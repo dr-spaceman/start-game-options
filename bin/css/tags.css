@@ -1,0 +1,72 @@
+
+ul.taglist, .taglist li { margin:0; padding:0; list-style:none; font-size:12px; line-height:18px; color:#999; }
+.taglist li { display:inline-block; position:relative; margin-right:7px; }
+.taglist .tag-wrap { position:relative; padding-right:4px; background:url("/bin/img/bullet.png") no-repeat right center; }
+.taglist.hov .rmable .tag-wrap{ background-image:none; }
+.taglist .tag-link { margin-right:9px; word-wrap:break-word; }
+
+.taglist.nohov a.tag-link { color:#888; text-decoration:none; }
+.taglist.nohov a.nocoverage { color:#AAA; text-decoration:line-through; }
+
+.taglist .albumlink { margin-right:5px; }
+
+.taglist a.rm {
+	position:absolute; top:0; right:2px;
+	display:none;
+	height:15px; width:8px; overflow:hidden; text-indent:500px;
+	background:url("/bin/img/sprites_tags.png") no-repeat 0 5px;
+}
+.taglist.hov .rmable a.rm { display:block; }
+.taglist.hov .rmable a.rm:hover { background-position:0 -35px; }
+
+.taglist .removed .tag-link { text-decoration:line-through !important; opacity:.5; color:#888; }
+
+.taglist.hov a.suggtaglink { color:#44AF41; }
+a.suggtaglink { text-decoration:none; }
+a.suggtaglink b { font-size:14px; font-weight:bold !important; line-height:14px; }
+
+.suggestedtag a.chbox { padding-left:18px !important; }
+.suggestedtag a.chbox .inp { left:0 !important; }
+.suggestedtag dfn { font-style:normal; }
+
+.tagspace {
+	display:none;
+	width:230px; height:25px;
+	position:relative;
+	margin:5px 0 0;
+}
+.tagspace .container {}
+.tagspace form {}
+.tagspace INPUT[type='text'] {
+	width:100%;
+	margin:0 !important;
+}
+.tagspace .ac_loading { background-position:145px center !important; }
+.tagspace INPUT[type='submit'] {
+	position:absolute; z-index:1; top:0; right:-5px;
+	height:24px;
+	margin:0; padding:0 10px;
+	font-size:14px; font-weight:bold; line-height:22px;
+	border-radius:0 2px 2px 0;
+}
+.tagspace .tt { padding:3px 6px; }
+
+.taga {
+	padding: 25px;
+	background: #fcc73a url(/bin/img/gradient_yellow_med.png) repeat-x 0 0;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #faf28f #F9C848 #F9C848 #faf28f;
+	border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px;
+}
+.taga > .container {
+	padding: 15px;
+	background-color:white;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #F9C848 #faf28f #faf28f #F9C848;
+	border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px;
+}
+.taga H6 { margin:0; padding:0; font-weight:bold; font-size:15px; color:#888; }
+.taga P { margin:5px 0 0; padding:0 0 0 11px; background:url(/bin/img/arrow-small-gray-right.png) no-repeat 0 3px; }
+.taga .taglist { padding:7px 10px; background-color:#EEE; font-size:14px; }

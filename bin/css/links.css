@@ -1,0 +1,34 @@
+/* style sheet for links.php
+   created 06/28/04 (China time)
+   modified 2008-01-12 */
+
+H1, H2, H3, H4 {
+	margin-bottom: 3px; }
+
+H3 {
+	padding: 1px 3px;
+	border-width: 1px 0;
+	border-style: solid;
+	border-color: #C0C0C0;
+	background-color: #EEE; }
+
+CODE {
+	display: block;
+	margin: 5px 0 2em 0;
+	padding-left: 5px;
+	border-left: 3px solid #C0C0C0; }
+
+UL.links-list {
+	margin: 0;
+	padding: 0; }
+UL.links-list LI {
+	margin: 0 0 4px 5px;
+	padding: 0 0 0 8px;
+	background: url(/bin/img/bullet-point.png) no-repeat 0 3px;
+	list-style: none; }
+
+#form_result {
+	padding: 1em;
+	border: 1px solid #FF8080;
+	background-color: #FFD5D5;
+	font-size: 15px; }

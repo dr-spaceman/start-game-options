@@ -1,0 +1,159 @@
+
+#groups-header {
+	height:56px;
+	margin:0 0 30px;
+	border-width: 0 0 2px; border-style:solid; border-color:#333;
+	color:#AAA;
+	border-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px;
+}
+#groups-header H2 {
+	float:left;
+	margin:0; padding:0;
+	font-weight:bold;
+	font-size:60px;
+	color:#333;
+	border-width:0;
+}
+#groups-header ul { margin:0; padding:0; list-style:none; }
+#groups-header li { margin:0; padding:0; float:left; }
+#groups-header li:first-child { margin-left:20px; }
+#groups-header li a { display:block; margin:27px 5px 0 0; padding:5px 15px; font-size:120%; background-color:white; }
+	
+OL#groupslist { margin:0; padding:0; list-style:none; }
+#groupslist li {
+	float:left;
+	width:23%;
+	margin:0 2% 10px 0;
+}
+#groupslist li a { display:block; text-decoration:none; }
+#groupslist img { float:left; margin:0 5px 5px 0; border-width:0 1px 1px 0; border-style:solid; border-color:#CCC; }
+#groupslist li a div { line-height:150%; color:#888; font-size:110%; }
+#groupslist li a big { display:block; color:#333; font-weight:bold; }
+#groupslist a:hover img { border-width:0; margin:1px 5px 5px 1px; }
+#groupslist a:hover big { text-decoration:underline; }
+
+#pagenav {
+	clear: both;
+	padding: 10px 0 0; }
+#pagenav B {
+	padding: .5em 1em;
+	border: 2px solid #CCC; }
+#pagenav A {
+	padding: .5em 1em;
+	text-decoration: none;
+	border: 2px solid #06C; }
+#pagenav A:HOVER {
+	border-color: #39F; }
+	
+#grouppage{}
+#grouppage H3 {
+	position:relative;
+	height:150px;
+	margin:0; padding:0;
+	border-width:0;
+	background-repeat:no-repeat; background-position: 0 0;
+}
+#grouppage H3 A {
+	display: block;
+	height:150px;
+	text-decoration:none;
+}
+#grouppage H3 SPAN {
+	position:absolute;
+	padding:5px 9px;
+	color:white;
+	text-decoration:none !important;
+	background:url(/bin/img/groups/header_heading_bg.png) repeat 0 0;
+}
+
+#grouppage #about { margin:20px 0 0; font-size:110%; line-height:150%; }
+#grouppage #controls { margin:20px 0 0; }
+#grouppage #controls ul { border:1px solid #CCC; margin:0; padding:0; list-style:none; height:26px; }
+#grouppage #controls li { margin:0; padding:0; float:left; }
+#grouppage #controls li > * { display:block; padding:3px 10px; line-height:20px; border-right:1px solid #CCC; }
+#grouppage #created { float:right !important; border-width:0 !important; }
+#grouppage #your-join-info { color:#666; }
+#grouppage #options-inp {
+	position: absolute;
+	z-index: 1;
+	display: none;
+	margin: 4px 0 0 -9px;
+	padding: 2px 8px;
+	border: 1px solid #CCC;
+	background-color: white; }
+#grouppage #options P {
+	margin: 2px 0 0; }
+#grouppage #invite {
+	display: none;
+	border-width: 0 1px 1px;
+	border-style: solid;
+	border-color: #CCC; }
+#grouppage #invite FORM {
+	display: block;
+	padding: 8px; }
+/*#grouppage #invite P {
+	margin: 5px 0 0; }*/
+
+#grouppage #group-forum, #grouppage #group-news {
+	width:585px;
+	margin:14px 0 6px; }
+#grouppage #group-forum FIELDSET, #grouppage #group-news FIELDSET {
+	border-color: #CCC; }
+#grouppage #members { float:right; width:365px; margin:20px 0 0; }
+#grouppage #members .tabbed-nav LI A {
+	margin:1px 5px 0 0 !important;
+	text-decoration:none; color:#888;
+	background-color:#DDD;
+	border-width:1px 1px 0; border-style:solid; border-color:#DDD;
+}
+#grouppage #members .tabbed-nav li.on a { background-color:white; border-bottom:1px solid white; }
+#grouppage #members .tabbed-nav LI A SPAN {
+	text-decoration: underline;
+	color: #06C; }
+#grouppage #members .tabbed-nav LI A:HOVER SPAN {
+	color: #39F; }
+#grouppage #memberlist {
+	clear: both;
+	padding: 7px 10px 0;
+	border-width:0 1px 1px; border-style:solid; border-color:#DDD;
+	background-color:white;
+}
+#grouppage #members OL {
+	list-style: none;
+	margin: 0;
+	padding: 0; }
+#grouppage #members OL LI {
+	width: 130px;
+	float: left;
+	margin: 0 0 5px;
+	padding: 0; }
+#grouppage #members OL LI.more {
+	display: none; }
+	
+	
+DT#groupmng {
+	margin: 0;
+	padding: 0; }
+#groupmng DT {
+	margin: 0 0 10px 0;
+	padding: 0; }
+#groupmng dt a {
+	display:block; padding:15px 0 15px 12px;
+	border-top:3px solid #CCC;
+	background:url(/bin/img/arrow-left-point.png) no-repeat 0 50%;
+	font-weight:bold; font-size:110%;
+}
+#groupmng DT A.on {
+	border-color: #06C;
+	background-image: url(/bin/img/arrow-down-point.png); }
+#groupmng DD {
+	display: none;
+	margin: 0 0 10px; }
+#groupmng DD P {
+	margin: 5px 0 0; }
+	
+.mgmemberlist {}
+.mgmemberlist th { padding:0 0 7px; border-bottom:2px solid #333; font-weight:bold; font-size:115%; color:#333; vertical-align:bottom; }
+.mgmemberlist td { padding:7px 0; border-bottom:1px solid #CCC; font-size:110%; }
+.mgmemberlist .checkbox { text-align:center; line-height:16px; }
+.mgmemberlist .checkbox * { margin:0; padding:0; }

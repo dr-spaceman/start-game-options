@@ -1,0 +1,71 @@
+<?xml version='1.0' standalone='yes'?>
+<pages>
+	<page type="game">
+		
+		<title>Donkey Kong</title>
+		
+		<keywords>dk donkeykong</keywords>
+		
+		<genres>
+			<genre>Action</genre>
+			<genre>Adventure</genre>
+			<genre>RPG</genre>
+		</genres>
+		
+		<game_series>
+			<series>Final Fantasy</series>
+			<series>Mega Man</series>
+		</game_series>
+		
+		<developers>
+			<developer>Capcom</developer>
+			<developer>Square</developer>
+		</developers>
+		
+		<related_games>
+			<related>Donkey Kong Jr</related>
+			<related>Donkey Kong Country</related>
+		</related_games>
+		
+		<publications>
+			<publication type="primary">
+				<img>abisui.jpg</img>
+				<title>Donkey Kong</title>
+				<platform>Nintendo 64</platform>
+				<region>US</region>
+				<release>1981-01-30</release>
+			</publication>
+			<publication>
+				<img>saas.jpg</img>
+				<title>DOnkey Kong Classis</title>
+				<platform>NES</platform>
+				<region>JP</region>
+				<release>1980-00-00</release>
+			</publication>
+		</publications>
+		
+		<people>
+			<person type="vital">
+				<name>Shigeru Miyamoto</name>
+				<credits>
+					<credit>
+						<role>Director</role>
+						<notes>w/ [[Gunpei Yokoi]]</notes>
+					</credit>
+					<credit>
+						<role>Producer</role>
+					</credit>
+				</credits>
+			</person>
+			<person type="vital">
+				<name>Gunpei Yokoi</name>
+				<credits>
+					<credit>
+						<role>Producer</role>
+					</credit>
+				</credits>
+			</person>
+		</people>
+		
+	</page>
+</pages>

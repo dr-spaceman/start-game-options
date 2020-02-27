@@ -1,0 +1,97 @@
+
+#messages-overview {}
+
+	#messages-overview H3 {
+		padding: 0 !important;
+		border-width: 0 !important; }
+	
+	#messages-overview H4 {
+		margin: 0 0 5px 5px;
+		padding-left: 15px;
+		font-size: 16px;
+		color: #696969;
+		background: url(/bin/img/arrow-down-right.png) no-repeat 0 50%; }
+
+	#messages {}
+	
+		#messages TFOOT {
+			display: none; }
+		
+		#messages TH {
+			padding: 5px;
+			border-bottom: 2px solid #AAA; }
+		
+		#messages TD {
+			vertical-align: middle;
+			padding: 5px;
+			border-bottom: 1px solid #CCC; }
+		#messages TD.last {
+			padding:0;
+			vertical-align:top;
+		}
+		#messages TD.last DIV { position:relative; }
+		#messages TD.last A { top:8px; right:8px; }
+		#messages .hilite-on TD { background-color:#FFFFBF; }
+		
+		#messages TD.nostyle {
+			padding: 0;
+			border-width: 0; }
+		
+		#messages A.subject {
+			padding-left: 15px;
+			font-weight: bold;
+			background: url(/bin/img/icons/mail.png) no-repeat 0 4px; }
+		#messages A.subject:HOVER {
+			background-position: 0 -17px; }
+		
+		#messages A.subject-read {
+			padding-left: 15px;
+			background: url(/bin/img/icons/mail-read.png) no-repeat 0 3px; }
+		#messages A.subject-read:HOVER {
+			background-position: 0 -18px; }
+		
+		#messages A.subject-replied {
+			padding-left: 15px;
+			background: url(/bin/img/icons/mail-replied.png) no-repeat 0 3px; }
+		#messages A.subject-replied:HOVER {
+			background-position: 0 -18px; }
+		
+		#messages A.message-unread {
+			font-weight: bold ! important; }
+		
+		#messages A.message-delete {
+			color: #D03737;
+			text-decoration: none;
+			font-size: 16px;
+			font-weight: bold ! important; }
+		
+		#messages A.message-read {
+			color: #49CD3A;
+			text-decoration: none;
+			font-size: 16px;
+			font-weight: bold ! important; }
+		
+			#messages A.message-delete:hover, #messages A.message-read:hover {
+				color: #B9B9B9; }
+
+#message {}
+	
+	#message .header {
+		padding: 0 30px 0 0;
+		text-align: right; }
+	#message H3 {
+		margin: 0;
+		padding:0;
+		border-width: 0;
+		font-weight: normal;
+		font-size: 21px;
+		color: #888; }
+	#message .styled-button {
+		float: right !important; }
+	#message P {
+		margin: 5px 0 0 0; }
+	#message-words {
+		font-family: arial;
+		font-size: 15px;
+		line-height: 1.5em; }
+	

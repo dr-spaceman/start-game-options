@@ -1,0 +1,28 @@
+
+
+#uplimg h5 { margin:0 0 5px; font-size:30px; color:#39F; }
+#uplimgform {
+	display:block;
+	margin:14px -30px; padding:1.5em 30px;
+	color:#333;
+	background:#CCC;
+	background:-webkit-gradient(
+	    linear,
+	    left top,
+	    left bottom,
+	    color-stop(rgb(204,204,204)),
+	    color-stop(rgb(170,170,170))
+	);
+	background:-moz-linear-gradient(
+	    center top,
+	    rgb(204,204,204),
+	    rgb(170,170,170)
+	);
+	box-shadow:0 3px 10px black; -moz-box-shadow:0 3px 10px black; -webkit-box-shadow:0 3px 10px black;
+	border-width:1px 0; border-style:solid; border-color:#DDD transparent black;
+}
+
+#uplimg p { margin:14px 0 0; }
+
+#uplq { max-height:120px; overflow:auto; }
+#uplq iframe, #uplq form { display:none; }

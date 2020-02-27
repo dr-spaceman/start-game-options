@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+
+<title>Videogam.in / BB Code Guide</title>
+
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+
+<link rel="stylesheet" type="text/css" href="/bin/css/screen.css" media="screen"/>
+<script type="text/javascript" src="/bin/script/jquery-1.4.1.js"></script>
+
+<style><!--
+
+BODY {
+	background: #EEE url('/index/graphics/bg-stripes.gif');
+	margin:0;
+	padding: 10px; }
+IMG.logo {
+	margin: 2em 0 1em 0; }
+DIV.shadow {
+	border-right: 2px solid #CCC;
+	border-bottom: 2px solid #CCC; }
+DIV.content {
+	padding: 10px;
+	background-color: white;
+	border: 1px solid #A4A4A4;
+	font-family: Arial;
+	font-size: 13px;
+	line-height: 150%; }
+H1 {
+	margin: 0 0 10px;
+	padding-top: 0;
+	font: normal 21px arial; }
+CODE {
+	background-color: #FFFFB7;
+	font-family:monospace;
+}
+TBODY.main > TR > TH {
+	padding: 6px;
+	font-weight: bold;
+	font-size: 16px;
+	text-align: left;
+	border-bottom: 2px solid #AAA;
+	background-color: #EEE;
+}
+TBODY.main > TR > TD {
+	padding: 6px;
+	border-bottom:1px solid #CCC;
+	vertical-align: top; }
+	
+--></style>
+
+</head>
+
+
+
+<body>
+
+<div class="shadow"><div class="content">
+
+<h1><b>Videogam.in</b> <span style="color:#888">/</span> BB Code Formatting Guide</h1>
+
+The following guide details all the special formatting you can use for your text on Forum, Sblog, or Content Pages (Games, People, Categories, Topics).
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:5px 0; border-top:1px solid #CCC;">
+	<tbody class="main">
+	<tr>
+		<th colspan="2">HTML</th>
+	</tr>
+	<tr>
+		<td colspan="2">
+			Besides the below BB code, you can use HTML anywhere on the site. <a href="#xhtml" class="arrow-toggle" onclick="$(this).toggleClass('arrow-toggle-on').next().toggle();">View allowed tags and restrictions</a>
+			<div style="display:none;">
+				Allowed tags:
+				<code style="display:block; padding:1px 5px; margin:0 0 5px 10px;">&lt;a&gt;&lt;abbr&gt;&lt;acronym&gt;&lt;b&gt;&lt;big&gt;&lt;blockquote&gt;&lt;code&gt;&lt;del&gt;&lt;dl&gt;&lt;dt&gt;&lt;dd&gt;&lt;em&gt;&lt;fieldset&gt;&lt;legend&gt;&lt;i&gt;&lt;small&gt;&lt;strike&gt;&lt;sub&gt;&lt;sup&gt;&lt;s&gt;&lt;strong&gt;&lt;ul&gt;&lt;ol&gt;&lt;li&gt;&lt;table&gt;&lt;tbody&gt;&lt;thead&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td&gt;&lt;th&gt;</code>
+				Allowed attributes: <code style="display:block; padding:1px 5px; margin:0 0 5px 10px;">href src title rel</code>
+				For example, you can use <code>&lt;a href="http://google.com" title="Google"&gt;Google&lt;/a&gt;</code>, but not <code>&lt;big style="color:red;font-size:500px;"&gt;BIG OBNOXIOUS TEXT&lt;/big&gt;</code> since <code>style</code> is not an allowable attribute.
+				<p></p>
+				XHML is preferred over BB Code since it doesn't require system resources to format.
+				<p></p>
+				For an  overview and list of XHTML markup, check out <a href="http://www.w3schools.com/tags/default.asp" target="_blank" class="arrow-link">W3C Schools</a>.
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2">Link to a Page at Videogam.in</th>
+	</tr>
+	<tr>
+		<td colspan="2">
+			Use double square brackets around any game title, person, company, development group, or topic to link to it's content page at Videogam.in. Optionally, include a vertical bar followed by alternate link words. For example:<br/>
+			<table border="1" cellpadding="5" cellspacing="0" style="margin:10px;">
+				<tr><td><code>[[The Legend of Zelda]]</code></td><td><a href="/games/The_Legend_of_Zelda">The Legend of Zelda</a></td></tr>
+				<tr><td><code>[[Final Fantasy X-2|a game with hotpants]]</code></td><td><a href="/games/Final_Fantasy_X-2">a game with hotpants</a></td></tr>
+				<tr><td><code>[[Shigeru Miyamoto]]</code></td><td><a href="/people/Shigeru_Miyamoto">Shigeru Miyamoto</a></td></tr>
+				<tr><td><code>[[Alexander O. Smith|translator extraordinaire]]</code></td><td><a href="/people/Alexander_O._Smith">translator extraordinaire</a></td></tr>
+				<tr><td><code>[[PlayStation Portable|PSP]]</code></td><td><a href="/pages/PlayStation_Portable">PSP</a></td></tr>
+				<tr><td><code>[[Sonic series]]</code></td><td><a href="/pages/Sonic_series">Sonic series</a></td></tr>
+				<tr><td><code>[[mustaches]]</code></td><td><a href="/pages/Mustaches">mustaches</a></td></tr>
+			</table>
+			<div style="display:block;">
+				<span class="warn"></span>
+				Page links should be used often and liberally to tag a relevant topic when mentioned in a forum reply, news post, or content page in order to create links and cohesion within the site, and to give readers a reference for more information.
+			</div>
+			<a href="#moretags" class="arrow-toggle" onclick="$(this).toggleClass('arrow-toggle-on').next().toggle();">More about Tagging</a>
+			<div style="display:none;">
+				Videogam.in tags are case-insensitive, so <code>[[Arc the Lad]]</code> and <code>[[Arc The Lad]]</code> link to the same page.<br/>
+				Sometimes, you can include a special <b>Namespace</b> in your tag to perform a special action. For example: <code>[[Category:Super Nintendo]]</code>, <code>[[Category:Diablo series|a series of RPG games]]</code>, <code>[[Tag:Super Mario Bros.]]</code>, <code>[[Tag:Videogame violence]]</code>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2">Linking to another page</th>
+	</tr>
+	<tr>
+		<td><a href="http://some-site.com">http://some-site.com</a></td>
+		<td><code>[url]http://some-site.com[/url]</code></td>
+	</tr>
+	<tr>
+		<td><a href="http://some-site.com">Some site</a></td>
+		<td><code>[url=http://some-site.com]Some site[/url]</code></td>
+	</tr>
+	<tr>
+		<th colspan="2">Text Formatting</th>
+	</tr>
+	<tr>
+		<td><b>Bold Text</b></td>
+		<td><code>[b]Bold Text[/b]</code></td>
+	</tr>
+	<tr>
+		<td><i>Italic Text</i></td>
+		<td><code>[i]Italic Text[/i]</code></td>
+	</tr>
+	<tr>
+		<td><strike>Strikethrough</strike></td>
+		<td><code>[strike]Strikethrough[/strike]</code></td>
+	</tr>
+	<tr>
+		<td><big>Big Text</big></td>
+		<td><code>[big]Big Text[/big]</code></td>
+	</tr>
+	<tr>
+		<td><small>Small Text</small></td>
+		<td><code>[small]Small Text[/small]</code></td>
+	</tr>
+	<tr>
+		<th colspan="2">Special Formatting</th>
+	</tr>
+	<tr>
+		<td><b>Quote</b></td>
+		<td>Quote a forum user or someone else: <code>[quote]Blah blah blah[/quote]</code></td>
+	</tr>
+	<tr>
+		<td><b>Spoilers</b></td>
+		<td>
+			Hide spoilers: <code>In Final Scifi VII [spoiler]Thaeris dies[/spoiler].</code><br/>
+			this text will only show up when the user highlights it with his mouse
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2">Image, Video, and Audio</th>
+	</tr>
+	<tr>
+		<td><img src="/bin/img/mascot.png" alt="My Picture"/></td>
+		<td><code>[img]http://videogam.in/mascot.png[/img]</code></td>
+	</tr>
+	<tr>
+		<td>Advanced image options</td>
+		<td>
+			Optionally, you can give some extra variables:<br/>
+			<code>[img|ALIGNMENT|BIG IMAGE|CAPTION]THUMBNAIL[/img]</code>
+			<ul>
+				<li><code>ALIGNMENT</code> can be <i>left</i> or <i>right</i> to align it beside text, <i>center</i> to align it between text, or blank for no alignment</li>
+				<li><code>BIG IMAGE</code> (optional) is the URL location of a big image. If this value is included, there will be a link to the big image if the reader clicks the thumbnail image.</li>
+				<li><code>CAPTION</code> (optional) is a short description or comment about the image that will appear below the thumbnail image.</li>
+				<li><code>THUMBNAIL</code> is the thumbnail image location.</li>
+			</ul>
+			<br/>
+			For example:<br/>
+			<div class="thumbnail right" style="width:100px;"><div class="image"><a href="media/mother-3-translation_screens/p_text15.png"><img src="media/mother-3-translation_screens/thumbs/p_text15.png" border="0"/></a></div><div class="caption"><small>A high-definition screenshot</div></div>
+			<code>[img|right|http://abc.com/big.jpg|A high-definition screenshot]http://abc.com/thumbnail.gif[/img]</code>
+			<hr/>
+			<div class="thumbnail left" style="width:100px;"><div class="image"><img src="media/mother-3-translation_screens/thumbs/p_text15.png" border="0"/></div></div><code>[img|left]http://abc.com/thumbnail.gif[/img]
+		</td>
+	</tr>
+	<tr>
+		<td>Embed Videos</td>
+		<td>
+			Embed videos with the following code: <b><code>[video]VIDEO_URL[/video]</code></b><br/>
+			Currently only <b>YouTube</b> and <b>Viddler</b> are supported. If you use another service (Gametrailers.com, for example), a link to the video will be supplied rather than embedding it.<br/>
+			Fetch the URL from the video menu or the "Share" menu rather than the browser's URL bar in order to provide the most accurate information.<br/>
+			For example:
+			<div style="margin:5px 0 5px 20px;">
+				<code>[video]http://www.youtube.com/watch?v=uI3rO3PbYOo[/video]</code><br/>
+				<object>
+				  <param name="movie" value="http://www.youtube.com/v/uI3rO3PbYOo?fs=1&hd=1"></param>
+				  <param name="allowFullScreen" value="true"></param>
+				  <embed src="http://www.youtube.com/v/uI3rO3PbYOo?fs=1&hd=1" type="application/x-shockwave-flash" allowfullscreen="true"></embed>
+				</object>
+			</div>
+			Optionally, you can give some extra attributes: <code>[video|ALIGNMENT|CAPTION]VIDEO_URL[/video]</code>
+			<ul>
+				<li><code>ALIGNMENT</code> can be <i>left</i> (default), <i>right</i>, or <i>center</i>.</li>
+				<li><code>CAPTION</code> (optional) is a short description, comment, or note about the video that will appear below it.</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>Embed Audio</td>
+		<td>
+			Embed MP3 audio with the following code: <b><code>[audio]URL[/audio]</code></b><br/>
+			For example: <code>[audio]http://videogam.in/bin/uploads/audio/Hey_Listen.mp3[/audio]</code><br/><br/>
+			
+			In addition, there are two optional attributes: <code>[audio|ALIGNMENT|CAPTION]URL[/audio]</code>, where <code>ALIGNMENT</code> is "center" (default), "left", or "right".<br/><br/>
+			
+			It is highly suggested that you upload your MP3 file to Videogam.in via <a href="/posts/manage.php?action=newpost#audio">New Sblog Post</a>. 
+			For the video URL, you can use the tiny URL of your post, found on right right side of the post page.<br/>
+			For example: (from <a href="http://videogam.in/s1865">http://videogam.in/s1865</a>) <code>[audio||Chrono Trigger - Mystery Within the Sea of Trees]s1865[/audio]</code>
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2">Lists</th>
+	</tr>
+	<tr>
+		<td><ul style="margin:0; padding:0 0 0 20px;"><li>item a</li><li>item b</li><li>item c</li></ul></td>
+		<td>
+			Create a bulleted list with an asterisk (<code>*</code>) at the beginning of a new line:<br/>
+			<code>* item a<br/>* item b<br/>* item c</code>
+		</td>
+	</tr>
+	<tr>
+		<td><ol style="margin:0; padding:0 0 0 20px;"><li>item 1</li><li>item 2</li><li>item 3</li></ol></td>
+		<td>
+			Create a numbered list with a number key (<code>#</code>) at the beginning of a new line:<br/>
+			<code># item 1<br/># item 2<br/># item 3</code>
+		</td>
+	</tr>
+	<tr>
+	<td>
+		<dl><dt>Full name</dt><dd>Luigi Mario</dd>
+		<dt>First appearance</dt><dd><a href="/content/Mario_Bros." class="pglink nocoverage" title="No coverage yet">Mario Bros.</a> (1983)</dd>
+		<dt>Affiliations</dt>
+		<dd><a href="/content/Mario" class="pglink nocoverage" title="No coverage yet">Mario</a> (brother)</dd>
+		<dd><a href="/content/Princess_Daisy" class="pglink nocoverage" title="No coverage yet">Princess Daisy</a> (girlfriend)</dd>
+		<dd><a href="/content/Waluigi" class="pglink nocoverage" title="No coverage yet">Waluigi</a> (arch-nemesis)</dd>
+		</dl>
+	</td>
+	<td>
+		Create a list of terms and defitintions like so:<br/>
+		<code>; Full name :: Luigi Mario<br/>; First appearance :: [[Mario Bros.]] (1983)<br/>; Affiliations<br/>:: [[Mario]] (brother)<br/>:: [[Princess Daisy]] (girlfriend)<br/>:: [[Waluigi]] (arch-nemesis)</code>
+	<tr>
+		<th colspan="2">Citing sources</th>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<code>[cite=URL]SOURCE NAME[/cite]</code> &nbsp; <code>[source=URL]SOURCE NAME[/source]</code><p></p>
+			When writing public articles, any  words, facts, and information taken from another source that are not generally known should be cited. 
+			For example: <blockquote style="margin:4px 0 4px 10px; font-family:monospace; font-size:12px;">Shigeru Miyamoto once donned a walrus mustache [cite=http://en.wikipedia.com/Shigeru_Miyamoto]Wikipedia: "Shigeru Miyamoto"[/cite].</blockquote>
+			When citing a print source, omit the URL: <code>[cite]Robert Cheese: "A God Amongst Us: The Biography of Shigeru Miyamoto"[/cite]</code>
+			<p></p>
+			The difference between <code>[cite]</code> and <code>[source]</code> is slight: <code>[cite]</code> is used to cite a specific sentence or paragraph, while <code>[source]</code> is used to cite a general source for the whole article.
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2">Heading Sections and Table of Contents</th>
+	</tr>
+	<tr>
+		<td colspan="2" id="headings">
+			Split long articles up into sections with headings: <code>==Heading Level 1==</code> and <code>===Heading Level 2===</code>. If you make use of these tags in a sblog post, forum post, or .Incyclopedia article, you can also automatically output a Table of Contents with the <code>&lt;!--toc--&gt;</code> tag.
+			<p></p>
+			<a href="#example" class="arrow-toggle preventdefault" onclick="$(this).toggleClass('arrow-toggle-on').next().toggle();">See an example</a>
+			<div style="display:none; margin:5px 0 0; padding:5px 10px; background-color:#EEE; font-family:monospace; color:#333; white-space:pre-wrap;">In an alternate universe, the villains and heroes of Final Fantasy wage war in a battle between darkness and light. Zidane and Kuja, Garland and the Warrior of Light, Cosmos and Chaos fight to determine which is the greater power, creation or destruction.
+
+<b>&lt;!--toc--&gt;</b>
+
+<b>==Characters==</b>
+There are many characters in this game!
+<b>===Heroes===</b>
+*Warrior of Light ([[Final Fantasy]])
+*Squall Leonhart ([[Final Fantasy VIII]])
+<b>===Villains===</b>
+*Garland (Final Fantasy)
+*Kefka ([[Final Fantasy VI]])
+
+<b>==Story==</b>
+The story is really interesting!
+
+<b>==Conclusion==</b>
+This game is going to be great!
+</div>
+		</td>
+	</tr>
+			
+</tbody>
+</table>
+
+</div></div>
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+</body>
+
+</html>
