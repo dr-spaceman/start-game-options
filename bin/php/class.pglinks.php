@@ -15,7 +15,7 @@ class pglinks {
 	var $rm_duplicates;  // @ remove duplicate links
 	
 	function __construct(){
-		$this->regex = '@\[\[('.implode(':|', $GLOBALS['pgnamespaces']).':)?(.*?)\]\](s|\'s)?@ise';
+		$this->regex = '@\[\[('.implode(':|', $GLOBALS['pgnamespaces']).':)?(.*?)\]\](s|\'s)?@is';
 	}
 	
 	function parse($text){

@@ -9,12 +9,12 @@ if($_GET['mlist']){
 	$email = base64_decode($_GET['mlist']);
 	$q = "SELECT * FROM users WHERE email='".mysqli_real_escape_string($GLOBALS['db']['link'], $email)."' LIMIT 1";
 	if(!$usr = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill('Sorry, but we couldn\'t find that user account. Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
-	$q = "SELECT * FROM users_prefs WHERE usrid='$usr[usrid]' LIMIT 1";
+	$q = "SELECT * FROM users_prefs WHERE usrid='".$usr['usrid']."' LIMIT 1";
 	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
-		$q = "INSERT INTO users_prefs (usrid) VALUES ('$usr[usrid]');";
+		$q = "INSERT INTO users_prefs (usrid) VALUES ('".$usr['usrid']."');";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
 	}
-	$q = "UPDATE users_prefs SET mail_from_admins = '0' WHERE usrid = '$usr[usrid]'";
+	$q = "UPDATE users_prefs SET mail_from_admins = '0' WHERE usrid = '".$usr['usrid']."'";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
 	
 	?>
@@ -122,27 +122,27 @@ if($edit == 'details') {
 				$in['interests'] = substr($in['interests'], 0, 100).'&hellip;';
 			}
 			
-			if($in[im][un][0] == "BillyBob64") {
-				unset($in[im][cl][0]);
-				unset($in[im][un][0]);
+			if($in['im'][un][0] == "BillyBob64") {
+				unset($in['im']['cl'][0]);
+				unset($in['im']['un'][0]);
 			}
 			$ims = array();
 			for($i = 0; $i <= 6; $i++) {
-				if($in[im][cl][$i] != "" && $in[im][un][$i] != "") $ims[] = $in[im][cl][$i].":::".$in[im][un][$i];
+				if($in['im']['cl'][$i] != "" && $in['im']['un'][$i] != "") $ims[] = $in['im']['cl'][$i].":::".$in['im']['un'][$i];
 			}
 			if($ims) $im_str = implode("|||", $ims);
 			$im_str = htmlSC($im_str);
-			$in[im] = $im_str;
+			$in['im'] = $im_str;
 			
 			//users main
 			$Query = sprintf("UPDATE users SET "
 				.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."', username_old='".mysqli_real_escape_string($GLOBALS['db']['link'], $usrname)."'," : "").
-		  	($in['password1'] ? "password = password('$in[password1]')," : "")."
+		  	($in['password1'] ? "password = password('".$in['password1']."')," : "")."
 	   		email = '%s',
 			  region = '".$in['region']."',
-				`gender` = '$in[gender]' 
+				`gender` = '".$in['gender']."' 
 	   		WHERE usrid = '$usrid' LIMIT 1",
-	   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[email]));
+	   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['email']));
 	   	
 	   	//users_details
 	   	if($Result = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_details WHERE usrid='$usrid' LIMIT 1")) {
@@ -154,29 +154,29 @@ if($edit == 'details') {
 			   		homepage = '%s',
 			   		`im` = '%s',
 						`handle` = '%s',
-						`dob` = '$in[dob]',
-						`time_zone` = '$in[time_zone]',
+						`dob` = '".$in['dob']."',
+						`time_zone` = '".$in['time_zone']."',
 						last_profile_update = now()
 			   		WHERE usrid = '$usrid' LIMIT 1",
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[name]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[location]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[interests]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[homepage]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['name']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['location']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['interests']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['homepage']),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[handle]));
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['handle']));
 					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
 						$errors[] = "Couldn't update details" . ($usrrank >= 8 ? " " . mysqli_error($GLOBALS['db']['link']) : "");
 					}
 				} else {
 					$Query2 = sprintf("INSERT INTO users_details 
 						(`usrid`,  `name`, `location`, `time_zone`,      `interests`, `homepage`, `dob`,                           `im`, `handle`, `last_profile_update`) VALUES 
-			      ('$usrid', '%s',   '%s',       '$in[time_zone]', '%s',        '%s',       '$in[year]-$in[month]-$in[day]', '%s', '%s',     now())",
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[name]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[location]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[interests]),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[homepage]),
+			      ('$usrid', '%s',   '%s',       '".$in['time_zone']."', '%s',        '%s',       '".$in['year']."-".$in['month']."-".$in['day']."', '%s', '%s',     now())",
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['name']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['location']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['interests']),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['homepage']),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[handle]));
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['handle']));
 					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
 						$errors[] = "Couldn't update (insert) details";
 					}
@@ -244,25 +244,25 @@ if($edit == 'details') {
 		});
 	</script>';
 	   
-	
-	if($in[im]) {
-		$ims = explode("|||", $in[im]);
+	$im = array("cl", "un");
+	if($in['im']) {
+		$ims = explode("|||", $in['im']);
 		foreach($ims as $i) {
 			list($cl, $un) = explode(":::", $i);
 			if($cl != "" && $un != "") {
-				$im[cl][] = $cl;
-				$im[un][] = $un;
+				$im['cl'][] = $cl;
+				$im['un'][] = $un;
 			}
 		}
 	}
-	$page->javascript.='<script type="text/javascript">var imnum='.count($im[cl]).';</script>';
+	$page->javascript.='<script type="text/javascript">var imnum='.count($im['cl']).';</script>';
 	$page->header();
 	
 	echo accountHeader();
   
 	$in = stripslashesDeep($in);
 	
-	if (!$in[homepage]) $in[homepage] = 'http://';
+	if (!$in['homepage']) $in['homepage'] = 'http://';
 	
 	// register notice
 	if ($_GET['justregistered'] == 1){
@@ -292,13 +292,13 @@ if($edit == 'details') {
 			  <dd><input type="text" name="in[name]" value="<?=$in['name']?>" id="name" size="35" maxlength="30"/></dd>
 			
 			  <dt><label for="handle">Handle <a href="" class="tooltip helpinfo" title="A title, nickname, or label that is sometimes displayed below your username (such as in the forums)"><span>?</span></a></label></dt>
-			  <dd><input type="text" name="in[handle]" value="<?=$in['handle']?>" id="handle" size="35"<?=($in[handle_lock] ? ' disabled="disabled"' : '')?> maxlength="55"/></dd>
+			  <dd><input type="text" name="in[handle]" value="<?=$in['handle']?>" id="handle" size="35"<?=($in['handle_lock'] ? ' disabled="disabled"' : '')?> maxlength="55"/></dd>
 			
 			  <dt><label for="homepage">Homepage</label></dt>
-			  <dd><input type="text" name="in[homepage]" value="<?=$in[homepage]?>" id="homepage" size="35" maxlength="100" style="color:#06C; text-decoration:underline;"/></dd>
+			  <dd><input type="text" name="in[homepage]" value="<?=$in['homepage']?>" id="homepage" size="35" maxlength="100" style="color:#06C; text-decoration:underline;"/></dd>
 			
 			  <dt><label for="location">Location</label></dt>
-			  <dd><input type="text" name="in[location]" value="<?=$in[location]?>" id="location" size="35" maxlength="30"/></dd>
+			  <dd><input type="text" name="in[location]" value="<?=$in['location']?>" id="location" size="35" maxlength="30"/></dd>
 			
 			  <dt><label for="location">Region <a href="" class="tooltip helpinfo" title="The region where you buy games"><span>?</span></a></label></dt>
 			  <dd>
@@ -318,20 +318,20 @@ if($edit == 'details') {
 			  		In 100 characters or less
 			  </dd>
 			  <dd>
-			  	<textarea name="in[interests]" rows="2" cols="" id="interests"><?=$in[interests]?></textarea>
+			  	<textarea name="in[interests]" rows="2" cols="" id="interests"><?=$in['interests']?></textarea>
 			  </dd>
 			
 			  <dt>Gender</dt>
 			  <dd>
 			  	<select name="in[gender]"><option value="">Not sure</option>
-			  		<option value="male"<?=($in[gender] == "male" ? ' selected="selected"' : '')?>>Male</option>
-			  		<option value="female"<?=($in[gender] == "female" ? ' selected="selected"' : '')?>>Female</option>
-			  		<option value="asexual"<?=($in[gender] == "asexual" ? ' selected="selected"' : '')?>>Asexual or Robot</option>
+			  		<option value="male"<?=($in['gender'] == "male" ? ' selected="selected"' : '')?>>Male</option>
+			  		<option value="female"<?=($in['gender'] == "female" ? ' selected="selected"' : '')?>>Female</option>
+			  		<option value="asexual"<?=($in['gender'] == "asexual" ? ' selected="selected"' : '')?>>Asexual or Robot</option>
 			  	</select>
 			  </dd>
 			
 			  <dt>Birthdate</dt>
-			  <?	list($year, $month, $day) = explode("-", $in[dob]);
+			  <?	list($year, $month, $day) = explode("-", $in['dob']);
 			  
 			  ?><dd><select name="in[year]"><option value="0000">year</option>
 			  		<?	for($y=date('Y'); $y >= 1900; $y--) echo '<option value="'.$y.'" '.($year == $y ? 'selected="selected"' : '').'>'.$y."</option>\n";
@@ -411,7 +411,7 @@ if($edit == 'details') {
             "-1.0" => "GMT -01:00 Azores/E. Atlantic",
             "-0.5" => "GMT -00:30");
             while(list($key, $val) = each($tzones)) {
-            	echo '<option value="'.$key.'"'.($key == $in[time_zone] ? ' selected="selected"' : '').'>'.$val."</option>\n";
+            	echo '<option value="'.$key.'"'.($key == $in['time_zone'] ? ' selected="selected"' : '').'>'.$val."</option>\n";
             }
             ?>
 					</select>
@@ -433,7 +433,7 @@ if($edit == 'details') {
 			
 			<h2>Contact Details</h2>
 			<dl>
-				<dd><input type="text" name="in[email]" value="<?=$in[email]?>" id="email" placeholder="E-mail address" style="width:192px"/></dd>
+				<dd><input type="text" name="in[email]" value="<?=$in['email']?>" id="email" placeholder="E-mail address" style="width:192px"/></dd>
 				<dd>Your e-mail address is strictly confidential, never shared with a third party, and never shown to any site visitors, <b>ever</b>.</dd>
 			</dl>
 			
@@ -635,24 +635,24 @@ if($edit == "prefs") {
 			Your e-mail address: <code style="font-weight:bold;"><?=$user->email?></code> (<a href="account.php?edit=details">change</a>)
 			<dl>
 				<dt>
-					<label><input type="checkbox" name="pref[mail_from_admins]" value="1" <?=($pref[mail_from_admins] != "0" ? 'checked="checked"' : "")?>/> Receive e-mail messages from Videogam.in administrators</dt>
+					<label><input type="checkbox" name="pref[mail_from_admins]" value="1" <?=($pref['mail_from_admins'] != "0" ? 'checked="checked"' : "")?>/> Receive e-mail messages from Videogam.in administrators</dt>
 				<dt>
-					<label><input type="checkbox" name="pref[mail_from_users]" value="1" <?=($pref[mail_from_users] != "0" ? 'checked="checked"' : "")?>/> Allow other Videogam.in users to send me e-mail messages (your e-mail address is always kept secret)</label>
+					<label><input type="checkbox" name="pref[mail_from_users]" value="1" <?=($pref['mail_from_users'] != "0" ? 'checked="checked"' : "")?>/> Allow other Videogam.in users to send me e-mail messages (your e-mail address is always kept secret)</label>
 				</dt>
 				<dt>
-					<label><input type="checkbox" name="pref[pm_notify]" value="1" <?=($pref[pm_notify] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone sends me a private message</label>
+					<label><input type="checkbox" name="pref[pm_notify]" value="1" <?=($pref['pm_notify'] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone sends me a private message</label>
 				</dt>
 				<dt>
-					<label><input type="checkbox" name="pref[subscribe_sblog]" value="1" <?=($pref[subscribe_sblog] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone comments on my News & Blog posts</label>
+					<label><input type="checkbox" name="pref[subscribe_sblog]" value="1" <?=($pref['subscribe_sblog'] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone comments on my News & Blog posts</label>
 				</dt>
 				<dt>
-					<label><input type="checkbox" name="pref[subscribe_reply]" value="1" <?=($pref[subscribe_reply] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone directly replies to my forum and comment posts</label>
+					<label><input type="checkbox" name="pref[subscribe_reply]" value="1" <?=($pref['subscribe_reply'] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone directly replies to my forum and comment posts</label>
 				</dt>
 				<dt>
-					<label><input type="checkbox" name="pref[watchlist_notify]" value="1" <?=($pref[watchlist_notify] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone edits one of my Watch List pages</label>
+					<label><input type="checkbox" name="pref[watchlist_notify]" value="1" <?=($pref['watchlist_notify'] != "0" ? 'checked="checked"' : "")?>/> Notify me when someone edits one of my Watch List pages</label>
 				</dt>
 				<dd>
-					<label><input type="checkbox" name="pref[watchlist_minor_no_notify]" value="1" <?=($pref[watchlist_minor_no_notify] != "0" ? 'checked="checked"' : "")?>/> Don't notify me when someone makes a minor edit</label>
+					<label><input type="checkbox" name="pref[watchlist_minor_no_notify]" value="1" <?=($pref['watchlist_minor_no_notify'] != "0" ? 'checked="checked"' : "")?>/> Don't notify me when someone makes a minor edit</label>
 				</dd>
 			</dl>
 		</fieldset>
@@ -664,8 +664,8 @@ if($edit == "prefs") {
 			<legend>Game Collection</legend>
 			<dl>
 				<dt>When adding new games...
-				<dd><label><input type="radio" name="pref[collection_prepend]" value="0" <?=($pref[collection_prepend] != "1" ? 'checked="checked"' : "")?>/> place them at the <b>bottom</b> (end) of my shelf</dd>
-				<dd><label><input type="radio" name="pref[collection_prepend]" value="1" <?=($pref[collection_prepend] == "1" ? 'checked="checked"' : "")?>/> place them at the <b>top</b> (beginning) of my shelf</dd>
+				<dd><label><input type="radio" name="pref[collection_prepend]" value="0" <?=($pref['collection_prepend'] != "1" ? 'checked="checked"' : "")?>/> place them at the <b>bottom</b> (end) of my shelf</dd>
+				<dd><label><input type="radio" name="pref[collection_prepend]" value="1" <?=($pref['collection_prepend'] == "1" ? 'checked="checked"' : "")?>/> place them at the <b>top</b> (beginning) of my shelf</dd>
 			</dl>
 			<p><b>Protip</b>: change the default box art you see when adding games by adjusting your Region selection on your <a href="/account.php?edit=details">account details</a> page.</p>
 		</fieldset>
@@ -683,19 +683,19 @@ if($edit == "prefs") {
 				<dl>
 					<dt>Post on my wall...</dt>
 					<dd>
-						<label><input type="checkbox" name="pref[fb_fan]" value="1" <?=($pref[fb_fan] != "0" ? 'checked="checked"' : "")?>/> Games, people, and other things I Love and Hate</label>
+						<label><input type="checkbox" name="pref[fb_fan]" value="1" <?=($pref['fb_fan'] != "0" ? 'checked="checked"' : "")?>/> Games, people, and other things I Love and Hate</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[fb_collection]" value="1" <?=($pref[fb_collection] != "0" ? 'checked="checked"' : "")?>/> My Game Collection</label>
+						<label><input type="checkbox" name="pref[fb_collection]" value="1" <?=($pref['fb_collection'] != "0" ? 'checked="checked"' : "")?>/> My Game Collection</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[fb_play]" value="1" <?=($pref[fb_play] != "0" ? 'checked="checked"' : "")?>/> Games I'm playing</label>
+						<label><input type="checkbox" name="pref[fb_play]" value="1" <?=($pref['fb_play'] != "0" ? 'checked="checked"' : "")?>/> Games I'm playing</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[fb_sblog_auth]" value="1" <?=($pref[fb_sblog_auth] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I write</label>
+						<label><input type="checkbox" name="pref[fb_sblog_auth]" value="1" <?=($pref['fb_sblog_auth'] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I write</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[fb_sblog_like]" value="1" <?=($pref[fb_sblog_like] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I like</label>
+						<label><input type="checkbox" name="pref[fb_sblog_like]" value="1" <?=($pref['fb_sblog_like'] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I like</label>
 					</dd>
 				</dl>
 				<?
@@ -718,13 +718,13 @@ if($edit == "prefs") {
 				<dl style="display:none">
 					<dt>Post tweets...</dt>
 					<dd>
-						<label><input type="checkbox" name="pref[twitter_fan]" value="1" <?=($pref[twitter_fan] != "0" ? 'checked="checked"' : "")?>/> Games, people, and other things I Love and Hate (only when you include remarks)</label>
+						<label><input type="checkbox" name="pref[twitter_fan]" value="1" <?=($pref['twitter_fan'] != "0" ? 'checked="checked"' : "")?>/> Games, people, and other things I Love and Hate (only when you include remarks)</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[twitter_play]" value="1" <?=($pref[twitter_play] != "0" ? 'checked="checked"' : "")?>/> Games I'm playing (only when you include remarks)</label>
+						<label><input type="checkbox" name="pref[twitter_play]" value="1" <?=($pref['twitter_play'] != "0" ? 'checked="checked"' : "")?>/> Games I'm playing (only when you include remarks)</label>
 					</dd>
 					<dd>
-						<label><input type="checkbox" name="pref[twitter_sblog_auth]" value="1" <?=($pref[twitter_sblog_auth] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I write</label>
+						<label><input type="checkbox" name="pref[twitter_sblog_auth]" value="1" <?=($pref['twitter_sblog_auth'] != "0" ? 'checked="checked"' : "")?>/> Sblog posts I write</label>
 					</dd>
 				</dl>
 				<?

@@ -18,17 +18,17 @@ if($row = mysqli_fetch_assoc($Resulta)) {
 		$Resultb = mysqli_query($GLOBALS['db']['link'], $Queryb);
 		while ($row = mysqli_fetch_assoc($Resultb)) {
 			if ($row['album'] == $dat['albumid']) {
-				$reportcard = "$dat[albumid]";
+				$reportcard = $dat['albumid'];
 			} else {
-				$reportcard = "$row[album]";
-				$edappend = " (<a href=\"?id=$row[albumid]\">$row[album]</a> edition)";
+				$reportcard = $row['album'];
+				$edappend = " (<a href=\"?id=".$row['albumid']."\">".$row['album']."</a> edition)";
 				$synact = 1;
 			}
 	
 		}
 	}
 } else {
-	$reportcard = "$dat[albumid]";
+	$reportcard = $dat['albumid'];
 }
 $album = $reportcard;
 
@@ -160,9 +160,9 @@ if($usrid) {
 			if($row['vendor'] == "GameMusic.com") continue;
 			if($row['vendor'] == "Play-Asia.com") $pa_incl = TRUE;
 			if($retail[$row['vendor']]) {
-		  	if(!$dat['no_commerce']) echo '<li class="retail"><a href="'.$row[code].'"><span class="price">'.$row['price'].'</span><img src="/music/graphics/'.$retail[$row['vendor']].'.png" alt="'.$row['vendor'].'" border="0"/></a></li>'."\n";
+		  	if(!$dat['no_commerce']) echo '<li class="retail"><a href="'.$row['code'].'"><span class="price">'.$row['price'].'</span><img src="/music/graphics/'.$retail[$row['vendor']].'.png" alt="'.$row['vendor'].'" border="0"/></a></li>'."\n";
 		  } else {
-		  	echo '<li><a href="'.$row[code].'">'.$row['vendor'].'</a></li>';
+		  	echo '<li><a href="'.$row['code'].'">'.$row['vendor'].'</a></li>';
 		  }
 		}
 		if(!$dat['no_commerce']) {
@@ -243,7 +243,7 @@ if($people) {
 <div id="related">
 	<?
 	$r = array();
-	$Querya = "SELECT r.type, r.related, r.album, l.id, l.albumid, l.release, l.title, l.datesort, l.subtitle, l.view from albums_related as r, albums as l where r.album = '$dat[albumid]' and l.albumid = r.related ORDER BY l.datesort DESC";
+	$Querya = "SELECT r.type, r.related, r.album, l.id, l.albumid, l.release, l.title, l.datesort, l.subtitle, l.view from albums_related as r, albums as l where r.album = '".$dat['albumid']."' and l.albumid = r.related ORDER BY l.datesort DESC";
 	$Resulta = mysqli_query($GLOBALS['db']['link'], $Querya);
 	if(mysqli_num_rows($Resulta)) {
 		?>
@@ -260,9 +260,9 @@ if($people) {
 			
 			if ($row['type'] == 5) {
 				if ($row['view'] == 1) {
-					$r[r5][] = '<li><a href="?id='.$row['albumid'].'">'.$pic.$row['albumid'].' ('.$row['release'].')</a></li>'."\n";
+					$r['r5'][] = '<li><a href="?id='.$row['albumid'].'">'.$pic.$row['albumid'].' ('.$row['release'].')</a></li>'."\n";
 				} else {
-					$r[r5][] = '<li>'.$pic.$row['albumid'].' ('.$row['release'].')</li>'."\n";
+					$r['r5'][] = '<li>'.$pic.$row['albumid'].' ('.$row['release'].')</li>'."\n";
 				}
 			} else { // 1 2 3 4
 				$t = "r".$row['type'];
@@ -275,60 +275,60 @@ if($people) {
 			}
 		}
 		
-		if ($r[r5]) {
+		if ($r['r5']) {
 			?>
 			<h4>Other editions</h4>
 			<ul>
 				<?
-				foreach ($r[r5] as $related) {
+				foreach ($r['r5'] as $related) {
 					echo $related;
 				}
 				?>
 			</ul>
 			<?
 		}
-		if ($r[r1]) {
+		if ($r['r1']) {
 			?>
 			<h4>Style/format</h4>
 			<ul>
 				<?
-				foreach ($r[r1] as $related) {
+				foreach ($r['r1'] as $related) {
 					echo $related;
 				}
 				?>
 			</ul>
 			<?
 		}
-		if ($r[r2]) {
+		if ($r['r2']) {
 			?>
 			<h4><?=$dat['title']?></h4>
 			<ul>
 				<?
-				foreach ($r[r2] as $related) {
+				foreach ($r['r2'] as $related) {
 					echo $related;
 				}
 				?>
 			</ul>
 			<?
 		}
-		if ($r[r4]) {
+		if ($r['r4']) {
 			?>
 			<h4><?=bb2html('[['.$dat['series'].' series]]', 'pages_only')?></h4>
 			<ul>
 				<?
-				foreach ($r[r4] as $related) {
+				foreach ($r['r4'] as $related) {
 					echo $related;
 				}
 				?>
 			</ul>
 			<?
 		}
-		if ($r[r3]) {
+		if ($r['r3']) {
 			?>
 			<h4>By Composer</h4>
 			<ul>
 				<?
-				foreach ($r[r3] as $related) {
+				foreach ($r['r3'] as $related) {
 					echo $related;
 				}
 				?>
@@ -360,7 +360,7 @@ if($people) {
 <?
 
 //eBay ad
-//echo '<script language="JavaScript" src="http://lapi.ebay.com/ws/eBayISAPI.dll?EKServer&ai=duynuh%29lsv&bdrcolor=c0c0c0&cid=0&eksize=1&encode=ISO-8859-1&endcolor=FF0000&endtime=n&fbgcolor=f5f5f5&fntcolor=000000&fs=3&hdrcolor=556987&hdrimage=1&hdrsrch=n&img=n&lnkcolor=006699&logo=3&num=4&numbid=n&paypal=n&popup=n&prvd=1&query='.urlencode($dat[title].' '.$dat[subtitle]).'&r0=3&shipcost=n&sid=album-'.$id.'&siteid=0&sort=MetaNewSort&sortby=endtime&sortdir=desc&srchdesc=n&tbgcolor=f5f5f5&tlecolor=f5f5f5&tlefs=0&tlfcolor=000000&track=676401&width=152"></script>';
+//echo '<script language="JavaScript" src="http://lapi.ebay.com/ws/eBayISAPI.dll?EKServer&ai=duynuh%29lsv&bdrcolor=c0c0c0&cid=0&eksize=1&encode=ISO-8859-1&endcolor=FF0000&endtime=n&fbgcolor=f5f5f5&fntcolor=000000&fs=3&hdrcolor=556987&hdrimage=1&hdrsrch=n&img=n&lnkcolor=006699&logo=3&num=4&numbid=n&paypal=n&popup=n&prvd=1&query='.urlencode($dat['title'].' '.$dat['subtitle']).'&r0=3&shipcost=n&sid=album-'.$id.'&siteid=0&sort=MetaNewSort&sortby=endtime&sortdir=desc&srchdesc=n&tbgcolor=f5f5f5&tlecolor=f5f5f5&tlefs=0&tlfcolor=000000&track=676401&width=152"></script>';
 
 ?>
 </div><!-- #side -->

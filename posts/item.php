@@ -65,7 +65,7 @@ if($post->attachment == "image"){
 	try { $img = new img($post->content['img_name'][0]); }
 	catch(Exception $e){ unset($img); }
 } else {
-	preg_match('@\{img:([a-z0-9-_!\.]+)\|?(.*?)\}(?:\s)?@ise', $post->content['text'], $imgmatch);
+	preg_match('@\{img:([a-z0-9-_!\.]+)\|?(.*?)\}(?:\s)?@is', $post->content['text'], $imgmatch);
 	if($imgmatch[1]){
 		try { $img = new img($imgmatch[1]); }
 		catch(Exception $e){ unset($img); }
@@ -413,7 +413,7 @@ if($post->privacy == "public"){
 			$query = "SELECT DISTINCT(usrid), avatar, username FROM `posts_ratings` LEFT JOIN users USING(usrid) WHERE posts_ratings.nid='$nid' AND posts_ratings.rating='1'";
 			$res = mysqli_query($GLOBALS['db']['link'], $query);
 			while($row = mysqli_fetch_assoc($res)){
-				if($row[usrid] == $post->usrid) continue;// Dont show author's self-love
+				if($row['usrid'] == $post->usrid) continue;// Dont show author's self-love
 				if(!$row['avatar']) $row['avatar'] = "unknown.png";
 				echo '<a href="~'.$row['username'].'" title="'.$row['username'].' loves this" class="tooltip"><img src="/bin/img/avatars/icon/'.$row['avatar'].'" alt="'.$row['username'].'"/></a>';
 			}

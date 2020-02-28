@@ -2,18 +2,30 @@
 
 class shelfItem {
 	
-	var $type;
-	var $tn;
-	var $id;
-	var $op; // ['love', 'hate']
+	public $type;
+	public $img;
+	public $tn;
+	public $id;
+	public $op; // ['love', 'hate']
 	//var $img;
-	var $no_img; // set true to display generic cover img
+	public $no_img; // set true to display generic cover img
+
+	/**
+	 * @param array
+	 */
+	public function __construct($properties = array()) {
+
+	}
+
+	public function addItem($properties = array()) {
+
+	}
 	
-	function __set($name, $val){
+	function __set($name, $val) {
 		if($name == "img") $this->setImg($val);
 	}
 	
-	function setImg($file=''){
+	function setImg($file='') {
 		
 		if(!$file){
 			$this->tn->height = 120;
@@ -27,9 +39,9 @@ class shelfItem {
 				$pos = strrpos($file, "/");
 				$this->tn->src = substr($file, 0, $pos) . "/" . ($this->type == "person" ? "profile_" : "md_") . substr($file, ($pos + 1), -3) . "png";
 			}
-      $this->tn->size = getimagesize($_SERVER['DOCUMENT_ROOT'].$this->tn->src);
-      $this->tn->height = $this->tn->size[1] / ($this->tn->size[0] / 140);
-      $this->tn->height = round($this->tn->height);
+		    $this->tn->size = getimagesize($_SERVER['DOCUMENT_ROOT'].$this->tn->src);
+		    $this->tn->height = $this->tn->size[1] / ($this->tn->size[0] / 140);
+		    $this->tn->height = round($this->tn->height);
 			
 		} else {
 			
@@ -61,7 +73,7 @@ class shelfItem {
 		
 	}
 	
-	function outputItem($row){
+	function outputItem($row) {
 		
 		// @var $row array a database row from `collection`
 		// [platform] a platform name (ie "Nintendo DS") that is evaluated for special box art orientation

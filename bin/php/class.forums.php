@@ -393,14 +393,14 @@ class forum {
 							$print_closed = '';
 							if($usrrank < $row['closed'] || ($row['closed'] && $usrrank >= 5)) $print_closed = ' class="locked"';
 							
-							if($row[ratings]) {
-								$total = $row[rating] / $row[ratings];
+							if($row['ratings']) {
+								$total = $row['rating'] / $row['ratings'];
 								if($total >= .5) $thumbs = '<img src="/bin/img/thumbs-up.png" alt="thumbs up"/>';
 								else $thumbs = '<img src="/bin/img/thumbs-down.png" alt="thumbs down"/>';
-								$thumbs.= '<span class="thumbs-text">'.$row[ratings].'</span>';
+								$thumbs.= '<span class="thumbs-text">'.$row['ratings'].'</span>';
 							} else $thumbs = '&nbsp;';
 							
-							if($usrlastlogin < $row[last_post]) {
+							if($usrlastlogin < $row['last_post']) {
 								$lightbulb = '<a href="/forums/?tid='.$row['tid'].'&focus_post=unread" title="unread posts in this topic"><img src="/bin/img/mascot.png" alt="new posts" border="0"/></a>';
 							} else {
 								$lightbulb = '<img src="/bin/img/mascot-off.png" alt="no new posts" border="0"/>';
@@ -1206,15 +1206,15 @@ class forum {
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)) {
 			if($row['fid']) $fid = $row['fid'];
-			$t[$row[tid]] = 0;
-			$date[$row[tid]] = '0000-00-00 00:00:00';
-			$query2 = "SELECT * FROM `forums_posts` WHERE tid='$row[tid]' ORDER BY `posted` DESC";
+			$t[$row['tid']] = 0;
+			$date[$row['tid']] = '0000-00-00 00:00:00';
+			$query2 = "SELECT * FROM `forums_posts` WHERE tid='".$row['tid']."' ORDER BY `posted` DESC";
 			$res2 = mysqli_query($GLOBALS['db']['link'], $query2);
 			while($row2 = mysqli_fetch_assoc($res2)) {
-				$t[$row[tid]]++;
-				if($t[$row[tid]] == 1) {
-					$date[$row[tid]] = $row2[posted];
-					$usrid[$row[tid]] = $row2[usrid];
+				$t[$row['tid']]++;
+				if($t[$row['tid']] == 1) {
+					$date[$row['tid']] = $row2['posted'];
+					$usrid[$row['tid']] = $row2['usrid'];
 				}
 			}
 		}
@@ -1245,11 +1245,11 @@ class forum {
 		$q = "SELECT * FROM forums_categories ORDER BY `sort` ASC";
 		$res = mysqli_query($GLOBALS['db']['link'], $q);
 		while($row = mysqli_fetch_assoc($res)) {
-			$navtree.= '</optgroup><optgroup label="'.$row[category].'">';
-			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$usrrank;
+			$navtree.= '</optgroup><optgroup label="'.$row['category'].'">';
+			$q2 = "SELECT * FROM forums WHERE cid='$row['cid']' AND `invisible` <= ".$usrrank;
 			$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
 			while($row2 = mysqli_fetch_assoc($res2)) {
-				$navtree.= '<option value="?fid='.$row2[fid].'">'.$row2[title]."</option>\n";
+				$navtree.= '<option value="?fid='.$row2['fid'].'">'.$row2['title']."</option>\n";
 			}
 		}
 		$navtree.= '</optgroup></select>';

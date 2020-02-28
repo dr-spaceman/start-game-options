@@ -72,7 +72,13 @@ class bbcode {
 		//$this->t = stripslashes($this->t);
 		
 		//don't parse html & bbcode inside <code/>
-		$this->t = preg_replace('@<code>(.*?)</code>@ise', "wrapCode('\\1')", $this->t);
+		$this->t = preg_replace_callback(
+			'@<code>(.*?)</code>@is',
+			function ($matches) {
+				return wrapCode($matches[1]);
+			},
+			$this->t
+		);
 		
 		if($this->params['pages_only']) return $pglinks->parse($this->t);
 		
@@ -89,36 +95,40 @@ class bbcode {
 			$this->markdown();
 			
 			$tags = array(
-				'@\~([^\s])(.*?)([^\s])\~(\((.*?)\))?@e', //strikethrough
 				//'@\[b\](.*?)\[/b\]@is', 
 				//'@\[i\](.*?)\[/i\]@is', 
 				'@\[spoiler\](.*?)\[/spoiler\]@is',
 				//'@\[big\](.*?)\[/big\]@is', 
 				//'@\[small\](.*?)\[/small\]@is', 
 				//'@\[strike\](.*?)\[/strike\]@is',
-				//'@\[url\](.*?)\[/url\]@ise', 
-				//'@\[url=(.*?)\](.*?)\[/url\]@ise', 
 				//"@\[img\](.*?)\[/img\]@is",
-				//'@\[img\|(.*?)\](.*?)\[/img\](?:\s)?@ise',
-				'@\[gallery\|?(.*?)\](.*?)\[/gallery\]@ise',
-				'@\{Template:(.*?)\}(?:\s)?@ise',
 			);
 			$tags_r = array(
-				"bbEvalDel('\\1','\\2','\\3','\\4')",
 				//'<b>$1</b>', 
 				//'<i>$1</i>', 
 				'<span class="spoiler"><del>$1</del></span>', 
 				//'<big>$1</big>', 
 				//'<small>$1</small>', 
 				//'<del>$1</del>',
-				//"evaluateLink('\\1', '\\1', '$ppd')",
-				//"evaluateLink('\\1', '\\2', '$ppd')",
 				//'<img src="$1" alt="my picture"/>',
-				//"evalImgTag('\\2', '\\1')",
-				"embedGallery('\\1', '\\2')",
-				"insertTemplate('\\1')",
 			);
 			$this->t = preg_replace($tags, $tags_r, $this->t);
+
+			$this->t = preg_replace_callback_array(
+				[
+					//strikethrough
+					'@\~([^\s])(.*?)([^\s])\~(\((.*?)\))?@' => function ($match) {
+						return bbEvalDel($match[1], $match[2], $match[3], $match[4]);
+					},
+					'@\[gallery\|?(.*?)\](.*?)\[/gallery\]@is' => function ($match) {
+						return embedGallery($match[1], $match[2]);
+					},
+					'@\{Template:(.*?)\}(?:\s)?@is' => function ($match) {
+						return insertTemplate($match[1]);
+					}
+				]
+				, $this->t
+			);
 			
 			// [[Page links]]
 			if(!$this->params['no_pagelinks']) $this->t = $pglinks->parse($this->t);

@@ -130,8 +130,8 @@ $bb->headings_offset = 4;
 	<?=((string)$row->heading_image ? '<div id="hdimg"><img src="'.(string)$row->heading_image.'" alt="'.$title_sc.'" border="0"/><img src="/bin/img/pagefold_940.png" alt="shadow" border="0" class="pgfsh"/></div>' : '')?>
 	
 	<?
-	$fan=array();
-	$in_collection=false;
+	$fan = array();
+	$in_collection = false;
 	if($usrid){
 		$query = "SELECT * FROM pages_fan WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='$usrid'";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
@@ -778,6 +778,8 @@ if($this->type == "person" && $row->credits_list->credit[0]){
 if($this->type == "game" && $row->publications->publication[0]){
 	
 	require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
+
+	//$shelf = new shelf();
 	
 	$num_pubs = 0;
 	$pubs = array();

@@ -273,10 +273,10 @@ class gallery {
 			}
 		} else {
 			if(is_string($this->files)){
-				//echo "STR:".$this->files;
-				preg_match_all('@\{img:([a-z0-9-_!\.]+)\|?(?:.*?)\}@ise', $this->files, $m);
-				if(count($m[1])) $this->files = $m[1];
-				//echo "MATCHES:";print_r($this->files);
+				//echo "STR:".htmlspecialchars($this->files);
+				preg_match_all('@\{img:([a-z0-9-_!\.]+)\|?(?:.*?)\}@is', $this->files, $matches);
+				if(count($matches[1])) $this->files = $matches[1];
+				//echo "MATCHES:";print_r($matches);
 			}
 			if(is_array($this->files)){
 				//echo "FILES:";print_r($this->files);

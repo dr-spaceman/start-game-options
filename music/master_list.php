@@ -32,7 +32,7 @@ while ($row = mysqli_fetch_assoc($Result)) {
 $total = count($list);
 
 for ($i = 0; $i < count($list); $i++) {
-	$b = $list[$i][title];
+	$b = $list[$i]['title'];
 	$b = strtoupper($b);
 	$a[$i] = $b{0};
 	unset($b);
@@ -79,7 +79,7 @@ for ($i = 0; $i < count($list); $i++) {
 					
 					for ($i = 0; $i < count($list); $i++) {
 					
-						$c = $a[$i];
+					  $c = $a[$i];
 						
 					  if ($list[$i]['view']) {
 					    $title = '<a href="/music/?id='.$list[$i]['albumid'].'"'.($list[$i]['file'] ? ' title="this album has music samples" class="hassample"' : '').'>'.$list[$i]['title'].' <em>'.$list[$i]['subtitle'].'</em></a>';
@@ -103,14 +103,7 @@ for ($i = 0; $i < count($list); $i++) {
 					}
 					
 					for ($i = 0; $i < 27; $i++) {
-						$h = $d[$i];
-						$h = count($h);
-						
-						if ($h > 0) {
-							echo '<td style="'.($i == 0 ? 'border-width:0;' : '').'"><a href="#'.$letters[$i].'">'.($letters[$i] == "0-9" ? '#' : $letters[$i]).'</a></td>';
-						} else {
-							echo '<td>'.$letters[$i].'</td>';
-						}
+						echo '<td style="'.($i == 0 ? 'border-width:0;' : '').'"><a href="#'.$letters[$i].'">'.($letters[$i] == "0-9" ? '#' : $letters[$i
 					}
 					
 					?>
