@@ -181,7 +181,7 @@ if ($_POST['do'] == "Submit Registration") {
 			    	
 		    	$q = "INSERT INTO users_oauth (usrid,oauth_provider,oauth_usrid,oauth_username) VALUES ('$usrid', 'steam', '".mysqli_real_escape_string($GLOBALS['db']['link'], $oauth['oauth_usrid'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $oauth['oauth_username'])."');";
 					if(!mysqli_query($GLOBALS['db']['link'], $q)){
-						sendBug("register.php Couldn't record Steam user data to users_oauth table because of a Mysql error [$q]: ".mysql_error());
+						sendBug("register.php Couldn't record Steam user data to users_oauth table because of a Mysql error [$q]: ".mysqli_error($GLOBALS['db']['link']));
 						die('Sorry, there was a database error and we couldn\'t record your Steam details. Your account has been registered and you have been logged in though! <a href="/">Continue</a>');
 					}
 					

@@ -7,7 +7,6 @@ require($_SERVER['DOCUMENT_ROOT']."/ninadmin/album_rules.php");
 	require("page.php");
 	$page =  new Page();
 	checkpermissions('albums.php');
-$Link = mysql_connect ($db[host], $db[user], $db[pass]) or printf ("Connection failed. %s\n", mysql_error ());
 
 $menu = "<a href=\"?action=new\">CREATE</a> (restart) | <a href=\"?action=edit\">EDIT</a> (restart)<br/><br/>\n";
 

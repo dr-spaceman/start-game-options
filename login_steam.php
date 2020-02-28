@@ -38,7 +38,7 @@ try {
 			  	if(!mysqli_num_rows($res)){
 				  	$q = "INSERT INTO users_oauth (usrid, oauth_provider, oauth_usrid, oauth_username) VALUES ('$usrid', 'steam', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steam_id)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steamuser->nickname)."');";
 						if(!mysqli_query($GLOBALS['db']['link'], $q)){
-							sendBug("login_steam.php Error reconciling Vg.in account with St acct [$q]: ".mysql_error());
+							sendBug("login_steam.php Error reconciling Vg.in account with St acct [$q]: ".mysqli_error($GLOBALS['db']['link']));
 							die("Sorry, there was a database error and we couldn't link your steam account to your Videogam.in account. <a href=\"".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in")."\">Back to Videogam.in</a>");
 						}
 						header("Location:http://videogam.in/account.php?edit=prefs&steamconnectedsuccess=1");

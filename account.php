@@ -165,7 +165,7 @@ if($edit == 'details') {
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[handle]));
 					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
-						$errors[] = "Couldn't update details" . ($usrrank >= 8 ? " " . mysql_error() : "");
+						$errors[] = "Couldn't update details" . ($usrrank >= 8 ? " " . mysqli_error($GLOBALS['db']['link']) : "");
 					}
 				} else {
 					$Query2 = sprintf("INSERT INTO users_details 
@@ -186,7 +186,7 @@ if($edit == 'details') {
 			if (!$errors) {
 				//$Query for `users`
 	  		if (!mysqli_query($GLOBALS['db']['link'], $Query)) {
-	  			$errors[] = "Couldn't update profile because of a database error " . ($usrrank >= 6 ? " [$Query] ".mysql_error() : '');
+	  			$errors[] = "Couldn't update profile because of a database error " . ($usrrank >= 6 ? " [$Query] ".mysqli_error($GLOBALS['db']['link']) : '');
 	  		} else {
 	  			
 	  			$results[] = "Successfully updated your details";

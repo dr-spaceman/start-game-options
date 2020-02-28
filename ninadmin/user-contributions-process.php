@@ -28,7 +28,7 @@ if($action == "categories") {
 			description = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in[$tid]['description'])."', 
 			points = '".$in[$tid]['points']."' 
 			WHERE type_id='$tid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = mysqli_error($GLOBALS['db']['link']);
 	}
 	if(!$errors) $results[] = "Categories & Points updated";
 	
@@ -38,7 +38,7 @@ if($action == "new category") {
 	
 	$q = "INSERT INTO users_contributions_types (category, description, points) VALUES 
 		('".$in['category']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['description'])."', '".$in['points']."');";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = mysql_error();
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = mysqli_error($GLOBALS['db']['link']);
 	else $results[] = "Category Set added";
 	
 }
@@ -50,7 +50,7 @@ if(!is_array($_POST['cids'])) return;
 foreach($_POST['cids'] AS $cid) {
 	
 	$q = "SELECT * FROM users_contributions uc LEFT JOIN users_contributions_data USING (contribution_id) WHERE uc.contribution_id='".$cid."' LIMIT 1";
-	if(!$x = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $id: ".mysql_error());
+	if(!$x = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $id: ".mysqli_error($GLOBALS['db']['link']));
 	
 	$type = $x['type_id'];
 	
@@ -107,7 +107,7 @@ foreach($_POST['cids'] AS $cid) {
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['text']),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $d['notes'])
 				);
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 				else $results[] = 'Successfully published wiki (<a href="/wiki.php?subj='.$d['subject_field'].'/'.$d['subject_id'].'/'.$d['field'].'">see it</a>)';
 				
 			}
@@ -141,13 +141,13 @@ foreach($_POST['cids'] AS $cid) {
 				foreach($del as $d) {
 					list($table, $f, $v) = explode("|", $d);
 					$q = "DELETE FROM `$table` WHERE `$f` = '$v'";
-					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't $q ".mysql_error();
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't $q ".mysqli_error($GLOBALS['db']['link']);
 				}
 				
 				$in['review_notes'] = '[Deleted game "'.$gdat->title.'"] '.$in['review_notes'];
 				
 				$q = "UPDATE users_contributions SET published='0', pending='0', review_notes='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['review_notes'])."' WHERE supersubject='gid:$gid' OR `description` LIKE '%[gid=$gid/]'";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update users_contributions; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update users_contributions; ".mysqli_error($GLOBALS['db']['link']);
 				
 			} else {
 				
@@ -177,7 +177,7 @@ foreach($_POST['cids'] AS $cid) {
 					"INSERT INTO games_trivia (gid, fact, `datetime`, usrid) VALUES ('$gdat->gid', '%s', '".date("Y-m-d H:i:s")."', '".$x['usrid']."');",
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['fact'])
 				);
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 				else $results[] = 'Successfully published factoid (<a href="/games/'.$gdat->gid.'/">see it</a>)';
 				
 			}
@@ -271,7 +271,7 @@ foreach($_POST['cids'] AS $cid) {
 			
 			$q = "INSERT INTO games_publications (gid, title, platform_id, region, release_date, `primary`, placeholder_img) VALUES 
 			('".$ssubjid."', '".htmlent($in['title'])."', '".$in['platform_id']."', '".$in['region']."', '".$in['release_date']."', '$primary', '".$in['placeholder_img']."');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 			else {
 				$results[] = 'Successfully added publication (<a href="/games/link.php?id='.$ssubjid.'">see it</a>)';
 				
@@ -301,7 +301,7 @@ foreach($_POST['cids'] AS $cid) {
 			$new_ssubj = "pid:".$pid;
 			$q = "INSERT INTO people_work (pid, gid, role, vital, notes) VALUES 
 			('$pid', '$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['role'])."', '".$in['vital']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes'])."');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 			else $results[] = 'Successfully added developer! <a href="/games/link.php?id='.$gid.'">game overview</a>';
 			
 			break;
@@ -351,7 +351,7 @@ foreach($_POST['cids'] AS $cid) {
 			if($in[$f] == "" && $d['*delete_row']) $q = "DELETE FROM `$t` WHERE `$k` = '$v' LIMIT 1";
 			else $q = "UPDATE `$t` SET `$f` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in[$f])."' WHERE `$k` = '$v' LIMIT 1";
 			if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = 'Updated '.$t.' database'.($reslink ? '; <a href="'.$reslink.'">Go to text page</a>' : '');
-			else $errors[] = "Couldn't process data; ".mysql_error();
+			else $errors[] = "Couldn't process data; ".mysqli_error($GLOBALS['db']['link']);
 			
 			break;
 			
@@ -375,7 +375,7 @@ foreach($_POST['cids'] AS $cid) {
 			reviewer = '".(!$in['anonymous_review'] ? $usrid : '')."',
 			review_notes = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['review_notes'])."' 
 			WHERE contribution_id='$cid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update contr queue; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update contr queue; ".mysqli_error($GLOBALS['db']['link']);
 		
 		if(!$deny) {
 			//mark ssubj as updated
@@ -401,7 +401,7 @@ function addPersonToDb($in, $uid) {
 	('%s', '$name_url', '%s', '".$in['prolific']."', '".$in['not_creator']."', '$now', '$now');",
 	mysqli_real_escape_string($GLOBALS['db']['link'], $name),
 	mysqli_real_escape_string($GLOBALS['db']['link'], $in['title']));
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $name to people database; ".mysql_error());
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $name to people database; ".mysqli_error($GLOBALS['db']['link']));
 	
 	if($in['credit_author']) {
 		$q = "INSERT INTO users_contributions (type_id, usrid, datetime, description, published, subject, supersubject) VALUES 

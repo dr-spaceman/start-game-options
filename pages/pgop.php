@@ -36,7 +36,7 @@ if($op == "collection"){
 if($act == "add") $q = "INSERT INTO pages_fan (usrid, op, `title`) VALUES ('$usrid', '$op', '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."');";
 elseif($act == "rm") $q = "DELETE FROM pages_fan WHERE usrid='$usrid' AND op='$op' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."';";
 elseif($act == "edit") $q = "UPDATE pages_fan SET `remarks`='".mysqli_real_escape_string($GLOBALS['db']['link'], $remarks)."' WHERE usrid='$usrid' AND op='$op' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."';";
-if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['errors'][] = "There was a database error!".($usrrank > 6 ? " ".mysql_error() : '');
+if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['errors'][] = "There was a database error!".($usrrank > 6 ? " ".mysqli_error($GLOBALS['db']['link']) : '');
 else $a->ret['success'] = '1';
 
 if(($act == "edit" || $act == "add") && $_SESSION['fb_142628175764082_access_token']){

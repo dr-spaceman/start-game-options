@@ -91,7 +91,7 @@ do if($_POST){
 		$newpgid = mysqlNextAutoIncrement("pages");
 		$q = "INSERT INTO pages (type, title, redirect_to, creator, created, modified) VALUES 
 			('".$pg->type."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', '$usrid', '$dt', '$dt');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add redirect page to database; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add redirect page to database; ".mysqli_error($GLOBALS['db']['link']);
 		
 		//rename page history entries
 		$q = "UPDATE pages_edit SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
@@ -108,7 +108,7 @@ do if($_POST){
 		$newpgid = $dat->pgid;
 		
 		$q = "UPDATE pages SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."', redirect_to = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE pgid = '$newpgid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update moving page with new attributes; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update moving page with new attributes; ".mysqli_error($GLOBALS['db']['link']);
 		
 		//rename page history entries
 		$q = "UPDATE pages_edit SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
@@ -131,7 +131,7 @@ do if($_POST){
 		catch(Exception $e){ $errors[] = "Error creating redirect page to $new_title; " . $e->getMessage(); }
 		
 		$q = "INSERT INTO pages_links (`from_pgid`, `to`, `is_redirect`) VALUES ('$newpgid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', '1');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record redirect link; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record redirect link; ".mysqli_error($GLOBALS['db']['link']);
 		
 	}
 	
@@ -146,7 +146,7 @@ do if($_POST){
 	
 	foreach($upd as $table => $field){
 		$q = "UPDATE `$table` SET `$field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `$field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update DB table `$table` with new page title; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update DB table `$table` with new page title; ".mysqli_error($GLOBALS['db']['link']);
 	}
 	
 	// UPDATE INDEXES //
@@ -188,7 +188,7 @@ do if($_POST){
 	
 	//update dbs
 	$q = "UPDATE pages SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', `modified` = '$dt' WHERE pgid='".$pg->pgid."' LIMIT 1";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database pages database; ".mysql_error();
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database pages database; ".mysqli_error($GLOBALS['db']['link']);
 	
 	$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, `rename`, `published`, edit_summary) VALUES (
 		'".$pg->pgid."', 

@@ -76,7 +76,7 @@ if($_POST['_action'] == "load_freetags") {
 			if($usrrank < $dat->rank) die("You can't remove that tag since the person who tagged it is ranked higher than you.");
 		}
 		$q = "DELETE FROM posts_tags WHERE id='$tid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database; ".mysqli_error($GLOBALS['db']['link']));
 	}
 } else {
 	?>

@@ -72,7 +72,7 @@ function addTag($arr){
 			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $tag));
 		$ret['tagid'] = mysqlNextAutoIncrement($handle[0]);
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = "Error adding tag to database: ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = "Error adding tag to database: ".mysqli_error($GLOBALS['db']['link']);
 		else{
 			$pglinks = new pglinks();
 			$pglinks->attr['class'] = "tag-link";
@@ -145,7 +145,7 @@ if($_POST['_action'] == "rm_tag") {
 		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0]),
 		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1]),
 		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]));
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database: ".mysql_error());
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database: ".mysqli_error($GLOBALS['db']['link']));
 	
 	exit;
 	

@@ -27,7 +27,7 @@ if($do == "create") {
 			die("Guide already exists");
 		}
 		$q = "INSERT INTO games_guides (`gid`, `authors`) VALUES ('$id', '$usrid')";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't INSERT to games_guides: ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't INSERT to games_guides: ".mysqli_error($GLOBALS['db']['link']));
 		
 		avert("?what=guide&id=$id");
 	}
@@ -286,7 +286,7 @@ if($_POST['submit_features']) {
 		`bestiary` = '$in[bestiary]' 
 		WHERE gid='$id' LIMIT 1";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-		$errors[] = "Couldn't update features: ".mysql_error();
+		$errors[] = "Couldn't update features: ".mysqli_error($GLOBALS['db']['link']);
 	} else {
 		$results[] = "Features updated";
 	}

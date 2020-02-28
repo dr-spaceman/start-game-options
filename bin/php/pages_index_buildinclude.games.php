@@ -56,7 +56,7 @@ if($pg->type == "game" && $pg->pgid){
 			$q.= "('$pg->pgid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pf)."', '".$pf_regions[(string)$pub->region]."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->publisher)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name_title_screen)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name_logo)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->distribution)."', ".($release_date ? "'$release_date'" : "NULL").", '$release_date_tentative', '$primary'),";
 		}
 		$q = substr($q, 0, -1);
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update publications index; ".mysql_error(), E_USER_ERROR);
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update publications index; ".mysqli_error($GLOBALS['db']['link']), E_USER_ERROR);
 	}
 	
 }

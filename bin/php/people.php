@@ -5,7 +5,6 @@ $title  = "Square Enix People Database -- Square Haven";
 $style  = "/people/people.css";
 $meta['keywords'] = "Square Enix developers, Final Fantasy developers, Kingdom hearts developers, game developers, creators, composers, musicians, artists";
 $meta['description'] = "Square Enix People Database, a comprehensive collection of information on the most vital people within or near the Square Enix sphere, including game devlopers, creators, music composers, artists, and regular more fallible people dedicated to the creations of those creators.";
-mysql_select_db($db[name]);
 
 $query = $_GET['query'];
 $association = $_GET['association'];
@@ -125,7 +124,7 @@ if($query) {
 				<?
 				// get the works and specific roles for which this person performed the given role
 				$games = mysqli_query($GLOBALS['db']['link'], "SELECT g.indexid, g.title, pw.role FROM people_work pw, Games g WHERE pw.pid = $row[id] AND pw.gid = g.indexid AND pw.role LIKE '%$role%' ORDER BY g.release_date DESC");
-				$albums = mysqli_query($GLOBALS['db']['link'], "SELECT a.title, a.subtitle, pw.role, a.albumid FROM sqhav_main2.album_list a, sqhav_main.people_work pw WHERE pw.role LIKE '%$role%' AND pw.pid = $row[id] AND a.albumid = pw.albumid ORDER BY a.datesort DESC");
+				$albums = mysqli_query($GLOBALS['db']['link'], "SELECT a.title, a.subtitle, pw.role, a.albumid FROM album_list a, people_work pw WHERE pw.role LIKE '%$role%' AND pw.pid = $row[id] AND a.albumid = pw.albumid ORDER BY a.datesort DESC");
 				$numgames = 0;
 				if ($games) $numgames = mysqli_num_rows($games);
 				$numalbums = 0;

@@ -396,7 +396,7 @@ if($field == "publish"){
 		`modifier`    = '$usrid',
 		`modified`    = '$dt'
 		WHERE pgid='".$ed->pgid."' LIMIT 1";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update database values for alternate titles and keywords; ".mysql_error(), E_USER_ERROR);
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update database values for alternate titles and keywords; ".mysqli_error($GLOBALS['db']['link']), E_USER_ERROR);
 	
 	try{ $ed->save(false, true); }
 	catch(Exception $e){ trigger_error("Couldn't save base data file (".$e->getMessage().")", E_USER_ERROR); die(json_encode($ret)); }
@@ -479,7 +479,7 @@ if($field == "publish"){
 			$q.= " ('".$ed->pgid."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $link)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $ulinks_ns[$i])."', '$is_redirect', '".(in_array($link, $parents) ? "parent" : "")."'),";
 		}
 		$q = substr($q, 0, -1);
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't record page links; ".mysql_error(), E_USER_ERROR);
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't record page links; ".mysqli_error($GLOBALS['db']['link']), E_USER_ERROR);
 	}
 	
 	//$GLOBALS['debug']=true;
@@ -532,7 +532,7 @@ if($field == "publish"){
 		unset($json_['rep_image']);
 		unset($json_['categories']);
 		$q = "UPDATE pages SET index_data = '".mysqli_real_escape_string($GLOBALS['db']['link'], json_encode($json_))."' WHERE pgid='".$ed->pgid."' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update index_data field on pages database; ".mysql_error(), E_USER_ERROR);
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update index_data field on pages database; ".mysqli_error($GLOBALS['db']['link']), E_USER_ERROR);
 		
 		//credits index
 		if($ed->type == "person"){

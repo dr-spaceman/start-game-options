@@ -84,7 +84,7 @@ if($action == "submit_synopsis") {
 	if($usrrank >= 4 && !$gdat->synopsis) {
 		
 		$q = "UPDATE games SET synopsis='".mysqli_real_escape_string($GLOBALS['db']['link'], $submission)."' WHERE gid='$gid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update games database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update games database; ".mysqli_error($GLOBALS['db']['link']));
 		
 		contributeToGame();
 		
@@ -94,7 +94,7 @@ if($action == "submit_synopsis") {
 		
 		$q = "INSERT INTO pending (`table`, usrid, `datetime`) VALUES 
 		('pending_games_synopsis', '$usrid', '".date('Y-m-d H:i:s')."');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 		
 		$q = sprintf("INSERT INTO pending_games_synopsis (`pend_id`, `gid`, `synopsis`, `user_is_author`, `author`, `author_link`) VALUES 
 		('$pendid', '$gid', '%s', '".$_POST['user_is_author']."', '%s', '%s');",
@@ -103,7 +103,7 @@ if($action == "submit_synopsis") {
 		mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['author_link']));
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			sendBug("Error adding a user-submitted synopsis to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\nsynopsis: ".$_POST['synopsis']);
-			die("Error saving to database; ".mysql_error());
+			die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 		}
 		
 	}
@@ -152,7 +152,7 @@ if($action == "submit_trivia") {
 		
 		$q = "INSERT INTO games_trivia (gid, fact, author, datetime, usrid) VALUES 
 		('$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fact)."', '$author', '".date("Y-m-d H:i:s")."', '$usrid')";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update games database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update games database; ".mysqli_error($GLOBALS['db']['link']));
 		
 		contributeToGame();
 		
@@ -163,13 +163,13 @@ if($action == "submit_trivia") {
 		
 		$q = "INSERT INTO pending (`table`, usrid, `datetime`) VALUES 
 		('pending_games_trivia', '$usrid', '".date('Y-m-d H:i:s')."');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 		
 		$q = "INSERT INTO pending_games_trivia (`pend_id`, `gid`, `fact`, `author`) VALUES 
 		('$pendid', '$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fact)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $author)."');";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			sendBug("Error adding a user-submitted trivia to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\nfact: ".$fact);
-			die("Error saving to database; ".mysql_error());
+			die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 		}
 		
 	}
@@ -463,8 +463,8 @@ if($action == "submit pub") {
 			$q = "INSERT INTO games_publications (gid, platform_id, title, region, release_date, `primary`) VALUES 
 			('$gid', '".$in['platform_id']."', '".htmlentities($in['title'], ENT_QUOTES)."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary')";
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				sendBug("Error adding a user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-				die("Error saving to database; ".mysql_error());
+				sendBug("Error adding a user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+				die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 			}
 			
 			$new_body = $gid."-box-".$nextid;
@@ -482,13 +482,13 @@ if($action == "submit pub") {
 			
 			$q = "INSERT INTO pending (`table`, usrid, `datetime`) VALUES 
 			('pending_games_publications', '$usrid', '".date('Y-m-d H:i:s')."');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 			
 			$q = "INSERT INTO pending_games_publications (pend_id, gid, platform_id, title, region, release_date, `file`) VALUES 
 			('$pendid', '$gid', '".$in['platform_id']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$file')";
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				sendBug("Error adding a [temporary] user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-				die("Error saving to database; ".mysql_error());
+				sendBug("Error adding a [temporary] user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+				die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 			}
 			
 		}
@@ -630,10 +630,10 @@ if($action == "upload screen") {
 				
 				$q = "INSERT INTO media (directory, category_id, description, gallery, datetime, usrid, quantity, unpublished) VALUES 
 				('$dir', '1', '<i>".addslashes($gdat->title)."</i> screenshots', '1', '".date("Y-m-d H:i:s")."', '$usrid', '1', '".($pending ? '1' : '')."')";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to db: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to db: ".mysqli_error($GLOBALS['db']['link']));
 				
 				$q = "INSERT INTO media_tags (media_id, tag) VALUES ('$nextid', 'gid:".$gdat->gid."')";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to tag db: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to tag db: ".mysqli_error($GLOBALS['db']['link']));
 				
 				if(!$pending) contributeToGame();
 				if($usrrank <= 8) $notify = TRUE;
@@ -806,7 +806,7 @@ if($action == "submit_person") {
 		// existing person //
 		
 		$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE pid='$pid' LIMIT 1");
-		if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
+		if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysqli_error($GLOBALS['db']['link']));
 		
 		$description = '<a href="/games/link.php?id='.$gid.'">'.htmlent($gdat->title).'</a> developer: <a href="/people/~'.$pdat->name_url.'">'.$pdat->name.'</a> ('.$_POST['role'].')';
 		
@@ -817,7 +817,7 @@ if($action == "submit_person") {
 			
 			$q = "INSERT INTO people_work (pid, gid, role, notes, vital) VALUES 
 			('$pid', '$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['role'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes'])."', '".$_POST['vital']."')";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysqli_error($GLOBALS['db']['link']));
 			
 			addUserContribution(6, $description, $_POST['notes'], ($usrrank <= 7 ? TRUE : FALSE), '', $subj, "pid:".$pid);
 			
@@ -835,13 +835,13 @@ if($action == "submit_person") {
 			
 			$q = "INSERT INTO pending (`what`, `table`, usrid, `datetime`) VALUES 
 			('$description', 'pending_people_work', '$usrid', '".date('Y-m-d H:i:s')."');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 			
 			$q = "INSERT INTO pending_people_work (pend_id, pid, gid, role, notes, vital) VALUES 
 			('$nextid', '$pid', '$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['role'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes'])."', '".$_POST['vital']."')";
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				sendBug("Error adding a user-submitted developer to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-				die("Error saving to database; ".mysql_error());
+				sendBug("Error adding a user-submitted developer to a gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+				die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 			}
 			
 			addUserContribution(6, $description, $_POST['notes'], ($usrrank <= 7 ? TRUE : FALSE), $pendid, '', "pid:".$pid);
@@ -878,14 +878,14 @@ if($action == "submit_person") {
 			mysqli_real_escape_string($GLOBALS['db']['link'], $name),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $name_url),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['bio']));
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $name to people database; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $name to people database; ".mysqli_error($GLOBALS['db']['link']));
 			
 			addUserContribution(12, 'New creator: <a href="/people/~'.$name_url.'">'.$name.'</a>', $_POST['bio'], ($usrrank <= 7 ? TRUE : FALSE), '', "people:".$pid, "pid:".$pid);
 			
 			$workid = mysqlNextAutoIncrement("people_work");
 			$q = "INSERT INTO people_work (pid, gid, role, notes, vital) VALUES 
 			('$pid', '$gid', '".htmlentities($_POST['role'], ENT_QUOTES)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes'])."', '".$_POST['vital']."')";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysqli_error($GLOBALS['db']['link']));
 			
 			addUserContribution(6, $description, $_POST['notes'], ($usrrank <= 7 ? TRUE : FALSE), '', "people_work:".$workid, "pid:".$pid);
 			
@@ -896,7 +896,7 @@ if($action == "submit_person") {
 			$pendid = mysqlNextAutoIncrement("pending");
 			$q = "INSERT INTO pending (`what`, `table`, usrid, `datetime`) VALUES 
 			('".mysqli_real_escape_string($GLOBALS['db']['link'], "New person: $name [w/ game role]")."', 'pending_people', '$usrid', '$now');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 			
 			$q = sprintf("INSERT INTO pending_people (pend_id, name, bio, gid, role, notes, vital) VALUES 
 			('$pendid', '%s', '%s', '$gid', '%s', '%s', '".$_POST['vital']."');",
@@ -905,8 +905,8 @@ if($action == "submit_person") {
 			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['role']),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes']));
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				sendBug("Error adding a user-submitted person to people db via gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-				die("Error saving to database; ".mysql_error());
+				sendBug("Error adding a user-submitted person to people db via gamepage\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+				die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 			}
 			
 		}
@@ -930,7 +930,7 @@ if($action == "select_pid") {
 	if(!$pid = $_POST['pid']) die("No pid given");
 	
 	$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE pid='$pid' LIMIT 1");
-	if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
+	if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysqli_error($GLOBALS['db']['link']));
 	
 	$res = mysqli_query($GLOBALS['db']['link'], "SELECT role FROM people_work WHERE gid='$gid' AND pid='$pid'");
 	if(mysqli_num_rows($res)) {
@@ -1043,7 +1043,7 @@ if($action == "submit_quote") {
 		('$gid', '%s', '1', '%s', '$usrid', '$now');",
 		mysqli_real_escape_string($GLOBALS['db']['link'], $quote),
 		mysqli_real_escape_string($GLOBALS['db']['link'], $quoter));
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add quote to database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add quote to database; ".mysqli_error($GLOBALS['db']['link']));
 		
 		contributeToGame();
 		
@@ -1055,15 +1055,15 @@ if($action == "submit_quote") {
 		
 		$q = "INSERT INTO pending (`what`, `table`, usrid, `datetime`) VALUES 
 		('$description', 'pending_games_quotes', '$usrid', '$now');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error saving to `pending`; ".mysqli_error($GLOBALS['db']['link']));
 		
 		$q = sprintf("INSERT INTO pending_games_quotes (pend_id, gid, quote, quoter) VALUES 
 		('$nextid', '$gid', '%s', '%s');",
 		mysqli_real_escape_string($GLOBALS['db']['link'], $quote),
 		mysqli_real_escape_string($GLOBALS['db']['link'], $quoter));
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-			sendBug("Error adding a user-submitted game quote\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-			die("Error saving to database; ".mysql_error());
+			sendBug("Error adding a user-submitted game quote\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+			die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 		}
 		
 	}

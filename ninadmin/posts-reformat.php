@@ -70,10 +70,10 @@ if(isset($min)){
 		//$result.= htmlentities($cont_str).'</dd></dl>';continue;
 		$q = "UPDATE posts SET `content` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont_str)."' WHERE nid='$row[nid]' LIMIT 1";
 		//$result.= htmlentities($q).'</dd></dl>';continue;
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't update db table [".htmlentities($q)."] ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't update db table [".htmlentities($q)."] ".mysqli_error($GLOBALS['db']['link']);
 		
 		$q = "INSERT INTO posts_edits (nid, usrid, `comments`, `content`) VALUES ('$row[nid]', 4651, '[BOT] Converting to new markup and Sblog 2.0 formatting (3rd round)', '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont_str)."');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update pages_edits db table [".htmlentities($q)."] ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update pages_edits db table [".htmlentities($q)."] ".mysqli_error($GLOBALS['db']['link']);
 		
 		$result.= '<hr/>'.htmlentities($text_intro).'</dd></dl>';
 		

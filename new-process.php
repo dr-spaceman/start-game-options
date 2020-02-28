@@ -338,7 +338,7 @@ if($_POST['submit_new']) {
 							$q.= "('$tid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $t)."'),";
 						}
 						$q = substr($q, 0, -1).";";
-						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysqli_error($GLOBALS['db']['link']);
 					}
 					
 					$forum->updatePosts($tid);
@@ -369,7 +369,7 @@ if($_POST['submit_new']) {
 			$nid = mysqlNextAutoIncrement("news");
 			$q = "INSERT INTO news (`description`,`description_url`,`content`,`usrid`,`type`,`public`,`blog`,`groups`,`options`,`datetime`) VALUES 
 				('".mysqli_real_escape_string($GLOBALS['db']['link'], $x[0])."', '$x[1]', '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont)."', '$usrid', '".$in['type']."', '".$in['post_to']['public']."', '".$in['post_to']['blog']."', '$groupsi', '$opts', '$dt');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into database; ".mysqli_error($GLOBALS['db']['link']);
 			else {
 			
 				//tags
@@ -400,7 +400,7 @@ if($_POST['submit_new']) {
 						$q.= "('$nid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $t)."'),";
 					}
 					$q = substr($q, 0, -1).";";
-					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysqli_error($GLOBALS['db']['link']);
 				}
 				
 				//heading img
@@ -508,7 +508,7 @@ if($_POST['process_new']) {
 					('$gid', '%s', '1', '%s', '$usrid', '".date("Y-m-d H:i:s")."');",
 					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[0]),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[1]));
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games quotes db; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games quotes db; ".mysqli_error($GLOBALS['db']['link']);
 			}
 		}
 		if($_POST['gappend']['link']) {
@@ -517,7 +517,7 @@ if($_POST['process_new']) {
 					('$gid', '$cont[0]', '%s', '%s', '$usrid', '".date("Y-m-d H:i:s")."');",
 					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[1]),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[2]));
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games links db; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games links db; ".mysqli_error($GLOBALS['db']['link']);
 			}
 		}
 	}
@@ -552,7 +552,7 @@ if($_POST['process_new']) {
 		description_url='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['description_url'])."', 
 		`options` = '".implode(" ", $in['options'])."' 
 		WHERE nid='".$in['nid']."' LIMIT 1";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database to reflect description and URL; ".mysql_error();
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database to reflect description and URL; ".mysqli_error($GLOBALS['db']['link']);
 	else {
 		header("Location: /news/".$in['date']."/".$in['description_url']);
 		exit;

@@ -15,7 +15,7 @@ if($_POST['iledit']){
 		$d = formatName($img_session_description);
 		if($d == ""){ $ret['error'] = "Can't have a blank session title"; break; }
 		$q = "UPDATE images_sessions SET img_session_description = '".mysqli_real_escape_string($GLOBALS['db']['link'], $d)."' WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_session_id)."' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysqli_error($GLOBALS['db']['link']);
 		else $ret['res'] = $d;
 		
 	} else {
@@ -30,7 +30,7 @@ if($_POST['iledit']){
 		if(!$field){ $ret['error'] = "The field name could not be determined."; break; }
 		
 		$q = "UPDATE images SET `".mysqli_real_escape_string($GLOBALS['db']['link'], $field[0])."` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $field[1])."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysqli_error($GLOBALS['db']['link']);
 		else{
 			if($field[0] == "img_description"){
 				$bb = new bbcode();

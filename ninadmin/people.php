@@ -160,7 +160,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 				if(!contributeToPeople($in['pid'], "usrid:".$usrid)) $errors[] = "Could not add your contribution to the table";
 			}
 		} else
-			$errors[] = "Could not update details ".mysql_error();
+			$errors[] = "Could not update details ".mysqli_error($GLOBALS['db']['link']);
 	}
 	
 	//upload pic

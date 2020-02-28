@@ -36,7 +36,7 @@ $page->header();
 if($id) {
 	
 	$q = "SELECT * FROM users_contributions uc LEFT JOIN users_contributions_data USING (contribution_id) WHERE uc.contribution_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $id)."' LIMIT 1";
-	if(!$x = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $id: ".mysql_error());
+	if(!$x = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $id: ".mysqli_error($GLOBALS['db']['link']));
 	
 	if(!$x['pending']) {
 		$errors[] = "This contribution is no longer pending (Reviewed by ".outputUser($x['reviewer'], FALSE, FALSE)." on  ".$x['datetime_reviewed'].")";

@@ -1,0 +1,526 @@
+
+#albumnav { margin-bottom:40px; font-size:14px; color:#DDD; }
+#albumnav h1, #albumnav h1 a { margin-bottom:5px; color:black; text-decoration:none; }
+#albumnav nav { height:16px; }
+#albumnav nav ul { margin:0; padding:0; list-style:none; }
+#albumnav nav ul li { margin:0 1em 0 0; padding:0; float:left; }
+#albumnav nav ul li a { color:#777; }
+#albumnav nav ul li a:hover { color:#999; }
+#albumnav a.addalbum { text-decoration:none; color:#06C; font-weight:bold; }
+#albumnav a.addalbum:hover { color:#39F; }
+#albumnav a.addalbum span { font-weight:normal; text-decoration:underline; }
+
+
+#album-profile #main { margin-right:331px; position:relative; }
+
+#album-profile .albumimg {
+	display:block;
+	background-color:white; background-position:0 0; background-repeat:no-repeat;
+	border-radius:4px; -moz-border-radius:4px; -webkit-border-radius:4px;
+	box-shadow:1px 1px 4px #BBB; -moz-box-shadow:1px 1px 4px #BBB; -webkit-box-shadow:1px 1px 4px #BBB;
+}
+#album-profile .albumimg img { visibility:hidden; }
+
+#album-profile #main-left {
+	float:left;
+	width:140px;
+	padding-right:15px;
+}
+#album-profile #main-left DL {
+	margin:15px 0 0; padding:0;
+}
+#album-profile #main-left DT {
+	padding:5px 0 0 0;
+	font-size:12px; color:#666; text-align:right;
+}
+#album-profile #main-left DD {
+	margin:0; padding:0 0 5px 0;
+	font-size:14px; text-align:right;
+}
+	
+#album-profile{}
+#album-profile H2 {
+	margin:0 0 15px 175px;
+	padding:0;
+	font-weight:bold;
+	font-size:17pt;
+	font-family:Arial;
+	letter-spacing:-1px;
+	color:#425C84;
+	border:none;
+}
+#album-profile H2 I {
+	font-weight:normal;
+	font-size:18px;
+	color:#999;
+	letter-spacing:normal;
+	white-space:nowrap;
+}
+
+#album-profile #synopsis {
+	margin:0 0 0 175px;
+}
+#synopsis P:first-child:first-line { font:bold 14px arial; }
+#synopsis .heading { display:none; }
+#synopsis .body { line-height:1.5em; }
+#synopsis .pglink { text-decoration:none; }
+#synopsis .pglink:hover { text-decoration:underline; }
+#synopsis .meta {
+    color: #888888;
+    margin: 10px 0 0;
+    padding: 0;
+    position: relative;
+}
+#synopsis .meta ul {
+    list-style: none outside none;
+    margin: 0 0 0 60px;
+    padding: 0;
+}
+#synopsis .meta li {
+    margin: 0 0 3px;
+    padding: 0;
+}
+#synopsis .meta a, #synopsis .meta time {
+    color: #333333;
+}
+#synopsis .meta a {
+    text-decoration: none;
+}
+#synopsis .meta a:hover {
+    text-decoration: underline;
+}
+#synopsis .meta a:hover > time {
+    text-decoration: underline;
+}
+#synopsis .meta li.poster {
+    font-size: 13px;
+}
+#synopsis .meta li.poster .useravatar {
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+#synopsis .meta li.poster .handle {
+    display: none;
+}
+#synopsis .meta li.posted a {
+    color: #888888;
+}
+#synopsis .meta li.posted a .sym {
+    visibility: hidden;
+}
+#synopsis .meta li.posted a:hover {
+    text-decoration: none;
+}
+#synopsis .meta li.posted a:hover .sym {
+    color: #000000;
+    visibility: visible;
+}
+#synopsis .meta .discuss { display:none; }
+#synopsis .meta .hrate { display:none; }
+#synopsis .meta .share { display:none; }
+
+#album-profile #sbloglist { margin:0 0 0 175px; }
+#album-profile #sbloglist H3 { margin:2em 0 .5em; }
+#album-profile #sbloglist .date { display:none; }
+
+#factoids { margin:30px 0 0; }
+#factoids FIELDSET { border-width:1px 0 0; }
+#factoids UL {
+	list-style:square;
+	margin:0 0 0 20px;
+	padding-left:5px; }
+#factoids LI {
+	padding:5px 0;
+	line-height:1.5em; }
+	
+#tracklist { margin:30px 0 0; }
+#tracklist H3 { display:none; }
+#tracklist H4 {
+	margin:15px 0 0 0;
+	padding:5px 0 5px 24px;
+	border-width:1px 0 0 0;
+	border-style:solid;
+	border-color:#C0C0C0;
+	background:#EEE url(/music/graphics/cd.png) no-repeat 8px 50%; }
+#tracklist-source {
+	margin:0;
+	padding:5px;
+	border:1px solid #C0C0C0; }
+.track-table { min-width:50%; }
+.track-table .heading {
+	padding:0;
+	border-left-width:0 !important; }
+.track-table TH {
+	padding:3px 4px;
+	font-weight:bold;
+	text-align:left;
+	vertical-align:top;
+	border-bottom:1px solid #C0C0C0;
+	background-color:#FFF; }
+.track-table TR.hov TD { background-color:#E8F3FF; }
+.track-table TD {
+	padding:3px 4px;
+	vertical-align:top;
+	border-bottom:1px solid #C0C0C0;
+	border-left:1px solid #EEE; }
+.tracklistn {
+	width:18px;
+	font-weight:bold;
+	text-align:right;
+	background-color:#F5F5F5;
+	border-left-width:0 !important; }
+.tracklist0 { background-color:white; }
+.tracklist1 {
+	text-align:left;
+	background-color:#F5F5F5; }
+.tracklist2 { background-color:white; text-align:left; }
+.extended-links {
+	text-align:right;
+	border-left-width:0 !important; }
+.extended-links IMG {
+	margin-left:5px; }
+.track-table .nostyle {
+	padding:0 !important;
+	border:0 !important; }
+
+#album-profile #side {
+	width:300px;
+	float:right;
+	padding-left:15px;
+}
+#album-profile #side H3 {
+	border-top:1px solid #CCC;
+	font-size:17px;
+	margin:2em 0 0.5em;
+	padding:0.5em 0 0;
+}
+#album-profile #side UL {
+	margin:0;
+	padding:0;
+	list-style:none; }
+#album-profile #side LI {
+	margin:0;
+	padding:8px 0;
+}
+
+#album-profile #collection TABLE {
+	border:1px solid #AAA; }
+#album-profile #collection TD, #album-profile #collection TH {
+	padding:5px;
+	font-size:11px;
+	border-width:1px 0 0 1px;
+	border-style:solid;
+	border-color:#CCC transparent transparent #EEE;
+	background-color:#F5F5F5; }
+#album-profile #collection TH {
+	font-weight:bold;
+	text-align:right; }
+#collection .top {
+	border-top-width:0 !important; }
+#album-profile #collection .input {
+	padding:5px 0 5px 5px; }
+#album-profile #collection INPUT {
+	margin:1px;
+	width:14px;
+	height:14px; }
+#album-profile #collection .label {
+	white-space:nowrap;
+	border-left-width:0 !important; }
+#album-profile LABEL {
+	display:block;
+	margin:0 0 0 -5px;
+	padding:0 0 0 18px;
+	height:14px;
+	background-position:0 50%;
+	background-repeat:no-repeat; }
+#album-profile #collection TD.rating {
+	background-color:white; }
+#collection .rating SPAN {
+	display:block;
+	height:14px;
+	background:url(/bin/img/star_rating.png) no-repeat 0 0; }
+#collection .rating .rating-value-0 {
+	background-position:0 0; }
+#collection .rating .rating-value-1 {
+	background-position:0 -14px; }
+#collection .rating .rating-value-2 {
+	background-position:0 -28px; }
+#collection .rating .rating-value-3 {
+	background-position:0 -42px; }
+#collection .rating .rating-value-4 {
+	background-position:0 -56px; }
+#collection .rating .rating-value-5 {
+	background-position:0 -70px; }
+#collection .nostyle {
+	padding:0;
+	border-width:0;
+	display:none; }
+#fans-list TABLE {
+	border-width:0 !important; }
+#fans-list TD {
+	border-width:0 0 1px 0 !important;
+	border-color:#DDD !important;
+	padding:3px 10px 3px 0 !important; }
+
+#album-profile #buy {}
+#album-profile #buy LI {
+	padding:3px 5px;
+}
+#album-profile #buy LI.retail { height:14px; }
+#album-profile #buy .retail A {
+	display:block;
+	color:black;
+	text-decoration:none; }
+#album-profile #buy IMG {
+	padding:2px 0 0 0; }
+#album-profile #buy .price {
+	float:right; }
+
+#album-profile #credits {}
+#album-profile #credits p {margin:0}
+#album-profile #credits TABLE {}
+#album-profile #credits TH, #album-profile #credits TD {
+	padding:5px;}
+#album-profile #credits TH {
+	font-weight:normal; }
+#album-profile #credits .vital TH {
+	font-weight:bold; }
+#album-profile #credits TD {
+	text-align:right; }
+#album-profile #credits .rowwithnotes TH, #album-profile #credits .rowwithnotes TD {
+	border-width:0 !important; }
+#album-profile #credits TD.notes {
+	padding:0 5px 5px 5px;
+	font-size:11px;
+	color:#808080;
+	text-align:left !important; }
+#album-profile #credits TD.notes A {
+	color:#808080; }
+
+#album-profile #related {}
+#album-profile #related H4 {
+	margin:0;
+	padding:5px;
+	font-size:13px; }
+#album-profile #related LI {
+	padding:0 0 5px 20px;
+	border-width:0;
+	background:url(/bin/img/arrow-right.gif) no-repeat 5px 4px; }
+
+#album-profile-footer {
+	padding:5px;
+	border:1px solid #C0C0C0; }
+#album-profile-footer SPAN {
+	color:#C0C0C0; }
+
+.listing {
+vertical-align:top;
+font-size:8pt;
+font-family:arial, Trebuchet MS, Arial;
+}
+
+.buy {
+vertical-align:top;
+font-family:arial, Trebuchet MS, Arial;
+font-size:7pt;
+}
+
+/* new page */
+
+.newtitle {
+font-family:arial, Arial;
+font-size:8pt;
+padding:10px 5px 5px 5px;
+border-style:solid;
+border-width:0px 0px 1px 0px;
+border-color:#CCCCCC
+color:#000000;
+}
+
+
+.newsubtitle {
+font-family:arial, Arial;
+font-size:8pt;
+font-weight:bold;
+background-color:#EEEEEE;
+color:#000000;
+text-align:left;
+vertical-align:middle;
+padding:5px 5px 5px 5px;
+border-color:#CCCCCC;
+border-style:solid;
+border-width:0px 0px 1px 0px;
+}
+
+#music-index H3 {
+	margin:0 0 5px; padding:0 0 5px;
+	font:400 2em/1.1 Arial; color:#333;
+	border-bottom:2px solid #AAA;
+	text-shadow:1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.music-data-table {
+	margin:1em 0 0 0; }
+.music-data-table H4 {
+	margin:10px 0 0 0;
+	padding:5px;
+	font-size:12px;
+	border-width:0 0 1px 0;
+	border-style:solid;
+	border-color:#CCC;
+	background:transparent url(/bin/img/gradient-b2t-eee.png) repeat-x scroll 0pt -110px; }
+.music-data-table H4 A {
+	text-decoration:none; }
+.music-data-table H4 A EM {
+	text-decoration:underline; }
+
+UL.music-index-list {
+	margin:0;
+	padding:0; }
+.music-index-list LI {
+	clear:both;
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+.music-index-list LI A {
+	display:block;
+	padding:5px;
+	text-decoration:none;
+	border-bottom:1px solid #CCC;
+	line-height:21px;
+	font-size:14px;
+}
+.music-index-list LI A:HOVER {
+	background-color:#F5F5F5;
+}
+.music-index-list LI IMG {
+	float:left;
+	margin:4px 5px 3px 0;
+	border:1px solid #CCC;
+}
+.music-index-list LI .title { text-decoration:underline; }
+.music-index-list LI .right { display:block; float:right; margin-left:5px; color:black; font-size:88%; }
+.music-index-list LI .center {
+	width:40px;
+	float:right;
+	font:bold 26px arial;
+	color:black; }
+	
+
+.newback {
+background-color:#EEEEEE;
+padding:0px 0px 0px 0px;
+border-color:#808080;
+border-style:solid;
+border-width:1px 0px 0px 1px;
+}
+
+.newback2 {
+background-color:#EEEEEE;
+padding:0px 0px 0px 0px;
+border-color:#808080;
+border-style:solid;
+border-width:1px 0px 0px 0px;
+}
+
+.newsidebar {
+vertical-align:middle;
+text-align:center;
+padding:10px 0;
+background-color:#EEEEEE;
+font-family:Arial;
+font-size:8pt;
+color:#000000;
+}
+
+.newentry {
+text-align:right;
+vertical-align:top;
+padding:4px 2px 4px 2px;
+font-family:arial, Arial;
+font-size:11px;
+color:#808080;
+font-weight:bold;
+background-color:#FFFFFF;
+border-color:#CCCCCC;
+border-style:solid;
+border-width:0px 0px 1px 1px;
+}
+.newentry2 {
+text-align:left;
+vertical-align:top;
+padding:4px 2px 4px 2px;
+font-family:arial, Arial;
+font-size:11px;
+border-color:#CCCCCC;
+border-style:solid;
+border-width:0px 0 1px 0px;
+background-color:#FFFFFF;
+}
+
+.credits {
+margin:10px 10px 10px 10px;
+padding:10px 10px 10px 10px;
+border-style:solid;
+border-color:#CCCCCC;
+border-width:1px 0px 0px 0px;
+}
+
+
+
+.rel {
+font-size:7pt;
+font-family:arial;
+color:#808080;
+text-align:left;
+font-weight:bold;
+vertical-align:top;
+background-color:#f5f5f5;
+padding:4px 4px 4px 0px;
+}
+
+.relpic {
+font-size:7pt;
+font-family:arial;
+color:#808080;
+text-align:left;
+vertical-align:top;
+background-color:#f5f5f5;
+padding:4px 0px 4px 4px;
+}
+
+A.gl:link {
+text-decoration:none;
+color:#000000;
+}
+
+A.gl:hover, A.gl:visited, A.gl:active {
+text-decoration:none;
+}
+
+.sidelist {
+text-align:left;
+font-family:Arial;
+font-weight:bold;
+font-size:8pt;
+color:#808080;
+}
+
+.sidelist1 {
+list-style-type:square;
+margin-top:0px;
+margin-bottom:5px;
+margin-left:20px;
+padding-left:0px;
+}
+
+.sidelist2 {
+list-style-type:circle;
+margin-top:0px;
+margin-bottom:0px;
+margin-left:15px;
+padding-left:0px;
+text-indent:0px;
+}

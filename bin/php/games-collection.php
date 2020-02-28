@@ -307,7 +307,7 @@ if($action == "submit_add_game") {
 		else $play_online_start = "NULL";
 		$_POST['online_id'] = htmlentities($_POST['online_id'], ENT_QUOTES);
 		
-		if(!$next_id = mysqlNextAutoIncrement('my_games')) die("Error: Couldn't get next database ID; ".mysql_error());
+		if(!$next_id = mysqlNextAutoIncrement('my_games')) die("Error: Couldn't get next database ID; ".mysqli_error($GLOBALS['db']['link']));
 		
 		if($sid) {
 			
@@ -348,7 +348,7 @@ if($action == "submit_add_game") {
 				$q = "INSERT INTO games_publications (gid, platform_id, title, region, `primary`) VALUES 
 				('$gid', '".$_POST['platform_id']."', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['region']."', '$primary')";
 				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-					sendBug("Error adding a user-submitted publication via + My Games\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
+					sendBug("Error adding a user-submitted publication via + My Games\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
 				}
 				
 				$file = $sid.".jpg";
@@ -373,13 +373,13 @@ if($action == "submit_add_game") {
 				
 				$q = "INSERT INTO pending (`table`, usrid, `datetime`) VALUES 
 				('pending_games_publications', '$usrid', '".date('Y-m-d H:i:s')."');";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
 				
 				$q = "INSERT INTO pending_games_publications (pend_id, gid, platform_id, title, region, `file`) VALUES 
 				('$pendid', '$gid', '".$_POST['platform_id']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['title'])."', '".$_POST['region']."', '".$sid.".jpg')";
 				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-					sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
-					die("Error saving to database; ".mysql_error());
+					sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+					die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 				}
 				
 			}
@@ -390,7 +390,7 @@ if($action == "submit_add_game") {
 		
 		$q = "INSERT INTO my_games (usrid, gid, publication_id, play, play_start, play_online, play_online_start, online_id, own, rating, added, title, platform_id, region) VALUES
 			('$usrid', '$gid', '$pid', '$play', $play_start, '$play_online', $play_online_start, '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['online_id'])."', '".$_POST['action-own']."', '".$_POST['game-rating']."', '$now', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['platform_id']."', '".$_POST['region']."');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
 		else die($next_id);
 		
 	} else {
@@ -419,7 +419,7 @@ if($action == "submit_add_game") {
 			own = '".$_POST['action-own']."', 
 			rating = '".$_POST['game-rating']."' 
 			WHERE id='$id' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
 		else die($q);die($id);
 		
 	}
@@ -736,7 +736,7 @@ if($action == "add found game") {
 	if(!$pubid = $_POST['pubid']) exit;
 	if(!$gid = $_POST['gid']) exit;
 	$q = "INSERT INTO my_games (usrid, gid, publication_id, added) VALUES ('$usrid', '$gid', '$pubid', '".date("Y-m-d H:i:s")."');";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) die(mysql_error());
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die(mysqli_error($GLOBALS['db']['link']));
 	else {
 		$q = "SELECT title_url, gp.title, platform FROM games_publications gp LEFT JOIN games USING (gid) LEFT JOIN games_platforms USING (platform_id) WHERE gp.id='$pubid' LIMIT 1";
 		$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
@@ -762,7 +762,7 @@ if($action == "edit my game form") {
 	//$q = "SELECT pub.title, pub. FROM my_games mg LEFT JOIN games_publications pub ON (mg.publication_id=pub.id) LEFT JOIN games g USING (gid) LEFT JOIN games_platforms pf USING (platform_id) WHERE gp.id='".$_POST['id']."' LIMIT 1";
 	$q = "SELECT mg.*, g.title_url, g.online, pf.platform FROM my_games mg LEFT JOIN games g USING (gid) LEFT JOIN games_platforms pf USING (platform_id) WHERE mg.id='".$_POST['id']."' LIMIT 1";
 	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
-		die("Error: Couldn't get data for  publication id ".$_POST['id']." ".mysql_error());
+		die("Error: Couldn't get data for  publication id ".$_POST['id']." ".mysqli_error($GLOBALS['db']['link']));
 	} else {
 		
 		if($dat->publication_id) {

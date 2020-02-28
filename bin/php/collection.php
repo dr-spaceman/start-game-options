@@ -69,7 +69,7 @@ if($_POST['collection_entry_input']){
 	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 		$id = mysqlNextAutoIncrement("collection");
 		$q = "INSERT INTO `collection` (`usrid`, `title`, `sort`) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '$sort')";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysql_error() : ""));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 		$in['id'] = $id;
 		$a->ret['added'] = 1;
 	}
@@ -105,7 +105,7 @@ if($_POST['collection_entry_input']){
 			$a->ret['shelf_id'] = $shelf->id;
 		}
 	} else {
-		$a->error("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysql_error() : ""));
+		$a->error("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 	}
 	
 	exit;
@@ -120,7 +120,7 @@ if($_POST['remove']){
 	
 	$q = "DELETE FROM collection WHERE `id` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['remove'])."' AND usrid = '$usrid' LIMIT 1";
 	if(mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['success'] = 1;
-	else $a->kill("Couldn't remove item..." . ($usrrank >= 7 ? " [$q] ".mysql_error() : ""));
+	else $a->kill("Couldn't remove item..." . ($usrrank >= 7 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 	
 	exit;
 	

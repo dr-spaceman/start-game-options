@@ -127,7 +127,7 @@ if($step && !$_POST['submitform']) {
 			$now = date("Y-m-d H:i:s");
 			$q2 = "INSERT INTO games (title, title_url, creator, contributors, created, modified) VALUES 
 			('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '$title_url', '$usrid', 'usrid:$usrid', '$now', '$now');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $errors[] = "Couldn't insert into db; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $errors[] = "Couldn't insert into db; ".mysqli_error($GLOBALS['db']['link']);
 			else {
 				if(!$dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get game id");
 				$editid = $dbdat->gid;
@@ -187,7 +187,7 @@ if($step && !$_POST['submitform']) {
 				if($genre != "") $q.= "('$editid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $genre)."'),";
 			}
 			$q = substr($q, 0, -1).";";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add genres to database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add genres to database; ".mysqli_error($GLOBALS['db']['link']);
 		}
 		
 	} elseif($step == "3") {
@@ -210,12 +210,12 @@ if($step && !$_POST['submitform']) {
 		//get next id
 		$query = mysqli_query($GLOBALS['db']['link'], "SHOW TABLE STATUS LIKE 'games_publications'");
 		$row = mysqli_fetch_assoc($query);
-		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysql_error());
+		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysqli_error($GLOBALS['db']['link']));
 		
 		$q = "INSERT INTO games_publications (gid,platform_id,title,region,release_date,`primary`) VALUES 
 			('$editid', '".$in['platform_id']."', '".$in['pub_title']."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary')";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-			$errors[] = "Couldn't add publication to db: ".mysql_error();
+			$errors[] = "Couldn't add publication to db: ".mysqli_error($GLOBALS['db']['link']);
 		} else {
 			$results[] = "Publication successfully added to the database.";
 			
@@ -338,19 +338,19 @@ if($step && !$_POST['submitform']) {
 			
 			//get next media ID
 			$q = "SHOW TABLE STATUS LIKE 'media'";
-			$r = mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysql_error() . "<br/>" . $q );
+			$r = mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysqli_error($GLOBALS['db']['link']) . "<br/>" . $q );
 			$row = mysqli_fetch_assoc($r);
 			if(!$nextid = $row['Auto_increment']) $errors[] = ("Couldn't get next id");
 			
 			$q = "INSERT INTO media (directory, category_id, description, gallery, datetime, usrid, quantity) VALUES 
 			('$dir', '1', '<i>".$dbdat->title."</i> screenshots', '1', '".date("Y-m-d H:i:s")."', '$usrid', '$filenum')";
 			if(!$errors) {
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db: ".mysqli_error($GLOBALS['db']['link']);
 			}
 			
 			$q = "INSERT INTO media_tags (media_id, tag) VALUES ('$nextid', 'gid:$editid')";
 			if(!$errors) {
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to tag db: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to tag db: ".mysqli_error($GLOBALS['db']['link']);
 			}
 		  
 		  if(!$errors) {

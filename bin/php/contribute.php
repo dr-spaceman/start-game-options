@@ -100,7 +100,7 @@ function submitNew() {
 			else $this->subj .= (substr($this->subj, -1) != ":" ? ":" : "").$newkey;
 		}
 		if($q) {
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array($thisf['desc'].": Couldn't process the given data; this field will remain unchanged. ".mysql_error()));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array($thisf['desc'].": Couldn't process the given data; this field will remain unchanged. ".mysqli_error($GLOBALS['db']['link'])));
 		}
 	}
 	
@@ -135,14 +135,14 @@ function submitNew() {
 		('$this->type', '$usrid', '".date("Y-m-d H:i:s")."', '%s', '$pub', '$pend', '$this->subj', '$this->ssubj', ".($this->no_points ? "'1'" : "NULL").");",
 		mysqli_real_escape_string($GLOBALS['db']['link'], $this->desc)
 	);
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("couldn't add contribution; ".mysql_error()));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("couldn't add contribution; ".mysqli_error($GLOBALS['db']['link'])));
 	
 	$this->data = str_replace("[CID]", $cid, $this->data);
 	$ret['data'] = $this->data;
 	$ret['contribution_id'] = $cid;
 	
 	$q = "INSERT INTO users_contributions_data (contribution_id, data) VALUES ('$cid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->data)."')";
-	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("Error adding contribution data; ".mysql_error()));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("Error adding contribution data; ".mysqli_error($GLOBALS['db']['link'])));
 	
 	if($pub && !$this->no_points) $this->recalculateContributions($usrid);
 	
@@ -216,14 +216,14 @@ function contributeToGame($contr='') {
 	if(!$row->contributors) {
 		// none yet
 		$query2 = "UPDATE games SET `contributors`='$contr' WHERE gid='$gid'";
-		if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysqli_error($GLOBALS['db']['link']);
 	} else {
 		$cons = array();
 		$cons = explode(",", $row->contributors);
 		if(!in_array($contr, $cons)) {
 			$cons[] = $contr;
 			$query2 = "UPDATE games SET `contributors` = '".implode(",", $cons)."' WHERE gid='$gid'";
-			if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysqli_error($GLOBALS['db']['link']);
 		}
 	}
 }

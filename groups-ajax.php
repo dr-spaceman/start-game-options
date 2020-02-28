@@ -10,5 +10,5 @@ if($do == "update option") {
 	
 	$q = "UPDATE groups_members SET `$op`='$val' WHERE group_id='$group_id' AND usrid='$usrid' LIMIT 1";
 	if(mysqli_query($GLOBALS['db']['link'], $q)) echo "ok";
-	else echo "error: couldn't updata database; ".mysql_error();
+	else echo "error: couldn't updata database; ".mysqli_error($GLOBALS['db']['link']);
 }

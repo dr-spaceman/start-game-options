@@ -127,8 +127,8 @@ eof;
 $handler = array("sessid" => $sessid, "usrid" => $usrid);
 $handler = http_build_query($handler);
 
-$autotag = $_GET['img_tag'];
-if($autotag && !is_array($autotag)){
+$autotag = array();
+if($_GET['img_tag']){
 	$autotag[0] = $_GET['img_tag'];
 }
 for($i = 0; $i < count($autotag); $i++){

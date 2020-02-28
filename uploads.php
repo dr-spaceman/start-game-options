@@ -52,7 +52,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 			
 			foreach($img_ids as $img_id){
 				$q = "UPDATE images SET img_category_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['img_category_id_mass'])."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update table row for img_id # $img_id ; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update table row for img_id # $img_id ; ".mysqli_error($GLOBALS['db']['link']);
 				else $num_upd++;
 			}
 			

@@ -71,7 +71,7 @@ if(!$fbuser){
   	//fresh data
   	$q = "INSERT INTO users_oauth (usrid, oauth_provider, oauth_usrid, oauth_username, oauth_token) VALUES ('$usrid', 'facebook', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['id'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['username'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $oauth_token)."');";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)){
-			sendBug("login_fb.php Error reconciling Vg.in account with Fb acct [$q]: ".mysql_error());
+			sendBug("login_fb.php Error reconciling Vg.in account with Fb acct [$q]: ".mysqli_error($GLOBALS['db']['link']));
 			die("Sorry, there was a database error and we couldn't link your Facebook account to your Videogam.in account. Refresh to try again, or <a href=\"".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in")."\">go back to Videogam.in</a>");
 		}
 		header("Location:".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in/account.php?edit=prefs&fbconnectedsuccess=1"));
@@ -84,7 +84,7 @@ if(!$fbuser){
   	if(!mysqli_num_rows($res)){
   		$q = "INSERT INTO users_oauth (usrid, oauth_provider, oauth_usrid, oauth_username) VALUES ('$row[usrid]', 'facebook', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['id'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['username'])."');";
 			if(!mysqli_query($GLOBALS['db']['link'], $q)){
-				sendBug("login_fb.php Error reconciling Vg.in account with Fb acct [$q]: ".mysql_error());
+				sendBug("login_fb.php Error reconciling Vg.in account with Fb acct [$q]: ".mysqli_error($GLOBALS['db']['link']));
 			}
 		}
   	login($row);
@@ -126,12 +126,12 @@ if(!$fbuser){
 		('".mysqli_real_escape_string($GLOBALS['db']['link'], $usrname)."', password('$new_password'), '".$fbuser_data['email']."', '$tod', '$tod', '$tod', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['gender'])."', '$avatar');";
 	$usrid = mysqlNextAutoIncrement("users");
 	if(!mysqli_query($GLOBALS['db']['link'], $q)){
-		sendBug("login_fb.php Couldn't register via Fb because of a Mysql error [$q]: ".mysql_error());
+		sendBug("login_fb.php Couldn't register via Fb because of a Mysql error [$q]: ".mysqli_error($GLOBALS['db']['link']));
 		die('Sorry, there was a database error and we couldn\'t register you as a new user. Please try <a href="/register.php">our alternate registration form</a>.');
 	}
 	$q = "INSERT INTO users_oauth (usrid,oauth_provider,oauth_usrid,oauth_username) VALUES ('$usrid', 'facebook', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['id'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fbuser_data['username'])."');";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)){
-		sendBug("login_fb.php Couldn't register via Fb because of a Mysql error [$q]: ".mysql_error());
+		sendBug("login_fb.php Couldn't register via Fb because of a Mysql error [$q]: ".mysqli_error($GLOBALS['db']['link']));
 		die('Sorry, there was a database error and we couldn\'t register you as a new user. Please try <a href="/register.php">our alternate registration form</a>.');
 	}
 	

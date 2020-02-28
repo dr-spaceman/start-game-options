@@ -104,7 +104,7 @@ if(isset($_GET['_min'])){
 		unset($json_['rep_image']);
 		unset($json_['categories']);
 		$q = "UPDATE pages SET index_data = '".mysqli_real_escape_string($GLOBALS['db']['link'], json_encode($json_))."' WHERE pgid='".$pg->pgid."' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update index_data field on pages database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update index_data field on pages database; ".mysqli_error($GLOBALS['db']['link']));
 		
 	}
 	

@@ -48,7 +48,7 @@ if($_POST) {
 		if($notes == "" || $notes == "Add notes about this particular update") exit;
 		
 		$q = "UPDATE users_contributions SET `notes` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $notes)."' WHERE contribution_id = '$cid' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error updating notes; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error updating notes; ".mysqli_error($GLOBALS['db']['link']));
 		
 		exit;
 		
@@ -327,7 +327,7 @@ if($_POST) {
 							foreach($data as $str) $q.= "('$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $str)."'),";
 							if($q) {
 								$q = "INSERT INTO `$table` VALUES ".substr($q, 0, -1).";";
-								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = $thisf['desc'].": Couldn't update database; ".mysql_error();
+								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = $thisf['desc'].": Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 							}
 						}
 						
@@ -348,7 +348,7 @@ if($_POST) {
 					
 					if($usrrank == 9) {
 						$q = "DELETE FROM games_publications WHERE id='$pubid' LIMIT 1";
-						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from db; ".mysql_error();
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from db; ".mysqli_error($GLOBALS['db']['link']);
 						else $results[] = "Publication #$pubid deleted";
 					} else {
 						//suggest
@@ -456,7 +456,7 @@ if($_POST) {
 					`vapid` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['vapid'])."',
 					`featured` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['featured'])."' 
 					WHERE gid='$thisf[gid]' LIMIT 1";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "[status] mysql error: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "[status] mysql error: ".mysqli_error($GLOBALS['db']['link']);
 				else $results[] = "Game status updated";
 				
 				break;

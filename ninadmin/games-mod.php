@@ -65,7 +65,7 @@ if($do == "delete_entry" && $id) {
 		"games" => "");
 	while(list($table, $x) = each($tables)) {
 		$q = "DELETE FROM `$table` WHERE ".($x ? $x : "gid='$id'");
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from `$table` table; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from `$table` table; ".mysqli_error($GLOBALS['db']['link']);
 		else $results[] = "Delete from `$table`; $q";
 	}
 	
@@ -195,7 +195,7 @@ if($what == "main") {
 				} else {
 					$query = "INSERT INTO games_old_title_urls (gid, old_title_url, new_title_url) VALUES ('$id', '$gdat[title_url]', '$in[title_url]')";
 					if(!mysqli_query($GLOBALS['db']['link'], $query)) {
-						$errors[] = "Title URL not changed; Couldn't update db to make title URL mirror: ".mysql_error();
+						$errors[] = "Title URL not changed; Couldn't update db to make title URL mirror: ".mysqli_error($GLOBALS['db']['link']);
 						$in['title_url'] = $gdat['title_url'];
 					}
 				}
@@ -216,7 +216,7 @@ if($what == "main") {
 				`modified` = '$datetime'
 				WHERE `gid`='$id' LIMIT 1";
 			if(!mysqli_query($GLOBALS['db']['link'], $query)) {
-				$errors[] = "Couldn't update db: ".mysql_error();
+				$errors[] = "Couldn't update db: ".mysqli_error($GLOBALS['db']['link']);
 			} else $results[] = "Database succesfully updated";
 			
 		}
@@ -418,12 +418,12 @@ if($what == "publications") {
 		//get next id
 		$query = mysqli_query($GLOBALS['db']['link'], "SHOW TABLE STATUS LIKE 'games_publications'");
 		$row = mysqli_fetch_assoc($query);
-		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysql_error());
+		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysqli_error($GLOBALS['db']['link']));
 		
 		$query = "INSERT INTO games_publications (gid,platform_id,title,region,release_date,`primary`,placeholder_img) VALUES 
 			('$id', '".$in['platform_id']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary', '".$in['placeholder_img']."')";
 		if(!mysqli_query($GLOBALS['db']['link'], $query)) {
-			$errors[] = "Couldn't add publication to db: ".mysql_error();
+			$errors[] = "Couldn't add publication to db: ".mysqli_error($GLOBALS['db']['link']);
 		} else {
 			$results[] = "Publication successfully added";
 			
@@ -500,7 +500,7 @@ if($what == "publications") {
 				placeholder_img='".$in['placeholder_img']."'
 				WHERE id='$pubid' LIMIT 1";
 			if(!mysqli_query($GLOBALS['db']['link'], $query)) {
-				$errors[] = "Couldn't update publication: ".mysql_error();
+				$errors[] = "Couldn't update publication: ".mysqli_error($GLOBALS['db']['link']);
 			} else {
 				$results[] = "Publication successfully edited";
 			}
@@ -570,7 +570,7 @@ if($what == "publications") {
 			
 			$q = sprintf("SELECT * FROM games_publications WHERE id='%s' LIMIT 1", mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['edit']));
 			if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
-				die("Couldn't get data for publication id#".$_GET['edit'].": ".mysql_error());
+				die("Couldn't get data for publication id#".$_GET['edit'].": ".mysqli_error($GLOBALS['db']['link']));
 			}
 			
 			$sel[$dat->region] = ' selected="selected"';
@@ -660,7 +660,7 @@ if($what == "publications") {
 		
 		$query = "DELETE FROM games_publications WHERE id=".$_GET['delete']." LIMIT 1";
 		if(!mysqli_query($GLOBALS['db']['link'], $query)) {
-			$errors[] = "Couldn't delete: ".mysql_error();
+			$errors[] = "Couldn't delete: ".mysqli_error($GLOBALS['db']['link']);
 		} else {
 			$results[] = "Publication deleted";
 		}
@@ -683,7 +683,7 @@ if($what == "publications") {
 		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$query2 = "UPDATE games_publications SET `primary`='1' WHERE id='$pr' LIMIT 1";
 			if(!mysqli_query($GLOBALS['db']['link'], $query2)) {
-				$errors[] = "Couldn't set primary: ".mysql_error();
+				$errors[] = "Couldn't set primary: ".mysqli_error($GLOBALS['db']['link']);
 			} else {
 				$results[] = "Primary set";
 			}
@@ -1130,7 +1130,7 @@ if($what == "trivia") {
 			if($in['delete']) {
 				
 				$q = "DELETE FROM games_trivia WHERE id='".$_POST['factid']."' LIMIT 1";
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete; ".mysqli_error($GLOBALS['db']['link']);
 				else $results[] = "Factoid deleted";
 				
 			} else {
@@ -1139,7 +1139,7 @@ if($what == "trivia") {
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['fact']),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['author']),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['datetime']));
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update db; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update db; ".mysqli_error($GLOBALS['db']['link']);
 				else $results[] = "Factoid edited";
 				
 			}
@@ -1158,7 +1158,7 @@ if($what == "trivia") {
 			mysqli_real_escape_string($GLOBALS['db']['link'], $in['fact']),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $author),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $in['datetime']));
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db; ".mysqli_error($GLOBALS['db']['link']);
 		else {
 			$results[] = "Factoid added";
 			addUserContribution(4, 'Trivia for <a href="/games/link.php?id='.$id.'">'.htmlent($gdat['title']).'</a>', $in['fact'], TRUE, '', $subj, 'gid:'.$id);

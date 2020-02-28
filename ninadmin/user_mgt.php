@@ -77,7 +77,7 @@ do if($in = $_POST['in']){
 		}
 		$q = substr($q, 0, -1) . ") " . substr($q2, 0, -1) . ");";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)){
-			$errors[] = "Couldn't create back-up user row because of a database error; $q; ".mysql_error();
+			$errors[] = "Couldn't create back-up user row because of a database error; $q; ".mysqli_error($GLOBALS['db']['link']);
 			break;
 		}
 		

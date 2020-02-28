@@ -227,7 +227,7 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// Game was released for Platform in Territory
-	$gamereleases = mysql_query($GLOBALS['db']['link'], "SELECT gp.release_date, gp.title AS publication, pt.platform AS platformname, games.* FROM games_publications gp, games, games_platforms as pt WHERE gp.release_date >= DATE_SUB(NOW(), INTERVAL $distance) AND gp.release_date <= NOW() AND games.gid=gp.gid");
+	$gamereleases = mysqli_query($GLOBALS['db']['link'], "SELECT gp.release_date, gp.title AS publication, pt.platform AS platformname, games.* FROM games_publications gp, games, games_platforms as pt WHERE gp.release_date >= DATE_SUB(NOW(), INTERVAL $distance) AND gp.release_date <= NOW() AND games.gid=gp.gid");
 	while ($row = mysqli_fetch_assoc($gamereleases))
 	{
 		$activities[date("Y-m-d", strtotime($row['release_date']))][strtotime($row['release_date'])] = array(

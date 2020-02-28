@@ -308,7 +308,7 @@ function printAd($size) {
 function mysqlNextAutoIncrement($table, $dontdie='') {
 	
 	$q = "SHOW TABLE STATUS LIKE '$table'";
-	$r 	= mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysql_error() );
+	$r 	= mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysqli_error($GLOBALS['db']['link']) );
 	$row = mysqli_fetch_assoc($r);
 	if($row['Auto_increment']) return $row['Auto_increment'];
 	elseif(!$dontdie) die("Couldn't get incremental ID for `$table`");

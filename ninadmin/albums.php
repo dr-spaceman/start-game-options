@@ -60,8 +60,6 @@ TABLE.styled-form {}
 }
 ';
 
-$Link = mysql_connect ($db[host], $db[user], $db[pass]) or printf ("Connection failed. %s\n", mysql_error ());
-
 //get array of people -- $people
 /*$query = "SELECT pid, name FROM people ORDER BY name";
 $res   = mysqli_query($GLOBALS['db']['link'], $query);
@@ -206,7 +204,7 @@ if ($action == "new") {
 		
 		unset($album1);
 		$Query2 = "SELECT * from albums as l where albumid = '$editid'";
-		$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2, $Link);
+		$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2);
 		
 		while ($Array2 = mysqli_fetch_assoc($Result2)) {
 		$album1[] = $Array2;
@@ -1189,7 +1187,7 @@ if ($action == "new") {
 			$cgames = mysqli_num_rows($Result);
 			
 			$Query2 = "SELECT r.type, r.album, r.related from albums_related as r where r.album = '$editid'";
-			$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2, $Link);
+			$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2);
 			$cgs = 0;
 			$sel = array();
 			while($row = mysqli_fetch_assoc($Result2)) {

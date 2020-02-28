@@ -106,8 +106,7 @@ if($collabid) {
 		while($row = mysqli_fetch_assoc($res)) {
 			$a[$row[albumid]]++;
 			if($a[$row[albumid]] > 1) {
-				mysql_select_db($db[name3]);
-				$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT `title`, `subtitle` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
+				$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT `title`, `subtitle` from `albums` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
 				while($row2 = mysqli_fetch_assoc($res2)) {
 					$row2 = stripslashes_deep($row2);
 					$i++;
@@ -116,7 +115,6 @@ if($collabid) {
 					$albums .= '<tr'.$trclass.'><td class="work-title" colspan="2"><a href="/features/albums/?id='.$row[albumid].'">'.$row2[title].($row2[subtitle] ? " ".$row2[subtitle] : "").'</a></td><td class="work-release">'.$row2[datesort].'</td></tr>';
 				}
 				$i = 0;
-				mysql_select_db($db[name]);
 			}
 		}
 	}
@@ -343,7 +341,7 @@ $printbio = reformatLinks($printbio);
 	} else $nogamework = 1;
 	
 	//albums
-	$query = "SELECT $db[name].`people_work`.*, $db[name3].`album_list`.`title`, $db[name3].`album_list`.`subtitle`, $db[name3].`album_list`.`datesort` FROM $db[name].`people_work`, $db[name3].`album_list` WHERE $db[name].`people_work`.`pid` = '$dat->id' and $db[name].`people_work`.`albumid` != '' AND $db[name].`people_work`.`albumid` = $db[name3].`album_list`.`albumid` ORDER BY $db[name3].`album_list`.`$a_sortby` $orderby";
+	$query = "SELECT `people_work`.*, `albums`.`title`, `albums`.`subtitle`, `albums`.`datesort` FROM `people_work`, `albums` WHERE `people_work`.`pid` = '$dat->id' and `people_work`.`albumid` != '' AND `people_work`.`albumid` = `albums`.`albumid` ORDER BY `albums`.`$a_sortby` $orderby";
 	$res = mysqli_query($GLOBALS['db']['link'], $query);
 	if(mysqli_num_rows($res)) {
 		if($nogamework) echo '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>';
@@ -364,33 +362,6 @@ $printbio = reformatLinks($printbio);
 		$i = 0;
 	} else $noalbumwork = 1;
 	
-	//albums
-	/*$query = "SELECT * FROM `people_work` WHERE `pid` = '$dat->id' and `albumid` != ''";
-	$res = mysqli_query($GLOBALS['db']['link'], $query);
-	if(mysqli_num_rows($res)) {
-		if($nogamework) echo '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>';
-		else echo '<tr><td colspan="5">'.pixel(1,10).'</td></tr><tr class="putborders">'
-		?><th colspan="2"><h3>Albums</h3>&nbsp;<a href="?sortby=title&orderby=asc#credits" title="order credits by ascending title">&uArr;</a><a href="?sortby=title&orderby=desc#credits" title="order credits by descending title">&dArr;</a></th>
-		<th nowrap colspan="2">release <a href="?sortby=release&orderby=asc#credits" title="order credits by ascending release date">&uArr;</a><a href="?sortby=release&orderby=desc#credits" title="order credits by descending release date">&dArr;</a></th>
-		<th>role</th></tr>
-		<?
-		while($row = mysqli_fetch_assoc($res)) {
-			mysql_select_db($db[name3]);
-			$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT `title`, `subtitle`, `datesort` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
-			while($row2 = mysqli_fetch_assoc($res2)) {
-				$row2 = stripslashes_deep($row2);
-				$row[notes] = reformatLinks($row[notes]);
-				$i++;
-				if($i % 2) $trclass = "odd";
-				else $trclass = "even";
-				echo '<tr class="'.$trclass.'"><td class="work-title" colspan="2"><a href="/features/albums/?id='.$row[albumid].'">'.$row2[title].($row2[subtitle] ? " ".$row2[subtitle] : "").'</a></td><td class="work-release" colspan="2">'.$row2[datesort].'</td><td class="work-role">'.$row[role].'&nbsp;</td></tr>';
-				echo ($row[notes] ? '<tr class="'.$trclass.'"><td colspan="5" class="work-notes">'.$row[notes].'</td></tr>' : "") . "\n";
-			}
-			$i = 0;
-			mysql_select_db($db[name]);
-		}
-	} else $noalbumwork = 1;*/
-	
 	?></table><?
 	
 	if($nogamework && $noalbumwork)
@@ -399,7 +370,6 @@ $printbio = reformatLinks($printbio);
 </div>
 
 <?	// news
-	mysql_select_db($db[name]);
 	$query = "SELECT n.* FROM `people_news` as p, `news` as n WHERE p.`pid` = '$dat->id' and n.`id` = p.`nid` ORDER BY n.`date` DESC";
 	$res = mysqli_query($GLOBALS['db']['link'], $query);
 	$news_num = mysqli_num_rows($res);

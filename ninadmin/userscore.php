@@ -30,7 +30,7 @@ if($_GET['init']){
 		if($score['total'] >= 1 && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_data WHERE usrid = '".$usr."' AND `date` = '".date("Y-m-d")."' LIMIT 1"))){
 			$q2 = "INSERT INTO users_data (usrid, `date`, ".implode(", ", array_keys($ins)).", score_forums, score_pages, score_sblogs, score_total) VALUES 
 				('$usr', '".date("Y-m-d")."', '".implode("', '", array_values($ins))."', '".$score['forums']."', '".$score['pages']."', '".$score['sblogs']."', '".$score['total']."');";
-			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysqli_error($GLOBALS['db']['link']);
 		}
 		
 		$q2 = "UPDATE users SET 
@@ -39,7 +39,7 @@ if($_GET['init']){
 			score_sblogs = '".$score['sblogs']."',
 			score_total = '".$score['total']."'
 			WHERE usrid = '$usr' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysqli_error($GLOBALS['db']['link']);
 		
 	}
 	

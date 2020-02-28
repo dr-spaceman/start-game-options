@@ -202,7 +202,7 @@ if($_POST['submit']) {
 				mysqli_real_escape_string($GLOBALS['db']['link'], $in['text']),
 				mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes']));
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				$errors[] = "Couldn't update wiki database; ".mysql_error();
+				$errors[] = "Couldn't update wiki database; ".mysqli_error($GLOBALS['db']['link']);
 			} else {
 				$results[] = 'Your new text has been posted. <a href="'.$link.'">Go back to the text page</a> to see it or begin a new version below.';
 			}

@@ -128,13 +128,13 @@ if($path != "") {
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['name']),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['about']),
 					mysqli_real_escape_string($GLOBALS['db']['link'], $in['img']));
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add group to database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add group to database; ".mysqli_error($GLOBALS['db']['link']);
 				else {
 					//inset creator as member
 					$q = "INSERT INTO groups_members (`group_id`,`usrid`,`status`,`joined`,`subscribe`) VALUES 
 						('$group_id', '$usrid', '3', '$dt', '1');";
 					if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-						$errors[] = "Couldn't add you to group members database; ".mysql_error();
+						$errors[] = "Couldn't add you to group members database; ".mysqli_error($GLOBALS['db']['link']);
 						$q2 = "DELETE FROM groups WHERE group_id='$group_id' LIMIT 1";
 						mysqli_query($GLOBALS['db']['link'], $q2);
 					} else {
@@ -155,7 +155,7 @@ if($path != "") {
 							}
 							if($q) {
 								$q = "INSERT INTO groups_tags (group_id, tag) VALUES ".substr($q, 0, -1);
-								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
+								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysqli_error($GLOBALS['db']['link']);
 							}
 						}
 						
@@ -299,7 +299,7 @@ if($path != "") {
 			}
 			if($q) {
 				$q = "INSERT INTO groups_tags (group_id, tag) VALUES ".substr($q, 0, -1);
-				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysqli_error($GLOBALS['db']['link']);
 			}
 			if(!$errors) $results[] = "Tags updated";
 		}
@@ -358,7 +358,7 @@ if($path != "") {
 				`about` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['about'])."',
 				`status` = '".$in['status']."'
 				WHERE group_id='$gdat->group_id' LIMIT 1";
-			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysqli_error($GLOBALS['db']['link']);
 			else {
 				$results[] = "Details updated";
 				$gdat->name = $in['name'];

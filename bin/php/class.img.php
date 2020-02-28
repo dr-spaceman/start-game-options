@@ -166,8 +166,8 @@ class img {
 		$q = "DELETE FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)){
 			$img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1"));
-			if(!$img) return $this->removeError("Unknown error removing image: img_id:".$this->img_id."; ".mysql_error());
-			else return $this->removeError("Couldn't remove image file <i>".$img->img_name."</i> from database; ".mysql_error());
+			if(!$img) return $this->removeError("Unknown error removing image: img_id:".$this->img_id."; ".mysqli_error($GLOBALS['db']['link']));
+			else return $this->removeError("Couldn't remove image file <i>".$img->img_name."</i> from database; ".mysqli_error($GLOBALS['db']['link']));
 		}
 		
 		$q = "SELECT * FROM images WHERE img_session_id = '$img->img_session_id'";

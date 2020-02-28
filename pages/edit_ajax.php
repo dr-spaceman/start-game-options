@@ -17,11 +17,11 @@ switch($do){
 			$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."' AND usrid='$usrid' LIMIT 1";
 			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$q2 = "DELETE FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."' AND usrid='$usrid'";
-				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error removing from watch list: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error removing from watch list: ".mysqli_error($GLOBALS['db']['link']));
 				$a->ret['removed'] = true;
 			} else {
 				$q2 = "INSERT INTO pages_watch (`title`, usrid) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."', '$usrid');";
-				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error adding; ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error adding; ".mysqli_error($GLOBALS['db']['link']));
 				else $a->ret['added'] = 'Success! This page has been added to your <a href="/pages/watchlist.php">watch list</a>.';
 			}
 		}
