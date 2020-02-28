@@ -27,15 +27,15 @@ if($_POST['submit']) {
 if($del_link = $_GET['del_link']) {
 	if($usrrank <= 7) die("Not an admin");
 	$q = "DELETE FROM external_links WHERE `id` = '$del_link' LIMIT 1";
-	if(mysql_query($q)) $results[] = "Link deleted";
+	if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = "Link deleted";
 	else $errors[] = "ERROR: link couldn't be deleted for some reason";
 }
 
 if($in['submit']) {
 	$q = sprintf("INSERT INTO external_links (`category`, `url`, `title`, `description`) VALUES ('$in[category]', '$in[url]', '%s', '%s')",
-		mysql_real_escape_string($in[title]),
-		mysql_real_Escape_string($in[description]));
-	if(mysql_query($q)) $results[] = "Link added";
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in[title]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in[description]));
+	if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = "Link added";
 	else $errors[] = "ERROR: Link could not be added for some reason";
 }
 
@@ -83,8 +83,8 @@ foreach($link_categories as $cg) {
 	?><h4><?=$cg?></h4>
 	<ul class="links-list"><?
 	$query = "SELECT * FROM external_links WHERE `category`='$cg' ORDER BY `title`";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$row = stripslashesDeep($row);
 		echo '<li><a href="'.$row['url'].'" target="_blank">'.$row['title'].'</a>'.($row['description'] ? " $row[description]" : "").($usrrank >= 8 ? '&nbsp;<a href="?del_link='.$row[id].'" title="delete this link" class="x">X</a>' : '')."</li>\n";
 	}

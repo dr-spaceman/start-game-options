@@ -3,8 +3,8 @@ if($_POST['_action'] == "load_freetags") {
 	require_once("page.php");
 	$x = array();
 	$query = "SELECT DISTINCT(tag) FROM posts_tags WHERE tag NOT LIKE 'gid:%' AND tag NOT LIKE 'pid:%' ORDER BY tag";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$x[] = $row['tag'];
 	}
 	die( implode("``", $x) );
@@ -14,10 +14,10 @@ if($_POST['_action'] == "load_freetags") {
 	if($what == "games") {
 		echo '<option value="">Select a game...</option>';
 		$query = "SELECT gid, title FROM games ORDER BY title";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$q = "SELECT release_date FROM games_publications WHERE gid='$row[gid]' and `primary`='1' LIMIT 1";
-			$dat = mysql_fetch_object(mysql_query($q));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			if(strlen($row['title']) > 50) {
 				$row['title'] = substr($row['title'], 0, 39) . "&hellip;" . substr($row['title'], -9);
 			}
@@ -26,16 +26,16 @@ if($_POST['_action'] == "load_freetags") {
 	} elseif($what == "people") {
 		echo '<option value="">Select a person...</option>';
 		$query = "SELECT pid, name, title FROM people ORDER BY name";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strlen($row['title']) > 35) $row['title'] = substr($row['title'], 0, 33) . "&hellip;";
 			echo '<option value="pid:'.$row['pid'].'">'.$row['name'].($row['title'] ? ' ('.$row['title'].')' : '').'</option>';
 		}
 	} elseif($what == "albums") {
 		echo '<option value="">Select an album...</option>';
 		$query = "SELECT albumid, title, subtitle, cid FROM albums ORDER BY title, subtitle";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strlen($row['title']) > 25) $row['title'] = substr($row['title'], 0, 20) . "&hellip;" . substr($row['title'], -5);
 			if(strlen($row['subtitle']) > 25) $row['subtitle'] = substr($row['subtitle'], 0, 14) . "&hellip;" . substr($row['subtitle'], -9);
 			echo '<option value="aid:'.$row['albumid'].'">'.$row['title'].($row['subtitle'] ? ' '.$row['subtitle'] : '').' ('.$row['cid'].')</option>';
@@ -47,22 +47,22 @@ if($_POST['_action'] == "load_freetags") {
 	if(!$nid = $_POST['_nid']) die("Error: No post id given");
 	if(!$tag = $_POST['_tag']) die("Error: No tag given");
 	//check if tag already exists
-	$q = "SELECT * FROM posts_tags WHERE nid='".mysql_real_escape_string($nid)."' AND tag='".mysql_real_escape_string($tag)."' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) die("This item is already tagged with '$tag'.");
+	$q = "SELECT * FROM posts_tags WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."' AND tag='".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' LIMIT 1";
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("This item is already tagged with '$tag'.");
 	
 	//if media, only  game/person allowed
-	/*$q = "SELECT type FROM posts WHERE nid='".mysql_real_escape_string($nid)."' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) die("Couldn't find data for nid #$nid");
+	/*$q = "SELECT type FROM posts WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."' LIMIT 1";
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't find data for nid #$nid");
 	if($dat->type == "image" || $dat->type == "gallery") {
 		$pre = substr($tag, 0, 4);
 		if($pre == "gid:" || $pre == "pid:") {
-			$q = "SELECT * FROM posts_tags WHERE nid='".mysql_real_escape_string($nid)."' AND tag LIKE '".$pre."%' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) die("Media posts can only have one subject. If your media is about more than one game or person, you'll need to split it into multiple posts.");
+			$q = "SELECT * FROM posts_tags WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."' AND tag LIKE '".$pre."%' LIMIT 1";
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("Media posts can only have one subject. If your media is about more than one game or person, you'll need to split it into multiple posts.");
 		}
 	}*/
 		
-	$q = "INSERT INTO posts_tags (nid, tag, usrid, datetime) VALUES ('".mysql_real_escape_string($nid)."', '".mysql_real_escape_string($tag)."', '$usrid', '".date("Y-m-d H:i:s")."');";
-	if(!mysql_query($q)) die("Error adding tag to database");
+	$q = "INSERT INTO posts_tags (nid, tag, usrid, datetime) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."', '$usrid', '".date("Y-m-d H:i:s")."');";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error adding tag to database");
 	exit;
 } elseif($_POST['_action'] == "remove_tag") {
 	require_once("page.php");
@@ -71,12 +71,12 @@ if($_POST['_action'] == "load_freetags") {
 	if($tbl == "posts_tags") {
 		//check and see if the tag is removable first
 		$q = "SELECT usrid, rank FROM posts_tags LEFT JOIN users USING (usrid) WHERE posts_tags.id='$tid' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($usrid != $dat->usrid) {
 			if($usrrank < $dat->rank) die("You can't remove that tag since the person who tagged it is ranked higher than you.");
 		}
 		$q = "DELETE FROM posts_tags WHERE id='$tid' LIMIT 1";
-		if(!mysql_query($q)) die("Error removing tag from database; ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database; ".mysql_error());
 	}
 } else {
 	?>

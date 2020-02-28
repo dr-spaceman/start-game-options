@@ -175,8 +175,8 @@ if(!$_POST) {
 								<option value="">Insert a common genre...</option>
 								<?
 								$query = "SELECT `genre`, COUNT(`genre`) AS `count` FROM `games_genres` GROUP BY `genre` ORDER BY `genre`";
-								$res   = mysql_query($query);
-								while($row = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($row = mysqli_fetch_assoc($res)) {
 									if($row['count'] > 3) echo '<option value=", '.str_replace('"', '&quot;', $row['genre']).'">'.$row['genre'].'</option>';
 								}
 								?>
@@ -184,8 +184,8 @@ if(!$_POST) {
 						</p>
 						<p><textarea name="in[genre]" rows="2" cols="60" id="input-genre"><?
 							$genres = array();
-							$res = mysql_query("SELECT * FROM games_genres WHERE gid='$editid'");
-							while($row = mysql_fetch_assoc($res)) $genres[] = $row['genre'];
+							$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM games_genres WHERE gid='$editid'");
+							while($row = mysqli_fetch_assoc($res)) $genres[] = $row['genre'];
 							echo implode(",", $genres);
 						?></textarea></p>
 					</td>
@@ -199,8 +199,8 @@ if(!$_POST) {
 						<option value=""<?=(!$in['series'] ? ' selected="selected"' : '')?>>Select a common series...</option>
 						<?
 							$query = "SELECT DISTINCT(series) AS series FROM games_series ORDER BY series";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.htmlentities($row['series'], ENT_QUOTES).'">'.$row['series']."</option>\n";
 							}
 						?>
@@ -215,10 +215,10 @@ if(!$_POST) {
 							<?
 							//$query = "SELECT series, COUNT(*) AS count FROM games_series GROUP BY series ORDER BY series";
 							$query = "SELECT * FROM games_series WHERE gid='$editid'";
-							$res   = mysql_query($query);
-							if(mysql_num_rows($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							if(mysqli_num_rows($res)) {
 								$i = 100;
-								while($row = mysql_fetch_assoc($res)) {
+								while($row = mysqli_fetch_assoc($res)) {
 									$i++;
 									?>
 									<div id="series-<?=$i?>">
@@ -275,8 +275,8 @@ if(!$_POST) {
 							<option value="">Select a platform...</option>
 							<?
 							$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.$row['platform_id'].'">'.$row['platform']."</option>\n";
 							}
 							?>
@@ -389,8 +389,8 @@ if(!$_POST) {
 							<option value="">Select an existing person...</option>
 							<?
 							$query = "SELECT pid, name, prolific FROM people WHERE not_creator != '1' ORDER BY name";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.$row['pid'].'"'.($in['pid'] == $row['pid'] ? ' selected="selected"' : '').($row['prolific'] ? ' style="font-weight:bold"' : '').'>'.$row['name'].'</option>'."\n";
 							}
 							?>
@@ -429,7 +429,7 @@ if(!$_POST) {
 		
 			//already has screens?
 			$q = "SELECT * FROM media_tags WHERE tag='gid:$editid' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) {
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 				?>There are already screenshots for this game. Nicely done!<?
 			} else {
 		
@@ -466,7 +466,7 @@ if(!$_POST) {
 			<ul>
 				<?
 				$q = "SELECT * FROM media_tags LEFT JOIN media USING (media_id) WHERE tag='gid:$editid' LIMIT 1";
-				if($mdat = mysql_fetch_object(mysql_query($q))) {
+				if($mdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 					echo '<li><a href="media.php?uploaddirectory='.str_replace("/media/", "", $mdat->directory).'">Upload more screenshots</a> or <a href="media.php">upload a new batch of media</a></li>'."\n";
 				}
 				?>

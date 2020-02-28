@@ -7,8 +7,8 @@ require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php";
 
 if($_POST['rmpages']) {
 	foreach($_POST['rmpages'] as $pg_) {
-		$q = "DELETE FROM pages_watch WHERE usrid='$usrid' AND `title`='".mysql_real_escape_string($pg_)."';";
-		if(!mysql_query($q)) $errors[] = "Couldn't remove $pg_";
+		$q = "DELETE FROM pages_watch WHERE usrid='$usrid' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $pg_)."';";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove $pg_";
 		else $removedpgs++;
 	}
 	if($removedpgs) $results[] = "Sucessfully removed $removedpgs page".($removedpgs != 1 ? 's' : '')." from your watch list.";

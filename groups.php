@@ -29,15 +29,15 @@ if($path != "") {
 		$groups->header();
 		
 		$query = "SELECT gm.*, g.* FROM groups_members gm, groups g WHERE gm.usrid='$usrid' AND g.group_id=gm.group_id ORDER BY name";
-		$res = mysql_query($query);
-		if(!mysql_num_rows($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) {
 			echo 'You don\'t belong to any groups. Perhaps you should go out an socialize more.';
 		} else {
 			?>
 			<ol id="groupslist">
 				<?
 				$i = 0;
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					$img = "no";
 					if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/groups/".$row['group_id']."_icon.png")) $img = $row['group_id'];
 					if(strlen($row['name']) > 36) $p_name = substr($row['name'], 0, 35)."&hellip;";
@@ -77,8 +77,8 @@ if($path != "") {
 			if(!$in['about']) $errors[] = "Please give a little information about the group in the About field.";
 			
 			//check name
-			$q = "SELECT * FROM groups WHERE name='".mysql_real_escape_string($in['name'])."' LIMIT 1";
-			if($dat = mysql_fetch_object(mysql_query($q))) {
+			$q = "SELECT * FROM groups WHERE name='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['name'])."' LIMIT 1";
+			if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$errors[] = 'The group name "'.$in['name'].'" has already been taken. <a href="/groups/'.$dat->group_id.'/'.formatNameURL($dat->name).'">check out this group</a>.';
 			}
 			
@@ -125,23 +125,23 @@ if($path != "") {
 				$group_id = mysqlNextAutoIncrement("groups");
 				$q = sprintf("INSERT INTO groups (`name`,`about`,`status`,`creator`,`created`,`img`) VALUES 
 					('%s', '%s', '".$in['status']."', '$usrid', '$dt', '%s');",
-					mysql_real_escape_string($in['name']),
-					mysql_real_escape_string($in['about']),
-					mysql_real_escape_string($in['img']));
-				if(!mysql_query($q)) $errors[] = "Couldn't add group to database; ".mysql_error();
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['name']),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['about']),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['img']));
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add group to database; ".mysql_error();
 				else {
 					//inset creator as member
 					$q = "INSERT INTO groups_members (`group_id`,`usrid`,`status`,`joined`,`subscribe`) VALUES 
 						('$group_id', '$usrid', '3', '$dt', '1');";
-					if(!mysql_query($q)) {
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 						$errors[] = "Couldn't add you to group members database; ".mysql_error();
 						$q2 = "DELETE FROM groups WHERE group_id='$group_id' LIMIT 1";
-						mysql_query($q2);
+						mysqli_query($GLOBALS['db']['link'], $q2);
 					} else {
 						
 						//subscribe to forum
 						$q = "INSERT INTO forums_mail (usrid, `location`) VALUES ('$usrid', 'group:".$group_id."');";
-						if(!mysql_query($q)) $errors[] = "Couldn't subscribe to forum topics";
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't subscribe to forum topics";
 						
 						//tags
 						if($in['tags']) {
@@ -151,11 +151,11 @@ if($path != "") {
 							foreach($tags as $tag) {
 								$tag = trim($tag);
 								$tag = formatName($tag);
-								if($tag) $q.= "('$group_id', '".mysql_real_escape_string($tag)."'),";
+								if($tag) $q.= "('$group_id', '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."'),";
 							}
 							if($q) {
 								$q = "INSERT INTO groups_tags (group_id, tag) VALUES ".substr($q, 0, -1);
-								if(!mysql_query($q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
+								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
 							}
 						}
 						
@@ -253,53 +253,53 @@ if($path != "") {
 		// GROUP PAGES //
 		
 		$group_id = $patharr[0];
-		$q = "SELECT * FROM groups WHERE group_id='".mysql_real_escape_string($group_id)."' LIMIT 1";
-		$res = mysql_query($q);
-		if(!$gdat = mysql_fetch_object($res)) require("404.php");
+		$q = "SELECT * FROM groups WHERE group_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $group_id)."' LIMIT 1";
+		$res = mysqli_query($GLOBALS['db']['link'], $q);
+		if(!$gdat = mysqli_fetch_object($res)) require("404.php");
 		
 		//form submissions
 		if($_POST['submit_memberlist']) {
-			$q = "UPDATE groups_members SET status='0' WHERE group_id='".mysql_real_escape_string($group_id)."';";
-			if(!mysql_query($q)) $errors[] = "Couldn't update managers";
+			$q = "UPDATE groups_members SET status='0' WHERE group_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $group_id)."';";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update managers";
 			else {
 				foreach($_POST['managers'] as $uid) {
 					$q = "UPDATE groups_members SET `status`='2' WHERE group_id='$gdat->group_id' AND usrid='$uid' LIMIT 1";
-					if(!mysql_query($q)) $errors[] = "Couldn't make usrid #$uid a manager";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't make usrid #$uid a manager";
 				}
 			}
 			if($_POST['remove']) {
 				foreach($_POST['remove'] as $uid) {
 					$q = "DELETE FROM groups_members WHERE group_id='$gdat->group_id' AND usrid='$uid' LIMIT 1";
-					if(!mysql_query($q)) $errors[] = "Couldn't remove usrid #$uid";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove usrid #$uid";
 					if(in_array($uid, $_POST['ban'])) {
 						$q = "INSERT INTO groups_banned (group_id, usrid, datetime, banned_by) VALUES 
 							('$gdat->group_id', '$uid', '".date("Y-m-d H:i:s")."', '$usrid');";
-						if(!mysql_query($q)) $errors[] = "Couldn't ban usrid #$uid";
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't ban usrid #$uid";
 					}
 				}
 			}
 			if($_POST['unban']) {
 				foreach($_POST['unban'] as $uid) {
 					$q = "DELETE FROM groups_banned WHERE group_id='$gdat->group_id' AND usrid='$uid' LIMIT 1";
-					if(!mysql_query($q)) $errors[] = "Couldn't unban usrid #$uid";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't unban usrid #$uid";
 				}
 			}
 		}
 		
 		if($_POST['update_tags']) {
 			$q = "DELETE FROM groups_tags WHERE group_id='$gdat->group_id'";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 			$q = "";
 			$tags = array();
 			$tags = explode("\r\n", $_POST['update_tags']);
 			foreach($tags as $tag) {
 				$tag = formatName($tag);
-				$tag = mysql_real_escape_string($tag);
-				if($tag) $q.= "('$gdat->group_id', '".mysql_real_escape_string($tag)."'),";
+				$tag = mysqli_real_escape_string($GLOBALS['db']['link'], $tag);
+				if($tag) $q.= "('$gdat->group_id', '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."'),";
 			}
 			if($q) {
 				$q = "INSERT INTO groups_tags (group_id, tag) VALUES ".substr($q, 0, -1);
-				if(!mysql_query($q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tags to the database; ".mysql_error();
 			}
 			if(!$errors) $results[] = "Tags updated";
 		}
@@ -344,7 +344,7 @@ if($path != "") {
 			$results[] = "Images successfully processed";
 			$warnings[] = "You might need to reload your browser's cache before the new upload will be reflected.";
 			
-			if($in['img']) mysql_query("UPDATE groups SET img = '".mysql_real_escape_string($in['img'])."' WHERE group_id = '$gdat->group_id' LIMIT 1");
+			if($in['img']) mysqli_query($GLOBALS['db']['link'], "UPDATE groups SET img = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img'])."' WHERE group_id = '$gdat->group_id' LIMIT 1");
 			
 		}
 		
@@ -354,11 +354,11 @@ if($path != "") {
 			$in['name'] = formatName($in['name']);
 			$in['about'] = parseText($in['about']);
 			$q = "UPDATE groups SET 
-				`name` = '".mysql_real_escape_string($in['name'])."',
-				`about` = '".mysql_real_escape_string($in['about'])."',
+				`name` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['name'])."',
+				`about` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['about'])."',
 				`status` = '".$in['status']."'
 				WHERE group_id='$gdat->group_id' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Couldn't update database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database; ".mysql_error();
 			else {
 				$results[] = "Details updated";
 				$gdat->name = $in['name'];
@@ -383,8 +383,8 @@ if($path != "") {
 					if(!preg_match("/^[^@]+@.+\.[a-z]{2,6}$/i", $add)) {
 						unset($adds[$i]);
 						//it's not an email address, so check the user bank for a username and corresponding email address
-						$q = "SELECT * FROM users LEFT JOIN users_prefs USING (usrid) WHERE username = '".mysql_real_escape_string($add)."' LIMIT 1";
-						if($usrdat = mysql_fetch_object(mysql_query($q))){
+						$q = "SELECT * FROM users LEFT JOIN users_prefs USING (usrid) WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $add)."' LIMIT 1";
+						if($usrdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
 							if(!in_array($usrdat->email, $adds)){
 								if(!$usrdat->mail_from_users) $pms[] = $usrdat->usrid;
 								else $adds[] = $usrdat->email;
@@ -416,10 +416,10 @@ if($path != "") {
 			if(count($pms)){
 				$q = "INSERT INTO pm (`to`, `from`, `date`, `subject`, `message`) VALUES ";
 				foreach($pms as $uid){
-					$q.= "('$uid', '$usrid', '".date("Y-m-d H:i:s")."', 'Invitation to join ".mysql_real_escape_string($gdat->name)."', '".mysql_real_escape_string($mail_message)."'),";
+					$q.= "('$uid', '$usrid', '".date("Y-m-d H:i:s")."', 'Invitation to join ".mysqli_real_escape_string($GLOBALS['db']['link'], $gdat->name)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $mail_message)."'),";
 				}
 				$q = substr($q, 0, -1);
-				mysql_query($q);
+				mysqli_query($GLOBALS['db']['link'], $q);
 			}
 				
 			if(!$errors) $results[] = "Invitations sent!";
@@ -429,10 +429,10 @@ if($path != "") {
 		
 		//get members
 		$query = "SELECT * FROM groups_members WHERE group_id='".$gdat->group_id."' ORDER BY joined";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$managers = array();
 		$members = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$members[] = $row['usrid'];
 			if($row['status'] > 1) $managers[] = $row['usrid'];
 			if($row['usrid'] == $usrid) $my_details = $row;
@@ -444,7 +444,7 @@ if($path != "") {
 				$errors[] = "You can't leave since you're the only manager. Please appoint a new manager before leaving.";
 			} else {
 				$q = "DELETE FROM groups_members WHERE group_id='".$gdat->group_id."' AND usrid='$usrid' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't remove you from member database";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove you from member database";
 				else {
 					header("Location:/groups/".$gdat->group_id."/".formatName($gdat->name));
 					exit;
@@ -458,13 +458,13 @@ if($path != "") {
 				$dt = date("Y-m-d H:i:s");
 				$q = "INSERT INTO groups_members (`group_id`,`usrid`,`status`,`joined`,`subscribe`) VALUES 
 					('".$gdat->group_id."', '$usrid', '1', '$dt', '1');";
-				if(!mysql_query($q)) {
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 					$errors[] = "There was a database error and you couldn't be added to the member list.";
 				} else {
 					
 					//subscribe to forum
 					$q = "INSERT INTO forums_mail (usrid, `location`) VALUES ('$usrid', 'group:".$gdat->group_id."');";
-					if(!mysql_query($q)) $errors[] = "Couldn't subscribe to forum topics";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't subscribe to forum topics";
 						
 					$members[] = $usrid;
 					$my_details = array("joined" => $dt, "subscribe" => "1", "status" => "1");
@@ -559,8 +559,8 @@ if($path != "") {
 							Give this group more exposure by tagging stuff. Please input one tag per line.<p></p>
 							<textarea name="update_tags" rows="3" cols="90" id="input-tags"><?
 								$query = "SELECT tag FROM groups_tags WHERE group_id='$gdat->group_id'";
-								$res   = mysql_query($query);
-								while($row = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($row = mysqli_fetch_assoc($res)) {
 									echo $row['tag']."\n";
 								}
 							?></textarea></p>
@@ -583,8 +583,8 @@ if($path != "") {
 								<?
 								//get stuff
 								$query = "SELECT * FROM groups_members WHERE group_id='".$gdat->group_id."'";
-								$res   = mysql_query($query);
-								while($row = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($row = mysqli_fetch_assoc($res)) {
 									$member[$row['usrid']] = $row;
 								}
 								
@@ -605,14 +605,14 @@ if($path != "") {
 							<?
 							//ban list
 							$query = "SELECT * FROM groups_banned WHERE group_id='$gdat->group_id'";
-							$res   = mysql_query($query);
-							if(mysql_num_rows($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							if(mysqli_num_rows($res)) {
 								?>
 								<fieldset style="margin:5px 0;">
 									<legend>Ban List</legend>
 									Check a user to un-ban.
 										<?
-										while($row = mysql_fetch_assoc($res)) {
+										while($row = mysqli_fetch_assoc($res)) {
 											echo '<div style="margin-top:4px"><input type="checkbox" name="unban[]" value="'.$row['usrid'].'"/> '.outputUser($row['usrid'], FALSE).' banned on '.$row['datetime'].' by '.outputUser($row['banned_by'], FALSE).'</div>';
 										}
 										?>
@@ -767,16 +767,16 @@ $groups->header();
 if($find = $_GET['find']) {
 	if(substr($find, 0, 4) == "gid:") {
 		$query = "SELECT * FROM groups_tags LEFT JOIN groups USING (group_id) WHERE tag='$find'";
-		$res   = mysql_query($query);
-		if(mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)) {
 			$findclause = " AND (";
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				$findclause.= " g.group_id='".$row['group_id']."' OR ";
 			}
 			$findclause = substr($findclause, 0, -3).")";
 		}
 	} else {
-		$findclause = " AND name LIKE '%".mysql_real_escape_string($find)."%'";
+		$findclause = " AND name LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $find)."%'";
 	}
 }
 
@@ -787,7 +787,7 @@ if($orderby == "name" || $orderby == "created") {
 } else {
 	$query = "SELECT g.*, COUNT(gm.group_id) AS members FROM groups_members gm, groups g WHERE g.group_id=gm.group_id AND g.`status` != 'invite'$findclause GROUP BY gm.group_id ORDER BY members DESC, name DESC";
 }
-$groupnum = mysql_num_rows(mysql_query($query));
+$groupnum = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 
 $max = 28;
 if(!$pg = $_GET['pg']) $pg = 1;
@@ -806,9 +806,9 @@ if($pg > 1) {
 
 <ol id="groupslist">
 <?
-$res = mysql_query($query);
+$res = mysqli_query($GLOBALS['db']['link'], $query);
 $i = 0;
-while($row = mysql_fetch_assoc($res)) {
+while($row = mysqli_fetch_assoc($res)) {
 	$img = "no";
 	if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/groups/".$row['group_id']."_icon.png")) $img = $row['group_id'];
 	if(strlen($row['name']) > 36) $p_name = substr($row['name'], 0, 35)."&hellip;";

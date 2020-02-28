@@ -9,8 +9,8 @@ $titleurl = formatNameURL($title);
 do if($_POST){
 	
 	if(!$oldpgid = $_POST['pgid']) break;
-	$q = "SELECT `title` FROM pages WHERE pgid = '".mysql_real_escape_string($oldpgid)."' LIMIT 1";
-	if(!$row = mysql_fetch_assoc(mysql_query($q))){ $errors[] = "Couldn't find page data for pade ID #".$oldpgid; break; }
+	$q = "SELECT `title` FROM pages WHERE pgid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $oldpgid)."' LIMIT 1";
+	if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){ $errors[] = "Couldn't find page data for pade ID #".$oldpgid; break; }
 	
 	$pg = new pgedit($row['title']);
 	$pg->loadData();
@@ -41,8 +41,8 @@ do if($_POST){
 		
 		$move = true;
 		
-		$res = mysql_query("SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($new_title)."' LIMIT 1");
-		if($dat = mysql_fetch_object($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' LIMIT 1");
+		if($dat = mysqli_fetch_object($res)){
 			
 			// a page exists in the destination
 			
@@ -69,7 +69,7 @@ do if($_POST){
 		//send an email request since user is less than trusted VIP (lv 5)
 		
 		$q = "SELECT * FROM users WHERE usrid='$usrid' LIMIT 1";
-		$usr = mysql_fetch_object(mysql_query($q));
+		$usr = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		$headers = 'From: '.$usrname.'<'.$usr->email.'>'."\r\n" .
     'X-Mailer: PHP/' . phpversion();
@@ -90,12 +90,12 @@ do if($_POST){
 		
 		$newpgid = mysqlNextAutoIncrement("pages");
 		$q = "INSERT INTO pages (type, title, redirect_to, creator, created, modified) VALUES 
-			('".$pg->type."', '".mysql_real_escape_string($old_title)."', '".mysql_real_escape_string($new_title)."', '$usrid', '$dt', '$dt');";
-		if(!mysql_query($q)) $errors[] = "Couldn't add redirect page to database; ".mysql_error();
+			('".$pg->type."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', '$usrid', '$dt', '$dt');";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add redirect page to database; ".mysql_error();
 		
 		//rename page history entries
-		$q = "UPDATE pages_edit SET `title` = '".mysql_real_escape_string($new_title)."' WHERE `title` = '".mysql_real_escape_string($old_title)."';";
-		if(!mysql_query($q)) $errors[] = "Couldn't update page history because of a database error";
+		$q = "UPDATE pages_edit SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update page history because of a database error";
 		
 	} elseif($move && !$movetoempty){
 		
@@ -103,16 +103,16 @@ do if($_POST){
 		// delete page content at the destination so there's no duplicate
 		
 		$dat = "";
-		$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($new_title)."' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' LIMIT 1";
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		$newpgid = $dat->pgid;
 		
-		$q = "UPDATE pages SET `title` = '".mysql_real_escape_string($old_title)."', redirect_to = '".mysql_real_escape_string($new_title)."' WHERE pgid = '$newpgid' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't update moving page with new attributes; ".mysql_error();
+		$q = "UPDATE pages SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."', redirect_to = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE pgid = '$newpgid' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update moving page with new attributes; ".mysql_error();
 		
 		//rename page history entries
-		$q = "UPDATE pages_edit SET `title` = '".mysql_real_escape_string($new_title)."' WHERE `title` = '".mysql_real_escape_string($old_title)."';";
-		if(!mysql_query($q)) $errors[] = "Couldn't update page history because of a database error";
+		$q = "UPDATE pages_edit SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update page history because of a database error";
 		
 	}
 	
@@ -130,8 +130,8 @@ do if($_POST){
 		try{ $newpg->save(false, true); }
 		catch(Exception $e){ $errors[] = "Error creating redirect page to $new_title; " . $e->getMessage(); }
 		
-		$q = "INSERT INTO pages_links (`from_pgid`, `to`, `is_redirect`) VALUES ('$newpgid', '".mysql_real_escape_string($new_title)."', '1');";
-		if(!mysql_query($q)) $errors[] = "Couldn't record redirect link; ".mysql_error();
+		$q = "INSERT INTO pages_links (`from_pgid`, `to`, `is_redirect`) VALUES ('$newpgid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', '1');";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record redirect link; ".mysql_error();
 		
 	}
 	
@@ -145,8 +145,8 @@ do if($_POST){
 	}
 	
 	foreach($upd as $table => $field){
-		$q = "UPDATE `$table` SET `$field` = '".mysql_real_escape_string($new_title)."' WHERE `$field` = '".mysql_real_escape_string($old_title)."';";
-		if(!mysql_query($q)) $errors[] = "Couldn't update DB table `$table` with new page title; ".mysql_error();
+		$q = "UPDATE `$table` SET `$field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."' WHERE `$field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."';";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update DB table `$table` with new page title; ".mysql_error();
 	}
 	
 	// UPDATE INDEXES //
@@ -171,12 +171,12 @@ do if($_POST){
 	if(!$index_dom->save($xmlf)) $ret['error'].= "Error saving index file :( \n";
 	
 	$q = "SELECT `json` FROM pages_index_json WHERE `type`='".$pg->type."' LIMIT 1";
-	if(!$row = mysql_fetch_assoc(mysql_query($q))) die("Error selecting JSON index: $q");
+	if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Error selecting JSON index: $q");
 	$json_blob = json_decode($row['json'], true);
 	$json_blob[$pg->title] = $json_;
 	$json_str = json_encode($json_blob);
-	$q = "UPDATE pages_index_json SET `json` = '".mysql_real_escape_string($json_str)."' WHERE `type` = '".$pg->type."' LIMIT 1";
-	if(!mysql_query($q)) $ret['error'].= "Error updating JSON index: $q \n";
+	$q = "UPDATE pages_index_json SET `json` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $json_str)."' WHERE `type` = '".$pg->type."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'].= "Error updating JSON index: $q \n";
 	
 	if($errors) break;
 	
@@ -187,18 +187,18 @@ do if($_POST){
 	catch(Exception $e){ $errors[] = "Couldn't save base XML document for this page. Changes will not be reflected. More information: " . $e->getMessage(); break; }
 	
 	//update dbs
-	$q = "UPDATE pages SET `title` = '".mysql_real_escape_string($new_title)."', `modified` = '$dt' WHERE pgid='".$pg->pgid."' LIMIT 1";
-	if(!mysql_query($q)) $errors[] = "Couldn't update database pages database; ".mysql_error();
+	$q = "UPDATE pages SET `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', `modified` = '$dt' WHERE pgid='".$pg->pgid."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database pages database; ".mysql_error();
 	
 	$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, `rename`, `published`, edit_summary) VALUES (
 		'".$pg->pgid."', 
-		'".mysql_real_escape_string($new_title)."', 
+		'".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."', 
 		'".$pg->sessid."',
 		'$usrid',
-		'[[".mysql_real_escape_string($old_title)."|".mysql_real_escape_string($old_title)."]] to [[".mysql_real_escape_string($new_title)."|".mysql_real_escape_string($new_title)."]]',
+		'[[".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."|".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."]] to [[".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."|".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."]]',
 		'1',
-		'".mysql_real_escape_string($_POST['edit_summary'])."')";
-	if(!mysql_query($q)) $errors[] = "Couldn't record edit session";
+		'".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['edit_summary'])."')";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit session";
 	
 	if($move && $newpgid){
 		
@@ -206,13 +206,13 @@ do if($_POST){
 	
 		$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, `rename`, `published`, edit_summary) VALUES (
 			'$newpgid', 
-			'".mysql_real_escape_string($old_title)."', 
+			'".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."', 
 			'".$newpg->sessid."',
 			'$usrid',
-			'[[".mysql_real_escape_string($old_title)."|".mysql_real_escape_string($old_title)."]] to [[".mysql_real_escape_string($new_title)."|".mysql_real_escape_string($new_title)."]]',
+			'[[".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."|".mysqli_real_escape_string($GLOBALS['db']['link'], $old_title)."]] to [[".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."|".mysqli_real_escape_string($GLOBALS['db']['link'], $new_title)."]]',
 			'1',
-			'".mysql_real_escape_string($_POST['edit_summary'])."')";
-		if(!mysql_query($q)) $errors[] = "Couldn't record edit session 2";
+			'".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['edit_summary'])."')";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit session 2";
 		
 	}
 	
@@ -275,8 +275,8 @@ if(!$pg->row){
 		<?
 		
 		foreach($pg_tags_tables as $table => $field){
-			$q = "SELECT * FROM `$table` WHERE `$field` = '".mysql_real_escape_string($title)."';";
-			$num_tags = $num_tags + mysql_num_rows(mysql_query($q));
+			$q = "SELECT * FROM `$table` WHERE `$field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."';";
+			$num_tags = $num_tags + mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		
 		if($num_tags) echo '<i>There are <b>'.$num_tags.'</b> Sblogs, Forums, Groups, Albums, and/or Images tagged "'.$title.'"</i>';

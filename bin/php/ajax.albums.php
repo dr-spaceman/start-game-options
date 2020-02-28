@@ -9,14 +9,14 @@ if($_POST['do'] == "get_fans") {
 	
 	//fans list
 	
-	$query = "SELECT * FROM albums_ratings WHERE albumid='".mysql_real_escape_string($albumid)."'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$query = "SELECT * FROM albums_ratings WHERE albumid='".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$fans[$row['usrid']]['rating'] = $row['rating'];
 	}
-	$query = "SELECT * FROM albums_collection WHERE albumid='".mysql_real_escape_string($albumid)."'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$query = "SELECT * FROM albums_collection WHERE albumid='".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$fans[$row['usrid']][$row['action']] = TRUE;
 	}
 	
@@ -47,14 +47,14 @@ if($_POST['do'] == "rate"){
 	
 	if(!$rating = $_POST['rating']) $rating = 0;
 	
-	$q = "DELETE FROM albums_ratings WHERE albumid='".mysql_real_escape_string($albumid)."' AND usrid='$usrid' LIMIT 1";
-	mysql_query($q);
+	$q = "DELETE FROM albums_ratings WHERE albumid='".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."' AND usrid='$usrid' LIMIT 1";
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	if($rating == '0') {
 		$ajax->ret['success'] = true;
 	} else {
-		$q = "INSERT INTO albums_ratings (albumid, rating, usrid, datetime) VALUES ('".mysql_real_escape_string($albumid)."', '".mysql_real_escape_string($rating)."', '$usrid', '".date("Y-m-d H:i:s")."')";
-		if(mysql_query($q)) $ajax->ret['success'] = true;
+		$q = "INSERT INTO albums_ratings (albumid, rating, usrid, datetime) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $rating)."', '$usrid', '".date("Y-m-d H:i:s")."')";
+		if(mysqli_query($GLOBALS['db']['link'], $q)) $ajax->ret['success'] = true;
 		else $ajax->kill("There was a database error and the requested action couldn't be performed. [ERROR 54IUD]");
 	}
 	
@@ -74,13 +74,13 @@ if($_POST['do'] == "set_collection"){
 		$q = $set == "true" ? "INSERT INTO pages_fan (usrid, op, `title`) VALUES ('$usrid', 'love', 'AlbumId:$albumid');" : "DELETE FROM pages_fan WHERE usrid='$usrid' AND op='love' AND `title`='AlbumId:$albumid';";
 	} else {
 		if($set == "true"){
-			$q = "INSERT INTO albums_collection (action, albumid, usrid, datetime) VALUES ('".mysql_real_escape_string($what)."', '".mysql_real_escape_string($albumid)."', '$usrid', '".date("Y-m-d H:i:s")."')";
+			$q = "INSERT INTO albums_collection (action, albumid, usrid, datetime) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $what)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."', '$usrid', '".date("Y-m-d H:i:s")."')";
 		} else {
-			$q = "DELETE FROM albums_collection WHERE action='".mysql_real_escape_string($what)."' AND albumid='".mysql_real_escape_string($albumid)."' AND usrid='$usrid' LIMIT 1";
+			$q = "DELETE FROM albums_collection WHERE action='".mysqli_real_escape_string($GLOBALS['db']['link'], $what)."' AND albumid='".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."' AND usrid='$usrid' LIMIT 1";
 		}
 	}
 	
-	if(!mysql_query($q)) $ajax->kill("There was a database error and the requested action couldn't be performed. [ERROR 71JYTY]");
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $ajax->kill("There was a database error and the requested action couldn't be performed. [ERROR 71JYTY]");
 	
 	$ajax->ret['success'] = true;
 	

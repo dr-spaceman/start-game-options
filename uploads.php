@@ -36,10 +36,10 @@ do if($_GET['sessid'] || $_GET['img_id']){
 	
 	$sessid = trim($_GET['sessid']);
 	
-	$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysql_real_escape_string($sessid)."' LIMIT 1";
-	$sess_res = mysql_query($query);
-	if(!mysql_num_rows($sess_res)) $page->die_("Couldn't find session data fro ID # $sessid");
-	$sess = mysql_fetch_object($sess_res);
+	$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	$sess_res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!mysqli_num_rows($sess_res)) $page->die_("Couldn't find session data fro ID # $sessid");
+	$sess = mysqli_fetch_object($sess_res);
 	if($sess->usrid != $usrid && $usrrank < 8) $page->die_("Sorry, but you don't have access to this upload session");
 	
 	if($_POST){
@@ -51,8 +51,8 @@ do if($_GET['sessid'] || $_GET['img_id']){
 			//classify
 			
 			foreach($img_ids as $img_id){
-				$q = "UPDATE images SET img_category_id = '".mysql_real_escape_string($_POST['img_category_id_mass'])."' WHERE img_id = '".mysql_real_escape_string($img_id)."' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't update table row for img_id # $img_id ; ".mysql_error();
+				$q = "UPDATE images SET img_category_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['img_category_id_mass'])."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update table row for img_id # $img_id ; ".mysql_error();
 				else $num_upd++;
 			}
 			
@@ -75,11 +75,11 @@ do if($_GET['sessid'] || $_GET['img_id']){
 			if(count($tags)){
 				foreach($img_ids as $img_id){
 					//img_id exists?
-					$q1 = "SELECT * FROM images WHERE img_id='".mysql_real_escape_string($img_id)."' LIMIT 1";
+					$q1 = "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
 					foreach($tags as $tag){
 						//not yet tagged with this phrase?
-						$q2 = "SELECT * FROM images_tags WHERE img_id='".mysql_real_escape_string($img_id)."' AND tag='".mysql_real_escape_string($tag)."' LIMIT 1";
-						if(mysql_num_rows(mysql_query($q1)) && !mysql_num_rows(mysql_query($q2))){
+						$q2 = "SELECT * FROM images_tags WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' AND tag='".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' LIMIT 1";
+						if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q1)) && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q2))){
 							$ins['_return'] = "return";
 							$ins['_subject'] = "images_tags:img_id:".$img_id;
 							$ins['_tag'] = $tag;
@@ -113,10 +113,10 @@ do if($_GET['sessid'] || $_GET['img_id']){
 		if($num_rm) $results[] = $num_rm." image".($num_rm != 1 ? "s" : "")." removed";
 		
 		//re-fetch session data
-		$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysql_real_escape_string($sessid)."' LIMIT 1";
-		$sess_res = mysql_query($query);
-		if(!mysql_num_rows($sess_res)) break;
-		$sess = mysql_fetch_object($sess_res);
+		$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+		$sess_res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($sess_res)) break;
+		$sess = mysqli_fetch_object($sess_res);
 	
 	}
 	
@@ -223,9 +223,9 @@ do if($_GET['sessid'] || $_GET['img_id']){
 		
 		<div id="imgsetedit" class="sm<?=($sess->img_qty > 1 ? ' selectable' : '')?>">
 			<?
-			$query = "SELECT img_name FROM images WHERE img_session_id = '".mysql_real_escape_string($sessid)."' ORDER BY `sort`, img_id";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$query = "SELECT img_name FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' ORDER BY `sort`, img_id";
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				
 				$img = new img($row['img_name']);
 				if($img->notfound) continue;
@@ -347,8 +347,8 @@ do if($_GET['sessid'] || $_GET['img_id']){
 	
 } while(false);
 
-$num_imgs = mysql_num_rows(mysql_query("SELECT * FROM images WHERE usrid = '$usrid'"));
-$num_sess = !$num_imgs ? 0 : mysql_num_rows(mysql_query("SELECT * FROM images_sessions WHERE usrid = '$usrid'"));
+$num_imgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images WHERE usrid = '$usrid'"));
+$num_sess = !$num_imgs ? 0 : mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images_sessions WHERE usrid = '$usrid'"));
 
 ?>
 <form action="uploads.php" method="get" name="uploadsq" id="uploadsq">
@@ -365,14 +365,14 @@ if($q = trim($_GET['q'])){
 	$sessions = array();
 	
 	//get image sessions by tag
-	$query = "SELECT DISTINCT(img_session_id) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysql_real_escape_string($q)."' AND images.usrid='$usrid'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) $sessions[] = $row['img_session_id'];
+	$query = "SELECT DISTINCT(img_session_id) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."' AND images.usrid='$usrid'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) $sessions[] = $row['img_session_id'];
 	
 	//get image sessions by description
-	$query = "SELECT img_session_id FROM images_sessions WHERE img_session_description LIKE '%".mysql_real_escape_string($q)."%' and usrid='$usrid'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$query = "SELECT img_session_id FROM images_sessions WHERE img_session_description LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%' and usrid='$usrid'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if(!in_array($row['img_session_id'], $sessions)) $sessions[] = $row['img_session_id'];
 	}
 	
@@ -382,8 +382,8 @@ if($q = trim($_GET['q'])){
 		arsort($sessions);
 		foreach($sessions as $sessid){
 			$query = "SELECT * FROM images_sessions WHERE img_session_id = '$sessid' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($query))){
-				$file = mysql_fetch_object(mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))){
+				$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
 				$img = new img($file->img_name);
 				?>
 				<figure>
@@ -404,13 +404,13 @@ if($q = trim($_GET['q'])){
 } else {
 
 	$query = "SELECT * FROM images_sessions WHERE usrid='$usrid' ORDER BY img_session_created DESC limit 0, 32";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)){
 		?>
 		<div class="uploadslist">
 			<?
-			while($row = mysql_fetch_assoc($res)){
-				$file = mysql_fetch_object(mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
+			while($row = mysqli_fetch_assoc($res)){
+				$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
 				$img = new img($file->img_name);
 				?>
 				<figure>

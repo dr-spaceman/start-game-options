@@ -89,8 +89,8 @@ function getPlatforms($getKeywords=''){
 	require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/db.php";
 	$not_platforms = array("Game console", "Handheld game console", "Online distribution platform");
 	$query = "SELECT `title`, `title_sort`, `keywords` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game console' OR `to` = 'Game platform') AND `namespace` = 'Category' AND `redirect_to` = '' ORDER BY `title`";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if(in_array($row['title'], $not_platforms)) continue;
 		$ret[] = $getKeywords ? $row : $row['title'];
 	}

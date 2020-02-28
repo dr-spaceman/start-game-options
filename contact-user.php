@@ -92,10 +92,10 @@ if($_POST['send']){
 		
 		$query = sprintf("INSERT INTO `pm` (`to`, `from`, `date`, `subject`, `message`, `reply_to_id`) VALUES 
 			('$to', '$usrid', '".date('Y-m-d H:i:s')."', '%s', '%s', '$reply_to_id')",
-			mysql_real_escape_string($subject),
-			mysql_real_escape_string($message));
+			mysqli_real_escape_string($GLOBALS['db']['link'], $subject),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $message));
 		$messageid = mysqlNextAutoIncrement("pm");
-		$res = mysql_query($query);
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		if(!$res) $errors[] = "Couldn't process PM because of a database error!";
 		else {
 			
@@ -146,8 +146,8 @@ if(!$user) {
 } else {
 	
 	$query = "SELECT * FROM users LEFT JOIN users_prefs USING (usrid) WHERE username='$user' LIMIT 1";
-	$res = mysql_query($query);
-	if(!$usr = mysql_fetch_object($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$usr = mysqli_fetch_object($res)) {
 		echo "Couldn't get user info for username '$user'";
 		$page->footer();
 	}
@@ -164,8 +164,8 @@ if(!$user) {
 	//reply stuff
 	if($reply_to_id = $_GET['reply_to_id']) {
 		$query = "SELECT * FROM `pm` WHERE `id` = '$reply_to_id' LIMIT 1";
-		$res = mysql_query($query);
-		$reply_dat = mysql_fetch_object($res);
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		$reply_dat = mysqli_fetch_object($res);
 		$subject = $reply_dat->subject;
 		$reply_message = "\n\n\n------ Original Message ------\nFrom: ".outputUser($reply_dat->from, FALSE, FALSE)."\nTo: ".outputUser($reply_dat->to, FALSE, FALSE)."\nDate: ".$reply_dat->date."\nSubject: ".stripslashes($reply_dat->subject)."\n\n".stripslashes($reply_dat->message);
 	}

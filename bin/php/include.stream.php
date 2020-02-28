@@ -26,13 +26,13 @@ class ActivityItem
 	function __construct($query, $datetime, $type, $actor, $data)
 	{
 		$this->query = $query;
-		$this->results = mysql_query($query);
+		$this->results = mysqli_query($GLOBALS['db']['link'], $query);
 		$this->datetime = $datetime;
 		$this->type = $type;
 		$this->actor = $actor;
 		$this->data = $data;
 
-		while ($row = mysql_fetch_assoc($results))
+		while ($row = mysqli_fetch_assoc($results))
 		{
 			$this->dateYmd = date("Y-m-d", strtotime($row['datetime']));
 			$this->time = strtotime($row['datetime']);
@@ -55,8 +55,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	$s = $truncate_news_articles;
 	
 	// User gave Game a X
-	$userRatings = mysql_query("SELECT gg.*, g.* FROM games_grades gg, games g WHERE g.gid = gg.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY datetime DESC");
-	while ($row = mysql_fetch_assoc($userRatings))
+	$userRatings = mysqli_query($GLOBALS['db']['link'], "SELECT gg.*, g.* FROM games_grades gg, games g WHERE g.gid = gg.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY datetime DESC");
+	while ($row = mysqli_fetch_assoc($userRatings))
 		$activities[date("Y-m-d", strtotime($row['datetime']))][strtotime($row['datetime'])] = array(
 			"type"		=> "rating",
 			"actor"		=> $row['usrid'],
@@ -70,8 +70,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 		);
 
 	// User thinks/says/asserts/etc Game is X
-	$userHype = mysql_query("SELECT gf.*, g.* FROM games_forecasts gf, games g WHERE g.gid = gf.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY datetime DESC");
-	while ($row = mysql_fetch_assoc($userHype))
+	$userHype = mysqli_query($GLOBALS['db']['link'], "SELECT gf.*, g.* FROM games_forecasts gf, games g WHERE g.gid = gf.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY datetime DESC");
+	while ($row = mysqli_fetch_assoc($userHype))
 		$activities[date("Y-m-d", strtotime($row['datetime']))][strtotime($row['datetime'])] = array(
 			"type"		=> "forecast",
 			"actor"		=> $row['usrid'],
@@ -85,8 +85,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 		);
 
 	// User posted Article entitled X
-	//$news = mysql_query("SELECT id, created, headline, subheading, author FROM news WHERE published = 1 AND date > //DATE_SUB(NOW(), INTERVAL $distance) ORDER BY date DESC");
-	//while ($row = mysql_fetch_assoc($news))
+	//$news = mysqli_query($GLOBALS['db']['link'], "SELECT id, created, headline, subheading, author FROM news WHERE published = 1 AND date > //DATE_SUB(NOW(), INTERVAL $distance) ORDER BY date DESC");
+	//while ($row = mysqli_fetch_assoc($news))
 	//{
 	//	$c = $row['heading'];
 	//	if (!$s)
@@ -108,8 +108,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	//}
 
 	// User commented on Article
-//	$comments = mysql_query("SELECT c.*, n.headline FROM comments c, news n WHERE n.id = c.nid AND n.published = 1 AND c.datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY c.datetime DESC");
-//	while ($row = mysql_fetch_assoc($comments))
+//	$comments = mysqli_query($GLOBALS['db']['link'], "SELECT c.*, n.headline FROM comments c, news n WHERE n.id = c.nid AND n.published = 1 AND c.datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY c.datetime DESC");
+//	while ($row = mysqli_fetch_assoc($comments))
 //	{
 //		$c = strip_tags($row['comment']);
 //		$c = strlen($c) > 75 ? substr($c, 0, 72)."..." : $c;
@@ -126,8 +126,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// User commented on A vs B
-//	$rotwcomments = mysql_query("SELECT rc.*, r.sel1, r.sel2 FROM sqhav_main2.rotwcomments rc, sqhav_main2.rotw r WHERE r.id = rc.id AND rc.datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY rc.datetime DESC");
-//	while ($row = mysql_fetch_assoc($rotwcomments))
+//	$rotwcomments = mysqli_query($GLOBALS['db']['link'], "SELECT rc.*, r.sel1, r.sel2 FROM sqhav_main2.rotwcomments rc, sqhav_main2.rotw r WHERE r.id = rc.id AND rc.datetime > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY rc.datetime DESC");
+//	while ($row = mysqli_fetch_assoc($rotwcomments))
 //	{
 //		$c = $row['comment'];
 //		if (!$s)
@@ -148,8 +148,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// User added Game to their collection
-	$gamescoll = mysql_query("SELECT gc.*, g.title, u.username, u.gender FROM games_collection gc, games g, users u WHERE g.gid = gc.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) AND gc.usrid = u.usrid ORDER BY datetime DESC");
-	while ($row = mysql_fetch_assoc($gamescoll))
+	$gamescoll = mysqli_query($GLOBALS['db']['link'], "SELECT gc.*, g.title, u.username, u.gender FROM games_collection gc, games g, users u WHERE g.gid = gc.gid AND datetime > DATE_SUB(NOW(), INTERVAL $distance) AND gc.usrid = u.usrid ORDER BY datetime DESC");
+	while ($row = mysqli_fetch_assoc($gamescoll))
 	{
 		$activities[date("Y-m-d", strtotime($row['datetime']))][strtotime($row['datetime'])] = array(
 			"type"		=> "collection-game",
@@ -165,8 +165,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// User is now playing Game
-	$playing = mysql_query("SELECT mg.*, u.* FROM my_games mg, games g, users u WHERE g.gid = mg.gid AND u.usrid = mg.usrid AND play_start > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY play_start DESC");
-	while ($row = mysql_fetch_assoc($playing))
+	$playing = mysqli_query($GLOBALS['db']['link'], "SELECT mg.*, u.* FROM my_games mg, games g, users u WHERE g.gid = mg.gid AND u.usrid = mg.usrid AND play_start > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY play_start DESC");
+	while ($row = mysqli_fetch_assoc($playing))
 	{
 		$activities[date("Y-m-d", strtotime($row['play_start']))][strtotime($row['play_start'])] = array(
 			"type"		=> "playing",
@@ -181,8 +181,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// User added Album to their collection
-	$albumcoll = mysql_query("SELECT ac.*, a.title, a.subtitle, u.username, u.gender FROM albums_collection ac, albums a, users u WHERE a.albumid = ac.albumid AND ac.datetime > DATE_SUB(NOW(), INTERVAL $distance) AND ac.usrid = u.usrid ORDER BY ac.datetime DESC");
-	while ($row = mysql_fetch_assoc($albumcoll))
+	$albumcoll = mysqli_query($GLOBALS['db']['link'], "SELECT ac.*, a.title, a.subtitle, u.username, u.gender FROM albums_collection ac, albums a, users u WHERE a.albumid = ac.albumid AND ac.datetime > DATE_SUB(NOW(), INTERVAL $distance) AND ac.usrid = u.usrid ORDER BY ac.datetime DESC");
+	while ($row = mysqli_fetch_assoc($albumcoll))
 	{
 		$activities[date("Y-m-d", strtotime($row['datetime']))][strtotime($row['datetime'])] = array(
 			"type"		=> "collection-album",
@@ -197,8 +197,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// User is now listening to Album
-//	$listening = mysql_query("SELECT ul.*, a.title, a.subtitle FROM sqhav_main.user_listening ul, sqhav_main2.album_list a WHERE a.albumid = ul.aid AND ul.started > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY ul.started DESC");
-//	while ($row = mysql_fetch_assoc($listening))
+//	$listening = mysqli_query($GLOBALS['db']['link'], "SELECT ul.*, a.title, a.subtitle FROM sqhav_main.user_listening ul, sqhav_main2.album_list a WHERE a.albumid = ul.aid AND ul.started > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY ul.started DESC");
+//	while ($row = mysqli_fetch_assoc($listening))
 //	{
 //		$activities[date("Y-m-d", strtotime($row['started']))][strtotime($row['started'])] = array(
 //			"type"		=> "listening",
@@ -212,8 +212,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// User wrote a site update
-//	$siteupdate = mysql_query("SELECT * FROM siteupdate WHERE date > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY date DESC");
-//	while ($row = mysql_fetch_assoc($siteupdate))
+//	$siteupdate = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM siteupdate WHERE date > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY date DESC");
+//	while ($row = mysqli_fetch_assoc($siteupdate))
 //	{
 //		$c = $row['words'];
 //		$activities[date("Y-m-d", strtotime($row['date']))][strtotime($row['date'])] = array(
@@ -227,9 +227,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// Game was released for Platform in Territory
-	$gamereleases = mysql_query
-		("SELECT gp.release_date, gp.title AS publication, pt.platform AS platformname, games.* FROM games_publications gp, games, games_platforms as pt WHERE gp.release_date >= DATE_SUB(NOW(), INTERVAL $distance) AND gp.release_date <= NOW() AND games.gid=gp.gid");
-	while ($row = mysql_fetch_assoc($gamereleases))
+	$gamereleases = mysql_query($GLOBALS['db']['link'], "SELECT gp.release_date, gp.title AS publication, pt.platform AS platformname, games.* FROM games_publications gp, games, games_platforms as pt WHERE gp.release_date >= DATE_SUB(NOW(), INTERVAL $distance) AND gp.release_date <= NOW() AND games.gid=gp.gid");
+	while ($row = mysqli_fetch_assoc($gamereleases))
 	{
 		$activities[date("Y-m-d", strtotime($row['release_date']))][strtotime($row['release_date'])] = array(
 			"type"		=> "release-game",
@@ -243,8 +242,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// Album was released
-	$albumreleases = mysql_query("SELECT * FROM albums a WHERE datesort > DATE_SUB(NOW(), INTERVAL $distance) AND datesort <= NOW() ORDER BY datesort DESC");
-	while ($row = mysql_fetch_assoc($albumreleases))
+	$albumreleases = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM albums a WHERE datesort > DATE_SUB(NOW(), INTERVAL $distance) AND datesort <= NOW() ORDER BY datesort DESC");
+	while ($row = mysqli_fetch_assoc($albumreleases))
 	{
 		$activities[date("Y-m-d", strtotime($row['datesort']))][strtotime($row['datesort'])] = array(
 			"type"		=> "release-album",
@@ -257,8 +256,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// Profile updates
-	$profileupdates = mysql_query("SELECT u.username, ud.last_profile_update AS date, u.gender FROM users u, users_details ud WHERE ud.last_profile_update > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY ud.last_profile_update DESC");
-	while ($row = mysql_fetch_assoc($profileupdates))
+	$profileupdates = mysqli_query($GLOBALS['db']['link'], "SELECT u.username, ud.last_profile_update AS date, u.gender FROM users u, users_details ud WHERE ud.last_profile_update > DATE_SUB(NOW(), INTERVAL $distance) ORDER BY ud.last_profile_update DESC");
+	while ($row = mysqli_fetch_assoc($profileupdates))
 	{
 		$activities[date("Y-m-d", strtotime($row['date']))][strtotime($row['date'])] = array(
 			"type"		=> "profile-update",
@@ -271,11 +270,11 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// Forum posts
-//	$forumposts = mysql_query("
+//	$forumposts = mysqli_query($GLOBALS['db']['link'], "
 //		SELECT fp.poster, fp.posted, fp.message, ft.tid, ft.title 
 //		FROM `forums_posts` fp, forums_topics ft 
 //		WHERE fp.tid = ft.tid AND ft.invisible = 0 AND fp.posted > NOW() - INTERVAL $distance ORDER BY fp.posted DESC");
-//	while ($row = mysql_fetch_assoc($forumposts))
+//	while ($row = mysqli_fetch_assoc($forumposts))
 //	{
 //		$c = $row['message'];
 //		$c = strip_tags($c);
@@ -293,8 +292,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 //	}
 
 	// Modified people
-	$peoplechanges = mysql_query("SELECT name, modified FROM people WHERE modified > NOW() - INTERVAL $distance ORDER BY modified DESC");
-	while ($row = mysql_fetch_assoc($peoplechanges))
+	$peoplechanges = mysqli_query($GLOBALS['db']['link'], "SELECT name, modified FROM people WHERE modified > NOW() - INTERVAL $distance ORDER BY modified DESC");
+	while ($row = mysqli_fetch_assoc($peoplechanges))
 	{
 		$activities[date("Y-m-d", strtotime($row['modified']))][strtotime($row['modified'])] = array(
 			"type"		=> "person-update",
@@ -306,8 +305,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// Modified games
-	$gamechanges = mysql_query("SELECT * FROM games WHERE modified > NOW() - INTERVAL $distance ORDER BY modified DESC");
-	while ($row = mysql_fetch_assoc($gamechanges))
+	$gamechanges = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM games WHERE modified > NOW() - INTERVAL $distance ORDER BY modified DESC");
+	while ($row = mysqli_fetch_assoc($gamechanges))
 	{
 		$activities[date("Y-m-d", strtotime($row['modified']))][strtotime($row['modified'])] = array(
 			"type"		=> "game-update",
@@ -320,8 +319,8 @@ function latestActivity($truncate_news_articles = false, $distance = "1 WEEK"){
 	}
 
 	// games previews
-	$previewchanges = mysql_query("SELECT *, games.title, games.title_url FROM games_previews gp LEFT JOIN games ON (gp.gid=games.gid) WHERE gp.datetime > NOW() - INTERVAL $distance ORDER BY gp.datetime DESC");
-	while ($row = mysql_fetch_assoc($previewchanges))
+	$previewchanges = mysqli_query($GLOBALS['db']['link'], "SELECT *, games.title, games.title_url FROM games_previews gp LEFT JOIN games ON (gp.gid=games.gid) WHERE gp.datetime > NOW() - INTERVAL $distance ORDER BY gp.datetime DESC");
+	while ($row = mysqli_fetch_assoc($previewchanges))
 	{
 		$activities[date("Y-m-d", strtotime($row['datetime']))][strtotime($row['datetime'])] = array(
 			"type"		=> "preview-update",

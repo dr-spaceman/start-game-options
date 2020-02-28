@@ -7,10 +7,10 @@ $page->header();
 $platforms = getPlatforms();
 
 $query = "SELECT * FROM games_previews WHERE `id`='$_GET[id]' LIMIT 1";
-if(!$dat = mysql_fetch_object(mysql_query($query))) {
+if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 	echo "Couldn't get data";
 } else {
-	$gdat = mysql_fetch_object(mysql_query("SELECT * FROM games WHERE gid='$dat->gid' LIMIT 1"));
+	$gdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM games WHERE gid='$dat->gid' LIMIT 1"));
 	?>
 	<h2>Preview</h2>
 	<p style="padding:10px; border:1px dotted #BBB;">

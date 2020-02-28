@@ -125,14 +125,14 @@ $page->header();
 		if(!$settype) $settype = "session";
 		do if($settype == "session"){
 			$q = "SELECT * FROM images_sessions WHERE img_session_id = '".$img->sessid."' LIMIT 1";
-			if(!$sess = mysql_fetch_assoc(mysql_query($q))) break;
+			if(!$sess = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) break;
 			?>
 			<h6><a href="/image/-/session/<?=$img->sessid?>"><?=$sess['img_session_description']?></a></h6>
 			<?
 			$query = "SELECT * FROM images WHERE img_session_id = '".$img->sessid."' ORDER BY `sort`";
-			$res   = mysql_query($query);
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			$i = 0;
-			while($row=mysql_fetch_assoc($res)){
+			while($row=mysqli_fetch_assoc($res)){
 				$imgnav[$i] = $row;
 				if($row['img_name'] == $img_name) $thisi = $i;
 				$i++;
@@ -140,14 +140,14 @@ $page->header();
 		} while(false);
 		
 		do if($settype == "tag"){
-			$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysql_real_escape_string($setid)."' OR tag LIKE '".mysql_real_escape_string($setid)."|%' ORDER BY img_timestamp";
-			$res   = mysql_query($query);
-			if(!mysql_num_rows($res)) break;
+			$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."' OR tag LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."|%' ORDER BY img_timestamp";
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			if(!mysqli_num_rows($res)) break;
 			
 			echo '<h6><a href="/image/-/tag/'.$setid.'">'.$setid.'</a></h6>';
 			
 			$i = 0;
-			while($row = mysql_fetch_assoc($res)){
+			while($row = mysqli_fetch_assoc($res)){
 				$imgnav[$i] = $row;
 				if($row['img_name'] == $img_name) $thisi = $i;
 				$i++;
@@ -185,8 +185,8 @@ $page->header();
 		</div>
 		<?
 		/*$query = "SELECT * FROM images_tags WHERE img_id = '".$img->img_id."'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$tagurl = formatNameURL($row['tag']);
 			if($pos = strpos($tagurl, "|")) $tagurl = substr($tagurl, 0, $pos);
 			$o_tags.= '<dd class="tag">[['.$row['tag'].']] [<a href="/image/-/tag/'.$tagurl.'">images</a>]</dd>';
@@ -213,8 +213,8 @@ $page->header();
 <?
 
 // ++ view
-$q = "UPDATE images SET img_views = '".++$img->img_views."' WHERE img_name = '".mysql_real_escape_string($img->img_name)."' LIMIT 1";
-mysql_query($q);
+$q = "UPDATE images SET img_views = '".++$img->img_views."' WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img->img_name)."' LIMIT 1";
+mysqli_query($GLOBALS['db']['link'], $q);
 
 $page->footer();
 

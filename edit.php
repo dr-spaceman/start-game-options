@@ -13,7 +13,7 @@ if($_POST) require("edit-process.php");
 if(!$nid = $_GET['nid']) dieFullpage("No news id given", "incl header");
 
 $q = "SELECT * FROM news WHERE nid='$nid' LIMIT 1";
-if(!$n = mysql_fetch_assoc(mysql_query($q))) dieFullpage("Couldn't get data for news id # $nid", "head");
+if(!$n = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) dieFullpage("Couldn't get data for news id # $nid", "head");
 
 if($usrrank <= 7 && $n['usrid'] != $usrid) dieFullpage("You don't have access to edit this item.");
 
@@ -221,15 +221,15 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 									<optgroup label="My Uploads">
 										<?
 										$query = "SELECT * FROM media_categories";
-										$res   = mysql_query($query);
-										while($row = mysql_fetch_assoc($res)) {
+										$res   = mysqli_query($GLOBALS['db']['link'], $query);
+										while($row = mysqli_fetch_assoc($res)) {
 											$mcat[$row['category_id']] = $row['category'];
 										}
 										$query = "SELECT * FROM media ORDER BY directory";
-										$res   = mysql_query($query);
+										$res   = mysqli_query($GLOBALS['db']['link'], $query);
 										$i = 0;
 										$j = 0;
-										while($row = mysql_fetch_assoc($res)) {
+										while($row = mysqli_fetch_assoc($res)) {
 											$i++;
 											if($in['gallery']['dir']) $x = $in['gallery']['dir'];
 											elseif($i == 1) $x = $row['directory'];
@@ -299,9 +299,9 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 								LEFT JOIN albums USING (albumid) 
 								LEFT JOIN albums_tracks t ON (t.id = s.track_id) 
 								ORDER BY title";
-							$res = mysql_query($query);
+							$res = mysqli_query($GLOBALS['db']['link'], $query);
 							$i = 0;
-							while($row = mysql_fetch_assoc($res)) {
+							while($row = mysqli_fetch_assoc($res)) {
 								if($cog != $row['albumid']) {
 									echo ($i > 0 ? '</optgroup>' : '').'<optgroup label="'.htmlSC($row['title']).' '.htmlSC($row['subtitle']).'">';
 									$cog = $row['albumid'];
@@ -357,9 +357,9 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 			<div style="margin:0 0 0 10px;<?=(!$in['post_to']['forums'] ? 'display:none;' : '')?>">
 				<?
 				$query = "SELECT * FROM forums WHERE closed <= '$usrrank' AND invisible <= '$usrrank' ORDER BY cid, title";
-				$res   = mysql_query($query);
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
 				$i = 0;
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					$i++;
 					echo '<p><label><input type="radio" name="in[fid]" value="'.$row['fid'].'"'.($i == 1 ? ' checked="checked"' : '').'/> '.$row['title'].'</label></p>';
 				}
@@ -377,12 +377,12 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 						<?
 						if(!$in['post_to']['groups']) $in['post_to']['groups'] = array();
 						$query = "SELECT name, name_url, g.group_id FROM groups_members gm LEFT JOIN groups g USING (group_id) WHERE gm.usrid='$usrid' ORDER BY name";
-						$res   = mysql_query($query);
-						if(!mysql_num_rows($res)) {
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						if(!mysqli_num_rows($res)) {
 							echo '<p><span style="text-decoration:line-through;">A Group...</span> You don\'t belong to any groups yet.</p>';
 						} else {
 							echo '<p>A Group...</label></p>';
-							while($row = mysql_fetch_assoc($res)) {
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<p><label><input type="checkbox" name="in[post_to][groups][]" value="'.$row['group_id'].'"'.(in_array($row['group_id'], $in['post_to']['groups']) ? ' checked="checked"' : '').'/> '.$row['name'].'</label> <a href="/groups/~'.$row['name_url'].'" target="_blank" class="arrow-link"></a></p>';
 							}
 						}
@@ -406,8 +406,8 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 						<option value="">Games...</option>
 						<?
 						$query = "SELECT g.title, gp.release_date FROM games g LEFT JOIN games_publications gp ON (g.gid=gp.gid AND gp.primary='1') ORDER BY g.title";
-						$res   = mysql_query($query);
-						while($row = mysql_fetch_assoc($res)) {
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						while($row = mysqli_fetch_assoc($res)) {
 							$row['title'] = stripslashes($row['title']);
 							$outp = (strlen($row['title']) > 50 ? substr($row['title'], 0, 40)."&hellip;".substr($row['title'], -6, 6) : $row['title']);
 							echo '<option value="'.htmlSC($row['title']).'">'.$outp.' ('.substr($row['release_date'], 0, 4).')</option>';
@@ -420,8 +420,8 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 						<option value="">People...</option>
 						<?
 						$query = "SELECT name, title, prolific FROM people ORDER BY name";
-						$res   = mysql_query($query);
-						while($row = mysql_fetch_assoc($res)) {
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						while($row = mysqli_fetch_assoc($res)) {
 							$row = stripslashesDeep($row);
 							$outp = $row['name'].($row['title'] ? ' ('.$row['title'].')' : '');
 							if(strlen($outp) > 50) $outp = substr($outp, 0, 48)."&hellip;)";

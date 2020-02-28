@@ -35,8 +35,8 @@ $page->header();
 
 if($id) {
 	
-	$q = "SELECT * FROM users_contributions uc LEFT JOIN users_contributions_data USING (contribution_id) WHERE uc.contribution_id='".mysql_real_escape_string($id)."' LIMIT 1";
-	if(!$x = mysql_fetch_assoc(mysql_query($q))) die("Couldn't get data for id # $id: ".mysql_error());
+	$q = "SELECT * FROM users_contributions uc LEFT JOIN users_contributions_data USING (contribution_id) WHERE uc.contribution_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $id)."' LIMIT 1";
+	if(!$x = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $id: ".mysql_error());
 	
 	if(!$x['pending']) {
 		$errors[] = "This contribution is no longer pending (Reviewed by ".outputUser($x['reviewer'], FALSE, FALSE)." on  ".$x['datetime_reviewed'].")";
@@ -50,16 +50,16 @@ if($id) {
 		list($subj, $subjid) = explode(":", $x['supersubject']);
 		if($subj == "gid") {
 			$q = "SELECT * FROM games WHERE gid='".$subjid."' LIMIT 1";
-			$g = mysql_fetch_object(mysql_query($q));
+			$g = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		} elseif($subj == "pid") {
 			$q = "SELECT * FROM people WHERE pid='".$subjid."' LIMIT 1";
-			$p = mysql_fetch_object(mysql_query($q));
+			$p = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 	}
 	
 	//get next cid for form
 	$q = "SELECT * FROM users_contributions WHERE `datetime` >= '".$x['datetime']."' AND pending = '1' AND contribution_id != '$id' LIMIT 1";
-	$nextc = mysql_fetch_object(mysql_query($q));
+	$nextc = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	?>
 	<form action="user-contributions.php<?=($nextc->contribution_id ? '?id='.$nextc->contribution_id : '')?>" method="post" enctype="multipart/form-data">
@@ -77,8 +77,8 @@ if($id) {
 							<select name="in[gid]" onchange="$(this).next().attr('href', '/games/'+$(this).val()+'/');">
 								<?
 								$query = "SELECT title, gid FROM games ORDER BY title";
-								$res   = mysql_query($query);
-								while($row = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($row = mysqli_fetch_assoc($res)) {
 									echo '<option value="'.$row['gid'].'"'.($row['gid'] == $subjid ? ' selected="selected"' : '').'>'.$row['title'].'</option>';
 								}
 								?>
@@ -109,7 +109,7 @@ if($id) {
 			if($d['notes']) echo '<p></p><div style="padding:3px 6px; border:1px solid #DDD; background-color:#FFFFB0;"><b>Wiki Author\'s Notes:</b> '.$d['notes'].'</div>';
 			
 			$q = "SELECT * FROM wiki WHERE field='".$d['field']."' AND subject_field='".$d['subject_field']."' AND subject_id='".$d['subject_id']."' ORDER BY `datetime` DESC LIMIT 1";
-			if($row = mysql_fetch_object(mysql_query($q))) {
+			if($row = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				
 				//show comparisons with currently published text
 				
@@ -214,8 +214,8 @@ if($id) {
 							<option value="">Select a platform...</option>
 							<?
 							$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.$row['platform_id'].'"'.($row['platform_id'] == $platform_id ? ' selected="selected" style="font-weight:bold;"' : '').'>'.$row['platform'].'</option>';
 							}
 							?>
@@ -289,12 +289,12 @@ if($id) {
 			$roles = array();
 			
 			$q = "SELECT * FROM people WHERE pid='$pid' LIMIT 1";
-			if($pdat = mysql_fetch_object(mysql_query($q))) {
+			if($pdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				
 				//has a role in this game already?
 				$q = "SELECT * FROM people_work WHERE gid='$gid' AND pid='$pid'";
-				$res = mysql_query($q);
-				while($row = mysql_fetch_assoc($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $q);
+				while($row = mysqli_fetch_assoc($res)) {
 					$roles[] = $row;
 				}
 			
@@ -302,9 +302,9 @@ if($id) {
 			} elseif(substr($pid, 0, 9) == "new name:") {
 				$name = str_replace("new name:", "", $pid);
 				list($name, $name_url) = formatName($name);
-				$res = mysql_query("SELECT * FROM people WHERE name='$name' LIMIT 1");
-				if(mysql_num_rows($res)) {
-					$pdat = mysql_fetch_object($res);
+				$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE name='$name' LIMIT 1");
+				if(mysqli_num_rows($res)) {
+					$pdat = mysqli_fetch_object($res);
 					$pid = $pdat->pid;
 				} else $not_in_db = TRUE;
 			} else {
@@ -331,7 +331,7 @@ if($id) {
 			}
 			
 			$q = "SELECT title, title_url FROM games WHERE gid='$gid' LIMIT 1";
-			$g = mysql_fetch_object(mysql_query($q));
+			$g = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			
 			?>
 			
@@ -340,8 +340,8 @@ if($id) {
 					<select name="in[gid]">
 						<?
 						$query = "SELECT title, gid FROM games ORDER BY title";
-						$res   = mysql_query($query);
-						while($row = mysql_fetch_assoc($res)) {
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						while($row = mysqli_fetch_assoc($res)) {
 							echo '<option value="'.$row['gid'].'"'.($row['gid'] == $gid ? ' selected="selected"' : '').'>'.$row['title'].'</option>';
 						}
 						?>
@@ -368,10 +368,10 @@ if($id) {
 					The user submitted the name '<?=$name?>' which isn't yet in the database.
 					<?
 					//check aliases for possible match
-					$res = mysql_query("SELECT name, name_url FROM people WHERE alias LIKE '%$name%' OR alias LIKE '%".htmlentities($name, ENT_QUOTES)."%'");
-					if(mysql_num_rows($res)) {
+					$res = mysqli_query($GLOBALS['db']['link'], "SELECT name, name_url FROM people WHERE alias LIKE '%$name%' OR alias LIKE '%".htmlentities($name, ENT_QUOTES)."%'");
+					if(mysqli_num_rows($res)) {
 						?><p><b>Found some possible matches:</b><?
-						while($row = mysql_fetch_assoc($res)) {
+						while($row = mysqli_fetch_assoc($res)) {
 							echo '<br/>&bull; <a href="/people/~'.$row['name_url'].'" target="_blank" class="arrow-link">'.$row['name'].'</a>';
 						}
 						?></p><?
@@ -383,8 +383,8 @@ if($id) {
 							<option value="">This person is actually......</option>
 							<?
 							$query = "SELECT pid, name FROM people ORDER BY name";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.$row['pid'].'">'.$row['name'].'</option>';
 							}
 							?>
@@ -460,11 +460,11 @@ if($id) {
 				
 				$inptext = readableBB($d[$f]);
 				
-				$q = "SELECT * FROM `$t` WHERE `$k` = '".mysql_real_escape_string($v)."' LIMIT 1";
-				if($row = mysql_fetch_assoc(mysql_query($q))) {
+				$q = "SELECT * FROM `$t` WHERE `$k` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $v)."' LIMIT 1";
+				if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 					
 					$q = "SELECT * FROM users_contributions WHERE subject = '".$x['subject']."' AND published = '1' ORDER BY `datetime` DESC LIMIT 1";
-					$cdat = mysql_fetch_object(mysql_query($q));
+					$cdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					
 					//show comparisons with currently published text
 					
@@ -591,8 +591,8 @@ if($id) {
 		</tr>
 		<?
 		$query = "SELECT * FROM users_contributions_types ORDER BY category";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			?>
 			<tr>
 				<td><input type="hidden" name="in[ids][]" value="<?=$row['type_id']?>"/><input type="text" name="in[<?=$row['type_id']?>][category]" value="<?=$row['category']?>" size="3"/></td>
@@ -613,8 +613,8 @@ if($id) {
 <h3 style="border-width:0;">Contributions Pending Approval</h3>
 <?
 $query = "SELECT * FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE pending = '1' ORDER BY datetime ASC";
-$res   = mysql_query($query);
-$pend_num = mysql_num_rows($res);
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+$pend_num = mysqli_num_rows($res);
 if(!$pend_num) {
 	?>Nothing pending right now<?
 } else {
@@ -630,7 +630,7 @@ if(!$pend_num) {
 				<th>&nbsp;</th>
 			</tr>
 			<?
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				if(strlen($row['data']) > 50){
 					$row['data'] = substr($row['data'], 0, 50).'&hellip;';
 				}

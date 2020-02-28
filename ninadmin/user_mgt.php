@@ -10,9 +10,9 @@ if($_GET['username']){
 	
 	$search_un = trim($_GET['username']);
 	
-	$query = "SELECT * FROM users WHERE username LIKE '%".mysql_real_Escape_String($search_un)."%'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$query = "SELECT * FROM users WHERE username LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $search_un)."%'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		$found[] = $row;
 	}
 	
@@ -55,8 +55,8 @@ if(!$userid = $_GET['userid']){
 	
 }
 
-$q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) WHERE usrid='".mysql_real_escape_string($_GET['userid'])."' LIMIT 1";
-if(!$userrow = mysql_fetch_assoc(mysql_query($q))) die("Couldn't get data for userid # ".$_GET['userid']);
+$q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['userid'])."' LIMIT 1";
+if(!$userrow = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for userid # ".$_GET['userid']);
 
 do if($in = $_POST['in']){
 	
@@ -66,23 +66,23 @@ do if($in = $_POST['in']){
 			break;
 		}
 		
-		$q = "SELECT * FROM users WHERE usrid='".mysql_real_escape_string($_GET['userid'])."' LIMIT 1";
-		$userrow = mysql_fetch_assoc(mysql_query($q));
+		$q = "SELECT * FROM users WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['userid'])."' LIMIT 1";
+		$userrow = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		$q  = "INSERT INTO users_deleted (";
 		$q2 = "VALUES (";
 		foreach($userrow as $field => $val){
 			$q.=  "`$field`,";
-			$q2.= "'".mysql_real_escape_string($val)."',";
+			$q2.= "'".mysqli_real_escape_string($GLOBALS['db']['link'], $val)."',";
 		}
 		$q = substr($q, 0, -1) . ") " . substr($q2, 0, -1) . ");";
-		if(!mysql_query($q)){
+		if(!mysqli_query($GLOBALS['db']['link'], $q)){
 			$errors[] = "Couldn't create back-up user row because of a database error; $q; ".mysql_error();
 			break;
 		}
 		
-		$q = "DELETE FROM users WHERE usrid='".mysql_real_escape_string($_GET['userid'])."' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't dete user from the database";
+		$q = "DELETE FROM users WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['userid'])."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't dete user from the database";
 		else{
 			$results[] = "This user has been deleted.";
 			break;
@@ -92,29 +92,29 @@ do if($in = $_POST['in']){
 	
 	$pw = trim($in['password']);
 	if($in['rank'] > $usrrank) unset($in['rank']);
-	$q = "UPDATE users SET ".($pw ? "`password` = password('".mysql_real_escape_string($pw)."'), " : "").($in['rank'] ? " `rank` = '".$in['rank']."'" : '')." WHERE usrid = '".$_GET['userid']."' LIMIT 1";
-	if(!mysql_query($q)) $errors[] = "Couldn't update USERS table (password, rank)";
+	$q = "UPDATE users SET ".($pw ? "`password` = password('".mysqli_real_escape_string($GLOBALS['db']['link'], $pw)."'), " : "").($in['rank'] ? " `rank` = '".$in['rank']."'" : '')." WHERE usrid = '".$_GET['userid']."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update USERS table (password, rank)";
 	
 	$handle = trim($in['handle']);
-	$q = "UPDATE users_details SET handle='".mysql_real_escape_string($handle)."', handle_lock='".$in['handle_lock']."' WHERE usrid = '".$_GET['userid']."' LIMIT 1";
-	if(!mysql_query($q)) $errors[] = "Couldn't update USERS_DETAILS table (handle)";
+	$q = "UPDATE users_details SET handle='".mysqli_real_escape_string($GLOBALS['db']['link'], $handle)."', handle_lock='".$in['handle_lock']."' WHERE usrid = '".$_GET['userid']."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update USERS_DETAILS table (handle)";
 	
 	$q = "DELETE FROM users_prefs WHERE usrid='".$_GET['userid']."'";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	$query = "SHOW COLUMNS FROM users_prefs";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if($row['Field'] == "usrid") continue;
 		$prefs[$row['Field']] = $in['prefs'][$row['Field']];
 	}
 	
 	$q = "INSERT INTO `users_prefs` (`usrid`,`".implode("`,`", array_keys($prefs))."`) VALUES ('".$_GET['userid']."'";
 	foreach($prefs as $p){
-		$q.= ",'".mysql_real_escape_string($p)."'";
+		$q.= ",'".mysqli_real_escape_string($GLOBALS['db']['link'], $p)."'";
 	}
 	$q.= ");";
-	if(!mysql_query($q)) $errors[] = "Couldn't update user preferences";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update user preferences";
 	
 	if(!$errors) $results[] = "User updated";
 
@@ -149,8 +149,8 @@ if($in['rank'] > $usrrank){
 			<select name="in[rank]">
 				<?
 				$query = "SELECT * FROM `users_ranks` WHERE `rank` >= 1 ORDER BY `rank`";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					echo '<option value="'.$row['rank'].'"'.($row['rank'] == $in['rank'] ? ' selected="selected"' : '').($row['rank'] > $usrrank ? ' disabled="disabled"' : '').'>'.$row['description'].'</option>';
 				}
 				?>
@@ -163,11 +163,11 @@ if($in['rank'] > $usrrank){
 			<label><input type="checkbox" name="in[handle_lock]" value="1"<?=($in['handle_lock'] ? ' checked="checked"' : '')?>/> Lock handle</label>
 		</dd>
 		<?
-		$q = "SELECT * FROM users_prefs WHERE usrid = '".mysql_real_escape_string($_GET['userid'])."' LIMIT 1";
-		if(!$prefs = mysql_fetch_assoc(mysql_query($q))){
+		$q = "SELECT * FROM users_prefs WHERE usrid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['userid'])."' LIMIT 1";
+		if(!$prefs = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$query = "SHOW COLUMNS FROM users_prefs";
-			$res = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				if($row['Field'] == "usrid") continue;
 				$prefs[$row['Field']] = $row['Default'];
 			}

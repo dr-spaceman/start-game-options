@@ -17,9 +17,9 @@ if(!$to){ echo "No page specified"; $ed->footer(); exit; }
 <h3 style="margin-top:0;">Pages that link to <a href="<?=pageURL($to)?>"><?=$to?></a></h3>
 <?
 
-$query = "SELECT * FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysql_real_escape_string($to)."';";
-$res   = mysql_query($query);
-while($row = mysql_fetch_assoc($res)){
+$query = "SELECT * FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $to)."';";
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)){
 	if(!$row['title']) continue;
 	if($row['namespace'] == "Category") $links_ctg[] = $row;
 	else $links[] = $row;
@@ -53,10 +53,10 @@ if(!$links && !$links_ctg) {
 				if($link['is_redirect']) {
 					echo ' (redirection)';
 					//check for pages that link to the page that redirects here
-					$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysql_real_escape_string($link['title'])."';";
-					$res   = mysql_query($query);
+					$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['title'])."';";
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
 					$sublinks = array();
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						$sublinks[] = $row['title'];
 					}
 					if(count($sublinks)){

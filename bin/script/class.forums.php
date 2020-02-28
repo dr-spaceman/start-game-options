@@ -14,7 +14,7 @@ $page->javascripts[] = "/bin/script/forums.js";
 //get user prefs (like javascript switch)
 if($usrid) {
 	$q = "SELECT * FROM users_prefs WHERE usrid='$usrid' LIMIT 1";
-	$userprefs = mysql_fetch_object(mysql_query($q));
+	$userprefs = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 }
 
 class forum {
@@ -61,11 +61,11 @@ class forum {
 				$query = "SELECT * FROM forums_topics WHERE fid='".$forum->fid."'";
 				$link = "?fid=".$fid;
 			} elseif($this->location) {
-				$query = "SELECT * FROM forums_topics WHERE `location`='".mysql_real_escape_string($this->location)."'";
+				$query = "SELECT * FROM forums_topics WHERE `location`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->location)."'";
 				$link = "?location=".urlencode($this->location);
 			} elseif($this->tag) {
 				$this->tag = formatName($this->tag);
-				$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE `tag`='".mysql_real_escape_string($this->tag)."'";
+				$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE `tag`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->tag)."'";
 				$link = "?tag=".formatNameURL($this->tag);
 			} else {
 				echo "No forum id, forum location, or tag provided; Can't fetch forum details.";
@@ -73,14 +73,14 @@ class forum {
 			}
 			
 			$query.= "ORDER BY sticky DESC, last_post DESC LIMIT 0, $limit";
-			$res = mysql_query($query);
-			if(!mysql_num_rows($res)) {
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			if(!mysqli_num_rows($res)) {
 				?>There are no related topics yet. Be the first to <a href="/forums/<?=$link?>">post one</a>.<?
 			} else {
 				?>
 				<ul class="forum-topic-list">
 					<?
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						echo '<li><a href="/forums/?tid='.$row['tid'].'">'.stripslashes($row['title']).'</a></li>'."\n";
 					}
 					?>
@@ -110,17 +110,17 @@ class forum {
 		if($this->fid) {
 			
 			$fid = $this->fid;
-			$forum = mysql_fetch_object(mysql_query("SELECT * FROM `forums` where `fid` = '".mysql_real_escape_string($fid)."' LIMIT 1"));
+			$forum = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `forums` where `fid` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $fid)."' LIMIT 1"));
 			$query = "SELECT * FROM forums_topics WHERE fid='".$forum->fid."' ORDER BY sticky DESC, last_post DESC";
 		
 		} elseif($this->location) {
 			
 			$forum->invisible = 0;
 			$forum->closed = 0;
-			$query = "SELECT * FROM forums_topics WHERE `location`='".mysql_real_escape_string($this->location)."' ORDER BY sticky DESC, last_post DESC";
+			$query = "SELECT * FROM forums_topics WHERE `location`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->location)."' ORDER BY sticky DESC, last_post DESC";
 			
 			//get fid
-			$dat = mysql_fetch_object(mysql_query($query." LIMIT 1"));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query." LIMIT 1"));
 			$fid = $dat->fid;
 			
 			// assign some data to $forum
@@ -131,12 +131,12 @@ class forum {
 				$fid = 15;
 				$group_id = substr($this->location, 6);
 				$q = "SELECT * FROM groups WHERE `group_id` = '$group_id' LIMIT 1";
-				if(!$groupdat = mysql_fetch_object(mysql_query($q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
+				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
 				$forum->title = $groupdat->name;
 				$forum->description = $groupdat->about;
 				//user is a member?
 				$q = "SELECT * FROM groups_members WHERE group_id='$group_id' AND usrid='$usrid' LIMIT 1";
-				if(!mysql_num_rows(mysql_query($q))) $page->die_('<h1>Access Denied</h1>You must be a group member to access this group\'s forums. <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_('<h1>Access Denied</h1>You must be a group member to access this group\'s forums. <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
 			}
 			
 		} elseif($this->tag) {
@@ -150,16 +150,16 @@ class forum {
 			if(strstr($this->tag, "AlbumID:")){
 				//get album details
 				$albumid = substr($this->tag, 8);
-				$q = "SELECT `title`, `subtitle` FROM albums WHERE albumid='".mysql_real_escape_string($albumid)."' LIMIT 1";
-				if($album = mysql_fetch_object(mysql_query($q))) $forum->description = '<a href="/music?id='.$albumid.'">'.$album->title.($album->subtitle ? ' <i>'.$album->subtitle.'</i>' : '').'</a>';
+				$q = "SELECT `title`, `subtitle` FROM albums WHERE albumid='".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."' LIMIT 1";
+				if($album = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $forum->description = '<a href="/music?id='.$albumid.'">'.$album->title.($album->subtitle ? ' <i>'.$album->subtitle.'</i>' : '').'</a>';
 			} else{
 				//chech pages DB for details
-				$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($this->tag)."' LIMIT 1";
-				$pgdat = mysql_fetch_object(mysql_query($q));
+				$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->tag)."' LIMIT 1";
+				$pgdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				if($pgdat->description) $forum->description = $pgdat->description.' <b class="arrow-right">[['.$this->tag.'|MORE]]</b>';
 			}
 			
-			$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE `tag`='".mysql_real_escape_string($this->tag)."' ORDER BY sticky DESC, created DESC";
+			$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE `tag`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->tag)."' ORDER BY sticky DESC, created DESC";
 			
 		} else {
 			echo "No forum id, forum location, or tag provided; Can't fetch forum details.";
@@ -168,7 +168,7 @@ class forum {
 		
 		if($forum->cid){
 			$q = "SELECT * FROM forums_categories WHERE cid='$forum->cid' LIMIT 1";
-			$catg = mysql_fetch_object(mysql_query($q));
+			$catg = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		
 		//user has access?
@@ -201,7 +201,7 @@ class forum {
 				else $post_access = 'forum-form';
 				
 				//page navigation
-				$topic_num = mysql_num_rows(mysql_query($query));
+				$topic_num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 				if($topic_num > $this->topics_per_page) {
 					if(!$pg = $_GET['pg']) $pg = 1;
 					$pgs = ceil($topic_num / $this->topics_per_page);
@@ -233,8 +233,8 @@ class forum {
 							<?
 							if($this->location) {
 								if($usrid) {
-									$q = "SELECT * FROM forums_mail WHERE `usrid` = '$usrid' AND `location` = '".mysql_real_escape_string($this->location)."' LIMIT 1";
-									if(mysql_num_rows(mysql_query($q))) {
+									$q = "SELECT * FROM forums_mail WHERE `usrid` = '$usrid' AND `location` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->location)."' LIMIT 1";
+									if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 										$subscribed = TRUE;
 									}
 								}
@@ -244,7 +244,7 @@ class forum {
 							} elseif($fid) {
 								if($usrid) {
 									$q = "SELECT * FROM forums_mail WHERE `usrid` = '$usrid' AND `fid` = '$fid' LIMIT 1";
-									if(mysql_num_rows(mysql_query($q))) {
+									if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 										$subscribed = TRUE;
 									}
 								}
@@ -293,8 +293,8 @@ class forum {
 								<select name="fid">
 									<?
 									$query2 = "SELECT * FROM forums WHERE no_index != '1' AND invisible <= '$usrrank' ORDER BY cid, title";
-									$res2   = mysql_query($query2);
-									while($row2 = mysql_fetch_assoc($res2)) {
+									$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
+									while($row2 = mysqli_fetch_assoc($res2)) {
 										echo '<option value="'.$row2['fid'].'">'.$row2['title'].'</option>';
 									}
 									?>
@@ -387,8 +387,8 @@ class forum {
 						</tr>
 						<?
 						
-						$res = mysql_query($query);
-						while($row = mysql_fetch_assoc($res)) {
+						$res = mysqli_query($GLOBALS['db']['link'], $query);
+						while($row = mysqli_fetch_assoc($res)) {
 							
 							$print_closed = '';
 							if($usrrank < $row['closed'] || ($row['closed'] && $usrrank >= 5)) $print_closed = ' class="locked"';
@@ -481,7 +481,7 @@ class forum {
 			echo "Can't show forum topic; insufficient topic scope given (need `tid` or `unique_location`)";
 			return;
 		}
-		if(!$topic = mysql_fetch_object(mysql_query($query))) {
+		if(!$topic = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 			$this->newTopicForm();
 			return;
 		}
@@ -498,8 +498,8 @@ class forum {
 		$i = 0;
 		if($this->fpost) $andwhere = "AND (pid='$this->fpost' OR reply_to='$this->fpost')";
 		$query = "SELECT * FROM forums_posts WHERE tid='$tid' $andwhere ORDER BY posted";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row['reply_to']) {
 				$d_posts[$row['reply_to']]['replies'][$row['pid']] = $row;
 				$d_posts[$row['reply_to']]['replies'][$row['pid']]['n'] = $i++;
@@ -514,7 +514,7 @@ class forum {
 		$num_posts = $i;
 		$num_unread = count($posts_unread);
 		
-		$forum = mysql_fetch_object(mysql_query("SELECT * FROM forums WHERE fid = '".$topic->fid."' LIMIT 1"));
+		$forum = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums WHERE fid = '".$topic->fid."' LIMIT 1"));
 		
 		//additional stuff
 		if($topic->location){
@@ -522,16 +522,16 @@ class forum {
 				//group
 				$group_id = substr($topic->location, 6);
 				$q = "SELECT * FROM groups WHERE `group_id` = '$group_id' LIMIT 1";
-				if(!$groupdat = mysql_fetch_object(mysql_query($q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
+				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
 				$addltitle = ' / <a href="/forums/?location=group:'.$group_id.'">'.$groupdat->name.'</a>';
 				//user is a member?
 				$q = "SELECT * FROM groups_members WHERE group_id='$group_id' AND usrid='$usrid' LIMIT 1";
-				if(!mysql_num_rows(mysql_query($q))) $page->die_('<h1>Access Denied</h1>Sorry, you have to be a group member to access this group\'s forums.  <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_('<h1>Access Denied</h1>Sorry, you have to be a group member to access this group\'s forums.  <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
 			} elseif(substr($topic->location, 0, 5) == "post:"){
 				//sblog post
 				$nid = substr($topic->location, 5);
 				$q = "SELECT * FROM posts WHERE `nid` = '$nid' LIMIT 1";
-				$ndat = mysql_fetch_object(mysql_query($q));
+				$ndat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				$this->users[$ndat->usrid]['status'] = "author";
 			}
 		}
@@ -554,7 +554,7 @@ class forum {
 						<?
 						if($usrid) {
 							$q = "SELECT * FROM forums_mail WHERE `usrid` = '$usrid' AND `tid` = '$tid' LIMIT 1";
-							if(mysql_num_rows(mysql_query($q))) {
+							if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 								$subscribed = TRUE;
 							}
 						}
@@ -606,28 +606,28 @@ class forum {
 				
 				//poll
 				$q = "SELECT * FROM forums_polls WHERE tid='$tid' LIMIT 1";
-				if($poll = mysql_fetch_object(mysql_query($q))) {
+				if($poll = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 					
 					if($_POST['pollopt']) {
 						//record ballot
 						if(!$usrid && !$_SERVER['REMOTE_ADDR']) $errors[] = "Couldn't record your vote since you're not registered or have no IP address";
-						elseif(mysql_num_rows(mysql_query("SELECT * FROM forums_polls_votes WHERE tid='$tid' AND (".($usrid ? "usrid='$usrid' OR " : "")."ip_address = '".$_SERVER['REMOTE_ADDR']."') LIMIT 1"))) $voted = TRUE;
+						elseif(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_polls_votes WHERE tid='$tid' AND (".($usrid ? "usrid='$usrid' OR " : "")."ip_address = '".$_SERVER['REMOTE_ADDR']."') LIMIT 1"))) $voted = TRUE;
 						else {
 							$voted = $_POST['pollopt'];
 							$q = "INSERT INTO forums_polls_votes (tid, ip_address, usrid, answer) VALUES ";
 							foreach($voted as $vote) {
-								$q.= "('$tid', '".$_SERVER['REMOTE_ADDR']."', '$usrid', '".mysql_real_escape_string($vote)."'),";
+								$q.= "('$tid', '".$_SERVER['REMOTE_ADDR']."', '$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $vote)."'),";
 							}
-							if(!mysql_query(substr($q, 0, -1))) $errors[] = "Couldn't record your vote to the database";
+							if(!mysqli_query($GLOBALS['db']['link'], substr($q, 0, -1))) $errors[] = "Couldn't record your vote to the database";
 						}
 					}
 					
 					$query = "SELECT * FROM forums_polls_votes WHERE tid='$tid'";
-					$res   = mysql_query($query);
-					if($total_votes = mysql_num_rows($res)) {
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
+					if($total_votes = mysqli_num_rows($res)) {
 						$data   = array();
 						$voted  = array();
-						while($row = mysql_fetch_assoc($res)) {
+						while($row = mysqli_fetch_assoc($res)) {
 							$data[$row['answer']]++;
 							if($row['usrid'] == $usrid || $row['ip_address'] == $_SERVER['REMOTE_ADDR']) $voted[] = $row['answer'];
 						}
@@ -809,13 +809,13 @@ class forum {
 						<td width="100%" style="text-align:center; color:#BBB;">
 							<?
 							$query = "SELECT * FROM forums_topics WHERE last_post < '$topic->last_post' AND invisible <= '$usrrank' ORDER BY last_post DESC";
-							$res = mysql_query($query);
-							if(!mysql_num_rows($res)) echo '<span id="polder" class="arrow-left">older</span>';
-							while($row = mysql_fetch_assoc($res)) {
+							$res = mysqli_query($GLOBALS['db']['link'], $query);
+							if(!mysqli_num_rows($res)) echo '<span id="polder" class="arrow-left">older</span>';
+							while($row = mysqli_fetch_assoc($res)) {
 								if($row['location']) {
 									$handle = explode(":", $row['location']);
 									if($handle[0] == "group"){
-										if(!mysql_num_rows(mysql_query("SELECT * FROM groups_members WHERE usrid='$usrid' AND group_id='$handle[1]' LIMIT 1"))) continue;
+										if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM groups_members WHERE usrid='$usrid' AND group_id='$handle[1]' LIMIT 1"))) continue;
 									}
 								}
 								echo '<a href="'.$this->topicURL($row['tid']).'" title="'.htmlSC($row['title']).'" id="polder" class="arrow-left tooltip">older</a>';
@@ -824,13 +824,13 @@ class forum {
 							echo " &middot; ";
 							
 							$query = "SELECT * FROM forums_topics WHERE last_post > '$topic->last_post' AND invisible <= '$usrrank' ORDER BY last_post ASC";
-							$res = mysql_query($query);
-							if(!mysql_num_rows($res)) echo '<span class="arrow-right">newer</span>';
-							while($row = mysql_fetch_assoc($res)) {
+							$res = mysqli_query($GLOBALS['db']['link'], $query);
+							if(!mysqli_num_rows($res)) echo '<span class="arrow-right">newer</span>';
+							while($row = mysqli_fetch_assoc($res)) {
 								if($row['location']) {
 									$handle = explode(":", $row['location']);
 									if($handle[0] == "group"){
-										if(!mysql_num_rows(mysql_query("SELECT * FROM groups_members WHERE usrid='$usrid' AND group_id='$handle[1]' LIMIT 1"))) continue;
+										if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM groups_members WHERE usrid='$usrid' AND group_id='$handle[1]' LIMIT 1"))) continue;
 									}
 								}
 								echo '<a href="'.$this->topicURL($row['tid']).'" title="'.htmlSC($row['title']).'" class="arrow-right tooltip">newer</a>';
@@ -1013,7 +1013,7 @@ class forum {
 				$textinp = str_replace($matches[0], "", $textinp);
 				if($pid = $matches[1]){
 					$q = "SELECT * FROM forums_posts WHERE pid='$pid' LIMIT 1";
-					if($row2 = mysql_fetch_assoc(mysql_query($q))){
+					if($row2 = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 						$textinp.= '[quote]'.$row2['message'].'[/quote]';
 					}
 				}
@@ -1113,8 +1113,8 @@ class forum {
 	
 	function topicURL($tid, $row='') {
 		if(!$row){
-			$q = "SELECT * FROM forums_topics WHERE tid='".mysql_real_escape_string($tid)."' LIMIT 1";
-			$row = mysql_fetch_assoc(mysql_query($q));
+			$q = "SELECT * FROM forums_topics WHERE tid='".mysqli_real_escape_string($GLOBALS['db']['link'], $tid)."' LIMIT 1";
+			$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		if($loc = $row['location']){
 			if(strstr($loc, "post:")){
@@ -1131,7 +1131,7 @@ class forum {
 		if($user == $usrid || !$user) return $usrrank; //given value is logged-in user
 		else {
 			$query = "SELECT rank FROM users WHERE usrid='$user' LIMIT 1";
-			$dat = mysql_fetch_object(mysql_query($query));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
 			return $dat->rank;
 		}
 	}
@@ -1140,7 +1140,7 @@ class forum {
 		global $db, $usrlastlogin;
 		if($uid) {
 			$query = "SELECT previous_activity FROM users WHERE usrid='$user' LIMIT 1";
-			$dat = mysql_fetch_object(mysql_query($query));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
 			if($dat->previous_activity) return $dat->previous_activity;
 			else return date("Y-m-d H:i:s");
 		} else return ($usrlastlogin ? $usrlastlogin : date("Y-m-d H:i:s"));
@@ -1150,7 +1150,7 @@ class forum {
 		global $usrid;
 		if(!$user) $user = $usrid;
 		$query = "SELECT * FROM `forums_admins` WHERE `user` = '$user' AND `authority` != '' LIMIT 1"; // tru for mod or admin
-		if(mysql_num_rows(mysql_query($query))) return TRUE;
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) return TRUE;
 		else return FALSE;
 	}
 	
@@ -1158,7 +1158,7 @@ class forum {
 		global $usrid;
 		if(!$user) $user = $usrid;
 		$query = "SELECT * FROM `forums_admins` WHERE `user` = '$user' AND `authority` = 'admin' LIMIT 1";
-		if(mysql_num_rows(mysql_query($query))) return TRUE;
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) return TRUE;
 		else return FALSE;
 	}
 	
@@ -1166,23 +1166,23 @@ class forum {
 		global $usrrank;
 		if($fid) $query = "SELECT * FROM forums_topics WHERE fid='".$fid."' AND invisible <= '$usrrank'";
 		else $query = "SELECT * FROM `forums_topics` WHERE `location`='".$this->getThisLocation()."' AND `invisible` < '$uval'";
-		return mysql_num_rows(mysql_query($query));
+		return mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 	}
 	
 	function numberOfPosts($tid='', $pg='') {
 		if($tid) {
 			$query = "SELECT * FROM `forums_posts` WHERE `tid` = '$tid' AND `invisible` < ".$this->getUserValue();
-			$res = mysql_query($query);
-			return mysql_num_rows($res);
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			return mysqli_num_rows($res);
 		} elseif($this->associate_tag) {
 			$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag='".$this->associate_tag."' AND invisible < ".$this->getUserValue();
-			if($dat = mysql_fetch_object(mysql_query($query))) {
+			if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 				$q = "SELECT * FROM forums_posts WHERE `tid`='".$dat->tid."' AND `invisible` < ".$this->getUserValue();
-				return mysql_num_rows(mysql_query($q));
+				return mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 			}
 		} else {
 			$query = "SELECT posts FROM forums_topics WHERE `location` = '".$this->getThisLocation()."' LIMIT 1";
-			$dat = mysql_fetch_object(mysql_query($query));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
 			return $dat->posts;
 		}
 	}
@@ -1193,7 +1193,7 @@ class forum {
 		if(!$uval) $uval = $this->getUserValue();
 		if($this->associate_tag) {
 			$query = "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag='".$this->associate_tag."' AND last_post > '$usrlastlogin' AND invisible < '$uval' LIMIT 1";
-			if(mysql_num_rows(mysql_query($query))) {
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
 				return TRUE;
 			} else {
 				return FALSE;
@@ -1207,14 +1207,14 @@ class forum {
 		// for accurate post count, make a db query
 		global $db;
 		$query = "SELECT * FROM `forums_topics`".($topic_id ? " WHERE `tid` = '$topic_id'" : '');
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row['fid']) $fid = $row['fid'];
 			$t[$row[tid]] = 0;
 			$date[$row[tid]] = '0000-00-00 00:00:00';
 			$query2 = "SELECT * FROM `forums_posts` WHERE tid='$row[tid]' ORDER BY `posted` DESC";
-			$res2 = mysql_query($query2);
-			while($row2 = mysql_fetch_assoc($res2)) {
+			$res2 = mysqli_query($GLOBALS['db']['link'], $query2);
+			while($row2 = mysqli_fetch_assoc($res2)) {
 				$t[$row[tid]]++;
 				if($t[$row[tid]] == 1) {
 					$date[$row[tid]] = $row2[posted];
@@ -1224,7 +1224,7 @@ class forum {
 		}
 		foreach(array_keys($t) as $tid) {
 			$query = "UPDATE forums_topics SET `posts` = '$t[$tid]', `last_post` = '$date[$tid]', `last_post_usrid` = '$usrid[$tid]' WHERE `tid` = '$tid'";
-			if(!mysql_query($query)) echo "Error: couldn't update forum post count<br/>";
+			if(!mysqli_query($GLOBALS['db']['link'], $query)) echo "Error: couldn't update forum post count<br/>";
 		}
 		
 	}
@@ -1247,12 +1247,12 @@ class forum {
 				<option value="">forum index</option>
 				<option value="new">new posts</option>';
 		$q = "SELECT * FROM forums_categories ORDER BY `sort` ASC";
-		$res = mysql_query($q);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $q);
+		while($row = mysqli_fetch_assoc($res)) {
 			$navtree.= '</optgroup><optgroup label="'.$row[category].'">';
 			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$usrrank;
-			$res2 = mysql_query($q2);
-			while($row2 = mysql_fetch_assoc($res2)) {
+			$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
+			while($row2 = mysqli_fetch_assoc($res2)) {
 				$navtree.= '<option value="?fid='.$row2[fid].'">'.$row2[title]."</option>\n";
 			}
 		}
@@ -1261,8 +1261,8 @@ class forum {
 	}
 	
 	function getLastForumInfo($fid) {
-		$q = "SELECT last_post, last_post_usrid FROM forums_topics WHERE fid='".mysql_real_escape_string($fid)."' ORDER BY last_post DESC LIMIT 1";
-		return mysql_fetch_assoc(mysql_query($q));
+		$q = "SELECT last_post, last_post_usrid FROM forums_topics WHERE fid='".mysqli_real_escape_string($GLOBALS['db']['link'], $fid)."' ORDER BY last_post DESC LIMIT 1";
+		return mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	}
 	
 	function subscription($arr, $rm = TRUE) {
@@ -1272,20 +1272,20 @@ class forum {
 		global $usrid;
 		
 		if($fid = $arr['fid']){
-			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND fid='".mysql_real_escape_string($fid)."' LIMIT 1";
-			if(!mysql_num_rows(mysql_query($q))) $q2 = "INSERT INTO forums_mail (usrid, fid) VALUES ('$usrid', '".mysql_real_escape_string($fid)."');";
-			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND fid='".mysql_real_escape_string($fid)."' LIMIT 1;";
-			if($q2) { if(!mysql_query($q2)) return false; else return true; }
+			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND fid='".mysqli_real_escape_string($GLOBALS['db']['link'], $fid)."' LIMIT 1";
+			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $q2 = "INSERT INTO forums_mail (usrid, fid) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fid)."');";
+			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND fid='".mysqli_real_escape_string($GLOBALS['db']['link'], $fid)."' LIMIT 1;";
+			if($q2) { if(!mysqli_query($GLOBALS['db']['link'], $q2)) return false; else return true; }
 		} elseif($tid = $arr['tid']){
-			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND tid='".mysql_real_escape_string($tid)."' LIMIT 1";
-			if(!mysql_num_rows(mysql_query($q))) $q2 = "INSERT INTO forums_mail (usrid, tid) VALUES ('$usrid', '".mysql_real_escape_string($tid)."');";
-			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND tid='".mysql_real_escape_string($tid)."' LIMIT 1;";
-			if($q2){ if(!mysql_query($q2)) return false; else return true; }
+			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND tid='".mysqli_real_escape_string($GLOBALS['db']['link'], $tid)."' LIMIT 1";
+			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $q2 = "INSERT INTO forums_mail (usrid, tid) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $tid)."');";
+			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND tid='".mysqli_real_escape_string($GLOBALS['db']['link'], $tid)."' LIMIT 1;";
+			if($q2){ if(!mysqli_query($GLOBALS['db']['link'], $q2)) return false; else return true; }
 		} elseif($pid = $arr['pid']){
-			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND pid='".mysql_real_escape_string($pid)."' LIMIT 1";
-			if(!mysql_num_rows(mysql_query($q))) $q2 = "INSERT INTO forums_mail (usrid, pid) VALUES ('$usrid', '".mysql_real_escape_string($pid)."');";
-			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND pid='".mysql_real_escape_string($pid)."' LIMIT 1;";
-			if($q2){ if(!mysql_query($q2)) return false; else return true; }
+			$q = "SELECT * FROM forums_mail WHERE usrid='$usrid' AND pid='".mysqli_real_escape_string($GLOBALS['db']['link'], $pid)."' LIMIT 1";
+			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $q2 = "INSERT INTO forums_mail (usrid, pid) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pid)."');";
+			elseif($rm) $q2 = "DELETE FROM forums_mail WHERE usrid='$usrid' AND pid='".mysqli_real_escape_string($GLOBALS['db']['link'], $pid)."' LIMIT 1;";
+			if($q2){ if(!mysqli_query($GLOBALS['db']['link'], $q2)) return false; else return true; }
 		} else return false;
 		
 	}

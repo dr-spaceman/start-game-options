@@ -11,12 +11,12 @@ if($action == "output_form") {
 	<?
 	exit;
 	$q = "SELECT * FROM games WHERE gid='$gid' LIMIT 1";
-	$gdat = mysql_fetch_object(mysql_query($q));
+	$gdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	//check for existing
 	$query = "SELECT * FROM my_games WHERE gid='$gid' AND usrid='$usrid'";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res) && $_POST['bypass'] != '1') {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res) && $_POST['bypass'] != '1') {
 		
 		?>
 		<a href="javascript:void(0)" onclick="toggle('','add-game')" class="x">X</a>
@@ -25,15 +25,15 @@ if($action == "output_form") {
 		Choose a publication below to edit it, or <a href="javascript:void(0)" onclick="addGame('<?=$gid?>','1')">add another publication of this game</a>.
 		<ul>
 			<?
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				?><li><a href="javascript:void(0)" onclick="addGame('<?=$gid?>', '1', '<?=$row['id']?>')"><?
 				if($row['publication_id']) {
 					$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-					if($pdat = mysql_fetch_object(mysql_query($q))) echo $pdat->title."</a> (".$pdat->platform.")";
+					if($pdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) echo $pdat->title."</a> (".$pdat->platform.")";
 					else echo "???</a>";
 				} else {
 					$q = "SELECT platform FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-					$x = mysql_fetch_object(mysql_query($q));
+					$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					echo $row['title']."</a> (".$x->platform.")";
 				}
 				?></li><?
@@ -47,7 +47,7 @@ if($action == "output_form") {
 		$editid = $_POST['editid'];
 		if(is_numeric($editid)) {
 			$q = "SELECT * FROM my_games WHERE id='$editid' LIMIT 1";
-			if(!$dat = mysql_fetch_object(mysql_query($q))) {
+			if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				die("Error: Couldn't get data");
 			}
 		} else $editid = "";
@@ -85,14 +85,14 @@ if($action == "output_form") {
 						<?
 						if($dat && !$dat->publication_id) {
 							//editing an uploaded box
-							$thispf = mysql_fetch_object(mysql_query("SELECT platform FROM games_platforms WHERE platform_id = '$dat->platform_id' LIMIT 1"));
+							$thispf = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT platform FROM games_platforms WHERE platform_id = '$dat->platform_id' LIMIT 1"));
 							$pf_imgs[] = '<a href="javascript:void(0)" onclick="selectBoxCover(\'x\');" class="tooltip" title="<i>'.$dat->title.'</i> for '.$thispf->platform.' (your uploaded cover)"><img src="/bin/uploads/user_boxart/'.$dat->id.'_tn.png" id="box-x" class="on"/></a>'."\n";
 							echo '<input type="hidden" id="AGselpubid" value="x"/>';
 						}
 						$query = "SELECT * FROM games_publications pub LEFT JOIN games_platforms pf USING (platform_id) WHERE pub.gid='$gid' ORDER BY `primary` DESC";
-						$res   = mysql_query($query);
-						$pf_num = mysql_num_rows($res);
-						while($row = mysql_fetch_assoc($res)) {
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						$pf_num = mysqli_num_rows($res);
+						while($row = mysqli_fetch_assoc($res)) {
 							$img = "/games/files/".$gdat->gid."/".$gdat->gid."-box-".$row['id']."-tn.png";
 							if(file_exists($_SERVER['DOCUMENT_ROOT'].$img)) {
 								$p_img = $img;
@@ -194,8 +194,8 @@ if($action == "output_form") {
 								<option value="">Select a platform...</option>
 								<?
 								$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-								$res   = mysql_query($query);
-								while($row = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($row = mysqli_fetch_assoc($res)) {
 									echo '<option value="'.$row['platform_id'].'">'.$row['platform']."</option>\n";
 								}
 								?>
@@ -291,7 +291,7 @@ if($action == "submit_add_game") {
 	if($sid = $_POST['gcsessid']) {
 		//it's an upload
 		if(!$_POST['title']) {
-			$gdat = mysql_fetch_object(mysql_query("SELECT title FROM games WHERE gid='$gid' LIMIT 1"));
+			$gdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT title FROM games WHERE gid='$gid' LIMIT 1"));
 			$_POST['title'] = $gdat->title;
 		}
 	}
@@ -342,12 +342,12 @@ if($action == "submit_add_game") {
 				
 				//get # of current pubs and decide if this should be the primary pub
 				$q = "SELECT * FROM games_publications WHERE gid='$gid'";
-				if(!mysql_num_rows(mysql_query($q))) $primary = '1';
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $primary = '1';
 				else $primary = '0';
 				
 				$q = "INSERT INTO games_publications (gid, platform_id, title, region, `primary`) VALUES 
 				('$gid', '".$_POST['platform_id']."', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['region']."', '$primary')";
-				if(!mysql_query($q)) {
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 					sendBug("Error adding a user-submitted publication via + My Games\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
 				}
 				
@@ -373,11 +373,11 @@ if($action == "submit_add_game") {
 				
 				$q = "INSERT INTO pending (`table`, usrid, `datetime`) VALUES 
 				('pending_games_publications', '$usrid', '".date('Y-m-d H:i:s')."');";
-				if(!mysql_query($q)) sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
 				
 				$q = "INSERT INTO pending_games_publications (pend_id, gid, platform_id, title, region, `file`) VALUES 
-				('$pendid', '$gid', '".$_POST['platform_id']."', '".mysql_real_escape_string($_POST['title'])."', '".$_POST['region']."', '".$sid.".jpg')";
-				if(!mysql_query($q)) {
+				('$pendid', '$gid', '".$_POST['platform_id']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['title'])."', '".$_POST['region']."', '".$sid.".jpg')";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 					sendBug("Error adding a [temporary] user-submitted publication via + MY GAMES\n\ngid: $gid (http://videogam.in/games/link.php?id=$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
 					die("Error saving to database; ".mysql_error());
 				}
@@ -389,8 +389,8 @@ if($action == "submit_add_game") {
 		}
 		
 		$q = "INSERT INTO my_games (usrid, gid, publication_id, play, play_start, play_online, play_online_start, online_id, own, rating, added, title, platform_id, region) VALUES
-			('$usrid', '$gid', '$pid', '$play', $play_start, '$play_online', $play_online_start, '".mysql_real_escape_string($_POST['online_id'])."', '".$_POST['action-own']."', '".$_POST['game-rating']."', '$now', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['platform_id']."', '".$_POST['region']."');";
-		if(!mysql_query($q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
+			('$usrid', '$gid', '$pid', '$play', $play_start, '$play_online', $play_online_start, '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['online_id'])."', '".$_POST['action-own']."', '".$_POST['game-rating']."', '$now', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['platform_id']."', '".$_POST['region']."');";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
 		else die($next_id);
 		
 	} else {
@@ -398,7 +398,7 @@ if($action == "submit_add_game") {
 		$id = $_POST['dbaction'];
 		
 		$q = "SELECT * FROM my_games WHERE id='$id' LIMIT 1";
-		if(!$dat = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get DB data to update");
+		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get DB data to update");
 		
 		$now = date("Y-m-d H:i:s");
 		if($play = $_POST['action-play'] && !$dat->play) {
@@ -415,11 +415,11 @@ if($action == "submit_add_game") {
 			$play_start 
 			play_online = '$play_online', 
 			$play_online_start 
-			online_id = '".mysql_real_escape_string($_POST['online_id'])."', 
+			online_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['online_id'])."', 
 			own = '".$_POST['action-own']."', 
 			rating = '".$_POST['game-rating']."' 
 			WHERE id='$id' LIMIT 1";
-		if(!mysql_query($q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysql_error() : ''));
 		else die($q);die($id);
 		
 	}
@@ -433,7 +433,7 @@ if($action == "delete") {
 	if(!$id = $_POST['id']) die("Error: No ide given");
 	
 	$q = "DELETE FROM my_games WHERE id='$id' LIMIT 1";
-	if(!mysql_query($q)) die("Error: couldn't delete from database");
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't delete from database");
 	else echo "ok";
 	exit;
 
@@ -561,13 +561,13 @@ if($action == "show my games") {
 	break;
 	}
 	
-	$res   = mysql_query($query);
-	if(!mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!mysqli_num_rows($res)) {
 		echo '<div style="padding:15px">'.$dat->username.' hasn\'t put any of those games in '.$genderref[$dat->gender].' box yet.</div>';
 	} else {
 		
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			
 			if($i == 0) $rowstyle = "border-top-width:0;";
 			else $rowstyle = "";
@@ -590,13 +590,13 @@ if($action == "show my games") {
 			if($row['publication_id']) {
 				$img = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['publication_id']."-tn.png";
 				$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-				$x = mysql_fetch_object(mysql_query($q));
+				$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				$row['title'] = $x->title;
 				$row['platform'] = $x->platform;
 			} elseif($row['platform_id']) {
 				$img = "/bin/uploads/user_boxart/".$row['id']."_tn.png";
 				$q = "SELECT * FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-				$x = mysql_fetch_object(mysql_query($q));
+				$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				$row['platform'] = $x->platform;
 			} else {
 				$row['platform'] = "Unknown platform";
@@ -677,7 +677,7 @@ if($action == "find games") {
 	$max = 8;
 	$min = ($pg - 1) * $max;
 	$query = "SELECT gp.id, g.title_url, gp.gid, gp.title, gp.platform_id FROM games g, games_publications gp WHERE (g.title LIKE '%$q%' OR gp.title LIKE '%$q%') AND g.gid=gp.gid";
-	$num = mysql_num_rows(mysql_query($query));
+	$num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 	if(!$num) {
 		echo "No games found";
 	} else {
@@ -703,15 +703,15 @@ if($action == "find games") {
 				$pfs = getPlatforms();
 				
 				$query.= " LIMIT $min, $max";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					$defimg = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['id']."-tn.png";
 					if(file_exists($_SERVER['DOCUMENT_ROOT'].$defimg)) $img = $defimg;
 					else $img = "/bin/img/no_box.png";
 					
 					//in collection already?
 					$q = "SELECT * FROM my_games WHERE publication_id='".$row['id']."' LIMIT 1";
-					if(mysql_num_rows(mysql_query($q))) $has = TRUE;
+					if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $has = TRUE;
 					else $has = FALSE;
 					
 					?>
@@ -736,10 +736,10 @@ if($action == "add found game") {
 	if(!$pubid = $_POST['pubid']) exit;
 	if(!$gid = $_POST['gid']) exit;
 	$q = "INSERT INTO my_games (usrid, gid, publication_id, added) VALUES ('$usrid', '$gid', '$pubid', '".date("Y-m-d H:i:s")."');";
-	if(!mysql_query($q)) die(mysql_error());
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die(mysql_error());
 	else {
 		$q = "SELECT title_url, gp.title, platform FROM games_publications gp LEFT JOIN games USING (gid) LEFT JOIN games_platforms USING (platform_id) WHERE gp.id='$pubid' LIMIT 1";
-		$row = mysql_fetch_assoc(mysql_query($q));
+		$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		$defimg = "/games/files/".$gid."/".$gid."-box-".$pubid."-tn.png";
 		if(file_exists($_SERVER['DOCUMENT_ROOT'].$defimg)) $img = $defimg;
@@ -761,14 +761,14 @@ if($action == "edit my game form") {
 	
 	//$q = "SELECT pub.title, pub. FROM my_games mg LEFT JOIN games_publications pub ON (mg.publication_id=pub.id) LEFT JOIN games g USING (gid) LEFT JOIN games_platforms pf USING (platform_id) WHERE gp.id='".$_POST['id']."' LIMIT 1";
 	$q = "SELECT mg.*, g.title_url, g.online, pf.platform FROM my_games mg LEFT JOIN games g USING (gid) LEFT JOIN games_platforms pf USING (platform_id) WHERE mg.id='".$_POST['id']."' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		die("Error: Couldn't get data for  publication id ".$_POST['id']." ".mysql_error());
 	} else {
 		
 		if($dat->publication_id) {
 			$img = "/games/files/".$dat->gid."/".$dat->gid."-box-".$dat->publication_id."-tn.png";
 			$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$dat->publication_id."' LIMIT 1";
-			$x = mysql_fetch_object(mysql_query($q));
+			$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$dat->title = $x->title;
 			$dat->platform = $x->platform;
 		} elseif($dat->platform_id) {
@@ -831,8 +831,8 @@ if($action == "edit my game form") {
 			<?
 			$tags = array();
 			$query = "SELECT tag FROM my_games_tags WHERE my_games_id='$dat->id'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$tags[] = $row['tag'];
 			}
 			?>

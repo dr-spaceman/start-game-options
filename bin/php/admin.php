@@ -12,9 +12,9 @@ function makeUrlStr($str) {
 function adminAction($subj="", $note="") {
 	global $db, $usrid;
 	$q = sprintf("INSERT INTO admin_changelog (usrid, `subject`, `notes`, datetime) VALUES ('$usrid', '%s', '%s', NOW())",
-		mysql_real_escape_string($subj),
-		mysql_real_escape_string($note));
-	if(!mysql_query($q)) $errors[] = "Couldn't record to changelog";
+		mysqli_real_escape_string($GLOBALS['db']['link'], $subj),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $note));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record to changelog";
 }
 
 function deleteDirectory($dir, $backup=FALSE) {

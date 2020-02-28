@@ -11,7 +11,7 @@ function newsNav($query = "SELECT * FROM news WHERE unpublished != '1' ORDER BY 
 	$max = ($this->max ? $this->max : 20);
 	$pg = (ctype_digit($_GET['pg']) ? $_GET['pg'] : 1);
 	
-	if(!$newsnum = mysql_num_rows(mysql_query($query))) {
+	if(!$newsnum = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
 		echo "No news found.";
 	} else {
 		
@@ -43,13 +43,13 @@ function newsNav($query = "SELECT * FROM news WHERE unpublished != '1' ORDER BY 
 			<?
 			
 			$tags = array();
-			$res = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$rows[] = $row;
 				
 				$query2 = "SELECT tag FROM news_tags WHERE nid='".$row['nid']."'";
-				$res2   = mysql_query($query2);
-				while($row2 = mysql_fetch_assoc($res2)) {
+				$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
+				while($row2 = mysqli_fetch_assoc($res2)) {
 					$tags[$row2['tag']]++;
 				}
 			}
@@ -99,7 +99,7 @@ function newsList($rows) {
 				unset($sel); $sel = array();
 				if($usrid) {
 					$q = "SELECT * FROM news_ratings WHERE usrid='$usrid' AND nid='$row[nid]' LIMIT 1";
-					if($urdat = mysql_fetch_object(mysql_query($q))) $sel[$urdat->rating] = "rate-on";
+					if($urdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $sel[$urdat->rating] = "rate-on";
 				}
 				?>
 				<dt class="head-<?=$row['type']?>">
@@ -248,12 +248,12 @@ function item($n, $disp="item") { //$n is a row of db headings and values; $disp
 		if(is_numeric($dir)) {
 			$mid = $dir;
 			$q = "SELECT * FROM media WHERE media_id='$mid' LIMIT 1";
-			$mdat = mysql_fetch_object(mysql_query($q));
+			$mdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$dir = $mdat->directory;
 			//captions
 			$query = "SELECT * FROM media_captions WHERE media_id='$mid'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$capt[$row['file']] = htmlSC($row['caption']);
 			}
 		}
@@ -393,11 +393,11 @@ function extractTags($txt) {
 function convertTag($tag) {
 	
 	$x = formatName($tag);
-	$qg = "SELECT gid FROM games WHERE title='".mysql_real_escape_string($x[0])."' LIMIT 1";
-	$qp = "SELECT pid FROM people WHERE name='".mysql_real_escape_string($x[0])."' LIMIT 1";
-	if($gdat = mysql_fetch_object(mysql_query($qg))) {
+	$qg = "SELECT gid FROM games WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $x[0])."' LIMIT 1";
+	$qp = "SELECT pid FROM people WHERE name='".mysqli_real_escape_string($GLOBALS['db']['link'], $x[0])."' LIMIT 1";
+	if($gdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $qg))) {
 		$tag = "gid:".$gdat->gid;
-	} elseif($pdat = mysql_fetch_object(mysql_query($qp))) {
+	} elseif($pdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $qp))) {
 		$tag = "pid:".$pdat->pid;
 	}
 	return $tag;
@@ -407,7 +407,7 @@ function convertTag($tag) {
 function numComments($nid) {
 	
 	$q = "SELECT tid FROM forums_tags LEFT JOIN forums_posts USING(tid) WHERE tag='news:$nid'";
-	if(!$num = mysql_num_rows(mysql_query($q))) $num = '0';
+	if(!$num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $num = '0';
 	return $num;
 	
 }
@@ -417,7 +417,7 @@ function numComments($nid) {
 function getNewsRating($nid) {
 	
 	$q = "SELECT avg(`rating`) as `rating`, count(`rating`) as `num` FROM `news_ratings` WHERE nid='$nid'";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$raw = $dat->rating;
 	$num = $dat->num;
 	
@@ -445,14 +445,14 @@ if( isset($_POST['set_rating']) ) {
 	if($r != '0' && $r != '1' && $r != 'null') die("Error: invalid rating given");
 	
 	$q = "DELETE FROM news_ratings WHERE usrid='$usrid' AND nid='$nid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	if($r != "null") {
 		$q = sprintf("INSERT INTO news_ratings (nid, usrid, rating, ip_address) VALUES ('%s', '%s', '$r', '".$_SERVER['REMOTE_ADDR']."');", 
-			mysql_real_escape_string($nid),
-			mysql_real_escape_string($usrid)
+			mysqli_real_escape_string($GLOBALS['db']['link'], $nid),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $usrid)
 		);
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 	}
 	
 	die( implode("|", getNewsRating($nid)) );

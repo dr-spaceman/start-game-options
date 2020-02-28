@@ -6,7 +6,7 @@
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 
-$q = mysql_real_escape_string($_GET['q']);
+$q = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['q']);
 
 $a = new ajax();
 $results = array();
@@ -36,8 +36,8 @@ function buildIndexQuery($field, $parent=''){
 
 foreach($tables as $table => $query){
 	if(stristr($_GET['var'], $table)){
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$title_sort = strtolower($row['title_sort']);
 			$results[$title_sort][] = array("title" => $row['title']);
 		}
@@ -51,8 +51,8 @@ if(stristr($_GET['var'], "platforms")){
 	
 if(stristr($_GET['var'], "albums")){
 	$query = "SELECT title, subtitle, albumid FROM albums WHERE (`title` LIKE '%".$q."%' OR `keywords` LIKE '%".$q."%' OR cid='$q') AND `view`='1' LIMIT 100";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		$title_sort = formatName($row['title']." ".$row['subtitle'], "sortable");
 		$title_sort = strtolower($title_sort);
 		$results[$title_sort][] = array("title" => $row['title'].($row['subtitle'] ? ' - '.$row['subtitle'] : ''), "tag" => 'AlbumID:'.$row['albumid']);

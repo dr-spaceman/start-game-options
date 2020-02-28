@@ -3,11 +3,11 @@ require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
 
 $ret = array();
 
-$q = mysql_real_escape_string($_GET['q']);
+$q = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['q']);
 
 $query = "SELECT pgid, `title`, `type`, `subcategory` FROM pages WHERE `redirect_to` = '' AND (`title` LIKE '%".$q."%' OR `keywords` LIKE '%".$q."%') ORDER BY `title` LIMIT 50";
-$res = mysql_query($query);
-while($row = mysql_fetch_assoc($res)){
+$res = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)){
 	if($row['subcategory']) $row['type'] = $row['subcategory'];
 	$ret[] = $row;
 }
@@ -25,8 +25,8 @@ $tables = array(
 
 foreach($tables as $table => $query){
 	if(stristr($_GET['_var'], $table)){
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$ret[] = $row['title'];
 		}
 	}
@@ -34,8 +34,8 @@ foreach($tables as $table => $query){
 
 if(stristr($_GET['_var'], "platforms")){
 	$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game console' OR `to` = 'Game platform') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE '%".$q."%' OR `keywords` LIKE '%".$q."%') ORDER BY `title`";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if($row['title'] == "Game console") continue;
 		if($row['title'] == "Handheld game console") continue;
 		$ret[] = $row['title'];
@@ -43,10 +43,10 @@ if(stristr($_GET['_var'], "platforms")){
 }
 	
 if(stristr($_GET['_var'], "albums")){
-	$q = mysql_real_escape_string($_GET['q']);
+	$q = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['q']);
 	$query = "SELECT title, subtitle, albumid FROM albums WHERE (`title` LIKE '%".$q."%' OR `keywords` LIKE '%".$q."%' OR cid='$q') AND `view`='1' LIMIT 100";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		$ret[] = $row['title'].($row['subtitle'] ? ' - '.$row['subtitle'] : '').'|AlbumID:'.$row['albumid'];
 	}
 }

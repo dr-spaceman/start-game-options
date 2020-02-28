@@ -78,16 +78,16 @@ class pglinks {
 				);
 		}
 		
-		$q = "SELECT `type`, `title`, subcategory, redirect_to FROM pages WHERE `title` = '".mysql_real_escape_string($tag)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))){
+		$q = "SELECT `type`, `title`, subcategory, redirect_to FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
 			
 			//found pg
 			
 			if($dat->redirect_to) {
 				return $this->buildLink(array("href"=>$ppd.'/'.$pgtypes[$dat->type].'/'.formatNameURL($dat->title), "title"=>"This subject will redirect to a more appropriate page; Consider changing this link to the real destination page.", "class"=>"pglink redirect"), $title);
 				//redirected pg
-				/*$q = "SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($dat->redirect_to)."' LIMIT 1";
-				if(!$dat2 = mysql_fetch_object(mysql_query($q))) {
+				/*$q = "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $dat->redirect_to)."' LIMIT 1";
+				if(!$dat2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 					return '<a href="'.$ppd.'/pages/handle.php?title='.formatNameURL($dat->title).'" style="border-bottom:1px dotted #CA3535;" class="tooltip" title="This page is assigned to redirect, but the redirect info can\'t be found.">'.$link_text.'<sup>&dagger;</sup></a>';
 				}*/
 			}

@@ -6,7 +6,7 @@ require($_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
 $_badges = new badges;
 
-$user = mysql_real_escape_string($_GET['username']);
+$user = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['username']);
 
 $page->title = "Videogam.in Users / $user";
 $page->css[] = "/bin/css/account.css";
@@ -24,9 +24,9 @@ if(!$user) {
 	exit;
 }
 
-$query = "SELECT * FROM users LEFT JOIN users_details USING (usrid) WHERE username = '".mysql_real_escape_string($user)."' LIMIT 1";
-$res   = mysql_query ($query);
-if(!$dat = mysql_fetch_object($res)) {
+$query = "SELECT * FROM users LEFT JOIN users_details USING (usrid) WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $user)."' LIMIT 1";
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+if(!$dat = mysqli_fetch_object($res)) {
 	?>
 	<h2>User Profiles</h2>
 	User '<?=$user?>' not on file.<br/><br/>
@@ -45,8 +45,8 @@ if($dat->rank >= 7) $status = "staff";
 
 //prefs
 $query = "SELECT * FROM `users_prefs` WHERE `usrid` = '".$dat->usrid."' LIMIT 1";
-$res   = mysql_query ($query);
-$prefs = mysql_fetch_object($res);
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+$prefs = mysqli_fetch_object($res);
 
 $statuses = array("staff" => "Videogam.in Staff", "vip" => "Videogam.in V.I.P.");
 $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
@@ -173,13 +173,13 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 		//patron saint
 		//SELECT pages.`title`, SUM(score) FROM pages LEFT JOIN pages_edit USING (`title`) WHERE (contributors='1' OR contributors LIKE '1|%') AND pages.redirect_to='' GROUP BY `title` ORDER BY SUM(score) DESC LIMIT 0, 25
 		$query = "SELECT `title` FROM pages WHERE (contributors='$dat->usrid' OR contributors LIKE '$dat->usrid|%') AND redirect_to='' ORDER BY `title`";
-		$res   = mysql_query($query);
-		if(!$num_ps = mysql_num_rows($res)){
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$num_ps = mysqli_num_rows($res)){
 			echo '<h5>'.$dat->username.' is not yet the Patron Saint of anything <span class="frowney"></span></h5>';
 		} else {
 			echo '<h5>Patron Saint of <b style="color:black">'.$num_ps.'</b> pages</h5><ul>';
 			$i = 0;
-			while($row = mysql_fetch_assoc($res)){
+			while($row = mysqli_fetch_assoc($res)){
 				$i++;
 				if($i == 20) echo '<li style="background:none;" onclick="$(this).hide().siblings().show();"><b><a href="#moreps" class="preventdefault arrow-toggle arrow-toggle-on" style="padding:0 10px 0 0; background-position:right center;">Show more</a></b></li>';
 				echo '<li style="'.($i >= 20 ? 'display:none;' : '').'"><a href="/pages/handle.php?title='.formatNameURL($row['title']).'">'.$row['title'].'</a></li>';
@@ -202,16 +202,16 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 			$posts = new posts();
 			
 			$query = "SELECT * FROM posts WHERE unpublished != '1' AND pending != '1' AND usrid = '$dat->usrid' ORDER BY datetime DESC LIMIT 5";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) $rows[] = $row;
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) $rows[] = $row;
 			$posts->shortlist($rows);
 			echo '<div class="more"><b><a href="/posts/?username='.$dat->username.'" class="arrow-right">See all '.$score['vars']['num_sblogposts'].' News & Blog posts by '.$dat->username.'</a></b></div>';
 			
 			//reviews
 			echo '<h3>Reviews</h3>';
 			$query = "SELECT * FROM posts WHERE unpublished != '1' AND pending != '1' AND usrid = '$dat->usrid' and type2 = 'review' ORDER BY datetime DESC";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) $reviews[] = $row;
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) $reviews[] = $row;
 			if(!$reviews) echo '<span class="none">No reviews yet.</span>';
 			else $posts->shortlist($reviews);
 			
@@ -219,11 +219,11 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 		
 		// ALBUMS
 		$query = "SELECT DISTINCT(albumid), `title`, subtitle FROM albums_collection LEFT JOIN albums USING (albumid) WHERE usrid='$dat->usrid' and `view`='1' ORDER BY datetime DESC";
-		$res   = mysql_query($query);
-		if(mysql_num_rows($res)){
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)){
 			echo '<h3>Music Collection</h3><ul class="albumcoll">';
 			$i = 0;
-			while($row = mysql_fetch_assoc($res)){
+			while($row = mysqli_fetch_assoc($res)){
 				$img = "/music/media/cover/standard/".$row['albumid'].".png";
 				$i++;
 				if($i == 8) echo '<li class="more"><a href="#morealbums" class="preventdefault" onclick="$(this).parent().hide().siblings().show();"><span>Show All Albums</span></a></li>';
@@ -238,7 +238,7 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 		
 		// Uploads
 		$query = "SELECT img_name FROM images_tags LEFT JOIN images USING (img_id) WHERE (`tag` = 'User:$user' OR `tag` LIKE 'User:$user|%')";
-		if($num_imgs = mysql_num_rows(mysql_query($query))){
+		if($num_imgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
 			?>
 			<h3>
 				<span style="float:right; font-size:13px;"><a href="/image/-/tag/User:<?=$user?>">See all <?=$num_imgs?> uploads</a></span>
@@ -246,8 +246,8 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 			</h3>
 			<?
 			$query.= " ORDER BY RAND() LIMIT 5";
-			$res = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$img = new img($row['img_name']);
 				echo '<a href="'.$img->src['url'].'"><img src="'.$img->src['tn'].'" width="100" height="100" alt="'.htmlSC($img->img_title).'" border="0"/></a> ';
 			}
@@ -263,8 +263,8 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 		
 		<?
 		$query = "SELECT my.*, g.title_url FROM my_games my LEFT JOIN games g USING (gid) WHERE usrid='$dat->usrid' ORDER BY `title`";
-		$res   = mysql_query($query);
-		if(!$colnum = mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$colnum = mysqli_num_rows($res)) {
 			echo '<div id="gamebox-space"><div style="padding:15px">'.$dat->username.' hasn\'t put any games in '.$genderref[$dat->gender].' box yet.</div></div><div id="gamebox-default"></div>';
 		} else {
 			?>
@@ -273,18 +273,18 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 				<a href="#" id="prev">&laquo;</a>
 				<div id="mask"><div id="scroll">
 						<?
-						while($row = mysql_fetch_assoc($res)) {
+						while($row = mysqli_fetch_assoc($res)) {
 							
 							if($row['publication_id']) {
 								$img = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['publication_id']."-sm.png";
 								$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['title'] = $x->title;
 								$row['platform'] = $x->platform;
 							} elseif($row['platform_id']) {
 								$img = "/bin/uploads/user_boxart/".$row['id']."_sm.png";
 								$q = "SELECT * FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['platform'] = $x->platform;
 							} else {
 								$row['platform'] = "Unknown platform";
@@ -361,8 +361,8 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 		
 		<?
 		$query = "SELECT my.*, g.title_url FROM my_games my LEFT JOIN games g USING (gid) WHERE usrid='$dat->usrid' ORDER BY added DESC LIMIT 5";
-		$res   = mysql_query($query);
-		if(!$colnum = mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$colnum = mysqli_num_rows($res)) {
 			echo '<div id="gamebox-space"><div style="padding:15px">'.$dat->username.' hasn\'t put any games in '.$genderref[$dat->gender].' box yet.</div></div><div id="gamebox-default"></div>';
 		} else {
 			?>
@@ -371,18 +371,18 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 				<table border="0" cellpadding="0" cellspacing="0" width="100%">
 					<tr>
 						<?
-						while($row = mysql_fetch_assoc($res)) {
+						while($row = mysqli_fetch_assoc($res)) {
 							
 							if($row['publication_id']) {
 								$img = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['publication_id']."-sm.png";
 								$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['title'] = $x->title;
 								$row['platform'] = $x->platform;
 							} elseif($row['platform_id']) {
 								$img = "/bin/uploads/user_boxart/".$row['id']."_sm.png";
 								$q = "SELECT * FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['platform'] = $x->platform;
 							} else {
 								$row['platform'] = "Unknown platform";
@@ -451,10 +451,10 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 	
 	// site reviews
 	$Query = "SELECT r.indx, r.id, r.author, r.grade, r.date, u.user, r.title, g.id, g.platform from StaffReview as r, Users as u, Games as g where u.user = '$user' and r.author = '$user' and r.id = g.id order by date DESC";
-	$Result = mysql_query ($Query);
-	if (mysql_num_rows($Result)) {
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	if (mysqli_num_rows($Result)) {
 		$site_reviews = true;
-		while ($row = mysql_fetch_assoc($Result)) {
+		while ($row = mysqli_fetch_assoc($Result)) {
 			$i++;
 			$rem = ($i % 2);
 			$bgc = "";
@@ -473,10 +473,10 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 				'declined' => 'red');
 
 	$Query = "SELECT * from `ReaderReview` where `user` = '$user' AND `published` = '1'";
-	$Result = mysql_query ($Query);
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
 
-	if (mysql_num_rows($Result)) {
-		while ($row = mysql_fetch_assoc($Result)) {
+	if (mysqli_num_rows($Result)) {
+		while ($row = mysqli_fetch_assoc($Result)) {
 			$i++;
 			$rem = ($i % 2);
 			$bgc = "";
@@ -494,18 +494,18 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 	
 	//forum
 	$q = "SELECT * FROM `forums_posts`";
-	$posts_all = mysql_num_rows(mysql_query($q));
+	$posts_all = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 	$q = "SELECT * FROM `forums_posts` WHERE `usrid` = '$dat->usrid'";
-	if(!$posts_user = mysql_num_rows(mysql_query($q))) $posts_user = '0';
+	if(!$posts_user = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $posts_user = '0';
 	$forums = "<tr><td><big>$posts_user</big> forum posts (<big>".round(($posts_user/$posts_all)*100, 2)." %</big> of all posts)</td></tr>";
 	
 	//games coll
 	$query = "SELECT action, title, title_url, platform_shorthand 
 		FROM games_collection LEFT JOIN games USING (gid) LEFT JOIN games_platforms USING (platform_id) 
 		WHERE usrid = '".$dat->usrid."' ORDER BY title";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
-		while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$gcoll[$row['action']][] = $row;
 		}
 	}
@@ -514,9 +514,9 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 	$query = "SELECT action, albumid, title, subtitle 
 		FROM albums_collection LEFT JOIN albums USING (albumid) 
 		WHERE usrid = '".$dat->usrid."' ORDER BY title";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
-		while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$acoll[$row['action']][] = $row;
 		}
 	}

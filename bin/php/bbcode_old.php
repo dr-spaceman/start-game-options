@@ -264,19 +264,19 @@ function sh2vi($x) {
 }
 function sh2viLink($pf, $sh_gid, $extra) {
 	$q = "SELECT title_url, gid FROM games WHERE sh_id = '$sh_gid' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	if(!$dat || $extra) return "/games/sh/$pf/$sh_gid/$extra";
 	else return "/games/".$dat->gid."/".$dat->title_url;
 }
 function sh2viCont($what, $cont) {
 	if($what == "G"){
-		$q = "SELECT gid FROM games WHERE title = '".mysql_real_escape_string($cont)."' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$q = "SELECT gid FROM games WHERE title = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont)."' LIMIT 1";
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($dat) $ret = "[gid=$dat->gid/]";
 		else $ret = "[game]".$cont."[/game]";
 	} elseif($what == "P"){
 		$q = "SELECT pid FROM people WHERE name = '$cont' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) $ret = "[pid=$dat->pid/]";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $ret = "[pid=$dat->pid/]";
 		else $ret = "[person]".$cont."[/person]";
 	}
 	return $ret;
@@ -314,11 +314,11 @@ function codedBB($text) {
 function BBencode($what, $desc) {
 	$ret = "[".$what."]".$desc."[/".$what."]";
 	if($what == "game") {
-		$q = "SELECT gid FROM games WHERE title='".mysql_real_escape_string($desc)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) $ret = "[gid=".$dat->gid."/]";
+		$q = "SELECT gid FROM games WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $ret = "[gid=".$dat->gid."/]";
 	} elseif($what == "person") {
-		$q = "SELECT pid FROM people WHERE name='".mysql_real_escape_string($desc)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) $ret = "[pid=".$dat->pid."/]";
+		$q = "SELECT pid FROM people WHERE name='".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $ret = "[pid=".$dat->pid."/]";
 	}
 	return $ret;
 }
@@ -330,18 +330,18 @@ function evaluateLink($a, $b, $ppd=false) {
 function evaluateTag($type, $id='', $link_text='', $prepend_domain=false, $bbcode=false) {
 	
 	if(!$id) $id = $link_text;
-	$id = mysql_real_escape_string($id);
+	$id = mysqli_real_escape_string($GLOBALS['db']['link'], $id);
 	
 	if($type == "game-id") {
-		$res = mysql_query("SELECT title_url, title FROM games WHERE `gid` = '$id' LIMIT 1");
-		if($row = @mysql_fetch_object($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], "SELECT title_url, title FROM games WHERE `gid` = '$id' LIMIT 1");
+		if($row = @mysqli_fetch_object($res)) {
 			if($bbcode) return '[game]'.$row->title.'[/game]';
 			else return '<a href="'.($prepend_domain ? "http://videogam.in" : "") . '/games/'.$id.'/'.$row->title_url.'" title="'.htmlSC($row->title).' overview" class="game-link">'.$row->title.'</a>';
 		}
 	} elseif($type == "game") {
 		$query = "SELECT gid, title, title_url FROM games WHERE title='".htmlSC($id)."' LIMIT 1";
-		$res = mysql_query($query);
-		if($row = @mysql_fetch_object($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if($row = @mysqli_fetch_object($res)) {
 			$ret = '<a href="' . ($prepend_domain ? "http://videogam.in" : "") . '/games/'.$row->gid.'/'.$row->title_url.'" title="'.htmlSC($row->title).' overview" class="game-link">'.($link_text ? $link_text : $id).'</a>';
 		} else {
 			$ret = '<a href="/games/add.php?title='.$id.'" title="Add this game to the database" rel="nofollow" class="nocoverage">'.($link_text ? $link_text : $id).'</a>';
@@ -349,12 +349,12 @@ function evaluateTag($type, $id='', $link_text='', $prepend_domain=false, $bbcod
 		return stripslashes($ret);
 	} elseif($type == "person") {
 		$q = "SELECT pid, name_url FROM people WHERE name='$id' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			return '<a href="' . ($prepend_domain ? "http://videogam.in" : "") . '/people/'.$dat->pid.'/'.$dat->name_url.'" title="'.$id.' profile, biography, credits" class="person-link">'.($link_text ? $link_text : $id).'</a>';
 		} else return $id;
 	} elseif($type == "person-id") {
 		$q = "SELECT pid, name, name_url FROM people WHERE pid='$id' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			if($bbcode) return '[person]'.$dat->name.'[/person]';
 			else return '<a href="' . ($prepend_domain ? "http://videogam.in" : "") . '/people/'.$dat->pid.'/'.$dat->name_url.'" title="'.htmlSC($dat->name).' biography, credits, news" class="person-link">'.$dat->name.'</a>';
 		} else return $id;
@@ -377,8 +377,8 @@ function evaluatePageLink($pg, $ppd=false) {
 	}
 	list($pg, $err) = formatName($pg);
 	
-	$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($pg)."' LIMIT 1";
-	if($dat = mysql_fetch_object(mysql_query($q))) {
+	$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg)."' LIMIT 1";
+	if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		
 		if(!$link_text) $link_text = $dat->title;
 		
@@ -390,8 +390,8 @@ function evaluatePageLink($pg, $ppd=false) {
 		
 		if($dat->redirect_to) {
 			//redirected pg
-			$q = "SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($dat->redirect_to)."' LIMIT 1";
-			if(!$dat2 = mysql_fetch_object(mysql_query($q))) {
+			$q = "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $dat->redirect_to)."' LIMIT 1";
+			if(!$dat2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				return '<a href="'.$ppd.'/pages/handle.php?title='.formatNameURL($dat->title).'" style="border-bottom:1px dotted #CA3535;" class="tooltip" title="This page is assigned to redirect, but the redirect info can\'t be found.">'.$link_text.'<sup>&dagger;</sup></a>';
 			} //else $dat = $dat2;
 		}

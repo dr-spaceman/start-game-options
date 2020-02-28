@@ -36,8 +36,8 @@ $page->header();
 
 <div id="desc">
 <?
-$q = "SELECT text FROM wiki WHERE `field`='description' AND subject_field='association' AND subject_id='".mysql_real_escape_string($assoc)."' ORDER BY `datetime` DESC LIMIT 1";
-if($dat = mysql_fetch_object(mysql_query($q))) {
+$q = "SELECT text FROM wiki WHERE `field`='description' AND subject_field='association' AND subject_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $assoc)."' ORDER BY `datetime` DESC LIMIT 1";
+if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 	$dat->text = bb2html($dat->text);
 	$dat->text = reformatLinks($dat->text);
 	$dat->text = nl2br($dat->text);
@@ -64,10 +64,10 @@ if($dat = mysql_fetch_object(mysql_query($q))) {
 	<h3>People</h3>
 	<?
 	$query = "SELECT pid, name, name_url, title, prolific FROM people WHERE assoc_co LIKE '%$assoc%' OR assoc_other LIKE '%$assoc%' ORDER BY `name`";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		?><ul><?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<li><span>'.$row['title'].'</span><a href="/people/~'.$row['name_url'].'"'.($row['prolific'] ? ' style="font-weight:bold"' : '').'>'.$row['name'].'</a></li>';
 		}
 		?></ul><?
@@ -86,10 +86,10 @@ if($dat = mysql_fetch_object(mysql_query($q))) {
 		WHERE games_developers.developer LIKE '%$assoc%' 
 		".($usrrank <= 6 ? "AND unpublished != '1'" : "")."
 		ORDER BY games.title";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		?><ul><?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<li><span>'.$row['platform'].'</span><a href="/games/~'.$row['title_url'].'"'.($row['unpublished'] ? ' style="text-decoration:line-through;"' : '').'>'.$row['title'].'</a></li>';
 		}
 		?></ul><?

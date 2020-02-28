@@ -1,29 +1,15 @@
 <?
-/*$db = array(
-	"host" => "localhost",
-	"user" => "root",
-	"pass" => "",
-	"main" => "nintendo",
-	"guides" => "nintendo_guides");*/
 
-$db = array(
-	"host" => "localhost.amazingpants.com",
-	"user" => "nintendo_default",
-	"pass" => "nin909",
-	"main" => "nintendo",
-	"guides" => "nintendo_guides");
+$db = array();
 
-$db2 = array( // Square Haven DB
-	'host' => 'localhost',
-	'user' => 'root',
-	'pass' => '',
-	'name' => 'sqhav_main');
+$config = parse_ini_file('/home/ninsiteuser/config-db.ini');
 
-$db['link'] = mysqli_connect($db['host'], $db['user'], $db['pass'], $db['main']);
+$db['link'] = mysqli_connect("localhost.amazingpants.com", $config['username'], $config['password'], $config['dbname_main']);
 if (mysqli_connect_errno()) {
 	die("Failed to connect to database: " . mysqli_connect_error());
 }
 mysqli_query($db['link'], "SET character_set_client=utf8");
 mysqli_query($db['link'], "SET character_set_connection=utf8");
 mysqli_query($db['link'], "SET character_set_results=utf8");
+
 ?>

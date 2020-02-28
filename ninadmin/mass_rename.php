@@ -21,9 +21,9 @@ do if ($_POST){
 	$newtitle = formatName($_POST['newtitle']);
 	if($newtitle == "") break;
 	
-	$query = "SELECT title, pgid FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysql_real_escape_string($title)."'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$query = "SELECT title, pgid FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		
 		if($row['title'] == "") continue;
 		
@@ -36,8 +36,8 @@ do if ($_POST){
 		$str = preg_replace('@\[\[(.*?)\]\]@ise', "replaceLink('\\1')", $str);
 		if(!@file_put_contents($file, $str)) continue;
 		
-		$q = "UPDATE pages_links SET `to` = '".mysql_real_escape_string($newtitle)."' WHERE from_pgid = '$pgid' AND `to` = '".mysql_real_escape_string($title)."'";
-		if(!mysql_query($q)) continue;
+		$q = "UPDATE pages_links SET `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $newtitle)."' WHERE from_pgid = '$pgid' AND `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."'";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) continue;
 		
 		$resl.= '<dd><b>Success</b></dd>';
 		

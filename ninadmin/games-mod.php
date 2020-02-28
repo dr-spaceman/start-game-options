@@ -25,8 +25,8 @@ $in = $_POST['in'];
 
 // get general gamedata from db
 $q = "SELECT * FROM games WHERE games.gid='$id' LIMIT 1";
-$res = mysql_query($q);
-while($row = mysql_fetch_assoc($res)) {
+$res = mysqli_query($GLOBALS['db']['link'], $q);
+while($row = mysqli_fetch_assoc($res)) {
 	$gdat = $row;
 }
 
@@ -65,7 +65,7 @@ if($do == "delete_entry" && $id) {
 		"games" => "");
 	while(list($table, $x) = each($tables)) {
 		$q = "DELETE FROM `$table` WHERE ".($x ? $x : "gid='$id'");
-		if(!mysql_query($q)) $errors[] = "Couldn't delete from `$table` table; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from `$table` table; ".mysql_error();
 		else $results[] = "Delete from `$table`; $q";
 	}
 	
@@ -95,8 +95,8 @@ if(!$id) {
 				LEFT JOIN games_publications ON (games_publications.gid=games.gid AND games_publications.`primary`='1') 
 				LEFT JOIN games_platforms ON (games_publications.platform_id=games_platforms.platform_id) ORDER BY $orderby";
 			if($orderby == "games_platforms.platform") $query.= ", games.title";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				if($orderby == "games_platforms.platform") {
 					$i = 0;
 					if($curr != $row['platform']) {
@@ -189,12 +189,12 @@ if($what == "main") {
 				$in['title_url'] = makeUrlStr($in['title_url']);
 				//exists?
 				$q = "SELECT * FROM games WHERE title_url='".$in['title_url']."' AND gid != '$id' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) {
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 					$warnings[] = "The title URL you input already exists; Changed to previously used one";
 					$in['title_url'] = $gdat['title_url'];
 				} else {
 					$query = "INSERT INTO games_old_title_urls (gid, old_title_url, new_title_url) VALUES ('$id', '$gdat[title_url]', '$in[title_url]')";
-					if(!mysql_query($query)) {
+					if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 						$errors[] = "Title URL not changed; Couldn't update db to make title URL mirror: ".mysql_error();
 						$in['title_url'] = $gdat['title_url'];
 					}
@@ -206,7 +206,7 @@ if($what == "main") {
 		
 		if(!$errors) {
 			$query = "UPDATE games SET
-				`title` = '".mysql_real_escape_string($in['title'])."',
+				`title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."',
 				`title_url` = '$in[title_url]',
 				`classic` = '".$in['classic']."',
 				`vapid` = '".$in['vapid']."',
@@ -215,7 +215,7 @@ if($what == "main") {
 				`unpublished` = '$in[unpublished]',
 				`modified` = '$datetime'
 				WHERE `gid`='$id' LIMIT 1";
-			if(!mysql_query($query)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 				$errors[] = "Couldn't update db: ".mysql_error();
 			} else $results[] = "Database succesfully updated";
 			
@@ -276,8 +276,8 @@ if($what == "main") {
 							<option value="">Select a user...</option>
 							<?
 							$query = "SELECT usrid, username FROM users ORDER BY username";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="usrid:'.$row['usrid'].'">'.$row['username'].'</option>'."\n";
 							}
 							?>
@@ -335,7 +335,7 @@ if($what == "controls") {
 				`no_playing_online` = '$in[no_playing_online]' 
 				WHERE gid='$id' LIMIT 1";
 		}
-		if(!mysql_query($q)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Couldn't update db";
 		} else {
 			$results[] = "Controls updated";
@@ -346,7 +346,7 @@ if($what == "controls") {
 	echo $mod_header;
 	
 	$q = "SELECT * FROM games_controls WHERE gid='$id' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		$insert = 1;
 	}
 	
@@ -408,7 +408,7 @@ if($what == "publications") {
 		
 		//get # of current pubs and decide if this should be the primary pub
 		$q = "SELECT * FROM games_publications WHERE gid='$id'";
-		if(!mysql_num_rows(mysql_query($q))) {
+		if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$primary = '1';
 		} else {
 			$primary = '0';
@@ -416,13 +416,13 @@ if($what == "publications") {
 		}
 		
 		//get next id
-		$query = mysql_query("SHOW TABLE STATUS LIKE 'games_publications'");
-		$row = mysql_fetch_array($query);
+		$query = mysqli_query($GLOBALS['db']['link'], "SHOW TABLE STATUS LIKE 'games_publications'");
+		$row = mysqli_fetch_assoc($query);
 		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysql_error());
 		
 		$query = "INSERT INTO games_publications (gid,platform_id,title,region,release_date,`primary`,placeholder_img) VALUES 
-			('$id', '".$in['platform_id']."', '".mysql_real_escape_string($in['title'])."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary', '".$in['placeholder_img']."')";
-		if(!mysql_query($query)) {
+			('$id', '".$in['platform_id']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary', '".$in['placeholder_img']."')";
+		if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 			$errors[] = "Couldn't add publication to db: ".mysql_error();
 		} else {
 			$results[] = "Publication successfully added";
@@ -493,13 +493,13 @@ if($what == "publications") {
 			$in['title'] = htmlent($in['title']);
 			
 			$query = "UPDATE games_publications SET 
-				title='".mysql_real_escape_string($in['title'])."',
+				title='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."',
 				region='".$in['region']."',
 				release_date='".$in['release_date']."',
 				platform_id='".$in['platform_id']."',
 				placeholder_img='".$in['placeholder_img']."'
 				WHERE id='$pubid' LIMIT 1";
-			if(!mysql_query($query)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 				$errors[] = "Couldn't update publication: ".mysql_error();
 			} else {
 				$results[] = "Publication successfully edited";
@@ -568,8 +568,8 @@ if($what == "publications") {
 			
 		} else {
 			
-			$q = sprintf("SELECT * FROM games_publications WHERE id='%s' LIMIT 1", mysql_real_escape_string($_GET['edit']));
-			if(!$dat = mysql_fetch_object(mysql_query($q))) {
+			$q = sprintf("SELECT * FROM games_publications WHERE id='%s' LIMIT 1", mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['edit']));
+			if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				die("Couldn't get data for publication id#".$_GET['edit'].": ".mysql_error());
 			}
 			
@@ -595,8 +595,8 @@ if($what == "publications") {
 								<select name="in[platform_id]">
 									<?
 									$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-									$res   = mysql_query($query);
-									while($row = mysql_fetch_assoc($res)) {
+									$res   = mysqli_query($GLOBALS['db']['link'], $query);
+									while($row = mysqli_fetch_assoc($res)) {
 										echo '<option value="'.$row['platform_id'].'"'.($row['platform_id'] == $dat->platform_id ? ' selected="selected"' : '').'>'.$row['platform']."</option>\n";
 									}
 									?>
@@ -659,7 +659,7 @@ if($what == "publications") {
 		// DELETE //
 		
 		$query = "DELETE FROM games_publications WHERE id=".$_GET['delete']." LIMIT 1";
-		if(!mysql_query($query)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 			$errors[] = "Couldn't delete: ".mysql_error();
 		} else {
 			$results[] = "Publication deleted";
@@ -680,9 +680,9 @@ if($what == "publications") {
 		//SET PRIMARY//
 		
 		$query = "UPDATE games_publications SET `primary`='0' WHERE gid='$id'";
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$query2 = "UPDATE games_publications SET `primary`='1' WHERE id='$pr' LIMIT 1";
-			if(!mysql_query($query2)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $query2)) {
 				$errors[] = "Couldn't set primary: ".mysql_error();
 			} else {
 				$results[] = "Primary set";
@@ -692,14 +692,14 @@ if($what == "publications") {
 	
 	//get current pubs
 	$query = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE gid='$id' ORDER BY `primary` DESC";
-	$pub_res = mysql_query($query);
-	$pub_num = @mysql_num_rows($pub_res);
+	$pub_res = mysqli_query($GLOBALS['db']['link'], $query);
+	$pub_num = @mysqli_num_rows($pub_res);
 	
 	//is there a primary publication?
 	if($pub_num) {
 		$query = "SELECT * FROM games_publications WHERE gid='$id' AND `primary`='1'";
-		$res   = mysql_query($query);
-		if(!mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) {
 			$warnings[] = "No primary publication is set. Please select one below (or add another publication and then set it as primary)";
 		}
 	}
@@ -731,7 +731,7 @@ EOF;
 		if(!$pub_num) {
 			echo '<tr><td colspan="5">None yet :(</td></tr>';
 		} else {
-			while($row = mysql_fetch_assoc($pub_res)) {
+			while($row = mysqli_fetch_assoc($pub_res)) {
 				?>
 				<tr>
 					<td>
@@ -783,7 +783,7 @@ if($what == "trailers") {
     	$handle->Process($_SERVER['DOCUMENT_ROOT']."/games/files/$id/");
       if ($handle->processed) {
       	$q = "UPDATE games_trailers SET thumbnail='".$handle->file_dst_name."' WHERE datetime='".$in['datetime']."' LIMIT 1";
-      	if(!mysql_query($q)) {
+      	if(!mysqli_query($GLOBALS['db']['link'], $q)) {
       		$errors[] = "The image was successfully uploaded but there was an error applying it to the database. Try reuploading it by editing it below in the Current Trailers box.";
       	} else {
       		$results[] = "Success! You have applied a thumbnail to your trailer.";
@@ -824,11 +824,11 @@ if($what == "trailers") {
 			
 			$q = sprintf("INSERT INTO games_trailers (gid, title, description, code, url, usrid, datetime) VALUES 
 				('".$gdat->gid."', '%s', '%s', '%s', '%s', '$usrid', '$datetime')",
-				mysql_real_escape_string($in['title']),
-				mysql_real_escape_string($in['description']),
-				mysql_real_escape_string($in['code']),
-				mysql_real_escape_string($in['url']));
-			if(!mysql_query($q)) {
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['title']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['description']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['code']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['url']));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				$errors[] = "Couldn't add trailer";
 			} else {
 				//is it a youtube?
@@ -869,12 +869,12 @@ if($what == "trailers") {
 		<legend>Current Trailers</legend>
 		<?
 		$query = "SELECT * FROM games_trailers WHERE gid='$gdat->gid' ORDER BY datetime";
-		$res   = mysql_query($query);
-		if(!$trailernum = mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$trailernum = mysqli_num_rows($res)) {
 			echo "None yet :(";
 		} else {
 			$i = 0;
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				$i++;
 				echo '<b>'.$row['title'].'</b> <small>Posted '.$row['datetime'].' by '.outputUser($row['usrid'], FALSE).'</small> <input type="button" value="Edit/Delete" id="button-'.$i.'" onclick="toggle(\'edit-'.$i.'\', \'button-'.$i.'\')"/><br/>';
 				?>
@@ -957,10 +957,10 @@ if($what == "links") {
 		if($usrrank < 7) die("Can't do this with rank");
 		
 		$q = "SELECT * FROM games_links WHERE id='$del' LIMIT 1";
-		if(!$dat = mysql_fetch_object(mysql_query($q))) die("Link id #$del not in db");
+		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Link id #$del not in db");
 		
 		$q = "DELETE FROM games_links WHERE id='$del' LIMIT 1";
-		if(!mysql_query($q)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Couldn't delete";
 		} else {
 			adminAction("games link: game:$gdat[title] Site:$dat->site_name URL:$dat->url Posted:$dat->datetime by ".outputUser($dat->usrid, FALSE, FALSE), "deleted");
@@ -985,11 +985,11 @@ if($what == "links") {
 		<legend>Current Links</legend>
 		<?
 		$query = "SELECT * FROM games_links WHERE gid='$id'";
-		$res   = mysql_query($query);
-		if(!mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) {
 			echo "No links";
 		} else {
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				echo '<p>';
 				echo '<a href="'.$row[url].'" target="_blank">'.$row[site_name].'</a> ';
 				echo '<a href="?id='.$id.'&what=links&delete='.$row[id].'" class="x">X</a>';
@@ -1120,7 +1120,7 @@ if($what == "trivia") {
 		
 		if($usrrank < 9) {
 			$q = "SELECT usrid FROM games_trivia WHERE id='$factid' LIMIT 1";
-			$dat = mysql_fetch_object(mysql_query($q));
+			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$udat = getUserDat($dat->usrid);
 			if($udat->rank > $usrrank) $errors[] = "You don't have permission to edit this item since the item's author outranks you.";
 		}
@@ -1130,16 +1130,16 @@ if($what == "trivia") {
 			if($in['delete']) {
 				
 				$q = "DELETE FROM games_trivia WHERE id='".$_POST['factid']."' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't delete; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete; ".mysql_error();
 				else $results[] = "Factoid deleted";
 				
 			} else {
 				
 				$q = sprintf("UPDATE games_trivia SET fact='%s', author='%s', datetime='%s' WHERE id='".$_POST['factid']."' LIMIT 1",
-					mysql_real_escape_string($in['fact']),
-					mysql_real_escape_string($in['author']),
-					mysql_real_escape_string($in['datetime']));
-				if(!mysql_query($q)) $errors[] = "Couldn't update db; ".mysql_error();
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['fact']),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['author']),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $in['datetime']));
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update db; ".mysql_error();
 				else $results[] = "Factoid edited";
 				
 			}
@@ -1155,10 +1155,10 @@ if($what == "trivia") {
 		$subj = "games_trivia:".mysqlNextAutoIncrement("games_trivia");
 		$q = sprintf("INSERT INTO games_trivia (gid, fact, author, datetime, usrid) VALUES 
 			('$id', '%s', '%s', '%s', '$usrid');",
-			mysql_real_escape_string($in['fact']),
-			mysql_real_escape_string($author),
-			mysql_real_escape_string($in['datetime']));
-		if(!mysql_query($q)) $errors[] = "Couldn't add to db; ".mysql_error();
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['fact']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $author),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['datetime']));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db; ".mysql_error();
 		else {
 			$results[] = "Factoid added";
 			addUserContribution(4, 'Trivia for <a href="/games/link.php?id='.$id.'">'.htmlent($gdat['title']).'</a>', $in['fact'], TRUE, '', $subj, 'gid:'.$id);
@@ -1191,8 +1191,8 @@ if($what == "trivia") {
 						<select name="in[author_select]">
 							<?
 							$query = "SELECT usrid, username FROM users ORDER BY username";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="usrid:'.$row['usrid'].'"'.($row['usrid'] == $usrid ? ' selected="selected"' : '').'/>'.$row['username'].'</option>';
 							}
 							?>
@@ -1222,9 +1222,9 @@ if($what == "trivia") {
 		<legend>Curent Factoids</legend>
 		<?
 		$query = "SELECT * FROM games_trivia WHERE gid='$id' ORDER BY datetime DESC";
-		$res   = mysql_query($query);
-		if(mysql_num_rows($res)) {
-			while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				$row = stripslashesDeep($row);
 				
 				if($row['author']) {
@@ -1277,10 +1277,10 @@ if($what == "quotes") {
 		$subj = "games_quotes:".mysqlNextAutoIncrement("games_quotes");
 		$query = sprintf("INSERT INTO games_quotes (gid, quote, quote_more, quoter, datetime, usrid) VALUES 
 			('$id', '%s', '%s', '%s', '".date("Y-m-d H:i:s")."', '$usrid')",
-			mysql_real_escape_string($in['quote']),
-			mysql_real_escape_string($in['quote_more']),
-			mysql_real_escape_string($in['quoter']));
-		if(!mysql_query($query)) $errors[] = "Couldn't add quote";
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['quote']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['quote_more']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['quoter']));
+		if(!mysqli_query($GLOBALS['db']['link'], $query)) $errors[] = "Couldn't add quote";
 		else {
 			$results[] = "Quote successfully added";
 			addUserContribution(5, 'Quote about <a href="/games/link.php?id='.$id.'">'.htmlent($gdat['title']).'</a> by '.$in['quoter'], '<blockquote>'.$in['quote'].'</blockquote>-'.$in['quoter'], TRUE, '', $subj, 'gid:'.$id);
@@ -1294,7 +1294,7 @@ if($what == "quotes") {
 		echo $mod_header;
 	
 		$q = "SELECT * FROM games_quotes WHERE id='$edit' LIMIT 1";
-		if(!$dat = mysql_fetch_object(mysql_query($q))) die("Couldn't get data for id # $edit");
+		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get data for id # $edit");
 		?>
 		<form action="games-mod.php?id=<?=$id?>&what=quotes" method="post">
 			<input type="hidden" name="in[id]" value="<?=$edit?>"/>
@@ -1356,7 +1356,7 @@ if($what == "quotes") {
 		
 		if($in['delete']) {
 			$q = "DELETE FROM games_quotes WHERE id='".$in['id']."' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Couldn't delete";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete";
 			else $results[] = "Deleted it";
 		} else {
 			$query = sprintf("UPDATE games_quotes SET 
@@ -1365,10 +1365,10 @@ if($what == "quotes") {
 				quoter = '%s' 
 				".($in['datetime'] ? ", datetime = '".$in['datetime']."'" : "")."
 				WHERE id='".$in['id']."' LIMIT 1", 
-				mysql_real_escape_string($in['quote']),
-				mysql_real_escape_string($in['quote_more']),
-				mysql_real_escape_string($in['quoter']));
-			if(!mysql_query($query)) $errors[] = "Couldn't edit quote";
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['quote']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['quote_more']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['quoter']));
+			if(!mysqli_query($GLOBALS['db']['link'], $query)) $errors[] = "Couldn't edit quote";
 			else $results[] = "Quote successfully edited";
 		}
 	}
@@ -1422,11 +1422,11 @@ if($what == "quotes") {
 		<legend>Current Quotes</legend>
 		<?
 		$query = "SELECT * FROM games_quotes WHERE gid='$id' ORDER BY datetime DESC";
-		$res   = mysql_query($query);
-		if(!mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) {
 			echo "None yet :(";
 		} else {
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				?>
 				<blockquote><?=$row['quote'].($row['quote_more'] ? '<hr/>'.$row['quote_more'] : '')?></blockquote>
 				<p style="text-align:right">

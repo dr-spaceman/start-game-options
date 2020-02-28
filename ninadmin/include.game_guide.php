@@ -2,7 +2,7 @@
 
 //get game guide data
 $q = "SELECT * FROM games_guides WHERE gid='$id' LIMIT 1";
-if($guidedat = mysql_fetch_object(mysql_query($q))) {
+if($guidedat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 	//deny access if user is not an author
 	if(strstr($guidedat->authors, " ")) {
 		$authors = explode(" ", $guidedat->authors);
@@ -23,11 +23,11 @@ if($do == "create") {
 	
 	if(!$errors) {
 		$q = "SELECT * FROM games_guides WHERE gid='$id' LIMIT 1";
-		if($guidedat = mysql_fetch_object(mysql_query($q))) {
+		if($guidedat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			die("Guide already exists");
 		}
 		$q = "INSERT INTO games_guides (`gid`, `authors`) VALUES ('$id', '$usrid')";
-		if(!mysql_query($q)) die("Couldn't INSERT to games_guides: ".mysql_error());
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't INSERT to games_guides: ".mysql_error());
 		
 		avert("?what=guide&id=$id");
 	}
@@ -285,7 +285,7 @@ if($_POST['submit_features']) {
 		`equipment` = '$in[equipment]',
 		`bestiary` = '$in[bestiary]' 
 		WHERE gid='$id' LIMIT 1";
-	if(!mysql_query($q)) {
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 		$errors[] = "Couldn't update features: ".mysql_error();
 	} else {
 		$results[] = "Features updated";
@@ -519,7 +519,7 @@ if(!$do) {
 						while (list($k2, $v2) = each($v)) {
 							
 							$q = "SELECT * FROM admin_changelog WHERE `subject`='/games/".$dir."/".$gdat[title_url]."/guide/".$k."/".$k2."' ORDER BY datetime DESC LIMIT 1";
-							if($dat = mysql_fetch_object(mysql_query($q))) {
+							if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 								$filedat = $dat->datetime.' by '.outputUser($dat->usrid, FALSE);
 							}
 							
@@ -608,8 +608,8 @@ if(!$do) {
 						<?
 							$c_rank = "Staff";
 							$query = "SELECT * FROM users LEFT JOIN users_ranks USING(rank) ORDER BY rank DESC, username";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								if($c_rank != $row[category]) {
 									$c_rank = $row[category];
 									echo '</optgroup><optgroup label="'.$row[category].'">';
@@ -636,7 +636,7 @@ if(!$do) {
 
 
 		<?
-	
+	
 	}
 	
 	$page->footer();

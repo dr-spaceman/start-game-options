@@ -14,14 +14,14 @@ switch($do){
 		if(!$pgtitle = formatName($_POST['_pgtitle'])) $a->kill("No page tile received");
 		elseif(!$usrid) $a->kill('Please <a href="/login.php">log in</a> to watch this page.');
 		else {
-			$q = "SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($pgtitle)."' AND usrid='$usrid' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) {
-				$q2 = "DELETE FROM pages_watch WHERE `title`='".mysql_real_escape_string($pgtitle)."' AND usrid='$usrid'";
-				if(!mysql_query($q2)) $a->error("Error removing from watch list: ".mysql_error());
+			$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."' AND usrid='$usrid' LIMIT 1";
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
+				$q2 = "DELETE FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."' AND usrid='$usrid'";
+				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error removing from watch list: ".mysql_error());
 				$a->ret['removed'] = true;
 			} else {
-				$q2 = "INSERT INTO pages_watch (`title`, usrid) VALUES ('".mysql_real_escape_string($pgtitle)."', '$usrid');";
-				if(!mysql_query($q2)) $a->error("Error adding; ".mysql_error());
+				$q2 = "INSERT INTO pages_watch (`title`, usrid) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $pgtitle)."', '$usrid');";
+				if(!mysqli_query($GLOBALS['db']['link'], $q2)) $a->error("Error adding; ".mysql_error());
 				else $a->ret['added'] = 'Success! This page has been added to your <a href="/pages/watchlist.php">watch list</a>.';
 			}
 		}
@@ -371,9 +371,9 @@ switch($do){
 					if((string)$node->img_name_title_screen) $imgs['img_titlescreen'] = (string)$node->img_name_title_screen;
 				}
 				
-				$query = "SELECT img_name, img_category_id FROM images_tags LEFT JOIN images USING (img_id) WHERE `tag` = '".mysql_real_escape_string($title)."' ORDER BY `sort`";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$query = "SELECT img_name, img_category_id FROM images_tags LEFT JOIN images USING (img_id) WHERE `tag` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' ORDER BY `sort`";
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					switch($row['img_category_id']){
 						case "11":
 							if(!$imgs['img_titlescreen']) $imgs['img_titlescreen'] = $row['img_name'];
@@ -426,8 +426,8 @@ switch($do){
 		
 		$pgl = new pglinks();
 		foreach($pgl->extractFrom($text) as $link){
-			$q = "SELECT subcategory FROM pages WHERE title = '".mysql_real_escape_string($link['tag'])."' LIMIT 1";
-			$row = mysql_fetch_assoc(mysql_query($q));
+			$q = "SELECT subcategory FROM pages WHERE title = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."' LIMIT 1";
+			$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 			$pgl->attrs['data-subcategory'] = $row['subcategory'];
 			$a->ret['formatted'] = $pgl->outputLink($link['tag'], $link['namespace'], $link['link_words']);
 		}
@@ -471,12 +471,12 @@ if($do == "ile_ouptut_field"){
 				$dat = "";
 				if($key == "g"){
 					$pname = preg_replace('@.*\[\[(.+)\]\].*@', '$1', $p['name']);
-					$q = "SELECT * FROM pages_games WHERE `title` = '".mysql_real_escape_string($pname)."' LIMIT 1";
-					$dat = mysql_fetch_object(mysql_query($q));
+					$q = "SELECT * FROM pages_games WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pname)."' LIMIT 1";
+					$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				} elseif($key == "a"){
 					$pname = preg_replace('@.*\[\[(.+)\]\].*@', '$1', $p['name']);
-					$q = "SELECT datesort FROM albums WHERE `albumid` = '".mysql_real_escape_string($pname)."' LIMIT 1";
-					$dat = mysql_fetch_object(mysql_query($q));
+					$q = "SELECT datesort FROM albums WHERE `albumid` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pname)."' LIMIT 1";
+					$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					$dat->release = $dat->datesort;
 				}
 				$rolesstr = '';
@@ -643,8 +643,8 @@ if($do == "loadpubs") {
 	$sessid = $_POST['sessid'];
 	
 	$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$pfs[] = $row;
 	}
 	
@@ -655,9 +655,9 @@ if($do == "loadpubs") {
 		"au" => "Australia"
 	);
 	
-	$query = "SELECT * FROM games_publications WHERE pgid='".mysql_real_escape_string($pgid)."' OR pages_session_id='".mysql_real_escape_string($sessid)."' ORDER BY release_date ASC";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$query = "SELECT * FROM games_publications WHERE pgid='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgid)."' OR pages_session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' ORDER BY release_date ASC";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		?>
 		<dd id="pub-<?=$row['id']?>" class="pub">
 			<div style="float:right; font-size:12px; color:#CCC;">
@@ -870,8 +870,8 @@ function outputPub($pub, $i){
 					
 					<?
 					$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-					$res   = mysql_query($query);
-					while($row = mysql_fetch_assoc($res)) {
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
+					while($row = mysqli_fetch_assoc($res)) {
 						$pfs[] = $row;
 						if($row['notable']) $pfs_n[] = $row;
 					}

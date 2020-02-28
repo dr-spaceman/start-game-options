@@ -29,9 +29,9 @@ class user {
 		$base_query = "SELECT usrid, username, email, gender, rank, region, avatar, registered, activity, previous_activity FROM users ";
 		
 		if(!$this->id && $params['username']){
-			$q = $base_query . "WHERE username='".mysql_real_escape_string($params['username'])."'";
-			if(!mysql_num_rows(mysql_query($q))) $q = $base_query . "WHERE username_old = '".mysql_real_escape_string($params['username'])."' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($q))){
+			$q = $base_query . "WHERE username='".mysqli_real_escape_string($GLOBALS['db']['link'], $params['username'])."'";
+			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $q = $base_query . "WHERE username_old = '".mysqli_real_escape_string($GLOBALS['db']['link'], $params['username'])."' LIMIT 1";
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				foreach($row as $k => $v){
 					if($k == "usrid") $k = "id";
 					$this->{$k} = $v;
@@ -43,8 +43,8 @@ class user {
 		
 		if($this->id){
 			// validate & get username
-			$q = $base_query . "WHERE usrid = '".mysql_real_escape_string($this->id)."' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($q))){
+			$q = $base_query . "WHERE usrid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->id)."' LIMIT 1";
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				foreach($row as $k => $v){
 					if($k == "usrid") $k = "id";
 					$this->{$k} = $v;
@@ -82,9 +82,9 @@ class user {
 		$this->avatar_src['icon'] = "/bin/img/avatars/icon/".($value ? $value : 'unknown.png');
 		
 		// Check for Fb connection and get Fb avatar
-		/*$res_oauth_fb = mysql_query("SELECT * FROM users_oauth WHERE usrid='$this->id' AND oauth_provider = 'facebook' LIMIT 1");
-		if(!$file && mysql_num_rows($res_oauth_fb)){
-			$row_oauth = mysql_fetch_assoc($res_oauth_fb);
+		/*$res_oauth_fb = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_oauth WHERE usrid='$this->id' AND oauth_provider = 'facebook' LIMIT 1");
+		if(!$file && mysqli_num_rows($res_oauth_fb)){
+			$row_oauth = mysqli_fetch_assoc($res_oauth_fb);
 			$this->avatar_src['icon'] = "http://graph.facebook.com/".$row_oauth['oauth_username']."/picture";
 			$this->avatar_src['big'] = $this->avatar_src['icon']."?size=large";
 		}*/
@@ -122,7 +122,7 @@ class user {
 		if(!$this->id) return false;
 		
 		$q = "SELECT * FROM users_details WHERE usrid='$this->id' LIMIT 1";
-		if(!$row = mysql_fetch_assoc(mysql_query($q))){
+		if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			return false;
 		} else {
 			foreach($row as $k => $v){
@@ -139,7 +139,7 @@ class user {
 		if(!$this->id) return false;
 		
 		$q = "SELECT * FROM users_prefs WHERE usrid='$this->id' LIMIT 1";
-		if(!$this->preferences = mysql_fetch_assoc(mysql_query($q))){
+		if(!$this->preferences = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			return false;
 		}
 		
@@ -154,7 +154,7 @@ class user {
 		if(!$this->id) return false;
 		
 		$q = "SELECT * FROM users_data WHERE usrid = '$this->id' ORDER BY `date` DESC LIMIT 1";
-		if($data_row = mysql_fetch_assoc(mysql_query($q))){
+		if($data_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$this->data = $data_row;
 			if($calculate) return $this->calculateScore($data_row);
 		}
@@ -187,10 +187,10 @@ class user {
 			'num_sblogposts' => "SELECT * FROM `posts` WHERE `usrid` = '$this->id' AND category != 'draft' AND pending != '1'",
 		);
 		
-		if($single_var && in_array($single_var, array_keys($vars_queries))) return mysql_num_rows(mysql_query($vars_queries[$single_var]));
+		if($single_var && in_array($single_var, array_keys($vars_queries))) return mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $vars_queries[$single_var]));
 		
 		if(!$vars){
-			foreach($vars_queries as $var => $query) $vars[$var] = mysql_num_rows(mysql_query($query));
+			foreach($vars_queries as $var => $query) $vars[$var] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 			$vars['contribution_score'] = $this->data['contribution_score'];
 			$vars['forum_rating'] = $this->data['forum_rating'];
 			$vars['sblog_rating'] = $this->data['sblog_rating'];
@@ -231,7 +231,7 @@ function outputUser($uid = "", $avatar = TRUE, $link = TRUE, $substr = ''){
 	elseif(!is_numeric($uid)) return '<acronym title="ID # '.$uid.'">???</acronym>';
 	else {
 		$q = "SELECT * FROM users WHERE usrid='$uid' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			
 			if($avatar){
 				if(!$dat->avatar && $dat->oauth_provider=="facebook" && $dat->oauth_username) $o_avatar='<span class="avatar"><img src="http://graph.facebook.com/'.$dat->oauth_username.'/picture" width="20" height="20"/></span>';
@@ -269,7 +269,7 @@ function gravatar($email, $size=144, $usrid=''){
 		if($upload_avatar_result['filename']){
 			$avatar = "c/".$usrid."/".$upload_avatar_result['filename'];
 			$q = "UPDATE users SET avatar='".$avatar."' WHERE usrid='$usrid' LIMIT 1";
-			if(mysql_query($q)) return "/bin/img/avatars/".$avatar;
+			if(mysqli_query($GLOBALS['db']['link'], $q)) return "/bin/img/avatars/".$avatar;
 		}
 	} else return false;
 	

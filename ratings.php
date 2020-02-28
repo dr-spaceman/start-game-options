@@ -12,7 +12,7 @@ if($grade == "") die("Error: No rating given");
 if($_POST['table'] == "forecast") {
 	
 	$q = "SELECT * FROM games_forecasts WHERE gid='$gid' AND usrid='$usrid' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) {
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		$query = "UPDATE games_forecasts SET `rating`='$grade', `datetime`='".date("Y-m-d H:i:s")."' WHERE usrid='$usrid' AND gid='$gid' LIMIT 1";
 	} else {
 		$query = "INSERT INTO games_forecasts (gid, usrid, `rating`, `datetime`) VALUES 
@@ -25,7 +25,7 @@ if($_POST['table'] == "forecast") {
 		$query = "DELETE FROM games_grades WHERE gid='$gid' AND usrid='$usrid' LIMIT 1";
 	} else {
 		$q = "SELECT * FROM games_grades WHERE gid='$gid' AND usrid='$usrid' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) {
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$query = "UPDATE games_grades SET grade='$grade', `datetime`='".date("Y-m-d H:i:s")."' WHERE gid='$gid' AND usrid='$usrid' LIMIT 1";
 		} else {
 			$query = "INSERT INTO games_grades (gid, usrid, `grade`, `datetime`) VALUES 
@@ -35,7 +35,7 @@ if($_POST['table'] == "forecast") {
 
 }
 
-if(!mysql_query($query)) {
+if(!mysqli_query($GLOBALS['db']['link'], $query)) {
 	sendBug("User couldn't insert forecast rating.\n\nQUERY: $query");
 	die("Error: Couldn't update the database! The administrative staff has been notified of this error.");
 }

@@ -246,8 +246,8 @@ if($_GET['component'] == "form"){
 //Drag and Drop form for box art
 
 $query = "SELECT * FROM images_categories ORDER BY sort";
-$res   = mysql_query($query);
-while($row = mysql_fetch_assoc($res)){
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)){
 	$img_category_opts.= '<option value="'.$row['img_category_id'].'"'.($row['img_category_id'] == $_GET['img_category_id'] ? ' selected' : '').'>'.$row['img_category'].'</option>';
 }
 	

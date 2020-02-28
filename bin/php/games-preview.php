@@ -9,7 +9,7 @@ $page->header();
 	
 	<?
 	$q = "SELECT * FROM games_previews WHERE gid='".$gdat->gid."' AND `datetime` > 0 ORDER BY `datetime` DESC LIMIT 1";
-	if(!$preview = mysql_fetch_object(mysql_query($q))) {
+	if(!$preview = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		echo "No preview yet published for this game.";
 	} else {
 		$words = stripslashes($preview->words);
@@ -26,8 +26,8 @@ $page->header();
 		
 		//amazon asin
 		/*$amzquery = "SELECT * FROM `ASIN` WHERE `id` = '$id' LIMIT 1";
-		$amzres = mysql_query($amzquery);
-		$amazon = mysql_fetch_object($amzres);
+		$amzres = mysqli_query($GLOBALS['db']['link'], $amzquery);
+		$amazon = mysqli_fetch_object($amzres);
 		if($amazon->asin) {
 			$p_amazon = '<p class="commerce-link"><a href="http://www.amazon.com/gp/product/'.$amazon->asin.'?ie=UTF8&tag=squarehaven&linkCode=as2&camp=1789&creative=9325&creativeASIN='.$amazon->asin.'" target="_blank">Preorder <i>'.$dat[title].'</i> from <i class="amazon">Amazon.com</i></a></p>'."\n\n";
 		}*/
@@ -58,23 +58,23 @@ $page->header();
 		//get some stuff for footer
 		//contributors
 		$query = "SELECT DISTINCT usrid FROM games_previews WHERE gid='".$gdat->gid."'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$preview_contributors[] = outputUser($row['usrid'], FALSE);
 		}
 		$query = "SELECT DISTINCT contributor FROM games_previews WHERE gid='".$gdat->gid."' AND datetime>0";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$row['contributor'] = trim($row['contributor']);
 			if($row['contributor'] != "") $preview_contributors[] = $row['contributor'];
 		}
 		//created date
 		$q = "SELECT datetime FROM games_previews WHERE datetime>0 ORDER BY datetime ASC LIMIT 1";
-		$x = mysql_fetch_object(mysql_query($q));
+		$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		$preview_created = timeSince($x->datetime);
 		//modified date
 		$q = "SELECT datetime FROM games_previews WHERE datetime>0 ORDER BY datetime DESC LIMIT 1";
-		$x = mysql_fetch_object(mysql_query($q));
+		$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		$preview_modified = timeSince($x->datetime);
 		
 		?>

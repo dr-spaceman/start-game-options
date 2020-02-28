@@ -44,11 +44,11 @@ $page->header();
 				LEFT JOIN people ON (people.pid=people_work.pid) 
 				WHERE albums_tags.gid='$gdat->gid' 
 				ORDER BY `people`.`name` ASC";
-			$res   = mysql_query($query);
-			if(!mysql_num_rows($res)) echo "No people have credited for the music of this game.";
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			if(!mysqli_num_rows($res)) echo "No people have credited for the music of this game.";
 			else {
 				?><ol><?
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					$nopic = TRUE;
 					$src = "/bin/img/people/nopicture-tn.png";
 					if(file_exists($root."/bin/img/people/".$row['pid']."-tn.png")) {
@@ -106,16 +106,16 @@ $page->header();
 								$r = array();
 								
 								$q = "SELECT name, name_url, vital FROM people_work LEFT JOIN people USING (pid) WHERE people_work.albumid='".$dat['albumid']."' AND role LIKE '%compos%'";
-								$res = mysql_query($q);
-								while($row = mysql_fetch_assoc($res)) {
+								$res = mysqli_query($GLOBALS['db']['link'], $q);
+								while($row = mysqli_fetch_assoc($res)) {
 									$x = '<a href="/people/~'.$row['name_url'].'">'.$row['name'].'</a>';
 									if($row['vital']) $v[] = $x;
 									else $r[] = $x;
 								}
 								
 								$q = "SELECT name, vital FROM albums_other_people WHERE albumid='".$dat['albumid']."' AND role LIKE '%compos%'";
-								$res = mysql_query($q);
-								while($row = mysql_fetch_assoc($res)) {
+								$res = mysqli_query($GLOBALS['db']['link'], $q);
+								while($row = mysqli_fetch_assoc($res)) {
 									if($row['vital']) $v[] = $row['name'];
 									else $r[] = $row['name'];
 								}

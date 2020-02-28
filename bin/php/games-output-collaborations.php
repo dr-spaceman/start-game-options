@@ -11,17 +11,17 @@ if($_POST) {
 		//inital game list
 		
 		$query = "SELECT DISTINCT(pid) FROM people_work WHERE gid='$gid'";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$pids = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$pids[] = $row['pid'];
 		}
 		
 		$gids = array();
 		foreach($pids as $pid) {
 			$query = "SELECT DISTINCT(gid) FROM people_work WHERE pid='$pid' AND gid != '' AND gid != '$gid'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$gids[$row['gid']]++;
 			}
 		}
@@ -34,9 +34,9 @@ if($_POST) {
 			while(list($g, $count) = each($gids)) {
 				if($count > 1) {
 					$q = "SELECT title, title_url FROM games WHERE gid='$g' LIMIT 1";
-					$d = mysql_fetch_object(mysql_query($q));
+					$d = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					$q2 = "SELECT release_date FROM games_publications WHERE gid='$g' ORDER BY release_date ASC LIMIT 1";
-					if($d2 = mysql_fetch_object(mysql_query($q2))) {
+					if($d2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q2))) {
 						$rel = substr($d2->release_date, 0, 4);
 						if($rel == "0000") $rel = "&nbsp;";
 					} else $rel = "&nbsp;";
@@ -58,16 +58,16 @@ if($_POST) {
 		//show the collaborations on the 2nd game
 		
 		$query = "SELECT DISTINCT(pid) FROM people_work WHERE gid='$gid'";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$pids1 = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$pids1[] = $row['pid'];
 		}
 		
 		$query = "SELECT DISTINCT(pid) FROM people_work WHERE gid='$gid2'";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$pids = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if(in_array($row['pid'], $pids1)) $pids[] = $row['pid'];
 		}
 		
@@ -80,10 +80,10 @@ if($_POST) {
 				foreach($pids as $pid) {
 					
 					$query = "SELECT pid, name, name_url, `alias`, role, vital, notes FROM people_work LEFT JOIN people USING (pid) WHERE people_work.pid='$pid' AND people_work.gid='$gid2'";
-					$res   = mysql_query($query);
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
 					$arr = array();
 					$roles = array();
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						$row = stripslashesDeep($row);
 						$arr = array(
 							"name" => $row['name'],

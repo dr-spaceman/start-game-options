@@ -21,18 +21,18 @@ do if($_POST){
 	
 	$dt = date("Y-m-d H:i:s");
 	
-	$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, old_len, new_len, edit_summary, `datetime`) VALUES ('".$ed->pgid."', '".mysql_real_escape_string($title)."', '$ed->sessid', '$usrid', '$len', '$len', '".mysql_real_escape_string($_POST['edit_summary'])."', '$dt')";
-	if(!mysql_query($q)) $errors[] = "Couldn't record edit session in the database";
+	$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, old_len, new_len, edit_summary, `datetime`) VALUES ('".$ed->pgid."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '$ed->sessid', '$usrid', '$len', '$len', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['edit_summary'])."', '$dt')";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit session in the database";
 	
 	if($_POST['rmpg']){
 		
 		// remove pg //
 		
 		$q = "UPDATE pages_edit SET removed = '1', `new_len` = '0' WHERE session_id='$ed->sessid' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't record edit summary [ERROR RMUPD03]";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit summary [ERROR RMUPD03]";
 		
-		$q = "DELETE FROM pages WHERE title='".mysql_real_escape_string($title)."' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't remove page because of a database error: ".$q;
+		$q = "DELETE FROM pages WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove page because of a database error: ".$q;
 		
 		@mail($default_email, "[Videogam.in] Remove page alert", "$usrname has deleted $title (http://videogam.in".$ed->url.").");
 		
@@ -41,8 +41,8 @@ do if($_POST){
 		$title_sort = $_POST['title_sort'] ? $_POST['title_sort'] : formatName($ed->title, "sortable");
 		$title_sort = strtolower($title_sort);
 		if($ed->row->title_sort != $title_sort){
-			$q = "UPDATE pages SET title_sort = '".mysql_real_escape_string($title_sort)."' WHERE pgid='$ed->pgid' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = 'Couldn\'t update Sort Title';
+			$q = "UPDATE pages SET title_sort = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title_sort)."' WHERE pgid='$ed->pgid' LIMIT 1";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = 'Couldn\'t update Sort Title';
 		}
 		
 		if(!in_array($_POST['pgtype'], array_keys($GLOBALS['pgtypes']))) $errors[] = 'Invalid page type given ('.$_POST['pgtype'].')';
@@ -70,13 +70,13 @@ do if($_POST){
 			if(!$index_dom->save($xmlf)) $error[] = "Error saving index XML file; This page was not removed from the old index ($ed->type)";
 			
 			$q = "SELECT `json` FROM pages_index_json WHERE `type`='".$ed->type."' LIMIT 1";
-			if(!$row = mysql_fetch_assoc(mysql_query($q))) $errors[] = "Error selecting JSON index; This page was not removed from the old index ($ed->type)";
+			if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $errors[] = "Error selecting JSON index; This page was not removed from the old index ($ed->type)";
 			else {
 				$json_blob = json_decode($row['json'], true);
 				unset($json_blob[$ed->title]);
 				$json_str = json_encode($json_blob);
-				$q = "UPDATE pages_index_json SET `json` = '".mysql_real_escape_string($json_str)."' WHERE `type` = '".$ed->type."' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Error updating JSON index; This page was not removed from the old index ($ed->type)";
+				$q = "UPDATE pages_index_json SET `json` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $json_str)."' WHERE `type` = '".$ed->type."' LIMIT 1";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Error updating JSON index; This page was not removed from the old index ($ed->type)";
 			}
 			
 			// update new index
@@ -84,8 +84,8 @@ do if($_POST){
 			$ed->type = $_POST['pgtype'];
 			$ed->data['type'] = $_POST['pgtype'];
 			
-			$q = "UPDATE pages SET `type` = '".$_POST['pgtype']."' WHERE `title` = '".mysql_real_escape_string($title)."' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Couldn't update database with new page type";
+			$q = "UPDATE pages SET `type` = '".$_POST['pgtype']."' WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database with new page type";
 			
 			//...we'll rebuild the new index below
 			
@@ -96,7 +96,7 @@ do if($_POST){
 	catch(Exception $e){ $errors[] = "Couldn't save base data file (".$e->getMessage().")\n"; }
 	
 	$q = "UPDATE pages_edit SET `published` = '1' WHERE session_id='$ed->sessid' LIMIT 1";
-	if(!mysql_query($q)) $errors[] = "Couldn't record edit (Your changes were probably saved though) [ERROR SETP01]";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit (Your changes were probably saved though) [ERROR SETP01]";
 	
 	//rebuild index and then go to the page overview
 	echo $html_tag;

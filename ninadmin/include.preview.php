@@ -1,6 +1,6 @@
 <?
 
-$dat = mysql_fetch_object(mysql_query("SELECT * FROM games WHERE `gid`='$id' LIMIT 1"));
+$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM games WHERE `gid`='$id' LIMIT 1"));
 if(!$dat) die("Couldn't get game data");
 
 //actions
@@ -15,24 +15,24 @@ if($_POST[draft] || $_POST[submit]) {
 	}
 	
 	if($_POST[insert]) {
-		$res = mysql_query("SHOW TABLE STATUS LIKE 'games_previews'");
-		if(!$d = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], "SHOW TABLE STATUS LIKE 'games_previews'");
+		if(!$d = mysqli_fetch_assoc($res)) {
 			$errors[] = "couldn't get incremental data to properly insert into db.";
 		} else {
 			$pid = $d[Auto_increment];
 			$query = sprintf("INSERT INTO games_previews (`id`,gid,datetime,usrid,contributor,words) VALUES 
 				('$pid', '$id', '$datetime', '$usrid', '%s', '%s')",
-				mysql_real_escape_string($_POST[contributor]),
-				mysql_real_escape_string($_POST[words]));
+				mysqli_real_escape_string($GLOBALS['db']['link'], $_POST[contributor]),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $_POST[words]));
 		}
 	} elseif($_POST[update]) {
 		$pid = $_POST[update];
 		$query = sprintf("UPDATE games_previews SET `datetime`='$datetime', `contributor`='%s', `words`='%s' WHERE `id` = '$pid' LIMIT 1",
-			mysql_real_escape_string($_POST[contributor]),
-			mysql_real_escape_string($_POST[words]));
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST[contributor]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST[words]));
 	}
 	
-	if(!mysql_query($query)) $errors[] = "Couldn't save $it to database";
+	if(!mysqli_query($GLOBALS['db']['link'], $query)) $errors[] = "Couldn't save $it to database";
 	else {
 		$results[] = $it.' saved; <a href="view-preview.php?id='.$pid.'" target="_blank">See it</a>';
 		if($_POST[submit]) {
@@ -46,7 +46,7 @@ if($_POST[draft] || $_POST[submit]) {
 if($_GET['delete']) {
 	if($usrrank < 8) die("User rank not high enough to perform this");
 	$query = "DELETE FROM games_previews WHERE `id`='$_GET[delete]' LIMIT 1";
-	if(!mysql_query($query)) $errors[] = "Couldn't delete version";
+	if(!mysqli_query($GLOBALS['db']['link'], $query)) $errors[] = "Couldn't delete version";
 	else $results[] = "Version deleted";
 }
 
@@ -79,8 +79,8 @@ echo '
 <div id="versions" style="display:'.($_GET[on] != 'update' ? 'block' : 'none').'">
 	';
 	$query = "SELECT * FROM games_previews WHERE gid='$id' ORDER BY `datetime` DESC";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		echo '<table border="0" cellpadding="0" cellspacing="0" width="100%" id="previewlist">
 			<tr>
 				<th>date time</th>
@@ -90,7 +90,7 @@ echo '
 				'.($usrrank >= 8 ? '<th style="display:none">delete</th>' : '').'
 			</tr>';
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			$safe_words = str_replace('"', '&quot;', $row[words]);
 			$safe_words = str_replace("'", "&prime;", $safe_words);
@@ -215,10 +215,10 @@ echo '
 				<option value="">Insert an image...</option>
 				<?
 				$query = "SELECT * FROM media_tags LEFT JOIN media USING(media_id) WHERE tag='gid:$id'";
-				$res   = mysql_query($query);
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
 				$curdir = "";
 				$i = 0;
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					if(is_dir($_SERVER['DOCUMENT_ROOT'].'/'.$row['directory'].'/thumbs/')) {
 						if($row['media_id'] != $curdir) {
 							$i++;
@@ -230,8 +230,8 @@ echo '
 						}
 						//get captions
 						$query2 = "SELECT * FROM media_captions WHERE media_id='".$row['media_id']."'";
-						$res2   = mysql_query($query2);
-						while($row2 = mysql_fetch_assoc($res2)) {
+						$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
+						while($row2 = mysqli_fetch_assoc($res2)) {
 							$capt[$row2['file']] = $row2['caption'];
 						}
 						//read dir
@@ -255,7 +255,7 @@ echo '
 		} elseif(!$no_previews && !$pid) {
 			//get specific or otherwise latest version
 			$q = "SELECT * FROM games_previews WHERE ".($_GET[build] ? "`id`='$_GET[build]'" : "gid='$id' AND `datetime`!='0000-00-00 00:00:00' ORDER BY `datetime` DESC")." LIMIT 1";
-			$d = mysql_fetch_object(mysql_query($q));
+			$d = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$words = $d->words;
 		}
 		?>

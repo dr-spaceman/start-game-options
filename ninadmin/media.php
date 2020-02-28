@@ -74,7 +74,7 @@ $media_page_head = '
 //delete tag (asyncRequest)
 if($del = $_POST['delete_tag']) {
 	$q = "DELETE FROM media_tags WHERE id='$del' LIMIT 1";
-	if(mysql_query($q)) echo '1';
+	if(mysqli_query($GLOBALS['db']['link'], $q)) echo '1';
 }
 
 //////////////////
@@ -85,7 +85,7 @@ if($operatedir = $_GET['operatedir']) {
 
 	//get mediadata
 	$q = "SELECT * FROM media WHERE directory='/media/$operatedir' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		die("Couldn't get media data");
 	}
 	
@@ -108,11 +108,11 @@ if($operatedir && ($_POST['operation'] == "deletedir" || $_GET['operation'] == "
 			$results[] = 'Directory deleted & all files copied to <a href="/bin/deleted-files/media/'.$operatedir.'/" target="_blank">/bin/deleted-files/media/'.$operatedir.'/</a>';
 			adminAction(str_replace($_SERVER['DOCUMENT_ROOT'], "", $subj), "delete");
 			$q = "DELETE FROM media WHERE media_id='$dat->media_id' LIMIT 1";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 			$q = "DELETE FROM media_tags WHERE media_id='$dat->media_id'";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 			$q = "DELETE FROM media_captions WHERE media_id='$dat->media_id'";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 		} else $errors[] = "Could not delete directory";
 		unset($operatedir);
 	}
@@ -126,7 +126,7 @@ if($operatedir) {
 		if(!$operatedir) die("no directory value assigned");
 		//delete all original captions
 		$q = "DELETE FROM media_captions WHERE media_id='".$dat->media_id."'";
-		if(!mysql_query($q)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Couldn't delete original captions, so no captions were added or changed";
 			$caption_error = TRUE;
 		}
@@ -140,8 +140,8 @@ if($operatedir) {
 					$i['caption'] = strip_tags($i['caption']);
 					$i['caption'] = htmlentities($i['caption']);
 					$q = sprintf("INSERT INTO media_captions (media_id, `file`, `caption`) VALUES ('$dat->media_id', '".$i['file']."', '%s')",
-						mysql_real_escape_string($i['caption']));
-					if(!mysql_query($q)) $errors[] = "Couldn't add caption (\"".$i['caption']."\") to file ".$i['file'];
+						mysqli_real_escape_string($GLOBALS['db']['link'], $i['caption']));
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add caption (\"".$i['caption']."\") to file ".$i['file'];
 				}
 			}
 		}
@@ -207,7 +207,7 @@ if($operatedir) {
 					$warnings[] = "You only RENAMED the directory. All links, updates, and database entries that were pointing to your old directory remain unchanged and will need to be updated manually.";
 					//reflect new name in db
 					$q = "UPDATE media SET directory='/media/$newname' WHERE directory='/media/$operatedir' LIMIT 1";
-					if(!mysql_query($q)) {
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 						die("The directory has been renamed but there was a fatal error: Couldn't reflect new name in media database! ARG!!!");
 						sendBug("Fatal error: couldn't rename media dir in db table `media`: /media/$operatedir => /media/$newname");
 					}
@@ -301,8 +301,8 @@ if($operatedir) {
 			}
 		}
 		$query = "SELECT * FROM media_captions WHERE media_id='$dat->media_id'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$capts[$row['file']] = $row['caption'];
 		}
 		if(!$files) {
@@ -365,7 +365,7 @@ if($_POST['createdirectory'] && $directoryname = $_POST['directoryname']) {
 		$results[] = "Your directory has been created";
 		//add to db
 		$q = "INSERT INTO media (directory, datetime, usrid) VALUES ('/media/".$directoryname."', '".date("Y-m-d H:i:s")."', '$usrid')";
-		if(!mysql_query($q)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			die("Directory created but couldn't update media details database table! That's bad!!!");
 		}
 		$_GET['uploaddirectory'] = $directoryname; // go directly to upload/general
@@ -383,7 +383,7 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 	
 	//get media_id
 	$q = "SELECT * FROM media WHERE directory='/media/$uploaddirectory' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		die("Couldn't get media_id");
 	}
 	$mid = $dat->media_id;
@@ -434,8 +434,8 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 						$capt[$f] = strip_tags($capt[$f]);
 						$capt[$f] = htmlentities($capt[$f]);
 						$q = sprintf("INSERT INTO media_captions (media_id, `file`, `caption`) VALUES ('$mid', '".$handle->file_dst_name."', '%s')",
-							mysql_real_escape_string($capt[$f]));
-						if(!mysql_query($q)) $errors[] = "Could not add caption (\"".$capt[$f]."\") to ".$handle->file_dst_name;
+							mysqli_real_escape_string($GLOBALS['db']['link'], $capt[$f]));
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Could not add caption (\"".$capt[$f]."\") to ".$handle->file_dst_name;
 					}
 					//thumbs
 					if(!$_POST['makethumbs']) {
@@ -480,9 +480,9 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 			source = '%s'".$q_append.",
 			unpublished = '".$det['unpublished']."' 
 			WHERE directory='/media/$uploaddirectory' LIMIT 1",
-			mysql_real_escape_string($det['description']), 
-			mysql_real_escape_string($det['source']));
-		if(!mysql_query($q)) {
+			mysqli_real_escape_string($GLOBALS['db']['link'], $det['description']), 
+			mysqli_real_escape_string($GLOBALS['db']['link'], $det['source']));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Couldn't update delection details";
 		} else {
 			$results[] = "Selection details updated";
@@ -492,11 +492,11 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 		if($dat->unpublished && !$det['unpublished']) {
 			//credit the uploader with publication
 			$q = "UPDATE users_contributions SET published='1' WHERE `subject`='media:".$mid."'";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 		} elseif(!$dat->unpublished && $det['unpublished']) {
 			//de-credit the uploader with publication
 			$q = "UPDATE users_contributions SET published='0' WHERE `subject`='media:".$mid."'";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 		}
 		*/
 		
@@ -504,7 +504,7 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 	
 	//get media data
 	$q = "SELECT * FROM media WHERE directory='/media/$uploaddirectory' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		die("Couldn't get media data");
 	}
   
@@ -512,9 +512,9 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 	if($tag = $_POST['tag']) {
 		foreach($tag as $t) {
 			if($t != "") {
-				$t = mysql_real_escape_string($t);
+				$t = mysqli_real_escape_string($GLOBALS['db']['link'], $t);
 				$q = "INSERT INTO media_tags (media_id, tag) VALUES ('$dat->media_id', '$t')";
-				if(!mysql_query($q)) {
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 					$errors[] = "Couldn't tag ".outputTag($t);
 				} else {
 					$results[] = "Successfully tagged <i>".outputTag($t)."</i> ($t)";
@@ -611,8 +611,8 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 				<option value="">Select...</option>
 				<?
 				$query = "SELECT * FROM media_categories ORDER BY category";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					if($row['category_id'] == $dat->category_id) {
 						$sel[$row['category_id']] = ' selected="selected"';
 						$cat_desc = $row['category_description'];
@@ -667,11 +667,11 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 		<ul>
 			<?
 			$query = "SELECT * FROM media_tags WHERE media_id='$dat->media_id'";
-			$res   = mysql_query($query);
-			if(!mysql_num_rows($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			if(!mysqli_num_rows($res)) {
 				echo '<li>Nothing tagged yet</li>';
 			} else {
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					if($usrrank >= 7) $tag_admin = ' <a href="#x" onclick="deleteTag(\''.$row['id'].'\');" class="x" id="x-'.$row['id'].'">X</a><img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none" id="loading-'.$row['id'].'"/>';
 					echo '<li id="li-'.$row['id'].'">'.outputTag($row['tag'], '', true).$tag_admin."</li>\n";
 				}
@@ -686,8 +686,8 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 		<option value="">Tag a game...</option>
 		<?
 		$query = "SELECT * FROM games order by `title`";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<option value="gid:'.$row['gid'].'">'.(strlen($row['title']) > 55 ? substr($row['title'], 0, 54)."&hellip;" : $row['title'])."</option>\n";
 		}
 		?>
@@ -697,8 +697,8 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 		<option value="">Tag a person...</option>
 		<?
 		$query = "SELECT * FROM people ORDER BY `name` ASC";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<option value="pid:'.$row['pid'].'">'.$row['name']."</option>\n";
 		}
 		?>
@@ -788,8 +788,8 @@ echo $media_page_head;
 		</tr>
 		<?
 		$query = "SELECT *, description as dir_description FROM media LEFT JOIN media_categories USING (category_id) ORDER BY `$orderby` $orderdir";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			//user access?
 			if($row['usrid'] != $usrid && $usrrank <= 7) {
 				continue;
@@ -824,7 +824,7 @@ function updateQty($dir) {
 		}
 	}
 	$q = "UPDATE media SET quantity='$qty' WHERE directory='/media/$dir' LIMIT 1";
-	if(!mysql_query($q)) return "Couldn't update media quantity for $subdir/$dir!!!";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) return "Couldn't update media quantity for $subdir/$dir!!!";
 }
 
 ?>

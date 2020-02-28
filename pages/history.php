@@ -20,8 +20,8 @@ if($sessid = $_GET['view_version']) {
 	
 	// view an edit version of a page //
 	
-	$q = "SELECT * FROM pages_edit WHERE session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if(!$pe = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get page data for id # ".$sessid);
+	$q = "SELECT * FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if(!$pe = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get page data for id # ".$sessid);
 	
 	$title = $pe->title;
 	
@@ -86,16 +86,16 @@ if($comp = trim($_GET['compare'])) {
 	
 	<?
 	
-	$q = "SELECT * FROM pages_edit WHERE session_id='".mysql_real_escape_string($v[1])."' LIMIT 1";
-	if(!$t2 = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get wiki data for id # ".$v[1]);
+	$q = "SELECT * FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $v[1])."' LIMIT 1";
+	if(!$t2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get wiki data for id # ".$v[1]);
 
 	if($v[0] == "previous") {
 		$q = "SELECT * FROM pages_edit WHERE pgid = '$t2->pgid' AND `datetime` < '$t2->datetime' ORDER BY `datetime` DESC LIMIT 1";
-		if(!$t1 = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
+		if(!$t1 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
 		$v[0] = $t1->session_id;
 	} else {
-		$q = "SELECT * FROM pages_edit WHERE session_id='".mysql_real_escape_string($v[0])."' LIMIT 1";
-		if(!$t1 = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
+		$q = "SELECT * FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $v[0])."' LIMIT 1";
+		if(!$t1 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
 	}
 	
 	require_once $_SERVER['DOCUMENT_ROOT'].'/bin/php/Text_Diff/Diff.php';
@@ -137,8 +137,8 @@ if($_GET['title']){
 	
 	if(!$title = formatName($_GET['title'])) die("An error occurred when trying to decipher page title");
 	
-	$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($title)."' LIMIT 1";
-	if(!$pgrow = mysql_fetch_assoc(mysql_query($q))) $pgrow = array("title" => $title);
+	$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+	if(!$pgrow = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $pgrow = array("title" => $title);
 	
 	if(!$title) $title = $pgrow['title'];
 	$titleurl = formatNameURL($title);
@@ -179,9 +179,9 @@ if($_GET['title']){
 	<div id="pgedhistory" class="pgedbg">
 		<?
 	
-		$query = "SELECT * FROM pages_edit WHERE `title`='".mysql_real_escape_string($title)."' ORDER BY `datetime` DESC;";
-		$res = mysql_query($query);
-		if(!$versions = mysql_num_rows($res)) {
+		$query = "SELECT * FROM pages_edit WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' ORDER BY `datetime` DESC;";
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$versions = mysqli_num_rows($res)) {
 			echo "No edits yet recorded.";
 		} else {
 			if($versions > 1) {
@@ -195,7 +195,7 @@ if($_GET['title']){
 			<table border="0" cellpadding="0" cellspacing="0" width="100%" id="wiki-history">
 			<?
 			$i = 0;
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				
 				//dont show the row if it's a draft and doesn't belong to the viewer
 				//if(!$row['published'] && $row['usrid'] != $usrid) continue;
@@ -222,7 +222,7 @@ if($_GET['title']){
 				$rev = "";
 				if($row['reverted_from']) {
 					$q = "SELECT datetime FROM pages_edit WHERE session_id='".$row['reverted_from']."' LIMIT 1";
-					$revdat = mysql_fetch_object(mysql_query($q));
+					$revdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					$rev = '<i style="color:#888;">Reverted from <a href="history.php?view_version='.$row['reverted_from'].'">'.formatDate($revdat->datetime, 10).'</a></i> &nbsp; ';
 				}
 				

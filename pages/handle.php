@@ -30,7 +30,7 @@ if($path){
 if($title == "Special:random") {
 	
 	$q = "SELECT title FROM pages WHERE redirect_to = '' ORDER BY RAND() LIMIT 1";
-	if($row = mysql_fetch_assoc(mysql_query($q))) header("Location: ".pageURL($row['title']));
+	if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) header("Location: ".pageURL($row['title']));
 	else die("Error finding random page");
 	
 } elseif($title == "Special:featured") {
@@ -45,8 +45,8 @@ if($title == "Special:random") {
 	<ul>
 		<?
 		$query = "SELECT * FROM pages WHERE `title` != '' AND redirect_to = '' ORDER BY `title`";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<li><a href="'.pageURL($row['title'], $row['type']).'">'.$row['title'].'</a></li>';
 		}
 		?>
@@ -70,19 +70,11 @@ if($title == "Special:random") {
 	<p>The most requested page content that hasn't been started yet.</p>
 	<ol>
 		<?
-		// new method (new table created 2012-05-27; Give it a while to collect data before showing this method)
 		$query = "SELECT COUNT(*) AS `count`, `title` FROM `pagecount_requestfail` GROUP BY `title` ORDER BY `count` DESC LIMIT 50";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			echo '<li><a href="/content/'.formatNameURL($row['title']).'">'.$row['title'].'</a> ('.$row['count'].' requests)</li>';
 		}
-		
-		// old method
-		/*$query = "SELECT * FROM pagecount WHERE corresponding_id = '' ORDER BY `count` DESC LIMIT 50";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
-			echo '<li><a href="/content/'.formatNameURL($row['title']).'">'.$row['title'].'</a> ('.$row['count'].' requests)</li>';
-		}*/
 		?>
 	</ol>
 	<?
@@ -275,10 +267,10 @@ if($title) {
 		//Uber Trick - visit every page in the SSX series
 		if(strstr($pg->title, "SSX")){
 			$query = "SELECT from_pgid AS pgid FROM pages_links WHERE `to` = 'SSX series' AND namespace = 'Category'";
-			$res   = mysql_query($query);
-			while($pl_row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($pl_row = mysqli_fetch_assoc($res)){
 				$q = "SELECT * FROM pages_tracks WHERE pgid='".$pl_row['pgid']."' AND usrid='$usrid' LIMIT 1";
-				if(!mysql_num_rows(mysql_query($q))){
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 					$unvisited = true;
 					break;
 				}

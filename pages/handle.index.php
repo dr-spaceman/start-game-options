@@ -14,10 +14,11 @@ if(!$index || !in_array($index, array_keys($pgtypes))) exit;
 
 $query = sprintf(
 	"SELECT `json` FROM pages_index_json WHERE `type` = '%s' AND `letter` = '$letter' LIMIT 1",
-	$GLOBALS['db']->res($index)
+	mysqli_real_escape_string($GLOBALS['db']['link'], $index)
 );
-if(!$row = $GLOBALS['db']->select($query)) exit;
-$rows = (array)json_decode($row['json']);
+$res = mysqli_query($GLOBALS['db']['link'], $query);
+if(!$row = mysqli_fetch_assoc($res)) exit;
+$rows = (array) json_decode($row['json']);
 
 if(!count($rows)){
 	die('<i class="null">No results.</i>');

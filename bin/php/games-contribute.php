@@ -25,7 +25,7 @@ if($action == "set message cookie") {
 
 if($_POST && $gid) {
 	$q = "SELECT * FROM games WHERE gid='$gid' LIMIT 1";
-	if(!$gdat = mysql_fetch_object(mysql_query($q))) die("Couldn't get game data for gid # $gid");
+	if(!$gdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get game data for gid # $gid");
 }
 
 if($do == "load") {
@@ -98,8 +98,8 @@ if($action == "submit_trivia") {
 		$contr->status = "publish";
 		$contr->subj = "games_trivia:id:".mysqlNextAutoIncrement("games_trivia").":";
 		$q = "INSERT INTO games_trivia (gid, fact, datetime, usrid) VALUES 
-		('$gid', '".mysql_real_escape_string($fact)."', '".date("Y-m-d H:i:s")."', '$usrid')";
-		if(!mysql_query($q)) die("Couldn't update games_trivia database; ".mysql_error());
+		('$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $fact)."', '".date("Y-m-d H:i:s")."', '$usrid')";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update games_trivia database; ".mysql_error());
 	} else $contr->status = "pend";
 	$cres = $contr->submitNew();
 	
@@ -262,8 +262,8 @@ if($action == "pub_form") {
 				<td>
 					<?
 					$query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-					$res   = mysql_query($query);
-					while($row = mysql_fetch_assoc($res)) {
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
+					while($row = mysqli_fetch_assoc($res)) {
 						$pfs[] = $row;
 						if($row['notable']) $pfs_n[] = $row;
 					}
@@ -398,7 +398,7 @@ if($action == "submit pub") {
 		$rd = $in['year']."-".$in['month']."-".$in['day'];
 		//get # of current pubs and decide if this should be the primary pub
 		$q = "SELECT * FROM games_publications WHERE gid='$gid' LIMIT 1";
-		if(!mysql_num_rows(mysql_query($q))) $primary = '1';
+		if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $primary = '1';
 		else $primary = '0';
 		
 		$boxfiles = processBoxes($_FILES['file'], $gid);
@@ -417,12 +417,12 @@ if($action == "submit pub") {
 			$q = sprintf(
 				"INSERT INTO games_publications (gid, platform_id, title, region, release_date, `primary`, `placeholder_img`) VALUES 
 				('$gid', '%s', '%s', '%s', '$rd', '$primary', '%s')",
-				mysql_real_escape_string($in['platform_id']),
-				mysql_real_escape_string($in['title']),
-				mysql_real_escape_string($in['region']),
-				mysql_real_escape_string($in['placeholder_img'])
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['platform_id']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['title']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['region']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['placeholder_img'])
 			);
-			if(!mysql_query($q)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				sendBug("Error adding a user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysql_error());
 				die("Error saving to database; ".mysql_error());
 			}
@@ -471,7 +471,7 @@ if($action == "screens_form") {
 		//user already uploaded some screens?
 		$dir = "/media/".$gdat->title_url."-".$gdat->gid."-screens-uid".$usrid;
 		$q = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-		if($x = mysql_fetch_object(mysql_query($q))) {
+		if($x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$has_note = ' (you have uploaded '.$x->quantity.' so far)';
 			$desc = htmlsc($x->description);
 		} else {
@@ -574,13 +574,13 @@ if($action == "upload screen") {
 			
 			$dir = "/media/".$gdat->title_url."-".$gdat->gid."-screens-uid".$usrid;
 			
-			$desc = mysql_real_escape_string($_POST['description']);
+			$desc = mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['description']);
 			$desc = trim($desc);
 			if(!$desc) $desc = htmlSC($gdat->title)." screenshots";
 			
 			$media_query = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-			$media_res = mysql_query($media_query);
-			if(!mysql_num_rows($media_res)) {
+			$media_res = mysqli_query($GLOBALS['db']['link'], $media_query);
+			if(!mysqli_num_rows($media_res)) {
 			
 				//make dir
 				$subj = $_SERVER['DOCUMENT_ROOT'].$dir;
@@ -593,17 +593,17 @@ if($action == "upload screen") {
 				
 				$q = "INSERT INTO media (directory, category_id, description, gallery, datetime, usrid, quantity, unpublished) VALUES 
 				('$dir', '1', '$desc', '1', '".date("Y-m-d H:i:s")."', '$usrid', '1', '".($contr->status == "pend" ? '1' : '')."')";
-				if(!mysql_query($q)) die("Couldn't add to db: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to db: ".mysql_error());
 				
 				$q = "INSERT INTO media_tags (media_id, tag) VALUES ('$nextid', 'gid:".$gdat->gid."')";
-				if(!mysql_query($q)) die("Couldn't add to tag db: ".mysql_error());
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add to tag db: ".mysql_error());
 				
 			} else {
 				
 				//qty + 1
-				$dat = mysql_fetch_object($media_res);
+				$dat = mysqli_fetch_object($media_res);
 				$q = "UPDATE media SET `quantity`='".($dat->quantity + 1)."', `description`='$desc' WHERE media_id='".$dat->media_id."' LIMIT 1";
-				mysql_query($q);
+				mysqli_query($GLOBALS['db']['link'], $q);
 				
 				$media_id = $dat->media_id;
 				
@@ -627,8 +627,8 @@ if($action == "upload screen") {
 						$capt = strip_tags($capt);
 						$capt = htmlSC($capt);
 						$q = sprintf("INSERT INTO media_captions (media_id, `file`, `caption`) VALUES ('$media_id', '".$file."', '%s')",
-							mysql_real_escape_string($capt));
-						if(!mysql_query($q)) echo "Error! Couldn't add caption. ";
+							mysqli_real_escape_string($GLOBALS['db']['link'], $capt));
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) echo "Error! Couldn't add caption. ";
 					}
 					
 					//thumb
@@ -672,8 +672,8 @@ if($action == "ss source") {
 	$source = trim($_POST['sname']);
 	if($_POST['surl'] != "http://" && $_POST['surl'] != "") $source = '<a href="'.htmlSC($_POST['surl']).'" target="_blank">'.$source.'</a>';
 	if($source) {
-		$q = "UPDATE media SET `source`='".mysql_real_escape_string($source)."' WHERE `directory`='/media/$dir' LIMIT 1";
-		if(!mysql_query($q)) die("Couldn't update database: ".mysql_error());
+		$q = "UPDATE media SET `source`='".mysqli_real_escape_string($GLOBALS['db']['link'], $source)."' WHERE `directory`='/media/$dir' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update database: ".mysql_error());
 		else die("Source input saved.");
 	}
 	
@@ -716,13 +716,13 @@ if($action == "check_name") {
 	
 	//check if the person exists and what roles he already has listed for this game
 	list($checkname, $name_url) = formatName($name);
-	$checkname = mysql_real_escape_string($checkname);
-	$res = mysql_query("SELECT * FROM people WHERE name='$checkname' LIMIT 1");
+	$checkname = mysqli_real_escape_string($GLOBALS['db']['link'], $checkname);
+	$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE name='$checkname' LIMIT 1");
 	$roles = array();
-	if($pdat = mysql_fetch_object($res)) {
-		$res2 = mysql_query("SELECT role FROM people_work WHERE gid='$gid' AND pid='".$pdat->pid."'");
-		if(mysql_num_rows($res2)) {
-			while($row = mysql_fetch_assoc($res2)) {
+	if($pdat = mysqli_fetch_object($res)) {
+		$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT role FROM people_work WHERE gid='$gid' AND pid='".$pdat->pid."'");
+		if(mysqli_num_rows($res2)) {
+			while($row = mysqli_fetch_assoc($res2)) {
 				$roles[] = $row['role'];
 			}
 		}
@@ -734,12 +734,12 @@ if($action == "check_name") {
 		
 		$matches = array();
 		
-		$query = "SELECT `name`, `alias`, pid, `title`, MATCH (`name`, `alias`) AGAINST ('".mysql_real_escape_string($checkname)."') AS `score` 
+		$query = "SELECT `name`, `alias`, pid, `title`, MATCH (`name`, `alias`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $checkname)."') AS `score` 
 			FROM people 
-			WHERE MATCH (`name`, `alias`) AGAINST ('".mysql_real_escape_string($checkname)."') 
+			WHERE MATCH (`name`, `alias`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $checkname)."') 
 			ORDER BY `score` DESC LIMIT 10";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row['score'] > 1) $matches[] = $row;
 		}
 		
@@ -881,8 +881,8 @@ if($action == "submit_person") {
 		$contr->desc = '[pid='.$pid.'/] role in [gid='.$gid.'/] ('.$_POST['role'].')';
 		$contr->data = '{pid:}'.$pid.'|--|{gid:}'.$gid.'|--|{role:}'.$_POST['role'].'|--|{notes:}'.$_POST['notes'].'|--|{vital:}'.$vital;
 		
-		$res = mysql_query("SELECT * FROM people WHERE pid='$pid' LIMIT 1");
-		if(!$pdat = mysql_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
+		$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE pid='$pid' LIMIT 1");
+		if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
 		
 		//post automatically?
 		if($usrrank >= 4) {
@@ -891,8 +891,8 @@ if($action == "submit_person") {
 			$contr->subj = "people_work:id:".mysqlNextAutoIncrement("people_work").":";
 			
 			$q = "INSERT INTO people_work (pid, gid, role, notes, vital) VALUES 
-			('".mysql_real_escape_string($pid)."', '".mysql_real_escape_string($gid)."', '".mysql_real_escape_string($_POST['role'])."', '".mysql_real_escape_string($_POST['notes'])."', '$vital')";
-			if(!mysql_query($q)) die("Couldn't update people work database; ".mysql_error());
+			('".mysqli_real_escape_string($GLOBALS['db']['link'], $pid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $gid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['role'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes'])."', '$vital')";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysql_error());
 			
 		} else {
 			
@@ -939,10 +939,10 @@ if($action == "submit_person") {
 			
 			$q = sprintf("INSERT INTO people (name, name_url, title, created, modified, contributors) VALUES 
 			('%s', '%s', '%s', '$now', '$now', 'usrid:$usrid');",
-			mysql_real_escape_string($name),
-			mysql_real_escape_string($name_url),
-			mysql_real_escape_string($title));
-			if(!mysql_query($q)) die("Couldn't add $name to people database; ".mysql_error());
+			mysqli_real_escape_string($GLOBALS['db']['link'], $name),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $name_url),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $title));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $name to people database; ".mysql_error());
 			else {
 				$contr_res1 = $contr->submitNew();
 				if($contr_res1['errors']) die("Error: ".implode("; ", $contr_res1['errors']));
@@ -961,8 +961,8 @@ if($action == "submit_person") {
 			$contr->subj = 'people_work:id:'.$workid.':';
 			
 			$q = "INSERT INTO people_work (pid, gid, role, notes, vital) VALUES 
-			('".mysql_real_escape_string($pid)."', '".mysql_real_escape_string($gid)."', '".mysql_real_escape_string($_POST['role'])."', '".mysql_real_escape_string($_POST['notes'])."', '$vital')";
-			if(!mysql_query($q)) die("Couldn't update people work database; ".mysql_error());
+			('".mysqli_real_escape_string($GLOBALS['db']['link'], $pid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $gid)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['role'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['notes'])."', '$vital')";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update people work database; ".mysql_error());
 			
 			$contr_res2 = $contr->submitNew();
 			
@@ -1009,12 +1009,12 @@ if($action == "select_pid") {
 	
 	if(!$pid = $_POST['pid']) die("No pid given");
 	
-	$res = mysql_query("SELECT * FROM people WHERE pid='$pid' LIMIT 1");
-	if(!$pdat = mysql_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
+	$res = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM people WHERE pid='$pid' LIMIT 1");
+	if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysql_error());
 	
-	$res = mysql_query("SELECT role FROM people_work WHERE gid='$gid' AND pid='$pid'");
-	if(mysql_num_rows($res)) {
-		while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], "SELECT role FROM people_work WHERE gid='$gid' AND pid='$pid'");
+	if(mysqli_num_rows($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$roles[] = $row['role'];
 		}
 	}
@@ -1049,8 +1049,8 @@ if($action == "select_pid") {
 				<select name="" id="gc-select-role">
 					<option value="">Select a common role...</option>
 					<?
-					$result = mysql_query("SELECT role, COUNT(role) AS count FROM `people_work` WHERE role != '' GROUP BY role ORDER BY role");
-					while ($row = mysql_fetch_assoc($result)) {
+					$result = mysqli_query($GLOBALS['db']['link'], "SELECT role, COUNT(role) AS count FROM `people_work` WHERE role != '' GROUP BY role ORDER BY role");
+					while ($row = mysqli_fetch_assoc($result)) {
 						if($row['count'] >= 4) echo '<option value="'.$row['role'].'">'.$row['role'].'</option>';
 					}
 					?>
@@ -1120,9 +1120,9 @@ if($action == "submit_quote") {
 		$subj = "games_quotes:".mysqlNextAutoIncrement("games_quotes");
 		$q = sprintf("INSERT INTO games_quotes (gid, quote, cut_off, quoter, usrid, datetime) VALUES 
 		('$gid', '%s', '1', '%s', '$usrid', '$now');",
-		mysql_real_escape_string($quote),
-		mysql_real_escape_string($quoter));
-		if(!mysql_query($q)) die("Couldn't add quote to database; ".mysql_error());
+		mysqli_real_escape_string($GLOBALS['db']['link'], $quote),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $quoter));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add quote to database; ".mysql_error());
 		
 	} else {
 		

@@ -21,8 +21,8 @@ foreach($credits as $p) {
 	}
 	$pname = str_replace("[[", "", $p['name']);
 	$pname = str_replace("]]", "", $pname);
-	$q = "SELECT * FROM pages_games WHERE `title` = '".mysql_real_escape_string($pname)."' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$q = "SELECT * FROM pages_games WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pname)."' LIMIT 1";
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$dat->platform = str_replace("[[", "", $dat->platform);
 	$dat->platform = str_replace("]]", "", $dat->platform);
 	

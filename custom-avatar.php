@@ -7,7 +7,7 @@ if($_GET['action'] == 'delete_av') {
 	if(!unlink($_SERVER['DOCUMENT_ROOT']."/bin/img/avatars/tn/custom/".$usrid.".png")) die("Error: couldn't delete thumbnail.");
 	@unlink($_SERVER['DOCUMENT_ROOT']."/bin/img/avatars/sm/custom/".$usrid.".png");
 	$q = "UPDATE users SET avatar='' WHERE usrid='$usrid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 }
 
 if($_FILES['file']) {
@@ -47,7 +47,7 @@ if($_FILES['file']) {
 				else $errors[] = 'Thumbnail couldn\'t be created: ' . $handle->error;
 				
 				$q = "UPDATE users SET avatar='custom/".$usrid.".png' WHERE usrid='$usrid' LIMIT 1";
-				mysql_query($q);
+				mysqli_query($GLOBALS['db']['link'], $q);
 				
 			} else $errors[] = 'Couldn\t upload image: ' . $handle->error;
 		} else {

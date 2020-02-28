@@ -22,7 +22,7 @@ if($action == "submimg"){
 	
 	$img_tag = $_POST['img_tag']; // a string or array with tagwords to tag this image with
 	$img_category_id = $_POST['img_category_id']; // a given category id to attribute to this image
-	if($img_category_id && !mysql_num_rows(mysql_query("SELECT * FROM images_categories WHERE img_category_id = '$img_category_id' LIMIT 1"))) unset($img_category_id);
+	if($img_category_id && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images_categories WHERE img_category_id = '$img_category_id' LIMIT 1"))) unset($img_category_id);
 	
 	// evaluate $handler [sessid, usrid] and use these given vars
 	// otherwise fall back on defaults
@@ -45,8 +45,8 @@ if($action == "submimg"){
 	
 	if($handler['usrid']) $usrid = $handler['usrid'];
 	if(!$usrid) NNdie('no user session registered; Please log in to upload.');
-	$q = "SELECT * FROM users WHERE usrid='".mysql_real_escape_string($usrid)."' LIMIT 1";
-	if(!$usr = mysql_fetch_object(mysql_query($q))) NNdie("Couldn't find user details");
+	$q = "SELECT * FROM users WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $usrid)."' LIMIT 1";
+	if(!$usr = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) NNdie("Couldn't find user details");
 	
 	$dir = "/images/".substr($sessid, 12, 7); // images/USRID
 	if(!is_dir($_SERVER['DOCUMENT_ROOT'].$dir)){
@@ -127,7 +127,7 @@ if($action == "submimg"){
 			//check filename in database and avoid duplicates
 		  $i = 0;
 		  $t_file_body = $file_body;
-		  while(mysql_num_rows(mysql_query("SELECT * FROM images WHERE img_name = '".mysql_real_escape_string($file_name)."' LIMIT 1"))){
+		  while(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $file_name)."' LIMIT 1"))){
 		  	$i++;
 		  	$t_file_body = $file_body."_".$i;
 		  	$file_name = $t_file_body.".".$handle->file_src_name_ext;
@@ -152,7 +152,7 @@ if($action == "submimg"){
 			if($_POST['reupload']){
 				
 				$q = "UPDATE `images` SET `img_size` = '".$handle->file_src_size."', `img_width` = '".$handle->image_src_x."', `img_height` = '".$handle->image_src_y."', `img_bits` = '".$handle->image_src_bits."' WHERE img_id = '$img->img_id' LIMIT 1";
-				if(!mysql_query($q)){
+				if(!mysqli_query($GLOBALS['db']['link'], $q)){
 					copy($_SERVER['DOCUMENT_ROOT']."/bin/deleted-files/".$file_name, $_SERVER['DOCUMENT_ROOT'].$dir."/".$file_name);
 					NNdie("Database error [SD139]");
 				}
@@ -160,16 +160,16 @@ if($action == "submimg"){
 			} else {
 				
 				//if the current imgs have been rearranged, make sure this one goes at the end
-				$q = "SELECT `sort` FROM images WHERE img_session_id = '".mysql_real_escape_string($sessid)."' ORDER BY `sort` DESC LIMIT 1";
-				$last_img = mysql_fetch_object(mysql_query($q));
+				$q = "SELECT `sort` FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' ORDER BY `sort` DESC LIMIT 1";
+				$last_img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				if($last_img->sort) $sort = $last_img->sort + 1;
 				else $sort = '0';
 				
 				//images
 				$img_id = mysqlNextAutoIncrement("images");
 				$q = "INSERT INTO `images` (`img_name`, `img_session_id`, `img_size`, `img_width`, `img_height`, `img_bits`, `img_minor_mime`, `img_category_id`, `usrid`, `sort`) VALUES 
-					('".mysql_real_escape_string($file_name)."', '$sessid', '".$handle->file_src_size."', '".$handle->image_src_x."', '".$handle->image_src_y."', '".$handle->image_src_bits."', '".$handle->image_src_type."', '$img_category_id', '$usrid', '$sort')";
-				if(!mysql_query($q)) NNdie("Couldn't insert image entry into database");
+					('".mysqli_real_escape_string($GLOBALS['db']['link'], $file_name)."', '$sessid', '".$handle->file_src_size."', '".$handle->image_src_x."', '".$handle->image_src_y."', '".$handle->image_src_bits."', '".$handle->image_src_type."', '$img_category_id', '$usrid', '$sort')";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) NNdie("Couldn't insert image entry into database");
 				
 				//given tags
 				if($img_tag){
@@ -179,23 +179,23 @@ if($action == "submimg"){
 					else $tags[0] = $img_tag;
 					foreach($tags as $tag){
 						$tag = formatName($tag);
-						if($tag != '') $q.= "('$img_id', '".mysql_real_escape_string($tag)."', '$usrid'),";
+						if($tag != '') $q.= "('$img_id', '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."', '$usrid'),";
 					}
 					if($q) $q = "INSERT INTO images_tags (img_id, tag, usrid) VALUES ".substr($q, 0, -1).";";
-					mysql_query($q);
+					mysqli_query($GLOBALS['db']['link'], $q);
 				}
 				
 				//images_sessions
-				$query = "SELECT * FROM images_sessions WHERE img_session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-				if(!mysql_num_rows(mysql_query($query))){
+				$query = "SELECT * FROM images_sessions WHERE img_session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
 					$img_session_description = $img_category_id && $tags[0] ? $tags[0] : date("Y-M-d");
 					$q = "INSERT INTO images_sessions (`img_session_id`, `img_session_description`, `usrid`) VALUES 
-						('$sessid', '".mysql_real_escape_string($img_session_description)."', '$usrid')";
-					if(!mysql_query($q)) NNdie("Couldn't begin session with database");
+						('$sessid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_session_description)."', '$usrid')";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) NNdie("Couldn't begin session with database");
 				}
-				$sessdat = mysql_fetch_object(mysql_query($query));
+				$sessdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
 				$q = "UPDATE images_sessions SET img_qty = '".($sessdat->img_qty + 1)."', img_session_modified = CURRENT_TIMESTAMP() WHERE img_session_id='".$sessid."' LIMIT 1";
-				mysql_query($q);
+				mysqli_query($GLOBALS['db']['link'], $q);
 				
 			}
 			

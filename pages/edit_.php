@@ -13,8 +13,8 @@ if($sessid = $_GET['destroysession']){
 	
 	//DESTROY AND EDIT SESSION
 	
-	$q = "SELECT * FROM pages_edit WHERE session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if(!$pe = mysql_fetch_object(mysql_query($q))) {
+	$q = "SELECT * FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if(!$pe = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		if($_GET['returnonfail']) {
 			header("Location: ".pageURL($_GET['returnonfail']));
 			die("Session not yet recorded");
@@ -48,8 +48,8 @@ if($sessid = $_GET['destroysession']){
 		exit;
 	}
 	
-	$q = "DELETE FROM pages_edit WHERE session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if(!mysql_query($q)) die("Error removing session from database");
+	$q = "DELETE FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing session from database");
 	
 	recalculatePageContr($pe->title);
 	
@@ -74,8 +74,8 @@ if(!$title && !$pgid) die('No page id or title given. <a href="/pages/">back</a>
 
 $sessid = $_POST['sessid'] ? $_POST['sessid'] : date("YmdHis").sprintf("%07d", $usrid);
 
-$q = "SELECT * FROM pages WHERE ".($pgid ? "pgid='".mysql_real_escape_string($pgid)."'" : "`title`='".mysql_real_escape_string($title)."'")." LIMIT 1";
-$dbdat = mysql_fetch_object(mysql_query($q));
+$q = "SELECT * FROM pages WHERE ".($pgid ? "pgid='".mysqli_real_escape_string($GLOBALS['db']['link'], $pgid)."'" : "`title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."'")." LIMIT 1";
+$dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 $pgid = $dbdat->pgid;
 
 if($_GET['editsource'] || $_POST['editsource']){
@@ -95,7 +95,7 @@ $title_url = formatNameURL($title);
 $filedir   = "/pages/files/".preg_replace("/[^a-z0-9_-]/i", "", $title_url)."/";
 $pgtype    = ($row['pgtype'] ? $row['pgtype'] : $_POST['in']['pgtype']);
 
-if($dbdat) $_pg->data = mysql_fetch_assoc(mysql_query($q));
+if($dbdat) $_pg->data = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 else $_pg->data = array("title" => $title, "type" => $pgtype);
 
 $in = $_POST['in'];
@@ -117,11 +117,11 @@ $_pg->editHeader();
 if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php">Log In</a> in order to edit this page.</big>');
 
 //check for previous sessions
-	$query = "SELECT * FROM pages_edit WHERE title='".mysql_real_escape_string($title)."' AND usrid='$usrid' AND published='0' AND session_id != '$sessid' ".($dbdat ? "AND `datetime` > DATE_ADD('".$dbdat->modified."', INTERVAL -1 DAY)" : "")." ORDER BY `datetime` DESC";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)){
+	$query = "SELECT * FROM pages_edit WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='$usrid' AND published='0' AND session_id != '$sessid' ".($dbdat ? "AND `datetime` > DATE_ADD('".$dbdat->modified."', INTERVAL -1 DAY)" : "")." ORDER BY `datetime` DESC";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)){
 		echo '<div style="margin:0 0 5px; padding:7px 10px; background-color:#FFB;"><b>You have unpublished sessions for this page title.</b> You can build upon your previous session or continue with the form below to start from scratch.<ul>';
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			echo '<li><a href="history.php?view_version='.$row['session_id'].'">'.formatDate($row['datetime'], 2).'</a> <span style="color:#AAA;">[<a href="edit.php?title='.$title_url.'&editsource='.$row['session_id'].'">build</a>]</span> '.$row['edit_summary'].'</li>';
 		}
 		echo '</ul></div>';
@@ -132,10 +132,10 @@ if(!$pgtype) {
 	// START A PAGE //
 	
 	//check the title for matches
-	$query = "SELECT `title`, MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($title)."') AS `score` FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($title)."') ORDER BY `score` DESC LIMIT 20";
-	$res   = mysql_query($query);
+	$query = "SELECT `title`, MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."') AS `score` FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."') ORDER BY `score` DESC LIMIT 20";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	$matches = array();
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		if($row['score'] > 3) $matches[] = $row['title'];
 	}
 	
@@ -722,8 +722,8 @@ if(!$pgtype) {
 	
 	<?
 	$watch = array();
-	$q = "SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($title)."' AND usrid='".$usrid."' LIMIT 1";
-	$watch = mysql_fetch_assoc(mysql_query($q));
+	$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='".$usrid."' LIMIT 1";
+	$watch = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	?>
 	<fieldset style="padding:10px;">

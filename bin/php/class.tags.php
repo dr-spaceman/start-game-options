@@ -34,22 +34,22 @@ function addTag($arr){
 	
 	//already tagged with this?
 	$q = sprintf("SELECT * FROM `%s` WHERE `%s`='%s' AND `tag`='%s' LIMIT 1", 
-		mysql_real_escape_string($handle[0]),
-		mysql_real_escape_string($handle[1]),
-		mysql_real_escape_string($handle[2]),
-		mysql_real_escape_string($tag));
-	if(mysql_num_rows(mysql_query($q))) $ret['error'] = "This item is already tagged with '$tag'.";
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $tag));
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $ret['error'] = "This item is already tagged with '$tag'.";
 	
 	//if the subject's a forum post, get thread id to match for double tagging
 	if($handle[0] == "forums_tags" && $handle[1] == "pid"){
-		$q = "SELECT tid FROM forums_posts WHERE pid = '".mysql_real_escape_string($handle[2])."' LIMIT 1";
-		if(!$fpost = mysql_fetch_assoc(mysql_query($q))) $ret['error'] = "Couldn't get forum thread data";
+		$q = "SELECT tid FROM forums_posts WHERE pid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."' LIMIT 1";
+		if(!$fpost = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $ret['error'] = "Couldn't get forum thread data";
 	}
 	
 	//check forum topic for double tagging
 	if($fpost['tid']){
-		$q = "SELECT * FROM forums_tags WHERE tid = '".$fpost['tid']."' AND `tag`='".mysql_real_escape_string($tag)."' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) $ret['error'] = "This forum thread is already tagged with '$tag'.";
+		$q = "SELECT * FROM forums_tags WHERE tid = '".$fpost['tid']."' AND `tag`='".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' LIMIT 1";
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $ret['error'] = "This forum thread is already tagged with '$tag'.";
 	}
 	
 	if(!$ret['error']) {
@@ -67,12 +67,12 @@ function addTag($arr){
 		}
 		
 		$q = sprintf("INSERT INTO `%s` (`%s`, `tag`, `usrid`) VALUES ('%s', '%s', '$usrid');", 
-			mysql_real_escape_string($handle[0]),
-			mysql_real_escape_string($handle[1]),
-			mysql_real_escape_string($handle[2]),
-			mysql_real_escape_string($tag));
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $tag));
 		$ret['tagid'] = mysqlNextAutoIncrement($handle[0]);
-		if(!mysql_query($q)) $ret['error'] = "Error adding tag to database: ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = "Error adding tag to database: ".mysql_error();
 		else{
 			$pglinks = new pglinks();
 			$pglinks->attr['class'] = "tag-link";
@@ -84,7 +84,7 @@ function addTag($arr){
 		//if the subject's a forum post, also tag the topic
 		if($fpost['tid']){
 			$q = "UPDATE forums_tags SET tid = '".$fpost['tid']."' WHERE id = '".$ret['tagid']."' LIMIT 1";
-			mysql_query($q);
+			mysqli_query($GLOBALS['db']['link'], $q);
 		}
 		
 		// save this tag as a cookie for quick access
@@ -142,10 +142,10 @@ if($_POST['_action'] == "rm_tag") {
 	$handle = explode(":", $tag); //ie posts_tags:id:123
 	
 	$q = sprintf("DELETE FROM `%s` WHERE `%s`='%s' LIMIT 1;", 
-		mysql_real_escape_string($handle[0]),
-		mysql_real_escape_string($handle[1]),
-		mysql_real_escape_string($handle[2]));
-	if(!mysql_query($q)) die("Error removing tag from database: ".mysql_error());
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1]),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database: ".mysql_error());
 	
 	exit;
 	
@@ -156,10 +156,10 @@ if($_GET['q'] && $_GET['timestamp']) {
 	//autocomplete query
 	
 	$q = $_GET['q'];
-	//$query = "SELECT title, type FROM pages WHERE MATCH(`title`,`keywords`) AGAINST('".mysql_real_escape_string($q)."') AND redirect_to='' AND title_unpublished='' LIMIT 100";
-	$query = "SELECT title, type FROM pages WHERE (`title` LIKE '%".mysql_real_escape_string($q)."%' OR `keywords` LIKE '%".mysql_real_escape_string($q)."%') AND redirect_to='' AND title_unpublished='' LIMIT 100";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	//$query = "SELECT title, type FROM pages WHERE MATCH(`title`,`keywords`) AGAINST('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND redirect_to='' AND title_unpublished='' LIMIT 100";
+	$query = "SELECT title, type FROM pages WHERE (`title` LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%' OR `keywords` LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%') AND redirect_to='' AND title_unpublished='' LIMIT 100";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		echo $row['title'].'|'.$row['type']."\n";
 	}
 	
@@ -200,8 +200,8 @@ class tags {
 		if(!$subj) $subj = $this->subj;
 		
 		$handle = explode(":", $subj);
-		$query = "SELECT * FROM `".mysql_real_escape_string($handle[0])."` WHERE `".mysql_real_escape_string($handle[1])."`='".mysql_real_escape_string($handle[2])."'";
-		$this->num_tags = mysql_num_rows(mysql_query($query));
+		$query = "SELECT * FROM `".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0])."` WHERE `".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1])."`='".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."'";
+		$this->num_tags = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 		return $this->num_tags;
 		
 	}
@@ -215,16 +215,16 @@ class tags {
 		
 		$handle = explode(":", $this->subj);
 		$query = sprintf("SELECT * FROM `%s` WHERE `%s`='%s'".($limit ? " LIMIT $limit" : ""),
-			mysql_real_escape_string($handle[0]),
-			mysql_real_escape_string($handle[1]),
-			mysql_real_escape_string($handle[2]));
-		$res   = mysql_query($query);
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[0]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[1]),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2]));
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		
-		if($show === 0) $show = mysql_num_rows($res);
+		if($show === 0) $show = mysqli_num_rows($res);
 		
 		$i = 0;
 		$o_tags = '';
-		while($row = mysql_fetch_assoc($res)){
+		while($row = mysqli_fetch_assoc($res)){
 			$tagitem = $this->tagItem($row);
 			if(++$i > $show) $tagitem = str_replace('style="', 'style="display:none;', $tagitem);
 			$o_tags.= $tagitem;
@@ -281,10 +281,10 @@ class tags {
 		if(!$subj) $subj = $this->subj;
 		
 		$handle = explode(":", $subj);
-		$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysql_real_escape_string($handle[2])."'";
-		$res   = mysql_query($query);
+		$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."'";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$tags = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$tags[] = $row['tag'];
 		}
 		
@@ -337,9 +337,9 @@ class tags {
 			if($this->subj){
 				//get current tags and add to $match_against
 				$handle = explode(":", $this->subj);
-				$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysql_real_escape_string($handle[2])."'";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."'";
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					$match_against[] = $row['tag'];
 				}
 			}
@@ -370,20 +370,20 @@ class tags {
 			
 			$handle = explode(":", $this->subj);
 			$ctags = array();
-			$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysql_real_escape_string($handle[2])."'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$query = "SELECT * FROM `$handle[0]` WHERE `$handle[1]`='".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."'";
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$ctags[] = $row['tag'];
 			}
 			
 			$q = "";
 			foreach($tags as $t){
 				if($t['namespace'] == "Tag" && !in_array($t['tag'], $ctags)){
-					$q.= "('".mysql_real_escape_string($handle[2])."', '".mysql_real_escape_string($t['tag'])."', '$usrid'),";
+					$q.= "('".mysqli_real_escape_string($GLOBALS['db']['link'], $handle[2])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $t['tag'])."', '$usrid'),";
 				}
 			}
 			if($q){
-				if(!mysql_query("INSERT INTO `$handle[0]` (`$handle[1]`, tag, usrid) VALUES ".substr($q, 0, -1))) return FALSE;
+				if(!mysqli_query($GLOBALS['db']['link'], "INSERT INTO `$handle[0]` (`$handle[1]`, tag, usrid) VALUES ".substr($q, 0, -1))) return FALSE;
 			}
 			
 		}

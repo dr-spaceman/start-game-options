@@ -14,13 +14,13 @@ if($_POST) {
 		
 		if(!$usrid) die("Log in first");
 		
-		$q = "SELECT * FROM watchlist WHERE supersubject = '".mysql_real_escape_string($ssubj)."' AND usrid = '$usrid' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))){
-			$q = "DELETE FROM watchlist WHERE supersubject = '".mysql_real_escape_string($ssubj)."' AND usrid = '$usrid'";
-			if(!mysql_query($q)) die("Couldn't delete $ssubj from watch list");
+		$q = "SELECT * FROM watchlist WHERE supersubject = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ssubj)."' AND usrid = '$usrid' LIMIT 1";
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
+			$q = "DELETE FROM watchlist WHERE supersubject = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ssubj)."' AND usrid = '$usrid'";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't delete $ssubj from watch list");
 		} else {
-			$q = "INSERT INTO watchlist (usrid, supersubject) VALUES ('$usrid', '".mysql_real_escape_string($ssubj)."');";
-			if(!mysql_query($q)) die("Couldn't add $ssubj to watch list");
+			$q = "INSERT INTO watchlist (usrid, supersubject) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $ssubj)."');";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add $ssubj to watch list");
 		}
 		
 		exit;
@@ -31,10 +31,10 @@ if($_POST) {
 		
 		if(!$usrid) die("Log in first");
 		
-		$q = "SELECT no_points FROM users_contributions WHERE contribution_id = '".mysql_real_escape_string($cid)."' AND usrid = '$usrid' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))){
-			$q = "UPDATE users_contributions SET no_points = '".($dat->no_points ? '0' : '1')."' WHERE contribution_id = '".mysql_real_escape_string($cid)."' LIMIT 1";
-			if(!mysql_query($q)) die("Couldn't update contribution data");
+		$q = "SELECT no_points FROM users_contributions WHERE contribution_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cid)."' AND usrid = '$usrid' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
+			$q = "UPDATE users_contributions SET no_points = '".($dat->no_points ? '0' : '1')."' WHERE contribution_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cid)."' LIMIT 1";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update contribution data");
 		} else die("Error: Couldn't get that data row");
 		
 		exit;
@@ -47,8 +47,8 @@ if($_POST) {
 		$notes = trim($_POST['_notes']);
 		if($notes == "" || $notes == "Add notes about this particular update") exit;
 		
-		$q = "UPDATE users_contributions SET `notes` = '".mysql_real_escape_string($notes)."' WHERE contribution_id = '$cid' LIMIT 1";
-		if(!mysql_query($q)) die("Error updating notes; ".mysql_error());
+		$q = "UPDATE users_contributions SET `notes` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $notes)."' WHERE contribution_id = '$cid' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error updating notes; ".mysql_error());
 		
 		exit;
 		
@@ -59,9 +59,9 @@ if($_POST) {
 		if($subj == "undefined") die('<div class="msg">Couldn\'t load field history :(</div>');
 		
 		$query = "SELECT usrid, datetime, data FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE subject = '$subj' AND published = '1' ORDER BY datetime DESC;";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$rows  = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$rows[] = $row;
 		}
 		if(!count($rows)) die('<div class="msg">No history found for this field</div>');
@@ -109,15 +109,15 @@ if($_POST) {
 				break;
 			case "pub-platform":
 				$query = "SELECT platform FROM games_platforms WHERE platform_id='$inp' LIMIT 1";
-				$res   = mysql_query($query);
-				if($dat = mysql_fetch_object($res)) die($dat->platform);
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				if($dat = mysqli_fetch_object($res)) die($dat->platform);
 				break;
 			case "person nationality":
 				echo '<div style="padding-left:20px; background:url(/bin/img/flags/'.strtolower($ret).'.png) no-repeat 0 1px;">'.$ret.'</div>';
 				break;
 			case "game pub platform":
 				$q = "SELECT platform FROM games_platforms WHERE platform_id='$ret' LIMIT 1";
-				$dat = mysql_fetch_object(mysql_query($q));
+				$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 				echo $dat->platform;
 				break;
 			case "bb2html":
@@ -274,7 +274,7 @@ if($_POST) {
 				if($thisf['delete']) {
 					$contr->data.= "|--|{*delete_row:}True; Delete this entry|--|{*previous_values:}";
 					$q = "SELECT * FROM `people_work` WHERE id = '$wid' LIMIT 1";
-					$row = mysql_fetch_assoc(mysql_query($q));
+					$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 					$contr->data.= "Role:".$row['role']."; Notes:".$row['notes'];
 					$contr->no_points = TRUE;
 					if($usrrank <= 7) $contr->status = "pend";
@@ -321,13 +321,13 @@ if($_POST) {
 					if(!$pend) {
 						
 						$q = "DELETE FROM `".$table."` WHERE gid='$gid'";
-						if(!mysql_query($q)) $errors[] = $thisf['desc'].": Couldn't delete old rows from $table";
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = $thisf['desc'].": Couldn't delete old rows from $table";
 						else {
 							$q = "";
-							foreach($data as $str) $q.= "('$gid', '".mysql_real_escape_string($str)."'),";
+							foreach($data as $str) $q.= "('$gid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $str)."'),";
 							if($q) {
 								$q = "INSERT INTO `$table` VALUES ".substr($q, 0, -1).";";
-								if(!mysql_query($q)) $errors[] = $thisf['desc'].": Couldn't update database; ".mysql_error();
+								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = $thisf['desc'].": Couldn't update database; ".mysql_error();
 							}
 						}
 						
@@ -348,7 +348,7 @@ if($_POST) {
 					
 					if($usrrank == 9) {
 						$q = "DELETE FROM games_publications WHERE id='$pubid' LIMIT 1";
-						if(!mysql_query($q)) $errors[] = "Couldn't delete from db; ".mysql_error();
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from db; ".mysql_error();
 						else $results[] = "Publication #$pubid deleted";
 					} else {
 						//suggest
@@ -387,7 +387,7 @@ if($_POST) {
 						
 						if($thisf['primary']) {
 							$q = "UPDATE games_publications SET `primary`='' WHERE gid='$gid'";
-							mysql_query($q);
+							mysqli_query($GLOBALS['db']['link'], $q);
 						}
 						
 						$contr->status = "publish";
@@ -451,12 +451,12 @@ if($_POST) {
 				}
 				
 				$q = "UPDATE games SET 
-					`unpublished` = '".mysql_real_escape_string($thisf['field']['unpublished'])."',
-					`classic` = '".mysql_real_escape_string($thisf['field']['classic'])."',
-					`vapid` = '".mysql_real_escape_string($thisf['field']['vapid'])."',
-					`featured` = '".mysql_real_escape_string($thisf['field']['featured'])."' 
+					`unpublished` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['unpublished'])."',
+					`classic` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['classic'])."',
+					`vapid` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['vapid'])."',
+					`featured` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $thisf['field']['featured'])."' 
 					WHERE gid='$thisf[gid]' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "[status] mysql error: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "[status] mysql error: ".mysql_error();
 				else $results[] = "Game status updated";
 				
 				break;
@@ -479,7 +479,7 @@ if($_POST) {
 							if($thisf['on_null'] == "delete") {
 								$contr->data.= "|--|{*delete_row:}True; Delete this entry|--|{*previous_value:}";
 								$q = "SELECT `$_field` FROM `$table` WHERE `$ofield` = '$oid' LIMIT 1";
-								$row = mysql_fetch_assoc(mysql_query($q));
+								$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 								$contr->data.= $row[$_field];
 							}
 							$contr->no_points = TRUE;
@@ -510,8 +510,8 @@ if($_POST) {
 			<span class="arrow-left" style="color:#666">Back to</span> <b><a href="<?=$_POST['return_url']?>"><?=$_POST['return_title']?></a></b>
 			<?
 			if($_POST['primary_ssubj']) {
-				$q = "SELECT * FROM watchlist WHERE supersubject = '".mysql_real_escape_string($_POST['primary_ssubj'])."' AND usrid = '$usrid' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) $watching = TRUE;
+				$q = "SELECT * FROM watchlist WHERE supersubject = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['primary_ssubj'])."' AND usrid = '$usrid' LIMIT 1";
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $watching = TRUE;
 				?>
 				&nbsp;&nbsp;&nbsp;
 				<span class="chbox<?=($watching ? ' chbox-checked' : '')?>" onclick="if(!chboxLoading(this)) watchList('<?=$_POST['primary_ssubj']?>');"><span></span>Add <?=$_POST['return_title']?> to your watch list</span> 

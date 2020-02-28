@@ -13,7 +13,7 @@ $pgtype    = $row['pgtype'];
 if(!$pgtype) $page->die_("No page type detected");
 
 $_pg->ile  = true;
-$dbdat     = mysql_fetch_object(mysql_query($masterq));
+$dbdat     = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $masterq));
 
 $in        = $_POST['in'];
 if($in)      require("edit_process.php");
@@ -22,11 +22,11 @@ else $in   = $row;
 
 //check for previous sessions
 if(!$_POST){
-	$query = "SELECT * FROM pages_edit WHERE title='".mysql_real_escape_string($title)."' AND usrid='$usrid' AND published='0' AND session_id != '$sessid' ORDER BY `datetime` DESC";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)){
+	$query = "SELECT * FROM pages_edit WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='$usrid' AND published='0' AND session_id != '$sessid' ORDER BY `datetime` DESC";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)){
 		$sess = 'You have unpublished sessions for this page title.</b> You can build upon your previous session or continue with the form below to start from scratch.<ul>';
-		while($row_ = mysql_fetch_assoc($res)) {
+		while($row_ = mysqli_fetch_assoc($res)) {
 			$sess.= '<li><a href="history.php?view_version='.$row_['session_id'].'">'.formatDate($row_['datetime'], 2).'</a> <span style="color:#AAA;">[<a href="edit.php?title='.$titleurl.'&editsource='.$row_['session_id'].'" title="build upon these changes">build</a>|<a href="edit.php?destroysession='.$row_['session_id'].'" title="permanently delete these changes" style="color:#E21D1D">destroy!</a>]</span> '.$row_['edit_summary'].'</li>';
 		}
 		$sess.= '</ul>';
@@ -77,8 +77,8 @@ if(!$_COOKIE['iledit'] || !$usrid){
 							<div style="margin:10px 0 0;">
 								<?
 								$watch = array();
-								$q = "SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($title)."' AND usrid='".$usrid."' LIMIT 1";
-								$watch = mysql_fetch_assoc(mysql_query($q));
+								$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='".$usrid."' LIMIT 1";
+								$watch = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 								if(!$watch){
 									?>
 									<label><input type="checkbox" name="watch[watch]" value="1"<?=($watch ? ' checked="checked"' : '')?> onclick="if( $(this).is(':checked') ) $('#ch-watch-email').show(); else $('#ch-watch-email').hide();"/> Watch this page</label> 

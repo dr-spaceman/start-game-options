@@ -12,16 +12,16 @@ class collection {
 		if(!$usrid) return false;
 		
 		if(!$in){
-			$q = "SELECT * FROM collection WHERE `title` = '".mysql_real_escape_string($title)."' AND usrid = '$usrid' LIMIT 1";
-			$in = mysql_fetch_assoc(mysql_query($q));
+			$q = "SELECT * FROM collection WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid = '$usrid' LIMIT 1";
+			$in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		
 		$pg = new pg($title);
 		
 		if($pg->id){
 			$query = "SELECT * FROM games_publications WHERE pgid='$pg->id' ORDER BY release_date";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				
 			}
 		}

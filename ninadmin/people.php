@@ -55,15 +55,15 @@ if($_GET['action'] == "deleteperson") {
 	if(!$pid = $_GET['pid']) die("no id given");
 	
 	$query = "SELECT `name` FROM `people` WHERE `pid` = '$pid' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($query))) die("Couldnt find data");;
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) die("Couldnt find data");;
 	
 	$query = "DELETE FROM `people` WHERE `pid` = '$pid'";
 	$query2 = "DELETE FROM `people_work` WHERE `pid` = '$pid'";
-	if(mysql_query($query)) {
+	if(mysqli_query($GLOBALS['db']['link'], $query)) {
 		$results[] = "Deleted from `people`";
 		adminAction($dat->name, "Deleted from people db");
 	} else $errors[] = "Could not delete from `people` db";
-	if(mysql_query($query2)) {
+	if(mysqli_query($GLOBALS['db']['link'], $query2)) {
 		$results[] = "Deleted from `people_work`";
 	} else $errors[] = "Could not delete from `people_work` db";
 }
@@ -76,10 +76,10 @@ if($_GET['action'] == "deleteperson") {
 if($_POST['action'] == "find person") {
 	
 	$q = "SELECT * FROM people WHERE `name` LIKE '$name'";
-	$res = mysql_query($q);
-	if(!mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $q);
+	if(!mysqli_num_rows($res)) {
 		$errors[] = "No results found for <i>$name</i>";
-	} elseif(mysql_num_rows($res) > 1) {
+	} elseif(mysqli_num_rows($res) > 1) {
 		$page->header();
 		?><h2>Narrow Results</h2>
 		<form action="people.php" name="people" method="post">
@@ -88,7 +88,7 @@ if($_POST['action'] == "find person") {
 				<select name="name" onchange="javascript:document.people.submit()">
 					<option value="" selected="selected">Select a person...</option>
 					<?
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						echo '<option value="'.htmlentities($row['name']).'">'.$row['name'].'</option>';
 					}
 					?>
@@ -144,7 +144,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			`name_url` = '".$in['name_url']."',
 			`alias` = '".$in['alias']."', 
 			`title` = '".$in['title']."', 
-			`bio` = '".mysql_real_escape_string($in['bio'])."', 
+			`bio` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['bio'])."', 
 			`prolific` = '".$in['prolific']."',
 			`not_creator` = '".$in['not_creator']."',
 			`dob` = '".$in['dob']."', 
@@ -153,7 +153,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			".($_POST['update_admin'] ? "`restrictions` = '".$in['restrictions']."', `contributors` = '$contributors', " : "")."
 			`modified` = '".date("Y-m-d")."' 
 			WHERE `pid` = '".$in['pid']."' LIMIT 1");
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Details updated";
 			adminAction($name, "Updated general details in people db");
 			if(!$in['noappend']) {
@@ -221,7 +221,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		if(!$pid = $_POST['pid']) die("Error: no PID input");
 		$query = "INSERT INTO `people_work` (`id`, `pid`, `gid`, `albumid`, `role`, `notes`, `vital`) VALUES 
 			(NULL, '$pid', '".$_POST['gid']."', '".$_POST['$albumid']."', '".addslashes($_POST['role'])."', '".addslashes($_POST['notes'])."', '".$_POST['vital']."')";
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Work added to Database";
 			adminAction("Added work: $name, gid $gid, $role", "people_work");
 			if(!contributeToPeople($pid, "usrid:".$usrid)) $errors[] = "Could not add your contribution to table";
@@ -237,7 +237,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			`notes` = '".addslashes($_POST['notes'])."', 
 			`vital` = ".($_POST['vital'] == 1 ? "'1'" : "NULL")." 
 			WHERE `id` = '".$_POST['workid']."' LIMIT 1";
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Work updated";
 			adminAction("Updated people: id $workid ".addslashes($role), "people_work");
 		} else $errors[] = "DB Error! Query: ".$query;
@@ -247,7 +247,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	//delete work
 	if($deletework = $_GET['deletework']) {
 		$query = "DELETE FROM `people_work` WHERE `id` = '$deletework' LIMIT 1";
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Deleted";
 			adminAction("Deleted a work entry from  db for $name", "people_work");
 		} else $errors[] = "Could not delete work";
@@ -260,7 +260,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			if($workid[$i]) {
 				list($pf, $pfid) = explode("||", $workid[$i]);
 				$query = "INSERT INTO `people_work` (`id`, `pid`, `$pf`, `role`, `notes`, `vital`) VALUES (NULL, '$pid', '$pfid', '".addslashes($role[$i])."', '".addslashes($notes[$i])."', '$vital[$i]')";
-				$res = mysql_query($query);
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
 				if(!$res) $errors[] = "Could not add. Query: ".$query;
 			}
 		}
@@ -281,11 +281,11 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		} else $in['date'] = date("Y-m-d");
 		$query = sprintf("INSERT INTO `people_interviews` (`id`, `pid`, `date`, `title`, `interview`, `source_name`, `source_url`, usrid, datetime) 
 			VALUES (NULL, '".$in['pid']."', '".$in['date']."', '%s', '%s', '%s', '%s', '$usrid', '".date("Y-m-d H:i:s")."')",
-			mysql_real_escape_string($in['title']),
-			mysql_real_escape_string($in['interview']),
-			mysql_real_escape_string($in['source_name']),
-			mysql_real_escape_string($in['source_url']));
-		if(mysql_query($query)) {
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['title']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['interview']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['source_name']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['source_url']));
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Interview added to Database";
 			adminAction("$name interview: ".$in['title'], "Added");
 			if(!contributeToPeople($in['pid'], "usrid:".$usrid)) $errors[] = "Could not add your contribution to table";
@@ -300,7 +300,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		
 		if($in[$iid]['delete']) {
 			$query = "DELETE FROM `people_interviews` WHERE `id` = '".$iid."' LIMIT 1";
-			if(mysql_query($query)) {
+			if(mysqli_query($GLOBALS['db']['link'], $query)) {
 				$results[] = "Deleted the interview";
 				adminAction("$name interview id #".$iid, "Deleted");
 			} else $errors[] = "Could not delete interview";
@@ -313,11 +313,11 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 				}
 			} else $in[$iid]['date'] = date("Y-m-d");
 			$query = sprintf("UPDATE `people_interviews` SET `date`='".$in[$iid]['date']."', `title`='%s', interview='%s', source_name='%s', source_url='%s' WHERE id='".$iid."' LIMIT 1",
-				mysql_real_escape_string($in[$iid]['title']),
-				mysql_real_escape_string($in[$iid]['interview']),
-				mysql_real_escape_string($in[$iid]['source_name']),
-				mysql_real_escape_string($in[$iid]['source_url']));
-			if(mysql_query($query)) {
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in[$iid]['title']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in[$iid]['interview']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in[$iid]['source_name']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in[$iid]['source_url']));
+			if(mysqli_query($GLOBALS['db']['link'], $query)) {
 				$results[] = "Interview updated";
 				adminAction("$name interview: ".$in[$iid]['title'], "Updated");
 			} else $errors[] = "Couldn't update database";
@@ -332,10 +332,10 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		if(!eregi("^(http://)", $in['url'])) die("invalid URL (did you include 'http://')");
 		$query = sprintf("INSERT INTO people_links (pid, `site`, `url`, `notes`, usrid, datetime) VALUES 
 			('".$in['pid']."', '%s', '%s', '%s', '$usrid', '".date("Y-m-d H:i:s")."')",
-			mysql_real_escape_string($in['site']),
-			mysql_real_escape_string($in['url']),
-			mysql_real_escape_string($in['notes']));
-		if(mysql_query($query)) {
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['site']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['url']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes']));
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Link added";
 			if(!contributeToPeople($in['pid'], "usrid:".$usrid)) $errors[] = "Could not add your contribution to table";
 		} else $errors[] = "Couldn't add link to database";
@@ -345,7 +345,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	//delete link
 	if($_GET['deletelink']) {
 		$query = "DELETE FROM `people_links` WHERE `id` = '".$_GET['deletelink']."' LIMIT 1";
-		if(mysql_query($query)) {
+		if(mysqli_query($GLOBALS['db']['link'], $query)) {
 			$results[] = "Deleted link";
 		} else $errors[] = "Could not delete link";
 		$here['links'] = "here";
@@ -359,7 +359,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	
 	//person's details
 	$query = "SELECT * FROM `people` WHERE ".($name ? "`name` = '$name'" : "pid='".$_GET['pid']."'")." LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($query))) die("couldn't get data for '$name'");
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) die("couldn't get data for '$name'");
 	
 	$name = $dat->name;
 	$dat->bio = stripslashes($dat->bio);
@@ -471,8 +471,8 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	$query = "SELECT * FROM people_work 
 	LEFT JOIN games ON (people_work.gid=games.gid) 
 	WHERE pid='$dat->pid' AND people_work.gid != '' ORDER BY games.title ASC";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		$gamework = '<table border="0" cellpadding="3" cellspacing="1" width="100%" class="persondata">
 			<tr>
 				<th width="45%"><h3>Games</h3></th>
@@ -480,7 +480,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 				<th width="35%">notes</th>
 				<th>Edit</th>
 			</tr>'."\n";
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			$row = stripslashesDeep($row);
 			$row['printnotes'] = strip_tags($row['notes']);
@@ -522,8 +522,8 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	
 	//albums
 	$query = "SELECT *, albums.id AS albums_id, people_work.id AS work_id FROM people_work LEFT JOIN albums USING (albumid) WHERE pid='$dat->pid' AND people_work.albumid != '' ORDER BY title";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		$albumwork = '<table border="0" cellpadding="3" cellspacing="1" width="100%" class="persondata">
 			<tr>
 				<th width="45%"><h3>Albums</h3></th>
@@ -531,7 +531,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 				<th width="35%">notes</th>
 				<th>Edit</th>
 			</tr>'."\n";
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			
 			$i++;
 			$row = stripslashesDeep($row);
@@ -577,14 +577,14 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	$query = "SELECT games.gid, games.title, platform_shorthand FROM games 
 	LEFT JOIN games_publications pub ON (games.gid=pub.gid AND `primary`='1') 
 	LEFT JOIN games_platforms pf ON (pub.platform_id=pf.platform_id) ORDER BY games.title";
-	if($res = mysql_query($query)) {
-		while($row = mysql_fetch_assoc($res)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$games .= '<option value="'.$row['gid'].'">'.$row['title'].' ('.$row['platform_shorthand'].')</option>'."\n";
 		}
 	}
 	$query = "SELECT `albumid`, `title`, `subtitle` FROM `albums` ORDER BY `title`";
-	if($res = mysql_query($query)) {
-		while($row = mysql_fetch_assoc($res)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strlen($row[title]) > 37)
 				$row[title] = substr($row[title], 0, 35) . "...";
 			$albums .= '<option value="'.$row['albumid'].'">'.$row['title'].': '.$row['subtitle']."</option>\n";
@@ -863,9 +863,9 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		<?
 		//interviews
 		$query = "SELECT * FROM people_interviews WHERE `pid` = '$dat->pid' ORDER BY `date` DESC";
-		$res = mysql_query($query);
-		if(mysql_num_rows($res)) {
-			while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				?>
 				<div id="interview-<?=$row['id']?>" style="padding:5px 0; border-top:1px solid #C0C0C0;">
 					<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -985,10 +985,10 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		
 		<?
 		$query = "SELECT * FROM `people_links` WHERE `pid` = '$dat->pid'";
-		$res = mysql_query($query);
-		if(mysql_num_rows($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)) {
 			echo '<ul>';
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li><a href="'.$row['url'].'">'.stripslashes($row['site']).'</a>';
 				if($usrrank >= 8 || ($usrid <= 7 && $row['usrid'] == $usrid)) echo ' <a href="people.php?name='.$name.'&action=edit+person&deletelink='.$row['id'].'" class="x">X</a>';
 				if($row['usrid'] && $row['datetime']) echo'<br/><small>Posted by '.outputUser($row['usrid'], FALSE).' on '.formatDate($row['datetime']).'</small>';
@@ -1037,16 +1037,16 @@ exit;
 	
 	//games & album list
 	$query = "SELECT `indexid`, `title`, `platform` FROM `games` ORDER BY `title`";
-	if($res = mysql_query($query)) {
-		while($row = mysql_fetch_assoc($res)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strlen($row[title]) > 47)
 				$row[title] = substr($row[title], 0, 45) . "...";
 			$games .= '<option value="gid||'.$row[indexid].'">'.$row[title].' ('.$platforms[$row[platform]].')</option>';
 		}
 	}
 	$query = "SELECT `albumid`, `title`, `subtitle` FROM `albums` ORDER BY `title`";
-	if($res = mysql_query($query)) {
-		while($row = mysql_fetch_assoc($res)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strlen($row[title]) > 37)
 				$row[title] = substr($row[title], 0, 35) . "...";
 			//if(strlen($row[subtitle]) > 15)
@@ -1149,19 +1149,19 @@ exit;
 				
 				//check if person exists in db
 				$query = "SELECT * FROM `people` WHERE `name` = '$name'";
-				$res = mysql_query($query);
-				if(!mysql_num_rows($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				if(!mysqli_num_rows($res)) {
 					$class = "pink";
 					unset($dat);
 				} else {
-					$dat = mysql_fetch_object($res);
+					$dat = mysqli_fetch_object($res);
 					//echo '<input type="hidden" name="pid['.$i.']" value="$dat->id" />';
 				}
 				
 				//check if person has work for this game already
 				$query = "SELECT * FROM `people_work` WHERE `pid` = '$dat->id' and `gid` = '$gid'";
-				$res = mysql_query($query);
-				if(mysql_num_rows($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				if(mysqli_num_rows($res)) {
 					$class = "yellow";
 					echo '<input type="hidden" name="multiple_entry['.$i.']" value="1" />';
 				}
@@ -1197,8 +1197,8 @@ exit;
 			} else {
 				//check if person exists in db
 				$query = "SELECT * FROM `people` WHERE `name` = '$xname[$i]'";
-				$res = mysql_query($query);
-				if(!mysql_num_rows($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				if(!mysqli_num_rows($res)) {
 					if(addPersonToDatabase($xname[$i])) {
 						$results[] = "Added <a href=\"/people/".str_replace(" ", "-", $xname[$i])."\">$xname[$i]</a> to the database";
 					} else {
@@ -1208,10 +1208,10 @@ exit;
 				}
 				if(!$skip_add_work[$i]) {
 					$query = "SELECT * FROM `people` WHERE `name` = '$xname[$i]'";
-					$res = mysql_query($query);
-					$dat = mysql_fetch_object($res);
+					$res = mysqli_query($GLOBALS['db']['link'], $query);
+					$dat = mysqli_fetch_object($res);
 					$query = "INSERT INTO `people_work` (`id`, `pid`, `gid`, `role`, `notes`, `vital`) VALUES (NULL, '$dat->id', '$gid', '$role[$i]', '$notes[$i]', '$vital[$i]')";
-					if(mysql_query($query)) {
+					if(mysqli_query($GLOBALS['db']['link'], $query)) {
 						$results[] = "<a href=\"/people/".str_replace(" ", "-", $xname[$i])."\">$xname[$i]</a> work added";
 						if($multiple_entry[$i]) $warnings[] = "$xname[$i] already had an entry for this game and your submission did not overwrite it. Please double check and make sure you didn't credit $xname[$i] for the same role.";
 					} else
@@ -1223,8 +1223,8 @@ exit;
 	
 	//gamedata
 	$query = "SELECT * FROM `games` WHERE `indexid` = '$gid'";
-	$res = mysql_query($query);
-	$gdat = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$gdat = mysqli_fetch_object($res);
 	
 	echo <<<EOF
 	
@@ -1270,24 +1270,24 @@ exit;
 
 //select names
 $query = "SELECT * FROM `people` WHERE `prolific` = '1' and `not_creator` = '0' ORDER BY `name`";
-if($res = mysql_query($query)) {
+if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 	$names = '<optgroup label="Prolific Creators">';
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		$names .= '<option value="'.htmlentities($row[name]).'">' . $row[name] . '</option>' . "\n";
 	}
 }
 $query = "SELECT * FROM `people` WHERE `prolific` = '0' and `not_creator` = '0' ORDER BY `name`";
-if($res = mysql_query($query)) {
+if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 	$names .= '</optgroup><optgroup label="Other Creators">';
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		$names .= '<option value="'.htmlentities($row[name]).'">' . $row[name] . '</option>' . "\n";
 	}
 	$names .= "</optgroup>";
 }
 $query = "SELECT * FROM `people` WHERE `not_creator` = '1' ORDER BY `name`";
-if($res = mysql_query($query)) {
+if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 	$names .= '</optgroup><optgroup label="Non-creators">';
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		$names .= '<option value="'.htmlentities($row[name]).'">' . $row[name] . '</option>' . "\n";
 	}
 	$names .= "</optgroup>";
@@ -1338,12 +1338,12 @@ function addPersonToDatabase($name) {
 	list($name, $dirname) = FormatName($name);
 	
 	//check if person already exists
-	if(mysql_num_rows(mysql_query("SELECT * FROM `people` WHERE `name` = '$name' OR name_url = '$dirname' LIMIT 1")))
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `people` WHERE `name` = '$name' OR name_url = '$dirname' LIMIT 1")))
 		die ("$name already exists in database");
 	
 	$query = "INSERT INTO `people` (`name`, name_url, created, modified) VALUES 
 		('$name', '$dirname', '".date("Y-m-d")."', '".date("Y-m-d")."')";
-	if(mysql_query($query)) {
+	if(mysqli_query($GLOBALS['db']['link'], $query)) {
 		$results[] = "$name has been added to the database";
 		adminAction($name, "Added person to people db");
 		return TRUE;
@@ -1359,12 +1359,12 @@ function reformatName($name) {
 function contributeToPeople($pid, $contr) {
 	global $db;
 	$query = "SELECT `contributors` FROM `people` WHERE pid='$pid' LIMIT 1";
-	$res = mysql_query($query);
-	$row = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$row = mysqli_fetch_object($res);
 	if(!$row->contributors) {
 		// none yet
 		$query2 = "UPDATE `people` SET `contributors` = '$contr' WHERE pid='$pid'";
-		$res = mysql_query($query2);
+		$res = mysqli_query($GLOBALS['db']['link'], $query2);
 		return $res;
 	} else {
 		$cons = array();
@@ -1374,7 +1374,7 @@ function contributeToPeople($pid, $contr) {
 		} else {
 			$cons[] = $contr;
 			$query2 = "UPDATE `people` SET `contributors` = '".implode(",", $cons)."' WHERE pid='$pid'";
-			$res = mysql_query($query2);
+			$res = mysqli_query($GLOBALS['db']['link'], $query2);
 			return $res;
 		}
 	}

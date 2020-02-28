@@ -7,10 +7,10 @@ function loadMyImgSessions($min=0, $max=30) {
 	
 	global $usrid;
 	if(!$usrid) return false;
-	$num_myImgs = mysql_num_rows(mysql_query("SELECT * FROM images_sessions WHERE usrid = '$usrid'"));
+	$num_myImgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images_sessions WHERE usrid = '$usrid'"));
 	if(!$num_myImgs) return false;
 	$query = "SELECT * FROM images_sessions WHERE usrid = '$usrid' ORDER BY img_session_created DESC";
-	$num_sessions = mysql_num_rows(mysql_query($query));
+	$num_sessions = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 	if($num_sessions > $max) $query.= " LIMIT $min, $max";
 	if(($min + $max) < $num_sessions){
 		$num_pgs = $num_sessions / $max;
@@ -18,10 +18,10 @@ function loadMyImgSessions($min=0, $max=30) {
 		$this_pg = $min / $max;
 		$this_pg++;
 	}
-	$res   = mysql_query($query);
-	$ret = '<div class="mouseposscroll" style="margin:-10px 0 0 -20px; padding:10px 0 0;"><ul class="imgslist mouseposscroll-container" style="width:'.(mysql_num_rows($res) * 110 + 220).'px">';
-	while($row=mysql_fetch_assoc($res)){
-		$file = mysql_fetch_object(mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	$ret = '<div class="mouseposscroll" style="margin:-10px 0 0 -20px; padding:10px 0 0;"><ul class="imgslist mouseposscroll-container" style="width:'.(mysqli_num_rows($res) * 110 + 220).'px">';
+	while($row=mysqli_fetch_assoc($res)){
+		$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
 		$img = new img($file->img_name);
 		$ret.= '<li class="a" title="'.htmlSC($row['img_session_description']).' ('.$row['img_qty'].' images)" onclick="img.loadForm(\'select\',{img_session_id:\''.$row['img_session_id'].'\'})"><img src="'.$img->src['tn'].'"/><div class="caption">'.$row['img_session_description'].'</div><div class="num">'.$row['img_qty'].'</div></li>';
 	}
@@ -44,15 +44,15 @@ if($act){
 			
 			$tags = array();
 			$query = "SELECT DISTINCT(`tag`) FROM images_tags ORDER BY `tag`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$tags[] = $row['tag'];
 			}
 			$p_tags = implode("`", $tags);
 			
 			$query = "SELECT * FROM images_categories ORDER BY sort";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$img_category_opts.= '<option value="'.$row['img_category_id'].'"'.($row['img_category_id'] == $img->img_category_id ? ' selected' : '').'>'.$row['img_category'].'</option>';
 			}
 			
@@ -261,17 +261,17 @@ if($act){
 			
 			if($_POST['img_session_id'] || $_POST['query']){
 				if($_POST['img_session_id']){
-					$query = "SELECT img_name, img_id FROM images WHERE img_session_id = '".mysql_real_escape_string($_POST['img_session_id'])."' ORDER BY `sort`";
+					$query = "SELECT img_name, img_id FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['img_session_id'])."' ORDER BY `sort`";
 					$back = 'img.loadForm(\'select\', {sessionlist:0})';
 				} elseif($_POST['query']){
-					$query = "SELECT img_name, img_id FROM images_tags LEFT JOIN images USING (img_id) WHERE `tag` = '".mysql_real_escape_string($_POST['query'])."'";
+					$query = "SELECT img_name, img_id FROM images_tags LEFT JOIN images USING (img_id) WHERE `tag` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['query'])."'";
 					$back = 'img.loadForm(\'search\', {query:\'\'})';
 				} else {
 					die("I am error.");
 				}
-				$res   = mysql_query($query);
-				$ret = '<form class="insimg-selimgs mouseposscroll"><ul class="imgslist mouseposscroll-container" style="width:'.(mysql_num_rows($res) * 110 + 500).'px">';
-				while($row=mysql_fetch_assoc($res)){
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				$ret = '<form class="insimg-selimgs mouseposscroll"><ul class="imgslist mouseposscroll-container" style="width:'.(mysqli_num_rows($res) * 110 + 500).'px">';
+				while($row=mysqli_fetch_assoc($res)){
 					$img = new img($row['img_name']);
 					$fsize = round($img->img_size * .0009765625);
 					if($fsize > 1024) $fsize = round($fsize * .0009765625, 2).'mb';
@@ -333,8 +333,8 @@ if($act){
 			if($_POST['load_imgcategoryid_options']){
 				$ret['imgcategoryid_options'] = '<option value="">Unclassified</option>';
 				$query = "SELECT * FROM images_categories ORDER BY sort";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					$ret['imgcategoryid_options'].= '<option value="'.$row['img_category_id'].'"'.($row['img_category_id'] == $img->img_category_id ? ' selected' : '').'>'.$row['img_category'].'</option>';
 				}
 			}
@@ -352,8 +352,8 @@ if($act){
 			$tags = new tags('images_tags:img_id:'.$img->img_id);
 			
 			$query = "SELECT * FROM images_categories ORDER BY sort";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$img_category_opts.= '<option value="'.$row['img_category_id'].'"'.($row['img_category_id'] == $img->img_category_id ? ' selected' : '').'>'.$row['img_category'].'</option>';
 			}
 			
@@ -448,8 +448,8 @@ if($act){
 			$img = new img($in['img_name']);
 			if($img->notfound) die(json_encode(array("error"=>"Couldn't find image data")));
 			
-			$q = "UPDATE images SET img_title = '".mysql_real_escape_string($in['img_title'])."', img_description = '".mysql_real_escape_string($in['img_description'])."', img_category_id = '".mysql_real_escape_string($in['img_category_id'])."' WHERE img_name = '".mysql_real_escape_string($in['img_name'])."' LIMIT 1";
-			if(!mysql_query($q)) $ret['error'] = "Couldn't save image data because of a database error";
+			$q = "UPDATE images SET img_title = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_title'])."', img_description = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_description'])."', img_category_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_category_id'])."' WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_name'])."' LIMIT 1";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = "Couldn't save image data because of a database error";
 			else $ret['success'] = '1';
 			
 			die(json_encode($ret));

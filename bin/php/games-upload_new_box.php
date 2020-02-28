@@ -86,11 +86,11 @@ if($_FILES['file']['nameXXXXXXXXXXX']) {
 	
 	//give points ?
 	$q = "SELECT * FROM users_contributions WHERE usrid='$usrid' AND type_id='15' AND supersubject='pid:$pid' AND published='1' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) $no_points = 1;
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $no_points = 1;
 	
 	//get desc
 	$q = "SELECT name, name_url FROM people WHERE pid='$pid' LIMIT 1";
-	$pdat = mysql_fetch_object(mysql_query($q));
+	$pdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	addUserContribution(
 		15, 

@@ -36,7 +36,7 @@ if($gamepg->subs[0] == "edit") $gamepg->edit_mode = TRUE;
 
 if($_GET['gid']) {
 	$query = "SELECT * FROM `games` WHERE gid='".$_GET['gid']."' LIMIT 1";
-	if(!$GLOBALS['gdat'] = mysql_fetch_object(mysql_query($query))) {
+	if(!$GLOBALS['gdat'] = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 		$page->title = "Videogam.in game page not found";
 		$page->error_404 = TRUE;
 		$page->header();
@@ -45,7 +45,7 @@ if($_GET['gid']) {
 	}
 } elseif($_GET['title_url']) {
 	$query = "SELECT * FROM `games` WHERE title_url='".$_GET['title_url']."' LIMIT 1";
-	if(!$GLOBALS['gdat'] = mysql_fetch_object(mysql_query($query))) {
+	if(!$GLOBALS['gdat'] = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 		$page->title = "Videogam.in game page not found";
 		$page->error_404 = TRUE;
 		$page->header();
@@ -77,13 +77,13 @@ if($submit == "Add Link") {
 			$datetime = date("Y-m-d H:i:s");
 			$q = sprintf("INSERT INTO games_links (gid, site_name, url, description, usrid, datetime) VALUES 
 				('$gdat->gid', '%s', '%s', '%s', '$usrid', '$datetime')",
-				mysql_real_escape_string($in['site_name']), 
-				mysql_real_escape_string($in['url']), 
-				mysql_real_escape_string($in['description']));
-			if(mysql_query($q)) {
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['site_name']), 
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['url']), 
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['description']));
+			if(mysqli_query($GLOBALS['db']['link'], $q)) {
 				
 				$q2 = "SELECT * FROM games_links WHERE datetime='$datetime' LIMIT 1";
-				$dat = mysql_fetch_object(mysql_query($q2));
+				$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q2));
 				$udat = getUserDat($usrid);
 				$headers = "From: $usrname <".$udat->email.">\r\n" .
     			'Reply-To: ' . $udat->email . "\r\n" .
@@ -171,7 +171,7 @@ if($gdat->creator == $usrid && $gdat->unpublished) {
 
 $page->trackback_tag = "gid:".$gdat->gid;
 $q = "SELECT text, usrid, datetime FROM wiki WHERE `field`='synopsis' AND subject_field='gid' AND subject_id='$gdat->gid' ORDER BY `datetime` DESC LIMIT 1";
-if($synopsis = mysql_fetch_object(mysql_query($q))) {
+if($synopsis = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 	$synopsis = bb2html($synopsis->text, "inline_citations");
 	$synopsis = reformatLinks($synopsis);
 	$page->meta_description = $gamepg->desc."; ".strip_tags($synopsis);
@@ -267,11 +267,11 @@ $page->header();
 // PEOPLE //
 if($gamepg->num_people) {
 	$query = "SELECT id, pid, name, name_url, `alias`, role, vital, notes FROM people_work LEFT JOIN people USING (pid) WHERE people_work.gid='".$gdat->gid."'".(!$gamepg->edit_mode ? " AND vital='1'" : "")." ORDER BY name";
-	$res   = mysql_query($query);
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	$pids = array();
 	$roles = array();
 	$p = array();
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		$row = stripslashesDeep($row);
 		if(!in_array($row['pid'], $pids)) $pids[] = $row['pid'];
 		$arr[$row['pid']] = array(
@@ -405,11 +405,11 @@ if($gamepg->num_albums) {
 	<h3>Groups</h3>
 	<?
 	$query = "SELECT g.*, COUNT(gm.group_id) AS members FROM groups_tags gt, groups_members gm, groups g WHERE gt.tag='gid:".$gdat->gid."' AND g.group_id=gt.group_id and gm.group_id=gt.group_id AND g.`status` != 'invite' GROUP BY gm.group_id ORDER BY members DESC, name DESC";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		?><ol id="groupslist"><?
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if($i < 5) {
 				$img = "no";
 				if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/groups/".$row['group_id']."_icon.png")) $img = $row['group_id'];
@@ -459,23 +459,23 @@ if($gamepg->num_albums) {
 
 $platforms = array();
 $query = "SELECT * FROM games_platforms WHERE platform != 'multiple' ORDER BY platform";
-$res   = mysql_query($query);
-while($row = mysql_fetch_assoc($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)) {
 	$platforms[$row['platform_id']] = $row['platform'];
 	$xplatforms[$row['platform']] = $row['platform_id'];
 }
 
 $i = 0;
 $query = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE gid='$gdat->gid' ORDER BY release_date ASC";
-$res   = mysql_query($query);
-if(!$pubnum = mysql_num_rows($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+if(!$pubnum = mysqli_num_rows($res)) {
 	$fs_boxes[] = '<li id="fs-'.$row['id'].'" class="on primary nobox"><div>This game has no box art yet<p><a href="javascript:void(0)" class="add" onclick="GCtoggle(\'pub\')">Add some</a></p></div></li>';
 } else {
 	include_once($_SERVER['DOCUMENT_ROOT']."/bin/php/country_codes.php");
 	
 	$o_box = '<ol>';
 	$i = 0;
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		$i++;
 		if($i == $pubnum && !$has_primary) {
 			//there's no primary pub!
@@ -525,10 +525,10 @@ if(!$pubnum = mysql_num_rows($res)) {
 									<p>Platform: <b>'.$row['o_pf'].'</b></p>';
 									//get contr credits
 									$query = "SELECT type_id, usrid, `datetime` FROM users_contributions WHERE (`subject` LIKE 'games_publications:id:".$row['id'].":%') AND `published`='1' ORDER BY `datetime`";
-									$res2  = mysql_query($query);
-									if(mysql_num_rows($res2)) {
+									$res2  = mysqli_query($GLOBALS['db']['link'], $query);
+									if(mysqli_num_rows($res2)) {
 										$userids = array();
-										while($row2 = mysql_fetch_assoc($res2)) {
+										while($row2 = mysqli_fetch_assoc($res2)) {
 											if(!in_array($row2['usrid'], $userids)) $userids[] = $row2['usrid'];
 										}
 										$o_box.= '<p class="rel-info">Contributors: ';
@@ -686,13 +686,13 @@ if(!$pubnum = mysql_num_rows($res)) {
 			
 			// FACTOIDS //
 			$query = "SELECT * FROM games_trivia WHERE gid='$gdat->gid' ORDER BY `datetime` ASC";
-			$res   = mysql_query($query);
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			?>
 			<div id="trivia">
 				<h3>Notes & Factoids</h3>
 				<ul>
 					<?
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						$row = stripslashesDeep($row);
 						$fact = bb2html($row['fact'], "inline_citations");
 						$fact = reformatLinks($fact);
@@ -705,10 +705,10 @@ if(!$pubnum = mysql_num_rows($res)) {
 							<ul>
 								<?
 								$query = "SELECT type_id, `datetime`, usrid FROM users_contributions WHERE (`subject` LIKE 'games_trivia:id:".$row['id'].":%') AND `published`='1' ORDER BY `datetime` ASC";
-								$res2  = mysql_query($query);
-								if(!mysql_num_rows($res2)) echo '<li>No further information available</li>';
+								$res2  = mysqli_query($GLOBALS['db']['link'], $query);
+								if(!mysqli_num_rows($res2)) echo '<li>No further information available</li>';
 								else {
-									while($row2 = mysql_fetch_assoc($res2)) {
+									while($row2 = mysqli_fetch_assoc($res2)) {
 										$lang = "edited";
 										if($row2['type_id'] == "4") $lang = "created";
 										echo '<li>'.outputUser($row2['usrid']).' '.$lang.' this on '.formatDate($row2['datetime']).'</li>';
@@ -774,18 +774,18 @@ $query = "SELECT * FROM media_tags
 	WHERE media_tags.tag='gid:$gdat->gid' AND media.category_id='1' AND unpublished != '1' 
 	ORDER BY media.datetime DESC 
 	LIMIT 1";
-$res = mysql_query($query);
-if(mysql_num_rows($res)) {
+$res = mysqli_query($GLOBALS['db']['link'], $query);
+if(mysqli_num_rows($res)) {
 ?>
 <div id="screens">
 	<h3>Newest <?=$gdat->title?> Screen Shots</h3>
 	<?
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		
 		//captions
 		$query = "SELECT * FROM media_captions WHERE media_id='".$row['media_id']."'";
-		$res   = mysql_query($query);
-		while($row2 = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row2 = mysqli_fetch_assoc($res)) {
 			$capts[$row2['file']] = $row2['caption'];
 		}
 		
@@ -852,8 +852,8 @@ if(mysql_num_rows($res)) {
 		echo "No related posts published";
 	} else {
 		$q = "SELECT * FROM posts_tags LEFT JOIN posts USING (nid) WHERE tag='gid:".$gdat->gid."' AND unpublished != 1 AND pending != 1 AND privacy = 'public' ORDER BY posts.datetime DESC LIMIT 10";
-		$r = mysql_query($q);
-		while($row = mysql_fetch_assoc($r)) {
+		$r = mysqli_query($GLOBALS['db']['link'], $q);
+		while($row = mysqli_fetch_assoc($r)) {
 			$rows[] = $row;
 		}
 		if($gamepg->num_news > 10) {
@@ -883,10 +883,10 @@ if($gamepg->num_links) {
 		<?
 		
 		$query = "SELECT * FROM games_links WHERE gid='$gdat->gid'";
-		$res   = mysql_query($query);
-		if(mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)) {
 			?><ul><?
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li>';
 				echo '<a href="'.$row['url'].'" target="_blank" class="link">'.$row['site_name'].'</a>';
 				if($usrrank > 7 || ($usrrank == 7 && $row['usrid'] == $usrid)) echo ' <a href="javascript:void(0)" onclick="if(confirm(\'Delete this link?\')) window.location=\'/ninadmin/games-mod.php?id='.$gdat->gid.'&what=links&delete='.$row['id'].'\';" class="x">X</a>';
@@ -1002,8 +1002,8 @@ if($gamepg->edit_mode) {
 			Input one genre per line
 			<p><textarea name="contr[genre][field]" rows="6" cols="50" class="output"><?
 				$query = "SELECT genre FROM games_genres WHERE gid='$gdat->gid'";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					echo stripslashes($row['genre'])."\n";
 				}
 			?></textarea>
@@ -1022,8 +1022,8 @@ if($gamepg->edit_mode) {
 			Input one developer per line
 			<p><textarea name="contr[developers][field]" rows="6" cols="50" class="output"><?
 				$query = "SELECT developer FROM games_developers WHERE gid='$gdat->gid'";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					echo stripslashes($row['developer'])."\n";
 				}
 			?></textarea>
@@ -1042,8 +1042,8 @@ if($gamepg->edit_mode) {
 			Input one series per line
 			<p><textarea name="contr[series][field]" rows="6" cols="30" class="output"><?
 				$query = "SELECT series FROM games_series WHERE gid='$gdat->gid'";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					echo stripslashes($row['series'])."\n";
 				}
 			?></textarea>

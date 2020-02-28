@@ -109,17 +109,17 @@ if($what=="all" || $what=="content"){
 	
 	$q_formatted = formatName($q);
 	
-	/*$query = "SELECT `title`, `description` FROM pages WHERE redirect_to='' AND `title` = '".mysql_real_escape_string($q)."' LIMIT 1";
-	if($row = mysql_fetch_assoc(mysql_query($query))) $matches['content'] = '<fieldset id="exactmatch"><legend>Exact Match</legend><big>'.bb2html('[['.$row['title'].']]</big>'.($row['description'] ? '<div style="margin-top:3px">'.$row['description'].'</div>' : ''), "pages_only").'</fieldset>';
+	/*$query = "SELECT `title`, `description` FROM pages WHERE redirect_to='' AND `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."' LIMIT 1";
+	if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))) $matches['content'] = '<fieldset id="exactmatch"><legend>Exact Match</legend><big>'.bb2html('[['.$row['title'].']]</big>'.($row['description'] ? '<div style="margin-top:3px">'.$row['description'].'</div>' : ''), "pages_only").'</fieldset>';
 	else $matches['content'] = '<fieldset id="exactmatch"><legend>Create This Page!</legend>There is no page named <i>'.$q.'</i> yet. <b><a href="/pages/edit.php?title='.formatNameURL($q).'" class="arrow-right">Start the <i>'.$q.'</i> page</a></b></fieldset>';*/
 	
-	$query = "SELECT `title`, `description`, `type`, MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($q)."') AS `score`
-		FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($q)."')
+	$query = "SELECT `title`, `description`, `type`, MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score`
+		FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."')
 		ORDER BY `score` DESC";
-	if($num['content'] = mysql_num_rows(mysql_query($query))){
-		$res = mysql_query($query.($what!="content" ? " LIMIT 8" : " LIMIT $min, $max"));
+	if($num['content'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
+		$res = mysqli_query($GLOBALS['db']['link'], $query.($what!="content" ? " LIMIT 8" : " LIMIT $min, $max"));
 		$o = '';
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if(strtolower($row['title']) == strtolower($q_formatted)) continue; // we'll output a pglabel below that will capture an exact match
 			$o.= '<dt><big>[['.$row['title'].']] ('.ucfirst($row['type']).')</big></dt>'.($row['description'] ? '<dd>'.$row['description'].'</dd>' : '');
 		}
@@ -139,12 +139,12 @@ if($what=="all" || $what=="posts"){
 //Albums
 if($what=="all" || $what=="albums"){
 	$types['albums'] = "Game Music";
-	$query = "SELECT `albumid`, `title`, `subtitle`, `cid`, `release`, MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysql_real_escape_string($q)."') AS `score`
-		FROM albums WHERE `view` = '1' AND MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysql_real_escape_string($q)."') 
+	$query = "SELECT `albumid`, `title`, `subtitle`, `cid`, `release`, MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score`
+		FROM albums WHERE `view` = '1' AND MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') 
 		ORDER BY `score` DESC";
-	if($num['albums'] = mysql_num_rows(mysql_query($query))){
-		$res = mysql_query($query.($what!="albums" ? " LIMIT 5" : " LIMIT $min, $max"));
-		while($row = mysql_fetch_assoc($res)) {
+	if($num['albums'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
+		$res = mysqli_query($GLOBALS['db']['link'], $query.($what!="albums" ? " LIMIT 5" : " LIMIT $min, $max"));
+		while($row = mysqli_fetch_assoc($res)) {
 			$img['src'] = "/music/media/cover/standard/".$row['albumid'].".png";
 			if(file_exists($_SERVER['DOCUMENT_ROOT'].$img['src'])){
 				list($img['width'], $img['height'], $img['type'], $img['attr']) = getimagesize($_SERVER['DOCUMENT_ROOT'].$img['src']);
@@ -163,17 +163,17 @@ while($what=="all" || $what=="forums"){
 	$max = $forum->topics_per_page;
 	
 	//first, search topic titles
-	$query = "SELECT tid, MATCH (`title`) AGAINST ('".mysql_real_escape_string($q)."') AS `score` 
-		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysql_real_escape_string($q)."') AND `invisible` <= '$usrrank';";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$query = "SELECT tid, MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score` 
+		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$usrrank';";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$tids[$row['tid']] = $row['score'];
 	}
 	//next, search post messages
-	$query = "SELECT tid, MATCH (`message`) AGAINST ('".mysql_real_escape_string($q)."') AS `score` 
-		FROM forums_posts WHERE MATCH (`message`) AGAINST ('".mysql_real_escape_string($q)."');";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$query = "SELECT tid, MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score` 
+		FROM forums_posts WHERE MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."');";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$tids[$row['tid']] = $tids[$row['tid']] + $row['score'];
 	}
 	
@@ -209,14 +209,14 @@ if($what == "all"){
 	$imgs = array();
 	
 	//get images by tag
-	$query = "SELECT DISTINCT(img_name) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysql_real_escape_string($q)."' OR `tag` LIKE '".mysql_real_escape_string($q)."|%'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) $imgs[] = $row['img_name'];
+	$query = "SELECT DISTINCT(img_name) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."' OR `tag` LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."|%'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) $imgs[] = $row['img_name'];
 	
 	//get images by description
-	$query = "SELECT img_name FROM images WHERE img_title LIKE '%".mysql_real_escape_string($q)."%' OR img_description LIKE '%".mysql_real_escape_string($q)."%'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$query = "SELECT img_name FROM images WHERE img_title LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%' OR img_description LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%'";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if(!in_array($row['img_name'], $imgs)) $imgs[] = $row['img_name'];
 	}
 	
@@ -300,8 +300,8 @@ if(!count($matches)){
 						foreach($cont as $tid) {
 							
 							$query = "SELECT * FROM forums_topics WHERE tid='$tid' LIMIT 1";
-							$res = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								
 								$row['title'] = stripslashes($row['title']);
 								
@@ -310,7 +310,7 @@ if(!count($matches)){
 								
 								//get forum
 								$query2 = "SELECT title, fid FROM forums WHERE fid='".$row['fid']."' LIMIT 1";
-								if($dat = mysql_fetch_object(mysql_query($query2))) {
+								if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query2))) {
 									$p_forum = '<a href="/forums/?fid='.$dat->fid.'">'.$dat->title.'</a>';
 								} else $p_forum = "";
 								

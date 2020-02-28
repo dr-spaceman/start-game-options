@@ -12,8 +12,8 @@ $page->css[] = "/posts/posts_form.css";
 
 //delete
 if($del = $_GET['delete']){
-	$q = "SELECT * FROM posts WHERE session_id = '".mysql_real_escape_string($del)."' LIMIT 1";
-	$in = mysql_fetch_assoc(mysql_query($q));
+	$q = "SELECT * FROM posts WHERE session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $del)."' LIMIT 1";
+	$in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	if(!$in) $errors[] = "That post doesn't exist in the database; Either we couldn't find it or it hasn't been saved yet.";
 	else {
 		//user has access?
@@ -22,16 +22,16 @@ if($del = $_GET['delete']){
 		if($in['options']['access'] && $usrrank < $in['options']['access']) $page->kill("<h1>Error</h1>This item is locked and can't be edited. [$usrrank < ".$in['options']['access']."]");
 		
 		$q = "DELETE FROM posts_edits WHERE nid = '$in[nid]'";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		$q = "DELETE FROM posts_tags WHERE nid = '$in[nid]'";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		$q = "DELETE FROM posts_ratings WHERE nid = '$in[nid]'";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
-		$q = "DELETE FROM posts WHERE session_id = '".mysql_real_escape_string($del)."' LIMIT 1";
-		if(!mysql_query($q)) {
+		$q = "DELETE FROM posts WHERE session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $del)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Database delete failure!";
 			$edid = $in['nid'];
 		} else {
@@ -46,7 +46,7 @@ if($edid = $_GET['edit']) {
 	//fetch edit data, etc
 	$page->title.= " / Edit Post";
 	$q = "SELECT * FROM posts WHERE nid = '".$edid."' LIMIT 1";
-	$in = mysql_fetch_assoc(mysql_query($q));
+	$in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	if(!$in) $page->kill(404);
 	$session_id = $in['session_id'];
 	$postdat = $in;
@@ -72,14 +72,14 @@ if($edid = $_GET['edit']) {
 	?><h1>Sblog Manager</h1><?
 	
 	$query = "SELECT * FROM posts WHERE usrid='$usrid' ORDER BY datetime DESC";
-	$res   = mysql_query($query);
-	if(!$num = mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$num = mysqli_num_rows($res)) {
 		?>You have no posts to manage. <a href="manage.php?action=newpost" class="plus"><b>+</b> New Sblog Post</a><?
 	} else {
 		if($num > 20 && !$_GET['show']) {
 			$words = 'Showing 20 of '.$num.' Posts &middot; <a href="?show=all">Show all</a>';
 			$query.= " LIMIT 20";
-			$res   = mysql_query($query);
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		} else $words = $num.' Post'.($num > 1 ? 's' : '');
 		?>
 		
@@ -87,7 +87,7 @@ if($edid = $_GET['edit']) {
 		
 		<table border="0" cellpadding="5" cellspacing="0" class="plain">
 			<?
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				$subdir = "posts";
 				if($row['category'] == "public") $subdir = "news";
 				elseif($row['category'] == "blog") $subdir = "blogs";
@@ -360,7 +360,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 									foreach($cont['audio_trackids'] as $tid) {
 										if($tid != "") {
 											$q = "SELECT track_name, disc, time, albumid, cid, title, subtitle FROM albums_tracks LEFT JOIN albums USING(albumid) WHERE albums_tracks.id='$tid' LIMIT 1";
-											$tdat = mysql_fetch_object(mysql_query($q));
+											$tdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 											?>
 											<li style="position:relative">
 												<a href="/music/?id=<?=$tdat->albumid?>" target="_blank" class="arrow-link"><?=$tdat->title?> <i><?=$tdat->subtitle?></i></a>&nbsp;
@@ -479,9 +479,9 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 			<div id="postshare">
 				<?
 				$query = "SELECT * FROM users_oauth WHERE usrid='$usrid'";
-				$res = mysql_query($query);
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
 				$oauth = array();
-				while($row = mysql_fetch_assoc($res)) $oauth[$row['oauth_provider']] = $row;
+				while($row = mysqli_fetch_assoc($res)) $oauth[$row['oauth_provider']] = $row;
 				?>
 				<dl>
 					<dt>Share</dt>
@@ -502,7 +502,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 					
 					<?
 					$q = "SELECT * FROM posts_polls WHERE nid='$postdat[nid]' LIMIT 1";
-					if($poll = mysql_fetch_assoc(mysql_query($q))) {
+					if($poll = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 						?>
 						There is already a poll in session. <label><input type="checkbox" name="poll[closed]" value="1"<?=($poll['closed'] ? ' checked="checked"' : '')?>/> Close poll</label>
 						<?
@@ -544,12 +544,12 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 							<option value="private"<?=($in['privacy'] == "private" ? ' selected="selected"' : '')?>>Private &mdash; anyone with the link can see it</option>
 							<?
 							$query = "SELECT name, name_url, g.group_id FROM groups_members gm LEFT JOIN groups g USING (group_id) WHERE gm.usrid='$usrid' ORDER BY name";
-							$res   = mysql_query($query);
-							if(mysql_num_rows($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							if(mysqli_num_rows($res)) {
 								?>
 								<optgroup label="Group &mdash; only members of a group can see it">
 									<?
-									while($row = mysql_fetch_assoc($res)) {
+									while($row = mysqli_fetch_assoc($res)) {
 										echo '<option value="group:'.$row['group_id'].'"'.($in['privacy'] == "group:".$row['group_id'] ? ' selected="selected"' : '').'> '.$row['name'].'</option>';
 									}
 									?>

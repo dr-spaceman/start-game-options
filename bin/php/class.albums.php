@@ -14,8 +14,8 @@ class album {
 		
 		$this->notfound = false;
 		
-		$q = "SELECT * FROM albums WHERE albumid = '".mysql_real_escape_string($albumid)."' LIMIT 1";
-		if($row = mysql_fetch_assoc(mysql_query($q))){
+		$q = "SELECT * FROM albums WHERE albumid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."' LIMIT 1";
+		if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$this->row = $row;
 			foreach($row as $key => $val) $this->{$key} = $val;
 			$this->url = "/music/?id=".$albumid;

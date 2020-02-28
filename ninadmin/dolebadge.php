@@ -14,9 +14,9 @@ if($_GET['init']){
 	switch($_GET['bid']){
 		case 1:
 			$q = "SELECT usrid FROM users LIMIT $lm, $max";
-			$res = mysql_query($q);
-			if($num = mysql_num_rows($res)){
-				while($row = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $q);
+			if($num = mysqli_num_rows($res)){
+				while($row = mysqli_fetch_assoc($res)){
 					$_badges->earn(1, $row[usrid]);
 				}
 			} else $err = "<b>All done!</b>";
@@ -24,9 +24,9 @@ if($_GET['init']){
 			
 		case '10':
 			$q = "SELECT DISTINCT(usrid) FROM posts where unpublished != '1' LIMIT $lm, $max";
-			$res = mysql_query($q);
-			if($num = mysql_num_rows($res)){
-				while($row = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $q);
+			if($num = mysqli_num_rows($res)){
+				while($row = mysqli_fetch_assoc($res)){
 					$_badges->earn(10, $row[usrid]);
 				}
 			} else $err = "<b>All done!</b>";
@@ -38,18 +38,18 @@ if($_GET['init']){
 		case 14:
 		case 38:
 			$q = "SELECT DISTINCT(usrid) FROM posts LIMIT $lm, $max";
-			$res = mysql_query($q);
-			if($num = mysql_num_rows($res)){
-				while($row_ = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $q);
+			if($num = mysqli_num_rows($res)){
+				while($row_ = mysqli_fetch_assoc($res)){
 					$query = "SELECT type, type2, rating, ratings, rating_weighted, usrid FROM posts WHERE usrid='$row_[usrid]' AND unpublished != '1' AND `pending` != '1'";
-					$res   = mysql_query($query);
-					if(mysql_num_rows($res)){
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
+					if(mysqli_num_rows($res)){
 						
 						$goodposts = 0;
 						$picposts = 0;
 						$postedtypes = array();
 						
-						while($row = mysql_fetch_assoc($res)){
+						while($row = mysqli_fetch_assoc($res)){
 						
 							if($in['type2'] == "review") $_badges->earn(13, $row_[usrid]); //review
 							
@@ -105,8 +105,8 @@ if($bid = $_POST['bid']){
 	//manually dole
 	
 	$uname = trim($_POST['username']);
-	$q = "SELECT usrid FROM users WHERE username = '".mysql_real_escape_string($uname)."' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$q = "SELECT usrid FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $uname)."' LIMIT 1";
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	if(!$dat->usrid) $errors[] = "Couldn't find username '$uname'.";
 	else {
 		$_badges->earn($bid, $dat->usrid);

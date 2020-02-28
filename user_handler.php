@@ -101,8 +101,8 @@ switch($section){
 		$page->title.= " / Fan Space";
 		
 		$query = "SELECT * FROM pages_fan WHERE usrid = '$u->id' ORDER BY `title`";
-		$res = mysql_query($query);
-		if(!$num_fan = mysql_num_rows($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$num_fan = mysqli_num_rows($res)){
 			$ret['formatted'] = $u->username.' isn\'t a fan of anything.';
 			break;
 		}
@@ -111,7 +111,7 @@ switch($section){
 		$types = array();
 		$sentiments = array();
 		
-		while($row = mysql_fetch_assoc($res)){
+		while($row = mysqli_fetch_assoc($res)){
 			$sentiments[$row['op']]++;
 			$num_sentiments++;
 			
@@ -185,14 +185,14 @@ switch($section){
 		
 		//get a list of platforms for the select box
 		$query = "SELECT COUNT(*) AS `rows`, `platform` FROM collection WHERE usrid='$u->id' GROUP BY `platform` ORDER BY `platform`";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) $options_platforms.= '<li class="fauxselect-option" data-value="'.htmlsc($row['platform']).'">'.$row['platform'].'</li>';
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) $options_platforms.= '<li class="fauxselect-option" data-value="'.htmlsc($row['platform']).'">'.$row['platform'].'</li>';
 		
 		//get a list of networks for the select box
 		$networks = array(); $networks_2 = array();
 		$query = "SELECT COUNT(*) AS `rows`, `network` FROM collection WHERE usrid='$u->id' GROUP BY `network` ORDER BY `network`";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			if($row['network'] == "other"){ $networks_2[] = "other"; continue; }
 			if($row['network']) $networks[] = $row['network'];
 		}
@@ -216,14 +216,14 @@ switch($section){
 			}
 			if($vars['query']){
 				$vars['query'] = trim($vars['query']);
-				$query = mysql_real_escape_string($vars['query']);
+				$query = mysqli_real_escape_string($GLOBALS['db']['link'], $vars['query']);
 				$where.= " AND (`title` LIKE '%$query%' OR `notes` LIKE '%$query%')";
 			}
 			if($vars['platform'] == "all") $vars['platform'] = "";
-			if($vars['platform']) $where.= " AND `platform` = '".mysql_real_escape_string($vars['platform'])."'";
+			if($vars['platform']) $where.= " AND `platform` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $vars['platform'])."'";
 			if(count($vars['network'])){
 				$where.= " AND (";
-				foreach($vars['network'] as $network) $where.= "`network` = '".mysql_real_escape_string($network)."' OR ";
+				foreach($vars['network'] as $network) $where.= "`network` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $network)."' OR ";
 				$where = substr($where, 0, -4).")";
 			}
 			if($vars['show'] == "all") $vars['show'] = "";
@@ -254,15 +254,15 @@ switch($section){
 		
 		//query
 		$query = "SELECT * FROM collection WHERE usrid='$u->id' $where ORDER BY sort ASC, date_added DESC";
-		$num_total_shelf_items = mysql_num_rows(mysql_query($query));
+		$num_total_shelf_items = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 		
 		$min = is_numeric($_GET['min']) ? $_GET['min'] : 0;
 		$max = $_GET['max'] == "*" ? $num_total_shelf_items : 50;
 		
 		$query.= " LIMIT $min, $max";
-		$res = mysql_query($query);
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		$num_shelf_items = 0;
-		while($row = mysql_fetch_assoc($res)){
+		while($row = mysqli_fetch_assoc($res)){
 			$shelf = new shelfItem();
 			$shelf->type = "game";
 			$shelf->img = $row['img_name'];
@@ -508,8 +508,8 @@ switch($section){
 		
 		// Love & Hate
 		$query = "SELECT op, remarks, `datetime`, `type`, `title`, `description`, rep_image FROM pages_fan LEFT JOIN pages USING(`title`) WHERE usrid = '$u->id' ORDER BY op, datetime DESC";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			if(substr($row['title'], 0, 8) == "AlbumId:"){
 				require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.albums.php";
 				$albumid = substr($row['title'], 8);
@@ -544,8 +544,8 @@ switch($section){
 		
 		//collection
 		$query = "SELECT * FROM collection WHERE usrid='$u->id' ORDER BY date_added DESC";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$shelf = new shelfItem();
 			$shelf->type = "game";
 			$row['no_headings'] = true;
@@ -571,8 +571,8 @@ switch($section){
 		
 		//pages
 		$query = "SELECT `title`, `type`, `subcategory`, `created`, rep_image FROM pages WHERE redirect_to='' and creator='$u->id' ORDER BY `created`";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$class = "patronsaint";
 			$repimgtn = a_repimg($row['rep_image']);
 			$url = pageURL($row['title'], $row['type']);
@@ -587,8 +587,8 @@ switch($section){
 		
 		// other stream stuff
 		$query = "SELECT * FROM stream WHERE usrid = '$u->id' AND action_type != 'earn badge'";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$class = "";
 			if(strstr($row['action'], "Patron Saint")){
 				$class = "patronsaint";

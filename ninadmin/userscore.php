@@ -10,27 +10,27 @@ if($_GET['init']){
 	
 	//record current scores and counts
 	$q = "SELECT usrid FROM users LIMIT $lm, $max";
-	$res = mysql_query($q);
-	if(!mysql_num_rows($res)) die("Finished");
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $q);
+	if(!mysqli_num_rows($res)) die("Finished");
+	while($row = mysqli_fetch_assoc($res)){
 		
 		$usr = $row[usrid];
 		$ins = array();
 		$userdat = getUserDat($usr);
-		$ins['num_forumposts'] = mysql_num_rows(mysql_query("SELECT * FROM forums_posts WHERE usrid = '$usr'"));
-		$ins['num_pageedits'] =  mysql_num_rows(mysql_query("SELECT * FROM `pages_edit` WHERE `usrid` = '$usr' AND published='1'"));
-		$ins['num_ps'] = mysql_num_rows(mysql_query("SELECT * FROM `pages` WHERE `contributors` = '$usr' OR `contributors` LIKE '$usr|%'"));
-		$ins['num_sblogposts'] = mysql_num_rows(mysql_query("SELECT * FROM `posts` WHERE `usrid` = '$usr' AND unpublished='0' AND pending='0'"));
+		$ins['num_forumposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_posts WHERE usrid = '$usr'"));
+		$ins['num_pageedits'] =  mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages_edit` WHERE `usrid` = '$usr' AND published='1'"));
+		$ins['num_ps'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages` WHERE `contributors` = '$usr' OR `contributors` LIKE '$usr|%'"));
+		$ins['num_sblogposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `posts` WHERE `usrid` = '$usr' AND unpublished='0' AND pending='0'"));
 		$ins['contribution_score'] = $userdat->contribution_score;
 		$ins['forum_rating'] = $userdat->forum_rating;
 		$ins['sblog_rating'] = $userdat->sblog_rating;
 		
 		$score = UserCalcScore($usr, $ins);
 		
-		if($score['total'] >= 1 && !mysql_num_rows(mysql_query("SELECT * FROM users_data WHERE usrid = '".$usr."' AND `date` = '".date("Y-m-d")."' LIMIT 1"))){
+		if($score['total'] >= 1 && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_data WHERE usrid = '".$usr."' AND `date` = '".date("Y-m-d")."' LIMIT 1"))){
 			$q2 = "INSERT INTO users_data (usrid, `date`, ".implode(", ", array_keys($ins)).", score_forums, score_pages, score_sblogs, score_total) VALUES 
 				('$usr', '".date("Y-m-d")."', '".implode("', '", array_values($ins))."', '".$score['forums']."', '".$score['pages']."', '".$score['sblogs']."', '".$score['total']."');";
-			if(!mysql_query($q2)) $err = "Error on Query: $q2; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysql_error();
 		}
 		
 		$q2 = "UPDATE users SET 
@@ -39,7 +39,7 @@ if($_GET['init']){
 			score_sblogs = '".$score['sblogs']."',
 			score_total = '".$score['total']."'
 			WHERE usrid = '$usr' LIMIT 1";
-		if(!mysql_query($q2)) $err = "Error on Query: $q2; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysql_error();
 		
 	}
 	

@@ -92,8 +92,8 @@ function pageURL($title, $pgtype='', $encode=1){
 	if($pgtype) $index = $pgtypes[$pgtype];
 	if(!$pgtype || $pgtype == "category"){
 		$title = formatName($title);
-		$q = "SELECT `type`, `subcategory` FROM pages WHERE `title` = '".mysql_real_escape_string($title)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))){
+		$q = "SELECT `type`, `subcategory` FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
 			if($dat->subcategory) $index = $pgsubcategories[$dat->subcategory];
 			$index = $index ? strtolower($index) : $pgtypes[$dat->type];
 		}
@@ -114,8 +114,8 @@ function validateEmail($email){
 
 /*function getPlatforms() {
 	$query = "SELECT * FROM games_platforms";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$ret[$row[platform_id]][platform] = $row[platform];
 		$ret[$row[platform_id]][platform_shorthand] = $row[platform_shorthand];
 	}
@@ -128,10 +128,10 @@ function getUserDat($params=''){
 	
 	if(!$params) $params = $GLOBALS['usrid'];
 	$uid = is_string($params) ? $params : $params['usrid'];
-	if($uid)                    $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE usrid='".mysql_real_escape_string($uid)."' LIMIT 1";
-	elseif($params['username']) $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE username='".mysql_real_escape_string($params['username'])."' LIMIT 1";
+	if($uid)                    $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $uid)."' LIMIT 1";
+	elseif($params['username']) $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE username='".mysqli_real_escape_string($GLOBALS['db']['link'], $params['username'])."' LIMIT 1";
 	else return false;
-	if(!$dat = mysql_fetch_object(mysql_query($q))) return false;
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return false;
 	
 	$dat->avatar_src = "/bin/img/avatars/".($dat->avatar ? $dat->avatar : 'unknown.png');
 	$dat->avatar_tn_src = "/bin/img/avatars/tn/".($dat->avatar ? $dat->avatar : 'unknown.png');
@@ -144,7 +144,7 @@ function formatDate ($date, $form = 1, $convert = FALSE) {
 	
 	if($convert && $usrid) {
 		$q = "SELECT time_zone FROM users_details WHERE usrid='$usrid' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$date = convertTimeZone($date, $dat->time_zone);
 		}
 	}
@@ -280,15 +280,15 @@ function convertTimeZone($dt, $tz) {
 function addPageView($pg='', $id='') {
 	global $db;
 	if(!$pg) $pg = preg_replace("/(index.php)$/", "", $_SERVER['SCRIPT_NAME']);
-	$query = "SELECT * FROM `pagecount` WHERE `title` = '".mysql_real_escape_string($pg)."' LIMIT 1;";
-	$res = mysql_query($query);
-	if(!$row = mysql_fetch_object($res)) {
-		$query = "INSERT INTO `pagecount` (`title`, `count`, `corresponding_id`) VALUES ('".mysql_real_escape_string($pg)."', 1, '$id')";
-		mysql_query($query);
+	$query = "SELECT * FROM `pagecount` WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg)."' LIMIT 1;";
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$row = mysqli_fetch_object($res)) {
+		$query = "INSERT INTO `pagecount` (`title`, `count`, `corresponding_id`) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $pg)."', 1, '$id')";
+		mysqli_query($GLOBALS['db']['link'], $query);
 		return '1';
 	} elseif($_SERVER['REMOTE_ADDR']) {
-		$query = "UPDATE `pagecount` SET `count` = '".++$row->count."'".($id ? ", `corresponding_id` = '$id'" : "")." WHERE `title` = '".mysql_real_escape_string($pg)."'";
-		$res = mysql_query($query);
+		$query = "UPDATE `pagecount` SET `count` = '".++$row->count."'".($id ? ", `corresponding_id` = '$id'" : "")." WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg)."'";
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
 	}
 	return $row->count;
 }
@@ -308,8 +308,8 @@ function printAd($size) {
 function mysqlNextAutoIncrement($table, $dontdie='') {
 	
 	$q = "SHOW TABLE STATUS LIKE '$table'";
-	$r 	= mysql_query($q) or die ( "Query failed: " . mysql_error() );
-	$row = mysql_fetch_assoc($r);
+	$r 	= mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysql_error() );
+	$row = mysqli_fetch_assoc($r);
 	if($row['Auto_increment']) return $row['Auto_increment'];
 	elseif(!$dontdie) die("Couldn't get incremental ID for `$table`");
 	

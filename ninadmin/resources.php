@@ -15,10 +15,10 @@ $in = $_POST['in'];
 // delete
 if($del = $_GET['delete']) {
 	$q = "SELECT * FROM admin_resources WHERE id='$del' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	if($usrrank == 9 || ($usrrank == 8 && $dat->usrid != 9) || ($usrid == $dat->usrid)) {
 		$q = "DELETE FROM admin_resources WHERE id='$del' LIMIT 1";
-		if(mysql_query($q)) $results[] = "Deleted";
+		if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = "Deleted";
 		else $errors[] = "Couldn't delete from db";
 	} else {
 		$errors[] = "No access to delete that";
@@ -29,11 +29,11 @@ if($del = $_GET['delete']) {
 if($_POST['add_link']) {
 	$in['category'] = preg_replace("/[^a-zA-Z0-9-_ ]/", "", $in['category']);
 	$q = sprintf("INSERT INTO admin_resources (category, url, `title`, description, usrid) VALUES ('%s', '%s', '%s', '%s', '$usrid')",
-		mysql_real_escape_string($in['category']),
-		mysql_real_escape_string($in['url']),
-		mysql_real_escape_string($in['title']),
-		mysql_real_escape_string($in['description']));
-	if(!mysql_query($q)) $errors[] = "Couldn't add to db";
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in['category']),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in['url']),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in['title']),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $in['description']));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db";
 	else {
 		$page->javascript.= '<script type="text/javascript">
 				if(document.onload) alert("xxx");
@@ -61,8 +61,8 @@ if($usrrank >= 7) {
 							<option value="">Select previously used</option>
 							<?
 							$query = "SELECT DISTINCT(category) AS category FROM admin_resources WHERE category != '' ORDER BY category";
-							$res   = mysql_query($query);
-							while($row = mysql_fetch_assoc($res)) {
+							$res   = mysqli_query($GLOBALS['db']['link'], $query);
+							while($row = mysqli_fetch_assoc($res)) {
 								echo '<option value="'.$row['category'].'">'.$row['category'].'</option>'."\n";
 							}
 							?>
@@ -98,8 +98,8 @@ if($usrrank >= 7) {
 <?
 
 $query = "SELECT * FROM admin_resources ORDER BY category";
-$res   = mysql_query($query);
-while($row = mysql_fetch_assoc($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)) {
 	if($curr_cat != $row['category']) {
 		$curr_cat = $row['category'];
 		echo '</dl><h3>'.$row['category']."</h3>\n<dl>\n";

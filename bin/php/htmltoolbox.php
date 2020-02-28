@@ -191,8 +191,8 @@ function outputToolbox($field, $include="", $bbcode="") {
 			<option value="">Insert a game link...</option>
 			<?
 			$query = "SELECT `title`, `gid` FROM `games` ORDER BY `title`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$row['title'] = htmlSC($row['title']);
 				echo '<option value="[game]'.htmlSC($row['title']).'[/game]">'.(strlen($row['title']) > 55 ? substr($row['title'], 0, 48)."&hellip;".substr($row['title'], -6) : $row['title']).'</option>';
 			}
@@ -201,8 +201,8 @@ function outputToolbox($field, $include="", $bbcode="") {
 			<option value="">Insert a game series...</option>
 			<?
 			$query = "SELECT DISTINCT(`series`) FROM games_series ORDER BY `series`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$row['series'] = htmlSC($row['series']);
 				echo '<option value="[url=/games/series/'.urlencode($row['series']).']'.$row['series'].'[/url]">'.$row['series'].'</option>';
 			}
@@ -211,8 +211,8 @@ function outputToolbox($field, $include="", $bbcode="") {
 			<option value="">Insert a person...</option>
 			<?
 			$query = "SELECT `name`, `name_url`, `title`, `prolific` FROM `people` ORDER BY `name`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$row['name'] = htmlSC($row['name']);
 				$row['title'] = strlen($row['title']) > 25 ? substr($row['title'], 0, 23).'&hellip;' : $row['title'];
 				echo '<option'.($row['prolific'] ? ' style="font-weight:bold"' : '').' value="[person]'.htmlSC($row['name']).'[/person]">'.$row['name'].($row['title'] ? ' ('.$row['title'].')' : '').'</option>';
@@ -222,8 +222,8 @@ function outputToolbox($field, $include="", $bbcode="") {
 			<option value="">Insert an association...</option>
 			<?
 			$query = "SELECT DISTINCT(`developer`) FROM games_developers ORDER BY `developer`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$row['developer'] = htmlSC($row['developer']);
 				echo '<option value="[url=/associations/'.urlencode($row['developer']).']'.$row['developer'].'[/url]">'.$row['developer'].'</option>';
 			}
@@ -232,8 +232,8 @@ function outputToolbox($field, $include="", $bbcode="") {
 				<option value="">Insert an album link...</option>
 				<?
 				$query = "SELECT `title`, subtitle, cid, albumid FROM albums ORDER BY `title`";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					$p_title = $row['title'].($row['subtitle'] ? ' '.$row['subtitle'] : '');
 					if(strlen($p_title) > 50) $p_title = substr($p_title, 0, 40)."&hellip;".substr($p_title, -8);
 					echo '<option value="[url=/music/?id='.$row['albumid'].']'.htmlSC($row['title']).($row['subtitle'] ? ' '.htmlSC($row['subtitle']) : '').'[/url]" title="'.htmlSC($row['title'].' '.$row['subtitle']).'">'.$p_title.' ('.$row['cid'].')</option>'."\n";
@@ -260,14 +260,14 @@ if(isset($_POST['load_media_dir'])) {
 	$pg = ($_POST['pg'] ? $_POST['pg'] : 1);
 	
 	$query = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-	$res = mysql_query($query);
-	$dat = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$dat = mysqli_fetch_object($res);
 	$dir = $dat->directory;
 	
 	//captions
 	$query = "SELECT c.* FROM media_captions c, media m WHERE m.directory='$dir' AND c.media_id=m.media_id";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$capts[$row['file']] = $row['caption'];
 	}
 	

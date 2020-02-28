@@ -16,7 +16,7 @@ if($del = $_GET['delete']) {
 	if(!rename("$root/$del", "$root/deleted/$del")) $a->kill("Couldn't delete $root/$del");
 	if(!rename("$root/icon/$del", "$root/deleted/icon/$del")) $a->kill("Couldn't delete $root/icon/$del");
 	$q = "UPDATE users SET avatar='unknown.png' WHERE avatar='$del'";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	$a->ret['success'] = 1;
 	exit;
 }
@@ -202,8 +202,8 @@ if($files){
 		
 		//# of uses
 		$query = "SELECT * FROM users WHERE avatar != ''";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$uses[$row['avatar']]++;
 		}
 		

@@ -29,7 +29,7 @@ class pgedit extends pg {
   	
 		if(!preg_match("/^[\d]{30}$/", $this->sessid)) throw new Exception("Invalid session ID");
 		$q = "SELECT * FROM pages_edit WHERE session_id = '".$this->sessid."' LIMIT 1";
-		if($this->sessionrow = mysql_fetch_object(mysql_query($q))) $this->sessionest = true;
+		if($this->sessionrow = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $this->sessionest = true;
 		
 	}
 	
@@ -323,8 +323,8 @@ class pgedit extends pg {
 	  			foreach($data->children() as $ch){
 	  				foreach($links->extractFrom($ch) as $link){
 		  				if($this->type=="category"){
-		  					$q = "SELECT subcategory FROM pages WHERE title = '".mysql_real_escape_string($link['tag'])."' LIMIT 1";
-								$row = mysql_fetch_assoc(mysql_query($q));
+		  					$q = "SELECT subcategory FROM pages WHERE title = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."' LIMIT 1";
+								$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 								$links->attrs['data-subcategory'] = $row['subcategory'];
 		  					$chbox =  '<input type="checkbox" name="'.$field.'_parent[]" value="'.htmlsc($link['tag']).'"'.($this->subcategory!=$row['subcategory'] ? ' disabled' : '').($ch['ancestor']=="parent" ? ' checked' : '').' title="mark as Immediate Parent" class="tooltip"/>';
 							}
@@ -374,8 +374,8 @@ class pgedit extends pg {
 				$media = '';
 				$dist  = '';
 				$query = "SELECT `to`, `title`, `keywords` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game media' OR `to` = 'Online distribution platform') AND `namespace` = 'Category' AND `redirect_to` = '' ORDER BY `title`";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					$li = '<li class="fauxselect-option" data-value="[['.htmlsc($row['title']).']]" title="'.$row['keywords'].'">'.$row['title'].'</li>';
 					if(strtolower($row['to']) == "game media") $media.= $li;
 					else $dist.= $li;
@@ -384,15 +384,15 @@ class pgedit extends pg {
 				
 				$publishers_options = '';
 				$query = "SELECT `title`, `keywords` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game publisher') AND `namespace` = 'Category' AND `redirect_to` = '' ORDER BY `title`";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					$publishers[] = $row['title'];
 					$publishers_options.= '<li class="fauxselect-option" data-value="[['.htmlsc($row['title']).']]" title="'.$row['keywords'].'">'.$row['title'].'</li>';
 				}
 				$publishers_options.= '<li class="break"></li>';
 				$query = "SELECT `title`, `keywords` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game developer') AND `namespace` = 'Category' AND `redirect_to` = '' ORDER BY `title`";
-				$res = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					if(in_array($row['title'], $publishers)) continue;
 					$publishers_options.= '<li class="fauxselect-option" data-value="[['.htmlsc($row['title']).']]" title="'.$row['keywords'].'">'.$row['title'].'</li>';
 				}
@@ -573,9 +573,9 @@ class pgedit extends pg {
 	  			foreach($data->children() as $ch) $online_networks[] = $ch;
 	  		}
 				$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Online gaming network') AND `namespace` = 'Category' AND `redirect_to` = '' ORDER BY `title`";
-				$res = mysql_query($query);
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
 				$ret.= '<ol style="margin:0; padding:0; list-style:none;">';
-				while($row = mysql_fetch_assoc($res)){
+				while($row = mysqli_fetch_assoc($res)){
 					$ret.= '<li><label><input type="checkbox" name="online_network[]" value="[[Category:'.htmlsc($row['title']).']]" '.(in_array('[[Category:'.$row['title'].']]', $online_networks) ? 'checked' : '').'> '.$row['title'].'</label></li>';
 				}
 				$ret.='<li><label><input type="checkbox" name="online_network[]" value="other" '.(in_array('other', $online_networks) ? 'checked' : '').'> other</label></li></ol>';
@@ -668,27 +668,27 @@ class pgedit extends pg {
   	// @param $nopub Don't publish it to DB row
   	// @ret str usrid of Patron Saint
 		
-		$query = "SELECT SUM(`score`) AS total_score, usrid FROM pages_edit WHERE `title` = '".mysql_real_escape_string($this->title)."' AND `published` = '1' GROUP BY usrid ORDER BY total_score DESC;";
-		$res   = mysql_query($query);
+		$query = "SELECT SUM(`score`) AS total_score, usrid FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND `published` = '1' GROUP BY usrid ORDER BY total_score DESC;";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$contr = array();
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)){
+		while($row = mysqli_fetch_assoc($res)){
 			
 			if($row['total_score'] < .5) continue;
 			
 			$contr[$row['usrid']] = $row['total_score'];
 			
 			//watching
-			$q = "SELECT * FROM pages_watch WHERE usrid='".$row['usrid']."' AND `title`='".mysql_real_escape_string($this->title)."' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) $contr[$row['usrid']] = $contr[$row['usrid']] + 1;
+			$q = "SELECT * FROM pages_watch WHERE usrid='".$row['usrid']."' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' LIMIT 1";
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr[$row['usrid']] = $contr[$row['usrid']] + 1;
 			
 			//sblog posts
-			$q = "SELECT * FROM posts_tags LEFT JOIN posts USING(nid) WHERE tag = '".mysql_real_escape_string($this->title)."' AND posts.usrid='".$row['usrid']."'";
-			if($sblogs = mysql_num_rows(mysql_query($q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($sblogs * .5);
+			$q = "SELECT * FROM posts_tags LEFT JOIN posts USING(nid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND posts.usrid='".$row['usrid']."'";
+			if($sblogs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($sblogs * .5);
 			
 			//images
-			$q = "SELECT * FROM images_tags LEFT JOIN images USING(img_id) WHERE tag = '".mysql_real_escape_string($this->title)."' AND images.usrid='".$row['usrid']."'";
-			if($images = mysql_num_rows(mysql_query($q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($images * .2);
+			$q = "SELECT * FROM images_tags LEFT JOIN images USING(img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND images.usrid='".$row['usrid']."'";
+			if($images = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($images * .2);
 			
 		}
 		
@@ -699,8 +699,8 @@ class pgedit extends pg {
 		$contr_new = count($this->contributors) ? array_keys($this->contributors) : array();
 		
 		if(!$nopub){
-			$q = "UPDATE pages SET contributors = '".json_encode($contr_new)."' WHERE title='".mysql_real_escape_string($this->title)."' LIMIT 1";
-			mysql_query($q);
+			$q = "UPDATE pages SET contributors = '".json_encode($contr_new)."' WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' LIMIT 1";
+			mysqli_query($GLOBALS['db']['link'], $q);
 		}
 		
 		return $contr_new[0];
@@ -831,7 +831,7 @@ class pgedit extends pg {
 		
 		$page->header();
   	
-  	if($usrid) $is_watching = mysql_num_rows(mysql_query("SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='$usrid' LIMIT 1"));
+  	if($usrid) $is_watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='$usrid' LIMIT 1"));
 		
 		$here[$_SERVER['SCRIPT_NAME']] = "on";
 		$titleurl = formatNameURL($this->title);
@@ -892,7 +892,7 @@ class pgedit extends pg {
 						<fieldset style="padding:15px; background-color:#EEE;">
 							<legend>Edit Options</legend>
 							<?
-							if(!$watching = mysql_num_rows(mysql_query("SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='".$usrid."' LIMIT 1"))){
+							if(!$watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='".$usrid."' LIMIT 1"))){
 							?>
 								<label>
 									<input type="checkbox" name="watch" value="1"<?=($this->juststarted && !$this->new_redirect ? ' checked="checked"' : '')?>/> 
@@ -1014,11 +1014,11 @@ class catTree {
 		
 		$this->files[] = $parent;
 		//if($this->debug) echo "\nFinding children of <b>$parent</b> ";//
-		$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysql_real_escape_string($parent)."' AND `ancestor` = 'parent' ORDER BY `title`";
-		$res = mysql_query($query);
-		if(!mysql_num_rows($res)) return;
+		$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $parent)."' AND `ancestor` = 'parent' ORDER BY `title`";
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) return;
 		$this->tree->{$parent} = $this->tree->{$parent}->addChild('ul');
-		while($row = mysql_fetch_assoc($res)) $children[] = $row['title'];
+		while($row = mysqli_fetch_assoc($res)) $children[] = $row['title'];
 		foreach($children as $child){
 			$this->tree->{$child} = $this->tree->{$parent}->addChild('li', htmlentities($child, ENT_COMPAT | ENT_XML1, "UTF-8"));
 		}
@@ -1045,8 +1045,8 @@ function categoryTreeTemplate($title){
 	
 	$parents = array();
 	$q = "SELECT `to` FROM pages_links WHERE from_pgid = '$pg->pgid' AND ancestor = 'parent'";
-	$r = mysql_query($q);
-	while($row = mysql_fetch_assoc($r)){
+	$r = mysqli_query($GLOBALS['db']['link'], $q);
+	while($row = mysqli_fetch_assoc($r)){
 		$parents[] = $row['to'];
 	}
 	
@@ -1060,8 +1060,8 @@ function categoryTreeTemplate($title){
 		while($has_parent==true){
 			if($i++ > 50) break;
 			$children[$parent][] = $child;
-			$q = "SELECT `to` FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `title` = '".mysql_real_escape_string($parent)."' AND `ancestor` = 'parent' LIMIT 1";
-			if(!$row = mysql_fetch_assoc(mysql_query($q))){
+			$q = "SELECT `to` FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $parent)."' AND `ancestor` = 'parent' LIMIT 1";
+			if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				$has_parent = false;
 			} else {
 				$child = $parent;

@@ -18,8 +18,8 @@ if($_POST['collection_entry_input']){
 	if(preg_match("/[^0-9]/", $in['completion'])) $a->kill("There was an input error in the [completion] field ($in[completion])");
 	
 	/*if($in['img_name']){
-		$q = "SELECT platform FROM games_publications WHERE img_name = '".mysql_real_escape_string($in['img_name'])."' LIMIT 1";
-		$row_img = mysql_fetch_assoc(mysql_query($q));
+		$q = "SELECT platform FROM games_publications WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_name'])."' LIMIT 1";
+		$row_img = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		$in['img_orientation'] = $row_img['platform'] != $in['platform'] ? $row_img['platform'] : '';
 	}*/
 	if($in['img_orientation'] == $in['platform']) $in['img_orientation'] = '';
@@ -62,38 +62,38 @@ if($_POST['collection_entry_input']){
 	$sort = 0;
 	if(!$user->preferences['collection_prepend']){
 		$q = "SELECT `sort` FROM collection WHERE usrid='$usrid' ORDER BY `sort` DESC LIMIT 1";
-		if($row = mysql_fetch_assoc(mysql_query($q))) $sort = $row['sort'] + 1;
+		if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $sort = $row['sort'] + 1;
 	}
 	
-	$q = "SELECT * FROM collection WHERE usrid='$usrid' AND title='".mysql_real_escape_string($in['title'])."' LIMIT 1";
-	if(!mysql_num_rows(mysql_query($q))){
+	$q = "SELECT * FROM collection WHERE usrid='$usrid' AND title='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."' LIMIT 1";
+	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 		$id = mysqlNextAutoIncrement("collection");
-		$q = "INSERT INTO `collection` (`usrid`, `title`, `sort`) VALUES ('$usrid', '".mysql_real_escape_string($in['title'])."', '$sort')";
-		if(!mysql_query($q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysql_error() : ""));
+		$q = "INSERT INTO `collection` (`usrid`, `title`, `sort`) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '$sort')";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysql_error() : ""));
 		$in['id'] = $id;
 		$a->ret['added'] = 1;
 	}
 	$q = "UPDATE collection SET 
-		platform = '".mysql_real_escape_string($in['platform'])."',
-		img_name = '".mysql_real_escape_string($in['img_name'])."',
-		img_orientation = '".mysql_real_escape_string($in['img_orientation'])."',
-		notes = '".mysql_real_escape_string($in['notes'])."',
-		ownership = '".mysql_real_escape_string($in['ownership'])."',
-		completion = '".mysql_real_escape_string($in['completion'])."',
+		platform = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['platform'])."',
+		img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_name'])."',
+		img_orientation = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_orientation'])."',
+		notes = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes'])."',
+		ownership = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['ownership'])."',
+		completion = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['completion'])."',
 		purchase_date = ".($purchase_date ? "'$purchase_date'" : "NULL").",
-		purchase_price = '".mysql_real_escape_string($in['purchase_price'])."',
-		purchase_currency = '".mysql_real_escape_string($in['purchase_currency'])."',
-		playing = '".mysql_real_escape_string($in[playing])."',
+		purchase_price = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['purchase_price'])."',
+		purchase_currency = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['purchase_currency'])."',
+		playing = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in[playing])."',
 		play_start = ".($play_start ? "'$play_start'" : "NULL").",
-		`network` = '".mysql_real_escape_string($in['network'])."',
-		product_id = '".mysql_real_escape_string($in['product_id'])."',
-		`condition` = '".mysql_real_escape_string($in['condition'])."',
+		`network` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['network'])."',
+		product_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['product_id'])."',
+		`condition` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['condition'])."',
 		incl_media = '$in[incl_media]',
 		incl_box = '$in[incl_box]',
 		incl_manual = '$in[incl_manual]',
 		incl_inserts = '$in[incl_inserts]'
-		WHERE usrid='$usrid' AND title='".mysql_real_escape_string($in['title'])."' LIMIT 1";
-	if(mysql_query($q)){
+		WHERE usrid='$usrid' AND title='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."' LIMIT 1";
+	if(mysqli_query($GLOBALS['db']['link'], $q)){
 		$a->ret['success'] = 1;
 		$a->ret['shelf_position'] = $sort;
 		if($_POST['return_new_shelf_item']){
@@ -118,8 +118,8 @@ if($_POST['remove']){
 	
 	if(!$usrid) $a->kill('No user session registered. Please <a href="/login.php">log in</a>.');
 	
-	$q = "DELETE FROM collection WHERE `id` = '".mysql_real_escape_string($_POST['remove'])."' AND usrid = '$usrid' LIMIT 1";
-	if(mysql_query($q)) $a->ret['success'] = 1;
+	$q = "DELETE FROM collection WHERE `id` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['remove'])."' AND usrid = '$usrid' LIMIT 1";
+	if(mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['success'] = 1;
 	else $a->kill("Couldn't remove item..." . ($usrrank >= 7 ? " [$q] ".mysql_error() : ""));
 	
 	exit;
@@ -136,8 +136,8 @@ if($sort = $_POST['sort']){
 	$i = 0;
 	foreach(explode(",", $sort) as $id){
 		$id = trim($id);
-		$q = "UPDATE collection SET `sort` = '".++$i."' WHERE id = '".mysql_real_escape_string($id)."' AND usrid = '$usrid' LIMIT 1";
-		if(!mysql_query($q)) $a->ret['not_sorted'][] = $id;
+		$q = "UPDATE collection SET `sort` = '".++$i."' WHERE id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $id)."' AND usrid = '$usrid' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['not_sorted'][] = $id;
 	}
 		
 	if($a->ret['not_sorted']) $num_not_sorted = count($a->ret['not_sorted']);
@@ -162,9 +162,9 @@ class collection {
 		$user = new user($usrid);
 		if($user->notfound) return false;
 		
-		$q = "SELECT * FROM collection WHERE `title` = '".mysql_real_escape_string($title)."' AND usrid = '$usrid' LIMIT 1";
-		$this->in_collection = mysql_num_rows(mysql_query($q));
-		if(!$in && $this->in_collection) $in = mysql_fetch_assoc(mysql_query($q));
+		$q = "SELECT * FROM collection WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid = '$usrid' LIMIT 1";
+		$this->in_collection = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
+		if(!$in && $this->in_collection) $in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		$ns = substr($title, 0, 8);
 		if(strtolower($ns) == "albumid:"){
@@ -212,8 +212,8 @@ class collection {
 			
 		} elseif($pg->pgid){
 			$query = "SELECT * FROM games_publications WHERE pgid='$pg->pgid' ORDER BY release_date";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				
 				if(strtolower($row['platform']) == "ios"){
 					//show an icon

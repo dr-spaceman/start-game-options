@@ -14,7 +14,7 @@ function getVars() {
 	
 	if(!$gdat) {
 		$query = "SELECT * FROM `games` WHERE gid='$this->gid' LIMIT 1";
-		if(!$GLOBALS['gdat'] = mysql_fetch_object(mysql_query($query))) {
+		if(!$GLOBALS['gdat'] = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 			die("no data");
 		}
 	}
@@ -23,10 +23,10 @@ function getVars() {
 	
 	//genre output
 	$query = "SELECT genre FROM games_genres WHERE gid='$this->gid'";
-	$res   = mysql_query($query);
-	if($genrenum = mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if($genrenum = mysqli_num_rows($res)) {
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			if($i == 1) {
 				$vowels = array("A", "a", "E", "e", "I", "i", "O", "o", "U", "u");
@@ -57,10 +57,10 @@ function getVars() {
 	$query = "SELECT platform, platform_shorthand, games_publications.id FROM games_publications 
 	LEFT JOIN games_platforms USING (platform_id) 
 	WHERE gid='".$this->gid."' ORDER BY `primary` DESC";
-	$res = mysql_query($query);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
 	$i = 0;
 	$pfs = array();
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		if($row['platform_shorthand'] != 'misc') {
 			$i++;
 			$x = '<a href="/games/'.$row['platform_shorthand'].'/">'.(in_array($row['platform'], array_keys($pf_change)) ? $pf_change[$row['platform']] : $row['platform']).'</a>';
@@ -82,11 +82,11 @@ function getVars() {
 	
 	//dev output
 	$query = "SELECT developer FROM games_developers WHERE gid='$this->gid'";
-	$res   = mysql_query($query);
-	if($num_devs = mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if($num_devs = mysqli_num_rows($res)) {
 		$ghead['dev'] = ' by <span id="ILedit-developers" class="editable">';
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$d = $row['developer'];
 			$i++;
 			$ghead['dev'].= '<a href="/associations/'.urlencode($d).'">'.trim($d).'</a>';
@@ -101,9 +101,9 @@ function getVars() {
 	
 	//series output
 	$query = "SELECT * FROM games_series WHERE gid='$this->gid'";
-	$res   = mysql_query($query);
-	if(mysql_num_rows($res)) {
-		while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$series[] = '<a href="/games/series/'.urlencode($row['series']).'">'.$row['series'].'</a>';
 		}
 		$num_series = count($series);
@@ -172,23 +172,23 @@ function header() {
 			
 			//links
 			$q = "SELECT * FROM games_links WHERE gid='$this->gid'";
-			$this->num_links = mysql_num_rows(mysql_query($q));
+			$this->num_links = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 			
 			//media
 			$query = "SELECT SUM(m.quantity) qty, c.category 
 				FROM media m, media_categories c, media_tags t 
 				WHERE m.unpublished != '1' AND t.tag='gid:".$this->gid."' AND m.media_id=t.media_id AND c.category_id=m.category_id 
 				GROUP BY (c.category)";
-			$res   = mysql_query($query);
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			$this->num_media = 0;
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = mysqli_fetch_assoc($res)) {
 				$this->footer_medias[] = '<a href="media">'.$row['category'].'</a>';
 				$this->num_media = $this->num_media + $row['qty'];
 			}
 			
 			//guide
 			$q = "SELECT * FROM games_guides WHERE gid='$this->gid' AND `published`='1' LIMIT 1";
-			if($guide = mysql_fetch_object(mysql_query($q))) {
+			if($guide = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$this->has_guide = TRUE;
 				$this->guide_phrase = '<b>Hey, listen!</b> Videogam.in\'s <a href="guide/" class="tooltip" title="it is so amazing">Guide to '.$gdat->title.'</a> includes '.
 					($guide->characters ? "character data, " : "").
@@ -203,28 +203,28 @@ function header() {
 			
 			//encyclopedia
 			$q = "SELECT * FROM wiki WHERE `field`='preview' AND subject_field='gid' AND subject_id='$this->gid' AND `datetime`!='0000-00-00 00:00:00' LIMIT 1";
-			$this->has_encyclopedia = mysql_num_rows(mysql_query($q));
+			$this->has_encyclopedia = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 			
 			//people
 			$q = "SELECT * FROM people_work WHERE gid='".$this->gid."'";
-			$this->num_people = mysql_num_rows(mysql_query($q));
+			$this->num_people = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 			
 			//music
 			$query = "SELECT * FROM albums_tags LEFT JOIN albums USING (albumid) WHERE gid='".$this->gid."' ORDER BY title, subtitle";
-			$res = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$this->albumdata[] = $row;
 				$this->num_albums++;
 			}
 			
 			//fans
 			$query = "SELECT DISTINCT(usrid) FROM my_games WHERE gid='$this->gid'";
-			$res   = mysql_query($query);
-			$this->num_fans = mysql_num_rows($res);
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			$this->num_fans = mysqli_num_rows($res);
 			
 			//posts
 			$query = "SELECT * FROM posts LEFT JOIN posts_tags USING (nid) WHERE tag='gid:".$gdat->gid."' AND unpublished != 1 AND pending != 1 AND privacy = 'public'";
-			$this->num_news = mysql_num_rows(mysql_query($query));
+			$this->num_news = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 			
 			if($this->subs[0] == "") $here['overview'] = '<h3>';
 			elseif($this->subs[0] == "media") $here['media'] = '<h3>';
@@ -296,12 +296,12 @@ function header() {
 					$conts = array();
 					$query = "SELECT usrid, type_id, datetime, points FROM users_contributions LEFT JOIN users_contributions_types USING (type_id) 
 						WHERE supersubject='gid:".$this->gid."' AND published='1'";
-					$res   = mysql_query($query);
-					$num   = mysql_num_rows($res);
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
+					$num   = mysqli_num_rows($res);
 					$i = 0;
 					$total_points = 0;
 					$points = array();
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						$x = "usrid:".$row['usrid'];
 						if(!in_array($x, $conts)) $conts[] = $x;
 						if($row['type_id'] == "1") $this->creator = "by ".outputUser($row['usrid'], FALSE)." ";
@@ -325,7 +325,7 @@ function header() {
 						$i++;
 						if(substr($c, 0, 6) == "usrid:") {
 							$q = "SELECT username, avatar FROM users WHERE usrid='".str_replace("usrid:", "", $c)."' LIMIT 1";
-							$usrdat = mysql_fetch_object(mysql_query($q));
+							$usrdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 						} else unset($usrdat);
 						if($i == 1) {
 							echo '<dt>Patron Saint</dt>';

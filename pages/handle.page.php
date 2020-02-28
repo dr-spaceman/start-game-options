@@ -45,14 +45,14 @@ foreach($tags as $tag) $posts->query_params['tags'][] = $tag;
 $posts->buildQuery();
 
 //Albums
-$query = "SELECT * FROM albums_tags LEFT JOIN albums USING (albumid) WHERE tag = '".mysql_real_escape_string($title)."' AND `view` = '1' ORDER BY datesort";
-$res_albums = mysql_query($query);
-$num_albums = mysql_num_rows($res_albums);
+$query = "SELECT * FROM albums_tags LEFT JOIN albums USING (albumid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND `view` = '1' ORDER BY datesort";
+$res_albums = mysqli_query($GLOBALS['db']['link'], $query);
+$num_albums = mysqli_num_rows($res_albums);
 
 //Images
-$query_img = "SELECT img_name FROM images_tags LEFT JOIN images USING (img_id) WHERE (`tag` = '".mysql_real_escape_string($title)."' OR `tag` LIKE '".mysql_real_escape_string($title)."|%') AND img_category_id != '4'";//dont get box art (ctg 4)
-$res_img = mysql_query($query_img);
-$num_imgs = mysql_num_rows($res_img);
+$query_img = "SELECT img_name FROM images_tags LEFT JOIN images USING (img_id) WHERE (`tag` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' OR `tag` LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."|%') AND img_category_id != '4'";//dont get box art (ctg 4)
+$res_img = mysqli_query($GLOBALS['db']['link'], $query_img);
+$num_imgs = mysqli_num_rows($res_img);
 
 //resize heading to prevent wrapping
 if(strlen($title) > 30){
@@ -133,12 +133,12 @@ $bb->headings_offset = 4;
 	$fan=array();
 	$in_collection=false;
 	if($usrid){
-		$query = "SELECT * FROM pages_fan WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='$usrid'";
-		$res = mysql_query($query);
-		while($row_fan = mysql_fetch_assoc($res)){
+		$query = "SELECT * FROM pages_fan WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='$usrid'";
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row_fan = mysqli_fetch_assoc($res)){
 			$fan[$row_fan['op']] = $row_fan;
 		}
-		if($this->type == "game" && mysql_num_rows(mysql_query("SELECT * FROM collection WHERE `title` = '".mysql_real_escape_string($title)."' AND usrid = '$usrid' LIMIT 1"))) $in_collection = true;
+		if($this->type == "game" && mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM collection WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid = '$usrid' LIMIT 1"))) $in_collection = true;
 		$collection_form = '<div id="pgop-form-collection" class="form"><div class="container"></div><a href="#close" class="ximg preventdefault" onclick="$(this).prev().html(\'\').parent().fadeOut()" style="top:8px; right:8px;">close</a></div>';
 	}
 	foreach(array("love", "hate") as $op){
@@ -189,16 +189,16 @@ $page->openSection($sec);
 		
 		//Forum topics
 		$topicnum = 0;
-		$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysql_real_escape_string($title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
-		$topicres   = mysql_query($query);
-		$num_topics = mysql_num_rows($topicres);
+		$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
+		$topicres   = mysqli_query($GLOBALS['db']['link'], $query);
+		$num_topics = mysqli_num_rows($topicres);
 		if($num_topics){
 			?>
 			<div id="forumtopics" class="c3">
 				<h3>Forum Discussions</h3>
 				<ul>
 					<?
-					while($frow = mysql_fetch_assoc($topicres)){
+					while($frow = mysqli_fetch_assoc($topicres)){
 						if(++$topicnum < 6){
 							echo '<li class="'.($frow['last_post'] < $usrlastlogin ? 'unread' : 'read').'"><a href="/forums/?tid='.$frow['tid'].'">'.$frow['title'].'</a></li>';
 						} else $fmore = '<div class="more"><a href="forums" title="'.htmlSC($title).' forum discussions">All related Forum Discussions</a></div>';
@@ -270,7 +270,7 @@ $page->openSection($sec);
             <li><a href="#catpglist">Related Pages</a></li>
             <?
           }
-          if($has_forums = mysql_num_rows(mysql_query("SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysql_real_escape_string($title)."' AND invisible <= '$usrrank' LIMIT 1"))) echo '<li id="pgcontnav-forumtopics"><a href="#forums" class="preventdefault" onclick="pgcont.toggle(\'forumtopics\')">Forum Discussions</a></li>';
+          if($has_forums = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' LIMIT 1"))) echo '<li id="pgcontnav-forumtopics"><a href="#forums" class="preventdefault" onclick="pgcont.toggle(\'forumtopics\')">Forum Discussions</a></li>';
           if($posts->num_posts) echo '<li><a href="#/posts/">News & Blogs</a></li>';
           if($num_albums) echo '<li><a href="#albums">Game Music</a></li>';
           if($num_imgs) echo '<li><a href="#imgs">Images</a></li>';
@@ -544,9 +544,9 @@ $page->openSection($sec);
 					<ul>
 						<?
 						$topicnum = 0;
-						$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysql_real_escape_string($title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC";
-						$res = mysql_query($query);
-						while($frow = mysql_fetch_assoc($res)){
+						$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC";
+						$res = mysqli_query($GLOBALS['db']['link'], $query);
+						while($frow = mysqli_fetch_assoc($res)){
 							if(++$topicnum < 20){
 								echo '<li class="'.($frow['last_post'] < $usrlastlogin ? 'unread' : 'read').'"><a href="/forums/?tid='.$frow['tid'].'">'.$frow['title'].'</a></li>';
 							} else $fmore = '<div class="more"><a href="forums" title="'.htmlSC($title).' forum discussions">All related Forum Discussions</a></div>';
@@ -571,27 +571,27 @@ $page->closeSection();
 
 $query = "SELECT DISTINCT(`title`), `type`, `subcategory` 
 	FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) 
-	WHERE `to` = '".mysql_real_escape_string($title)."' AND `namespace` = 'Category' AND redirect_to = '';";
-$res   = mysql_query($query);
+	WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND `namespace` = 'Category' AND redirect_to = '';";
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
 $cat_pgs = array('game' => array(), 'person' => array(), 'category' => array(), 'topic' => array());
 $cat_list = array();
-while($catrow = mysql_fetch_assoc($res)){
+while($catrow = mysqli_fetch_assoc($res)){
 	$index = ($catrow['subcategory'] ? $catrow['subcategory'] : $catrow['type']);
 	$cat_pgs[$index][] = $catrow['title'];
 	$cat_list[] = $catrow['title'];
 }
 
 //also get child pages of category pages that redirect here
-$query = "SELECT DISTINCT(`title`) FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysql_real_escape_string($title)."' AND is_redirect = '1'";
-$res   = mysql_query($query);
-while($catrow = mysql_fetch_assoc($res)){
+$query = "SELECT DISTINCT(`title`) FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND is_redirect = '1'";
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($catrow = mysqli_fetch_assoc($res)){
 	if(!in_array($catrow['title'], $cat_list)){
 		$query2 = "
 			SELECT DISTINCT(`title`), `type` 
 			FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) 
-			WHERE `to` = '".mysql_real_escape_string($catrow['title'])."' AND `namespace` = 'Category' AND redirect_to = '';";
-		$res2 = mysql_query($query2);
-		while($catrow = mysql_fetch_assoc($res2)) {
+			WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $catrow['title'])."' AND `namespace` = 'Category' AND redirect_to = '';";
+		$res2 = mysqli_query($GLOBALS['db']['link'], $query2);
+		while($catrow = mysqli_fetch_assoc($res2)) {
 			$index = ($catrow['subcategory'] ? $catrow['subcategory'] : $catrow['type']);
 			$cat_pgs[$index][] = $catrow['title'];
 			$cat_list[] = $catrow['title'];
@@ -708,8 +708,8 @@ if($this->type == "person" && $row->credits_list->credit[0]){
 				$dat = $game->row['index_data'];
 				$cr['original'] = $game->link;
 			} elseif($key == "a"){
-				$q = "SELECT datesort, cid, publisher FROM albums WHERE `albumid` = '".mysql_real_escape_string($cr['tag'])."' LIMIT 1";
-				$dat = mysql_fetch_assoc(mysql_query($q));
+				$q = "SELECT datesort, cid, publisher FROM albums WHERE `albumid` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cr['tag'])."' LIMIT 1";
+				$dat = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 				$dat['first_release'] = $dat['datesort'];
 			}
 			
@@ -860,7 +860,7 @@ if($num_albums){
 		<ul class="c2r">
 			<?
 			$i = 0;
-			while($arow = mysql_fetch_assoc($res_albums)){
+			while($arow = mysqli_fetch_assoc($res_albums)){
 				$tn['src'] = "/music/media/cover/standard/".$arow['albumid'].".png";
 				if(file_exists($_SERVER['DOCUMENT_ROOT'].$tn['src'])){
 					list($tn['width'], $tn['height'], $tn['type'], $tn['attr']) = getimagesize($_SERVER['DOCUMENT_ROOT'].$tn['src']);
@@ -896,16 +896,16 @@ if($num_albums){
 	
 	//Forum topics
 	$topicnum = 0;
-	$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysql_real_escape_string($title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
-	$topicres   = mysql_query($query);
-	$num_topics = mysql_num_rows($topicres);
+	$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
+	$topicres   = mysqli_query($GLOBALS['db']['link'], $query);
+	$num_topics = mysqli_num_rows($topicres);
 	if($num_topics){
 		?>
 		<div id="forumtopics" style="">
 			<h3>Forum Discussions</h3>
 			<ul>
 				<?
-				while($frow = mysql_fetch_assoc($topicres)){
+				while($frow = mysqli_fetch_assoc($topicres)){
 					if(++$topicnum < 6){
 						echo '<li class="'.($frow['last_post'] < $usrlastlogin ? 'unread' : 'read').'"><a href="/forums/?tid='.$frow['tid'].'">'.$frow['title'].'</a></li>';
 					} else $fmore = '<div class="more"><a href="forums" title="'.htmlSC($title).' forum discussions" class="arrow-right">More related Forum Discussions</a></div>';
@@ -948,8 +948,8 @@ if($num_imgs){
 		
 		$imgs = array();
 		$query_img.= " AND img_width > 349 ORDER BY RAND() LIMIT 5";
-		$res = mysql_query($query_img);
-		while($img = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query_img);
+		while($img = mysqli_fetch_assoc($res)){
 			$imgs[] = $img;
 		}
 		$outp = '';
@@ -1052,7 +1052,7 @@ if(strstr($outp_params, "include_footer")){
 			<a href="/pages/links.php?to=<?=$titleurl?>">Links</a> | 
 			<a href="#">Discussion</a> | 
 			<?
-			if($usrid) $is_watching = mysql_num_rows(mysql_query("SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='$usrid' LIMIT 1"));
+			if($usrid) $is_watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='$usrid' LIMIT 1"));
 			?>
 			
 			<span id="watchpages">
@@ -1131,8 +1131,8 @@ if($this->row['modifier'] == $usrid){
 
 if(!$this->pgid && $_SERVER['HTTP_REFERER'] != "http://videogam.in/content/Special:most_requested"){
 	// track this page view
-	$q = "INSERT INTO pagecount_requestfail (`title`,`url`,`referrer`) VALUES ('".mysql_real_escape_string($title)."', '".$_SERVER['REQUEST_URI']."', '".$_SERVER['HTTP_REFERER']."')";
-	mysql_query($q);
+	$q = "INSERT INTO pagecount_requestfail (`title`,`url`,`referrer`) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '".$_SERVER['REQUEST_URI']."', '".$_SERVER['HTTP_REFERER']."')";
+	mysqli_query($GLOBALS['db']['link'], $q);
 }
 
 // Twitter feeds & whatnot

@@ -15,7 +15,7 @@ class posts {
 	public function __set($name, $value){
 		if($name == "query"){
 			$this->q = $value;
-			$this->num_posts = mysql_num_rows(mysql_query($this->q));
+			$this->num_posts = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $this->q));
 		}
 		else $this->{$name} = $value;
 	}
@@ -39,26 +39,26 @@ class posts {
 		$q = "SELECT * FROM ";
 		if(is_array($this->query_params['tags'])){
 			$q.= "posts_tags LEFT JOIN posts USING (nid) WHERE (";
-			foreach($this->query_params['tags'] as $tag) $q.= "`tag` = '".mysql_real_escape_string($tag)."' OR ";
+			foreach($this->query_params['tags'] as $tag) $q.= "`tag` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' OR ";
 			$q = substr($q, 0, -4).") AND ";
 		} else $q.= "posts WHERE ";
-		if($this->query_params['query'] = trim($this->query_params['query'])) $q.= "(`description` LIKE '%".mysql_real_escape_string($this->query_params['query'])."%' OR `content` LIKE '%".mysql_real_escape_string($this->query_params['query'])."%') AND ";
+		if($this->query_params['query'] = trim($this->query_params['query'])) $q.= "(`description` LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $this->query_params['query'])."%' OR `content` LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $this->query_params['query'])."%') AND ";
 		$q.= "`privacy` = '".$qs_privacy."' AND `pending` " . (!$this->query_params['pending'] ? "!= '1'" : "= 1");
 		if(isset($this->query_params['archive'])) $q.= " AND `archive` ".($this->query_params['archive'] ? "= 1" : "!= 1");
 		if($this->query_params['category'] == "blog" OR $this->query_params['category'] == "public") $q.= " AND `category` = '".$this->query_params['category']."'";
 		else $q.= " AND `category` != 'draft'";
 		if($this->query_params['user']){
-			$query = "SELECT usrid FROM users WHERE username = '".mysql_real_escape_string($this->query_params['user'])."' LIMIT 1";
-			if($userdat = mysql_fetch_object(mysql_query($query))) $q.= " AND usrid = '".$userdat->usrid."'";
+			$query = "SELECT usrid FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->query_params['user'])."' LIMIT 1";
+			if($userdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) $q.= " AND usrid = '".$userdat->usrid."'";
 		}
 		if($this->query_params['datetime']){
 			if(preg_match("/\d{4}-\d*-?\d*/", $this->query_params['datetime'])) $q.= " AND `posts`.`datetime` LIKE '".$this->query_params['datetime']."%'";
 		}
 		if(is_array($this->query_params['post_type_not'])){
-			foreach($this->query_params['post_type_not'] as $type_not) $q.= " AND `post_type` != '".mysql_real_escape_string($type_not)."'";
+			foreach($this->query_params['post_type_not'] as $type_not) $q.= " AND `post_type` != '".mysqli_real_escape_string($GLOBALS['db']['link'], $type_not)."'";
 		}
 		if(is_array($this->query_params['attachment_not'])){
-			foreach($this->query_params['attachment_not'] as $att_not) $q.= " AND `attachment` != '".mysql_real_escape_string($att_not)."'";
+			foreach($this->query_params['attachment_not'] as $att_not) $q.= " AND `attachment` != '".mysqli_real_escape_string($GLOBALS['db']['link'], $att_not)."'";
 		}
 		$orders_by = array("date_asc" => "`posts`.`datetime` ASC", "rating" => "rating_weighted DESC");
 		$order_by = $orders_by[$this->query_params['sort']];
@@ -110,7 +110,7 @@ class posts {
 		);
 		
 		if(is_array($this->query_params['tags'])){
-			foreach($this->query_params['tags'] as $tag) $form_tags.= '<input type="hidden" name="tags[]" value="'.mysql_real_escape_string($tag).'"class="dontget"/>';
+			foreach($this->query_params['tags'] as $tag) $form_tags.= '<input type="hidden" name="tags[]" value="'.mysqli_real_escape_string($GLOBALS['db']['link'], $tag).'"class="dontget"/>';
 		}
 		for($n = 1999; $n <= date("Y"); $n++) $form_year.= '<option value="'.$n.'"'.(substr($this->query_params['datetime'], 0, 4) == $n ? ' selected="selected"' : '').'>'.$n.'</option>';
 		$months = array('01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'May','06'=>'June','07'=>'July','08'=>'August','09'=>'September','10'=>'October','11'=>'November','12'=>'December');
@@ -196,8 +196,8 @@ class posts {
 		if(!$rows){
 			$rows_nids = array();
 			$this->q.= " LIMIT ".(($this->pg - 1) * $this->max).", ".$this->max.";";//echo $this->q;
-			$res = mysql_query($this->q);
-			while($row = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $this->q);
+			while($row = mysqli_fetch_assoc($res)){
 				if(in_array($row['nid'], $rows_nids)) continue;
 				$rows_nids[] = $row['nid'];
 				$rows[] = $row;
@@ -233,7 +233,7 @@ class posts {
 				if($row['type2'] == "review") $typeimg = "review";*/
 				
 				/*$q = "SELECT `question` FROM posts_polls WHERE nid='".$row['nid']."' LIMIT 1";
-				if($poll = mysql_fetch_assoc(mysql_query($q))){
+				if($poll = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 					if(strlen($poll['question']) > 100) $poll['question'] = substr($poll['question'], 0, 96)."...";
 				}'.($poll['question'] ? '<li class="poll">Poll: <a href="'.$post->url.'#poll">'.$poll['question'].'</a></li>' : '').'*/
 				
@@ -259,7 +259,7 @@ class posts {
 				//my rating
 				/*if($usrid){
 					$q = "SELECT rating FROM posts_ratings WHERE nid='$row[nid]' AND usrid='$usrid' LIMIT 1";
-					$myrating = mysql_fetch_assoc(mysql_query($q));
+					$myrating = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 				}*/
 				
 				$ret.= 
@@ -337,8 +337,8 @@ class post {
 			$this->url = $_SERVER['HTTP_HOST'] == "localhost" ? "/posts/handle.php?nid=".$this->nid : '/sblog/'.$this->nid.'/'.$in['permalink'];
 			$this->content = $this->splitData();
 		} elseif($in != ''){
-			$q = "SELECT * FROM posts WHERE nid='".mysql_real_escape_string($in)."' LIMIT 1";
-			if($in = mysql_fetch_assoc(mysql_query($q))){
+			$q = "SELECT * FROM posts WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $in)."' LIMIT 1";
+			if($in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				foreach($in as $key => $val) $this->{$key} = $val;
 				$this->url = $_SERVER['HTTP_HOST'] == "localhost" ? "/posts/handle.php?nid=".$this->nid : '/sblog/'.$this->nid.'/'.$this->permalink;
 				$this->content = $this->splitData();
@@ -371,7 +371,7 @@ class post {
 		$rtlink = $date."/".$n['permalink'];
 		if($n['category'] == "blog") {
 			$q = "SELECT username FROM users WHERE usrid='".$n['usrid']."' LIMIT 1";
-			$udat = mysql_fetch_object(mysql_query($q));
+			$udat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$rtlink = "/~".$udat->username."/blog/".$rtlink;
 		} else {
 			$rtlink = "/posts/".$rtlink;
@@ -475,7 +475,7 @@ class post {
 				
 				//poll
 				$q = "SELECT `question` FROM posts_polls WHERE nid='".$this->nid."' LIMIT 1";
-				if($poll = mysql_fetch_assoc(mysql_query($q))){
+				if($poll = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 					if(strlen($poll['question']) > 100) $poll['question'] = substr($poll['question'], 0, 96)."...";
 					$text.= '<div class="poll"><p>Poll: <a href="'.$this->url.'#poll">'.$poll['question'].'</a></p></div>';
 				}
@@ -621,7 +621,7 @@ class post {
 		if(!$nid) $nid = $this->nid;
 		
 		$q = "SELECT posts FROM forums_topics WHERE location='post:$nid'";
-		if(!$dat = mysql_fetch_assoc(mysql_query($q))) $this->num_comments = 0;
+		if(!$dat = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $this->num_comments = 0;
 		else $this->num_comments = $dat['posts'];
 		return $this->num_comments;
 		
@@ -656,7 +656,7 @@ class post {
 		//my rating
 		if($usrid){
 			$q = "SELECT rating FROM posts_ratings WHERE nid='$this->nid' AND usrid='$usrid' LIMIT 1";
-			$myrating = mysql_fetch_assoc(mysql_query($q));
+			$myrating = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		
 		return 

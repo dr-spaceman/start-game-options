@@ -34,10 +34,10 @@ try {
     		// automatically reconcole existing Videogamin user account with Steam account
 			  if($usrid){
 			  	$q = "SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='steam' LIMIT 1";
-			  	$res = mysql_query($q);
-			  	if(!mysql_num_rows($res)){
-				  	$q = "INSERT INTO users_oauth (usrid, oauth_provider, oauth_usrid, oauth_username) VALUES ('$usrid', 'steam', '".mysql_real_escape_string($steam_id)."', '".mysql_real_escape_string($steamuser->nickname)."');";
-						if(!mysql_query($q)){
+			  	$res = mysqli_query($GLOBALS['db']['link'], $q);
+			  	if(!mysqli_num_rows($res)){
+				  	$q = "INSERT INTO users_oauth (usrid, oauth_provider, oauth_usrid, oauth_username) VALUES ('$usrid', 'steam', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steam_id)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steamuser->nickname)."');";
+						if(!mysqli_query($GLOBALS['db']['link'], $q)){
 							sendBug("login_steam.php Error reconciling Vg.in account with St acct [$q]: ".mysql_error());
 							die("Sorry, there was a database error and we couldn't link your steam account to your Videogam.in account. <a href=\"".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in")."\">Back to Videogam.in</a>");
 						}
@@ -45,14 +45,14 @@ try {
 				  	exit;
 				  } else {
 				  	//check if it's the same account
-				  	$row_oauth = mysql_fetch_assoc($res);
+				  	$row_oauth = mysqli_fetch_assoc($res);
 				  	if($row_oauth['oauth_usrid'] != $steam_id) die("There was an account conflict! Your steam account is already connected to a different username.");
 			  	}
 			  }
 			  
 			  // login existing steam user
-			  $q = "SELECT * FROM users_oauth LEFT JOIN users USING (usrid) WHERE oauth_provider = 'steam' AND oauth_usrid='".mysql_real_escape_string($steam_id)."' LIMIT 1";
-			  if($row = mysql_fetch_assoc(mysql_query($q))){
+			  $q = "SELECT * FROM users_oauth LEFT JOIN users USING (usrid) WHERE oauth_provider = 'steam' AND oauth_usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $steam_id)."' LIMIT 1";
+			  if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			  	login($row);
 			  	header("Location:".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in"));
 			  	exit;
@@ -62,7 +62,7 @@ try {
 			  
 			  $usrname = preg_replace("/[^a-z0-9\-\_]/i", "", $steamuser->nickname);
 			  $i = 0;
-			  while(mysql_num_rows(mysql_query("SELECT username FROM users WHERE username = '".mysql_real_escape_string($usrname)."' LIMIT 1"))){
+			  while(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT username FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $usrname)."' LIMIT 1"))){
 			  	$i++;
 			  	if($i > 1) $usrname = substr($usrname, 0, -1);
 			  	$usrname.= $i;

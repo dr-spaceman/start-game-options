@@ -23,14 +23,14 @@ if($_POST['do'] == "ajaxreg") {
   if($pw && preg_match('/[^a-zA-Z0-9]/', $pw)) die("Illegal characters in password (only letters and numbers)");
   
   //Check if username is already registered
-  $Query = "SELECT username FROM users WHERE username = '".mysql_real_escape_string($un)."'"; 
-  $Result = mysql_query($Query);
-  if(mysql_num_rows($Result)) die("Error: the username '".$un."' has already been registered. Please choose a different username.");
+  $Query = "SELECT username FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $un)."'"; 
+  $Result = mysqli_query($GLOBALS['db']['link'], $Query);
+  if(mysqli_num_rows($Result)) die("Error: the username '".$un."' has already been registered. Please choose a different username.");
   
   //Check if email address is already registered
-  $Query = "SELECT email FROM users WHERE email = '".mysql_real_escape_string($em)."'"; 
-  $Result = mysql_query($Query);
-	if(mysql_num_rows($Result)) die("Error: The email address '".$em."' is already registered. Please log in using your username/password combination.");
+  $Query = "SELECT email FROM users WHERE email = '".mysqli_real_escape_string($GLOBALS['db']['link'], $em)."'"; 
+  $Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	if(mysqli_num_rows($Result)) die("Error: The email address '".$em."' is already registered. Please log in using your username/password combination.");
 	
 	// REGISTER HERE //
 	
@@ -44,7 +44,7 @@ if($_GET['verify']) {
 	$page->header();
 	$user = base64_decode($_GET['verify']);
 	$query = "UPDATE `users` SET `verified` = '1' WHERE `username` = '$user' LIMIT 1";
-	if(!mysql_query($query)) echo "Error! Couldn't verify user '$user'";
+	if(!mysqli_query($GLOBALS['db']['link'], $query)) echo "Error! Couldn't verify user '$user'";
 	else echo "Verifying e-mail address...<br/><br/>Success! You have been verified.";
 	$page->footer();
 	exit;
@@ -58,7 +58,7 @@ if($_GET['do'] == "send_verification_email") {
 	if(!$usrid) echo "Error: Couldn't send verification e-mail since you're not logged in";
 	elseif(sendVerificationEmail($usrid)) {
 		$query = "SELECT `email` FROM `users` WHERE `id` = '$usrid' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($query));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
 		echo "A verification e-mail has been sent to $dat->email. If you can't access this e-mail account, please <a href=\"account.php\">update your account details</a> and try again.";
 	} else {
 		echo "Error sending verification e-mail! The error has been sent to the staff for review";
@@ -110,16 +110,16 @@ if ($_POST['do'] == "Submit Registration") {
   }
   
   //Check if username is already registered
-  $Query = "SELECT username FROM users WHERE username = '".mysql_real_escape_string($sub['username'])."'"; 
-  $Result = mysql_query($Query);
-  if(mysql_num_rows($Result)) {
+  $Query = "SELECT username FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['username'])."'"; 
+  $Result = mysqli_query($GLOBALS['db']['link'], $Query);
+  if(mysqli_num_rows($Result)) {
     $errors[] = "Sorry, the username <i>".$sub['username']."</i> has already been registered. Please choose a different username.<br/>If this is your username, try <a href=\"/login.php\">logging in</a>";
   }
   
   //Check if email address is already registered
-  $Query = "SELECT email FROM users WHERE email = '".mysql_real_escape_string($sub['email'])."'"; 
-  $Result = mysql_query($Query);
-	if(mysql_num_rows($Result)) {
+  $Query = "SELECT email FROM users WHERE email = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['email'])."'"; 
+  $Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	if(mysqli_num_rows($Result)) {
     $errors[] = "The email address <i>".$sub['email']."</i> is already registered. Try <a href=\"/login.php\">logging in</a>.";
   }
   
@@ -133,15 +133,15 @@ if ($_POST['do'] == "Submit Registration") {
 	  
 	  //Insert into database
 	  $Query = "INSERT INTO users (`username`, `password`, `email`, `registered`, `activity`, `previous_activity`, `gender`) 
-	  	VALUES ('".mysql_real_escape_string($sub['username'])."', password('".mysql_real_escape_string($sub['password'])."'), '".$sub['email']."', '$tod', '$tod', '$tod', '".mysql_real_escape_string($sub['gender'])."')";
-	  if (!mysql_query($Query)) {
+	  	VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['username'])."', password('".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['password'])."'), '".$sub['email']."', '$tod', '$tod', '$tod', '".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['gender'])."')";
+	  if (!mysqli_query($GLOBALS['db']['link'], $Query)) {
 	    $errors[] = "There was an error and the account could not be registered.";
 	    sendBug("User couldn't register. Table error?");
 	  } else {
 	  	
 	  	// retrieve new user data for login
-	  	$query = "SELECT * FROM `users` WHERE `username` = '".mysql_real_escape_string($sub['username'])."' LIMIT 1";
-	  	if(!$user = @mysql_fetch_assoc(mysql_query($query))) {
+	  	$query = "SELECT * FROM `users` WHERE `username` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sub['username'])."' LIMIT 1";
+	  	if(!$user = @mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))) {
 	  		$errors[] = "You were registered successfully, but there was an error and the process could not continue. However, you should be able to log in to your account.";
 	  		sendBug("Registration error selecting inserted user data. [$query]");
 	  		break;
@@ -154,7 +154,7 @@ if ($_POST['do'] == "Submit Registration") {
 	  	
 	  	//update user_prefs table
 	  	$query = "INSERT INTO `users_prefs` (`usrid`) VALUES ('$usrid')";
-	  	if(!mysql_query($query)) sendBug("Could not INSERT into `users_prefs` table (/register.php) [$query]");
+	  	if(!mysqli_query($GLOBALS['db']['link'], $query)) sendBug("Could not INSERT into `users_prefs` table (/register.php) [$query]");
 	  	
 	  	//send welcome email
 	  	$message = file_get_contents($_SERVER['DOCUMENT_ROOT']."/bin/incl/welcome_message.htm");
@@ -179,14 +179,14 @@ if ($_POST['do'] == "Submit Registration") {
 					
 			    $steamuser = new SteamId($oauth['oauth_usrid']);
 			    	
-		    	$q = "INSERT INTO users_oauth (usrid,oauth_provider,oauth_usrid,oauth_username) VALUES ('$usrid', 'steam', '".mysql_real_escape_string($oauth['oauth_usrid'])."', '".mysql_real_escape_string($oauth['oauth_username'])."');";
-					if(!mysql_query($q)){
+		    	$q = "INSERT INTO users_oauth (usrid,oauth_provider,oauth_usrid,oauth_username) VALUES ('$usrid', 'steam', '".mysqli_real_escape_string($GLOBALS['db']['link'], $oauth['oauth_usrid'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $oauth['oauth_username'])."');";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)){
 						sendBug("register.php Couldn't record Steam user data to users_oauth table because of a Mysql error [$q]: ".mysql_error());
 						die('Sorry, there was a database error and we couldn\'t record your Steam details. Your account has been registered and you have been logged in though! <a href="/">Continue</a>');
 					}
 					
-					$query = "INSERT INTO users_details (usrid,`name`,`location`,`homepage`) VALUES ('$usrid', '".mysql_real_escape_string($steamuser->realName)."', '".mysql_real_escape_string($steamuser->location)."', '".mysql_real_escape_string($steamuser->links[0])."');";
-					if(!mysql_query($query)) sendBug("Could not INSERT into `users_details` table [$query] (/register.php)");
+					$query = "INSERT INTO users_details (usrid,`name`,`location`,`homepage`) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steamuser->realName)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steamuser->location)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $steamuser->links[0])."');";
+					if(!mysqli_query($GLOBALS['db']['link'], $query)) sendBug("Could not INSERT into `users_details` table [$query] (/register.php)");
 					
 					// import avatar
 					if($avatar_url = $steamuser->getFullAvatarUrl()){
@@ -196,7 +196,7 @@ if ($_POST['do'] == "Submit Registration") {
 							
 							$upload_avatar_result = uploadAvatar($avatar, "", customAvatarDir($usrid));
 							if($upload_avatar_result['filename']){
-								mysql_query("UPDATE users SET avatar='".customAvatarDir($usrid)."/".$upload_avatar_result['filename']."' WHERE usrid='$usrid' LIMIT 1");
+								mysqli_query($GLOBALS['db']['link'], "UPDATE users SET avatar='".customAvatarDir($usrid)."/".$upload_avatar_result['filename']."' WHERE usrid='$usrid' LIMIT 1");
 							}
 							
 						}
@@ -270,7 +270,7 @@ function sendVerificationEmail($user) {
 	global $db, $default_email;
 	
 	$query = "SELECT * FROM `users` WHERE `username` = '$user' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($query))) die("Couldn't get user data for '$user'");
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) die("Couldn't get user data for '$user'");
 	
 	$to = $dat->email;
   $subject = 'Videogam.in verification e-mail';

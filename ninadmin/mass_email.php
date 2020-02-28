@@ -20,11 +20,11 @@ if(isset($_POST['min'])){
 	$to = array();
 	
 	$q = $_POST['query'] . " LIMIT $min, $limit";
-	$res = mysql_query($q);
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $q);
+	while($row = mysqli_fetch_assoc($res)){
 		$q2 = "SELECT * FROM users_prefs WHERE usrid='".$row['usrid']."' AND mail_from_admins = '0' LIMIT 1";
-		$res2 = mysql_query($q2);
-		if(!$_POST['bypass'] && mysql_num_rows($res2)){
+		$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
+		if(!$_POST['bypass'] && mysqli_num_rows($res2)){
 			$_POST['num']--;
 			continue;
 		}
@@ -124,7 +124,7 @@ if(isset($_POST['min'])){
 		
 		if(!$errors){
 		
-			if(!$num = mysql_num_rows(mysql_query($q))) {
+			if(!$num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$errors[] = "Couldn't compile e-mail list from database: $q";
 			} else {
 				
@@ -209,8 +209,8 @@ if(isset($_POST['min'])){
 		<ul style="list-style:none;">
 			<?
 			$query = "SELECT * FROM users_ranks WHERE rank > 0 ORDER BY rank";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li><label><input type="checkbox" name="in[send_to][]" value="'.$row['rank'].'"'.(in_array($row['rank'], $in['send_to']) ? ' checked="checked"' : '').'/> '.$row['description'].'s</label></li>';
 			}
 			?>

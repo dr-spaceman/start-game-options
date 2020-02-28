@@ -4,7 +4,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 
 if($pf_id = $_POST['setPrimary']) {
 	$q = "UPDATE games_platforms SET notable='".$_POST['setTo']."' WHERE platform_id='$pf_id' LIMIT 1";
-	if(mysql_query($q)) die("ok");
+	if(mysqli_query($GLOBALS['db']['link'], $q)) die("ok");
 	else die("Error setting db value");
 }
 
@@ -31,7 +31,7 @@ if($what == "platforms") {
 		if(!$sh = $in['platform_shorthand']) $errors[] = "No shorthang given";
 		if(!$errors) {
 			$q = "INSERT INTO games_platforms (platform, platform_shorthand, notable) VALUES ('$pf', '$sh', '".$in['notable']."')";
-			if(!mysql_query($q)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				$errors[] = "Couldn't add to db";
 			} else {
 				$results[] = "Platform added";
@@ -58,8 +58,8 @@ if($what == "platforms") {
 			<th style="border-top:none; background-color:#F5F5F5;">&nbsp;</th>
 		</tr><?
 		$query = "SELECT * FROM games_platforms ORDER BY platform";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			?>
 			<tr>
 				<td><?=$row[platform_id]?></td>

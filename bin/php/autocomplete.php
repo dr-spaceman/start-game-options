@@ -6,7 +6,7 @@
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php");
 
-$q = mysql_real_escape_string($_GET['q']);
+$q = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['q']);
 $filter = $_GET['filter_type'];
 
 if(strstr($_GET['return_vars'], "platform_shorthand")){
@@ -36,8 +36,8 @@ if(!$filter){
 }
 
 foreach($queries as $query){
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		if(strtolower($row['title']) == strtolower($q)) $exact_match = true;
 		$title_sort = $row['title_sort'];
 		$title_sort = strtolower($title_sort);
@@ -83,8 +83,8 @@ foreach($queries as $query){
 
 if(!$filter || stristr($filter, "albums")){
 	$query = "SELECT title, subtitle, albumid, datesort FROM albums WHERE (`title` LIKE '%$q%' OR `keywords` LIKE '%$q%' OR cid='$q') AND `view`='1' ORDER BY `title` LIMIT 30";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		$title_sort = formatName($row['title'].($row['subtitle'] ? " ".$row['subtitle'] : ''), "sortable");
 		$title_sort = strtolower($title_sort);
 		$arr = array(

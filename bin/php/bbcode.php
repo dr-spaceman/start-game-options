@@ -833,11 +833,11 @@ function bbFilterHeading($h, $content){
 /*function BBencode($what, $desc) {
 	$ret = "[".$what."]".$desc."[/".$what."]";
 	if($what == "game") {
-		$q = "SELECT gid FROM games WHERE title='".mysql_real_escape_string($desc)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) $ret = "[gid=".$dat->gid."/]";
+		$q = "SELECT gid FROM games WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $ret = "[gid=".$dat->gid."/]";
 	} elseif($what == "person") {
-		$q = "SELECT pid FROM people WHERE name='".mysql_real_escape_string($desc)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) $ret = "[pid=".$dat->pid."/]";
+		$q = "SELECT pid FROM people WHERE name='".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $ret = "[pid=".$dat->pid."/]";
 	}
 	return $ret;
 }*/

@@ -4,8 +4,8 @@ $page = new page;
 require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php");
 
 if($sessid = $_GET['sessid']){
-	$q = "SELECT * FROM images_sessions WHERE img_session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if($img_sess = mysql_fetch_object(mysql_query($q))){
+	$q = "SELECT * FROM images_sessions WHERE img_session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if($img_sess = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
 		if($img_sess->usrid != $usrid && $usrrank < 8) die("<span style=\"color:white;\">You don't have access to modify this session.</span>");
 	}
 	$editsession = true;

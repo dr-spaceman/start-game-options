@@ -325,19 +325,19 @@ if(!$ed->sessionest){
 	//die(" = ".$old_len);
 	
 	$q = "INSERT INTO pages_edit (pgid, `title`, session_id, usrid, source_session_id, old_len) VALUES 
-	('".$handle['pgid']."', '".mysql_real_escape_string($title)."', '$ed->sessid', '$usrid', '".$enddata['editsource']."', '$old_len')";
-	if(!mysql_query($q)) trigger_error("Couldn't record edit session in the database", E_USER_ERROR);
+	('".$handle['pgid']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '$ed->sessid', '$usrid', '".$enddata['editsource']."', '$old_len')";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't record edit session in the database", E_USER_ERROR);
 
 }
 
 $q = "UPDATE pages_edit SET 
-	edit_summary = '".mysql_real_escape_string($enddata['edit_summary'])."', 
+	edit_summary = '".mysqli_real_escape_string($GLOBALS['db']['link'], $enddata['edit_summary'])."', 
 	`minor_edit` = '".$enddata['minoredit']."', 
 	`datetime`   = '$dt', 
 	`new_len`    = '$ed->length',
 	`score`      = '".$sc."'
 	WHERE session_id='$ed->sessid' LIMIT 1";
-if(!mysql_query($q)) trigger_error("Couldn't record edit summary", E_USER_ERROR);
+if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't record edit summary", E_USER_ERROR);
 
 if(!$ret['error']) $ret['saved'] = 1;
 
@@ -368,17 +368,17 @@ if($field == "publish"){
 	
 	if($ret['error']) die(json_encode($ret));
 	
-	$pgexists = mysql_num_rows(mysql_query("SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($ed->title)."' LIMIT 1"));
+	$pgexists = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' LIMIT 1"));
 	if(!$ed->pgid || !$pgexists){
-		$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($ed->title)."' LIMIT 1";
-		if($dbdat = mysql_fetch_object(mysql_query($q))){
+		$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' LIMIT 1";
+		if($dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
 			$ed->pgid = $dbdat->pgid;
 		} else {
 			$title_sort = formatName($ed->title, "sortable");
 			$title_sort = strtolower($title_sort);
 			$ed->pgid = mysqlNextAutoIncrement("pages");
-			$q = "INSERT INTO pages (`type`, `title`, `title_sort`, `creator`, `created`) VALUES ('".$ed->type."', '".mysql_real_escape_string($ed->title)."', '".mysql_real_escape_string($title_sort)."', '$usrid', '$dt');";
-			if(!mysql_query($q)) {
+			$q = "INSERT INTO pages (`type`, `title`, `title_sort`, `creator`, `created`) VALUES ('".$ed->type."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $title_sort)."', '$usrid', '$dt');";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				trigger_error("There was a critical database error when trying to insert page; This page hasn't been created, but your draft has been saved.", E_USER_ERROR);
 				die(json_encode($ret));
 			}
@@ -388,15 +388,15 @@ if($field == "publish"){
 	
 	$q = "UPDATE pages SET 
 		`subcategory` = '',
-		`keywords`    = '".mysql_real_escape_string($ed->data->keywords)."',
-		`description` = '".mysql_real_escape_string($ed->data->description)."',
-		`rep_image`   = '".mysql_real_escape_string($ed->data->rep_image)."',
-		`background_image` = '".mysql_real_escape_string($ed->data->background_image)."',
-		`redirect_to` = '".mysql_real_escape_string($redirect_to)."',
+		`keywords`    = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->data->keywords)."',
+		`description` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->data->description)."',
+		`rep_image`   = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->data->rep_image)."',
+		`background_image` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->data->background_image)."',
+		`redirect_to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $redirect_to)."',
 		`modifier`    = '$usrid',
 		`modified`    = '$dt'
 		WHERE pgid='".$ed->pgid."' LIMIT 1";
-	if(!mysql_query($q)) trigger_error("Couldn't update database values for alternate titles and keywords; ".mysql_error(), E_USER_ERROR);
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update database values for alternate titles and keywords; ".mysql_error(), E_USER_ERROR);
 	
 	try{ $ed->save(false, true); }
 	catch(Exception $e){ trigger_error("Couldn't save base data file (".$e->getMessage().")", E_USER_ERROR); die(json_encode($ret)); }
@@ -412,7 +412,7 @@ if($field == "publish"){
 		
 		//get lengths
 		$q = "SELECT old_len, new_len FROM pages_edit WHERE session_id='$ed->sessid' LIMIT 1";
-		$row = mysql_fetch_assoc(mysql_query($q));
+		$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		$sc = 1; //base point per edit
 		$sz = $row['new_len'] - $row['old_len'];
@@ -426,24 +426,24 @@ if($field == "publish"){
 		`published` = '1',
 		`score`     = '$sc'
 		WHERE session_id='$ed->sessid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	//Remove from pagecount_requestfail, the database that collects hits from pages not yet started
-	$q = "DELETE FROM pagecount_requestfail WHERE title = '".mysql_real_escape_string($title)."'";
-	mysql_query($q);
+	$q = "DELETE FROM pagecount_requestfail WHERE title = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."'";
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	//Page links
 	
 	$old_parents = array();
 	$parents = array();
 	$q = "SELECT * FROM pages_links WHERE from_pgid = '$ed->pgid' AND ancestor = 'parent'";
-	$r = mysql_query($q);
-	while($row = mysql_fetch_assoc($r)){
+	$r = mysqli_query($GLOBALS['db']['link'], $q);
+	while($row = mysqli_fetch_assoc($r)){
 		$old_parents[] = $row['to'];
 	}
 	
 	$q = "DELETE FROM pages_links WHERE from_pgid = '".$ed->pgid."'";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	$ulinks    = array();
 	$ulinks_ns = array();
 	$exlinks   = array();
@@ -460,8 +460,8 @@ if($field == "publish"){
 			
 			//subcategory
 			if($link['namespace'] == "Category" && in_array($link['tag'], array_keys($pgsubcategories))){
-				$q = "UPDATE pages SET subcategory = '".mysql_real_escape_string($link['tag'])."' WHERE pgid='".$ed->pgid."' LIMIT 1";
-				if(!mysql_query($q)) trigger_error("Couldn't set page subcategory to '".$link['tag']."'", E_USER_ERROR);
+				$q = "UPDATE pages SET subcategory = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."' WHERE pgid='".$ed->pgid."' LIMIT 1";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't set page subcategory to '".$link['tag']."'", E_USER_ERROR);
 			}
 			
 		}
@@ -476,10 +476,10 @@ if($field == "publish"){
 		$q = "INSERT INTO pages_links (`from_pgid`, `to`, `namespace`, `is_redirect`, `ancestor`) VALUES ";
 		foreach($ulinks as $i => $link){
 			$is_redirect = ($link == $redirect_to ? 1 : 0);
-			$q.= " ('".$ed->pgid."', '".mysql_real_escape_string($link)."', '".mysql_real_escape_string($ulinks_ns[$i])."', '$is_redirect', '".(in_array($link, $parents) ? "parent" : "")."'),";
+			$q.= " ('".$ed->pgid."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $link)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $ulinks_ns[$i])."', '$is_redirect', '".(in_array($link, $parents) ? "parent" : "")."'),";
 		}
 		$q = substr($q, 0, -1);
-		if(!mysql_query($q)) trigger_error("Couldn't record page links; ".mysql_error(), E_USER_ERROR);
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't record page links; ".mysql_error(), E_USER_ERROR);
 	}
 	
 	//$GLOBALS['debug']=true;
@@ -499,10 +499,10 @@ if($field == "publish"){
 		if(!preg_match("/[a-z]/i", $ia)) $ia = "0";
 		
 		$q = "SELECT `json` FROM pages_index_json WHERE `type`='".$ed->type."' AND `letter` = '$ia' LIMIT 1";
-		if($row = mysql_fetch_assoc(mysql_query($q))){
+		if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$json_blob = json_decode($row['json'], true);
 		} else {
-			mysql_query("INSERT INTO pages_index_json (`type`, `letter`) VALUES ('".$ed->type."', '$ia')");
+			mysqli_query($GLOBALS['db']['link'], "INSERT INTO pages_index_json (`type`, `letter`) VALUES ('".$ed->type."', '$ia')");
 			$json_blob = array();
 		}
 		
@@ -524,39 +524,39 @@ if($field == "publish"){
 		}
 		
 		$json_str = json_encode($json_blob);
-		$q = "UPDATE pages_index_json SET `json` = '".mysql_real_escape_string($json_str)."' WHERE `type` = '".$ed->type."' AND `letter` = '$ia' LIMIT 1";
-		if(!mysql_query($q)) trigger_error("Error updating JSON index: $q ", E_USER_ERROR);
+		$q = "UPDATE pages_index_json SET `json` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $json_str)."' WHERE `type` = '".$ed->type."' AND `letter` = '$ia' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Error updating JSON index: $q ", E_USER_ERROR);
 		
 		unset($json_['keywords']);
 		unset($json_['description']);
 		unset($json_['rep_image']);
 		unset($json_['categories']);
-		$q = "UPDATE pages SET index_data = '".mysql_real_escape_string(json_encode($json_))."' WHERE pgid='".$ed->pgid."' LIMIT 1";
-		if(!mysql_query($q)) trigger_error("Couldn't update index_data field on pages database; ".mysql_error(), E_USER_ERROR);
+		$q = "UPDATE pages SET index_data = '".mysqli_real_escape_string($GLOBALS['db']['link'], json_encode($json_))."' WHERE pgid='".$ed->pgid."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update index_data field on pages database; ".mysql_error(), E_USER_ERROR);
 		
 		//credits index
 		if($ed->type == "person"){
-			$q = "DELETE FROM credits WHERE person = '".mysql_real_escape_string($ed->title)."' AND source_person = 1 AND source_game = 0 AND source_album = 0;";
-			mysql_query($q);
-			$q = "UPDATE credits SET source_person = 0 WHERE person = '".mysql_real_escape_string($ed->title)."';";
-			mysql_query($q);
+			$q = "DELETE FROM credits WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' AND source_person = 1 AND source_game = 0 AND source_album = 0;";
+			mysqli_query($GLOBALS['db']['link'], $q);
+			$q = "UPDATE credits SET source_person = 0 WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."';";
+			mysqli_query($GLOBALS['db']['link'], $q);
 			if($ed->data->credits_list->credit[0]){
 				$queries = array();
 				$pglinks = new pglinks();
 				$exlinks = $pglinks->extractFrom($ed->data->credits_list->asXML());
 				foreach($exlinks as $link){
 					$work = $link['namespace'] == "AlbumID" ? "AlbumID:".$link['tag'] : $link['tag'];
-					$q = "SELECT * FROM credits WHERE person = '".mysql_real_escape_string($ed->title)."' AND work = '".mysql_real_escape_string($work)."' LIMIT 1";
-					if(mysql_num_rows(mysql_query($q))){
-						$q = "UPDATE credits SET source_person = 1 WHERE person = '".mysql_real_escape_string($ed->title)."' AND work = '".mysql_real_escape_string($work)."'";
-						mysql_query($q);
+					$q = "SELECT * FROM credits WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $work)."' LIMIT 1";
+					if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
+						$q = "UPDATE credits SET source_person = 1 WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $work)."'";
+						mysqli_query($GLOBALS['db']['link'], $q);
 					} else {
-						$queries[] = "('".mysql_real_escape_string($ed->title)."', '".mysql_real_escape_string($work)."', '1')";
+						$queries[] = "('".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $work)."', '1')";
 					}
 				}
 				if($queries){
 					$query = "INSERT INTO credits (person, work, source_person) VALUES ".implode(",", $queries);
-					mysql_query($query);
+					mysqli_query($GLOBALS['db']['link'], $query);
 				}
 			}
 		}
@@ -570,8 +570,8 @@ if($field == "publish"){
 	} // end index actions
 	
 	//former PS
-	$q = "SELECT * FROM pages WHERE `title` = '".mysql_real_escape_string($title)."' LIMIT 1";
-	$pgdat = mysql_fetch_object(mysql_query($q));
+	$q = "SELECT * FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+	$pgdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$contr = array();
 	$contr = json_decode($pgdat->contributors);
 	$former_ps = $contr[0];
@@ -584,19 +584,19 @@ if($field == "publish"){
 	
 	//update user total score
 	$q = "SELECT SUM( `score` ) AS `sum_score` FROM pages_edit WHERE usrid = '$usrid' AND `published` = '1';";
-	$row_score = mysql_fetch_object(mysql_query($q));
+	$row_score = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$q = "UPDATE users SET contribution_score='".$row_score->sum_score."' WHERE usrid='$usrid' LIMIT 1;";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	//notify users watching that this page has been edited
-	$query = "SELECT usrid FROM pages_watch WHERE `title`='".mysql_real_escape_string($title)."' AND usrid != '".$usrid."';";
-	$res   = mysql_query($query);
-	while($_SERVER['HTTP_HOST'] != "localhost" && $row = mysql_fetch_assoc($res)){
+	$query = "SELECT usrid FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid != '".$usrid."';";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($_SERVER['HTTP_HOST'] != "localhost" && $row = mysqli_fetch_assoc($res)){
 		$q = "SELECT `email`, `username` FROM users WHERE usrid = '$row[usrid]' LIMIT 1";
-		do if($user_row = mysql_fetch_assoc(mysql_query($q))){
+		do if($user_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$q2 = "SELECT * FROM users_prefs WHERE usrid = '$row[usrid]' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q2))){
-				$prefs = mysql_fetch_assoc(mysql_query($q2));
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q2))){
+				$prefs = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q2));
 				if($prefs['watchlist_notify'] != 1) continue;
 				if($enddata['minoredit'] && $prefs['watchlist_minor_no_notify'] == 1) continue;
 			}
@@ -612,8 +612,8 @@ if($field == "publish"){
 	do if($has_new_ps){
 		
 		//track for stream
-		$q = "INSERT INTO stream (`action`, `action_type`, `usrid`) VALUES ('[[User:".$usrname."]] became the Patron Saint of [[".mysql_real_escape_string($title)."]].', 'page edit', '$usrid');";
-		mysql_query($q);
+		$q = "INSERT INTO stream (`action`, `action_type`, `usrid`) VALUES ('[[User:".$usrname."]] became the Patron Saint of [[".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."]].', 'page edit', '$usrid');";
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		//notify old ps
 		if($_SERVER['HTTP_HOST'] == "localhost") break;
@@ -629,11 +629,11 @@ if($field == "publish"){
 	} while(false);
 	
 	//watch
-	$q = "SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($title)."' AND usrid='".$usrid."' LIMIT 1";
-	$watching = mysql_num_rows(mysql_query($q));
+	$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='".$usrid."' LIMIT 1";
+	$watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 	if($enddata['watch'] && !$watching){
-		$q = "INSERT INTO pages_watch (`title`, usrid) VALUES ('".mysql_real_escape_string($title)."', '$usrid');";
-		if(!mysql_query($q)) trigger_error("Couldn't add to your watch list", E_USER_ERROR);
+		$q = "INSERT INTO pages_watch (`title`, usrid) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '$usrid');";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't add to your watch list", E_USER_ERROR);
 	}
 	
 	// BADGES //
@@ -650,10 +650,10 @@ if($field == "publish"){
 		if($ulinks_ns[$i] == "Category" && $link == "Puzzle") $_badges->earn(44);
 		if($ulinks_ns[$i] == "Category" && $link == "Game Boy"){
 			$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = 'Game Boy' AND is_redirect != '1'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
-				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysql_real_escape_string($row['title'])."' AND published = '1' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) $numGB++;
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
+				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['title'])."' AND published = '1' LIMIT 1";
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $numGB++;
 				if($numGB >= 5){
 					$_badges->earn(45);
 					break;
@@ -662,10 +662,10 @@ if($field == "publish"){
 		}
 		if($ulinks_ns[$i] == "Category" && $link == "PlayStation"){
 			$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = 'PlayStation' AND is_redirect != '1'";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
-				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysql_real_escape_string($row['title'])."' AND published = '1' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) $numPS++;
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
+				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['title'])."' AND published = '1' LIMIT 1";
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $numPS++;
 				if($numPS >= 3){
 					$_badges->earn(58);
 					break;
@@ -675,7 +675,7 @@ if($field == "publish"){
 		if($ulinks_ns[$i] == "Category" && ($link == "Namco" || $link == "Namco Bandai") && $ps == $usrid) $_badges->earn(59); //Sexy Yellow Circle
 		if($ed->type == "person"){
 			$q = "SELECT DISTINCT(pgid) FROM pages_edit LEFT JOIN pages USING(pgid) WHERE `type` = 'person' AND usrid = '$usrid'";
-			if(mysql_num_rows(mysql_query($q)) >= 75) $_badges->earn(52);
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q)) >= 75) $_badges->earn(52);
 		}
 	}
 	
@@ -683,7 +683,7 @@ if($field == "publish"){
 	if($is_new_ps){
 		
 		$q = "UPDATE pages_edit SET new_ps = '1' WHERE session_id='$ed->sessid' LIMIT 1";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		$num_ps_stolen = (int)$user->calculateScore('', 'num_ps_stolen');
 		if($num_ps_stolen >= 5) $_badges->earn(55);

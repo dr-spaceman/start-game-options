@@ -10,8 +10,8 @@ if($sessid = $_GET['destroysession']){
 	
 	//DESTROY A SESSION
 	
-	$q = "SELECT * FROM pages_edit WHERE session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if(!$pe = mysql_fetch_object(mysql_query($q))) {
+	$q = "SELECT * FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if(!$pe = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		if($_GET['returnonfail']) {
 			header("Location: ".pageURL($_GET['returnonfail']));
 			die("Session not yet recorded");
@@ -46,8 +46,8 @@ if($sessid = $_GET['destroysession']){
 		exit;
 	}
 	
-	$q = "DELETE FROM pages_edit WHERE session_id='".mysql_real_escape_string($sessid)."' LIMIT 1";
-	if(!mysql_query($q)) die("Error removing session from database");
+	$q = "DELETE FROM pages_edit WHERE session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing session from database");
 	
 	$ed = new pgedit($pe->title);
 	$ed->recalculatePageContr();
@@ -83,15 +83,15 @@ try {
 	
 	// Check for unpublished edit session in past few days
 	if($_POST['_action'] != "start" && !$_GET['editsource']){
-		$query = "SELECT * FROM pages_edit WHERE title='".mysql_real_escape_string($title)."' AND usrid='$usrid' AND published='0' AND `datetime` > DATE_ADD('".date("Y-m-d H:i:s")."', INTERVAL -3 DAY) ORDER BY `datetime` DESC";
-		$res   = mysql_query($query);
-		if(mysql_num_rows($res)){
+		$query = "SELECT * FROM pages_edit WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='$usrid' AND published='0' AND `datetime` > DATE_ADD('".date("Y-m-d H:i:s")."', INTERVAL -3 DAY) ORDER BY `datetime` DESC";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(mysqli_num_rows($res)){
 			?>
 			<div id="recentsessions" class="pgedbg" style="margin-bottom:20px; padding:20px 40px; font-size:14px; line-height:1.5em;">
 				<b>You have unpublished edits for this page.</b> You can build upon a previous session or continue with the form below to start from scratch.
 				<ul>
 					<?
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						echo '<li><a href="history.php?view_version='.$row['session_id'].'">'.formatDate($row['datetime'], 2).'</a> <span style="color:#AAA;">[<a href="edit.php?title='.$titleurl.'&editsource='.$row['session_id'].'">build</a>]</span> '.$row['edit_summary'].'</li>';
 					}
 					?>
@@ -147,10 +147,10 @@ try {
 		// START A PAGE //
 		
 		//check the title for matches
-		$query = "SELECT `title`, MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($ed->title)."') AS `score` FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysql_real_escape_string($ed->title)."') ORDER BY `score` DESC LIMIT 20";
-		$res   = mysql_query($query);
+		$query = "SELECT `title`, MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."') AS `score` FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."') ORDER BY `score` DESC LIMIT 20";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$matches = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row['score'] > 3) $matches[] = $row['title'];
 		}
 		
@@ -655,13 +655,13 @@ try {
 				
 				//check for discrepancies
 				$cr_d = array();
-				$query = "SELECT work FROM credits WHERE person = '".mysql_real_escape_string($ed->title)."' AND source_person = '0'";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)){
+				$query = "SELECT work FROM credits WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $ed->title)."' AND source_person = '0'";
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)){
 					if(substr($row['work'], 0, 8) == "AlbumID:"){
 						$albumid = substr($row['work'], 8);
-						$q = "SELECT title, subtitle FROM albums WHERE albumid = '".mysql_real_escape_string($albumid)."' LIMIT 1";
-						if(!$album = mysql_fetch_assoc(mysql_query($q))) continue;
+						$q = "SELECT title, subtitle FROM albums WHERE albumid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $albumid)."' LIMIT 1";
+						if(!$album = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) continue;
 						$row['work'].= "|".$album['title'].($album['subtitle'] ? " ".$album['subtitle'] : '');
 					}
 					$cr_d[] = $row['work'];

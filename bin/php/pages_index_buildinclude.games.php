@@ -5,33 +5,33 @@
 
 if($pg->type == "game" && $pg->pgid){
 	
-	$q = "DELETE FROM credits WHERE work = '".mysql_real_escape_string($pg->title)."' AND source_game = 1 AND source_person = 0 AND source_album = 0;";
-	mysql_query($q);
-	$q = "UPDATE credits SET source_game = 0 WHERE work = '".mysql_real_escape_string($pg->title)."';";
-	mysql_query($q);
+	$q = "DELETE FROM credits WHERE work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' AND source_game = 1 AND source_person = 0 AND source_album = 0;";
+	mysqli_query($GLOBALS['db']['link'], $q);
+	$q = "UPDATE credits SET source_game = 0 WHERE work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."';";
+	mysqli_query($GLOBALS['db']['link'], $q);
 	if((string)$pg->data->credits){
 		$pglinks = new pglinks();
 		$pglinks->regex = '@::\s*\[\[('.implode(':|', $GLOBALS['pgnamespaces']).')?:?(.*?)\]\]@ise';
 		if($exlinks = $pglinks->extractFrom((string)$pg->data->credits)){
 			$queries = array();
 			foreach($exlinks as $link){
-				$q = "SELECT * FROM credits WHERE work = '".mysql_real_escape_string($pg->title)."' AND person = '".mysql_real_escape_string($link['tag'])."' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))){
-					$q = "UPDATE credits SET source_game = 1 WHERE person = '".mysql_real_escape_string($link['tag'])."' AND work = '".mysql_real_escape_string($pg->title)."'";
-					mysql_query($q);
+				$q = "SELECT * FROM credits WHERE work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' AND person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."' LIMIT 1";
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
+					$q = "UPDATE credits SET source_game = 1 WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."'";
+					mysqli_query($GLOBALS['db']['link'], $q);
 				} else {
-					$queries[] = "('".mysql_real_escape_string($link['tag'])."', '".mysql_real_escape_string($pg->title)."', '1')";
+					$queries[] = "('".mysqli_real_escape_string($GLOBALS['db']['link'], $link['tag'])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."', '1')";
 				}
 			}
 			if($queries){
 				$query = "INSERT INTO credits (person, work, source_game) VALUES ".implode(",", $queries);
-				mysql_query($query);
+				mysqli_query($GLOBALS['db']['link'], $query);
 			}
 		}
 	}
 	
 	$q = "DELETE FROM games_publications WHERE pgid='$pg->pgid'";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	if($pubs = ($pg->data->publications ? $pg->data->publications->children() : array())){
 		
 		$q = "INSERT INTO games_publications (`pgid`,`title`,`release_title`,`platform`,`region`,`publisher`,`img_name`,`img_name_title_screen`,`img_name_logo`,`distribution`,`release_date`,`release_date_tentative`,`primary`) VALUES ";
@@ -53,10 +53,10 @@ if($pg->type == "game" && $pg->pgid){
 				$release_date_tentative = '0';
 			}
 			
-			$q.= "('$pg->pgid', '".mysql_real_escape_string($pg->title)."', '".mysql_real_escape_string($pub->title)."', '".mysql_real_escape_string($pf)."', '".$pf_regions[(string)$pub->region]."', '".mysql_real_escape_string($pub->publisher)."', '".mysql_real_escape_string($pub->img_name)."', '".mysql_real_escape_string($pub->img_name_title_screen)."', '".mysql_real_escape_string($pub->img_name_logo)."', '".mysql_real_escape_string($pub->distribution)."', ".($release_date ? "'$release_date'" : "NULL").", '$release_date_tentative', '$primary'),";
+			$q.= "('$pg->pgid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pf)."', '".$pf_regions[(string)$pub->region]."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->publisher)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name_title_screen)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->img_name_logo)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pub->distribution)."', ".($release_date ? "'$release_date'" : "NULL").", '$release_date_tentative', '$primary'),";
 		}
 		$q = substr($q, 0, -1);
-		if(!mysql_query($q)) trigger_error("Couldn't update publications index; ".mysql_error(), E_USER_ERROR);
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) trigger_error("Couldn't update publications index; ".mysql_error(), E_USER_ERROR);
 	}
 	
 }

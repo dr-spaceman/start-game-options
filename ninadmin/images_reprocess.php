@@ -13,9 +13,9 @@ if(!$lm) $lm = 0;
 echo $html_tag.'<body>Init '.$lm.'... <a href="?lm='.($lm + 4).'">Next</a><dl>';
 
 $q = "SELECT * FROM images LIMIT $lm, 4";
-$r = mysql_query($q);
-if(!mysql_num_rows($r)) die('</dl><br/>End.</body></html>');
-while($image = mysql_fetch_assoc($r)){
+$r = mysqli_query($GLOBALS['db']['link'], $q);
+if(!mysqli_num_rows($r)) die('</dl><br/>End.</body></html>');
+while($image = mysqli_fetch_assoc($r)){
 	
 	$dir = "/images/".substr($image[img_session_id], 12, 7)."/";
 	$file = $dir.$image['img_name'];

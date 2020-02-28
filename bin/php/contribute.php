@@ -42,17 +42,17 @@ function submitNew() {
 	//No points for previous similar conr in past 24 hours
 	if(!$this->no_points) {
 		$q = "SELECT * FROM users_contributions 
-			WHERE `subject`='".mysql_real_escape_string($this->subj)."' 
-			AND type_id='".mysql_real_escape_string($this->type)."' 
+			WHERE `subject`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->subj)."' 
+			AND type_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->type)."' 
 			AND published='1' 
 			AND usrid='$usrid' 
 			AND datetime >= DATE_SUB(CURDATE(),INTERVAL 1 DAY)
 			LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) $this->no_points = 1;
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $this->no_points = 1;
 	}
 	//calculate points and get type desc
 	$q = "SELECT * FROM users_contributions_types WHERE type_id='".$this->type."' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$ret['type_id'] = $this->type;
 	$ret['type_desc'] = $dat->description;
 	if($pub) $ret['points'] = $dat->points;
@@ -68,39 +68,39 @@ function submitNew() {
 		$proc_act = "insert";
 		list($table, $ofield, $oid, $_field) = explode(":", $this->subj);
 		if($ofield && $oid) {
-			$query = "SELECT * FROM `".mysql_real_escape_string($table)."` WHERE `".mysql_real_escape_string($ofield)."`='".mysql_real_escape_string($oid)."' LIMIT 1";
-			if(mysql_num_rows(mysql_query($query))) $proc_act = "update";
+			$query = "SELECT * FROM `".mysqli_real_escape_string($GLOBALS['db']['link'], $table)."` WHERE `".mysqli_real_escape_string($GLOBALS['db']['link'], $ofield)."`='".mysqli_real_escape_string($GLOBALS['db']['link'], $oid)."' LIMIT 1";
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) $proc_act = "update";
 		}
 		$q = "";
 		if($proc_act == "update") {
 			//UPDATE
-			$q = "UPDATE `".mysql_real_escape_string($table)."` SET ";
+			$q = "UPDATE `".mysqli_real_escape_string($GLOBALS['db']['link'], $table)."` SET ";
 			while(list($key, $val) = each($data)) {
 				if($key == "*delete_row") {
-					$q = "DELETE FROM `".mysql_real_escape_string($table)."` ";
+					$q = "DELETE FROM `".mysqli_real_escape_string($GLOBALS['db']['link'], $table)."` ";
 					break;
 				}
 				if(!strstr($key, "*")) { //exclude any keys with the * char
-					$q.= "`$key`='".mysql_real_escape_string($val)."',";
+					$q.= "`$key`='".mysqli_real_escape_string($GLOBALS['db']['link'], $val)."',";
 				}
 			}
-			$q = substr($q, 0, -1)." WHERE `".mysql_real_escape_string($ofield)."`='".mysql_real_escape_string($oid)."' LIMIT 1";
+			$q = substr($q, 0, -1)." WHERE `".mysqli_real_escape_string($GLOBALS['db']['link'], $ofield)."`='".mysqli_real_escape_string($GLOBALS['db']['link'], $oid)."' LIMIT 1";
 		} elseif($ofield) {
 			//INSERT
-			$newkey = mysqlNextAutoIncrement(mysql_real_escape_string($table));
-			$q = "INSERT INTO `".mysql_real_escape_string($table)."` ";
+			$newkey = mysqlNextAutoIncrement(mysqli_real_escape_string($GLOBALS['db']['link'], $table));
+			$q = "INSERT INTO `".mysqli_real_escape_string($GLOBALS['db']['link'], $table)."` ";
 			$keys = array();
 			$vals = array();
 			foreach(array_keys($data) as $key) {
-				$keys[] = "`".mysql_real_escape_string($key)."`";
-				$vals[] = "'".mysql_real_escape_string($data[$key])."'";
+				$keys[] = "`".mysqli_real_escape_string($GLOBALS['db']['link'], $key)."`";
+				$vals[] = "'".mysqli_real_escape_string($GLOBALS['db']['link'], $data[$key])."'";
 			}
 			$q.= "(".implode(",", $keys).") VALUES (".implode(",", $vals).");";
 			if(strstr($this->subj, "[ID]")) $this->subj = str_replace("[ID]", $newkey, $this->subj);
 			else $this->subj .= (substr($this->subj, -1) != ":" ? ":" : "").$newkey;
 		}
 		if($q) {
-			if(!mysql_query($q)) return array("errors" => array($thisf['desc'].": Couldn't process the given data; this field will remain unchanged. ".mysql_error()));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array($thisf['desc'].": Couldn't process the given data; this field will remain unchanged. ".mysql_error()));
 		}
 	}
 	
@@ -133,16 +133,16 @@ function submitNew() {
 	$q = sprintf(
 		"INSERT INTO users_contributions (type_id, usrid, datetime, description, published, pending, subject, supersubject, no_points) VALUES 
 		('$this->type', '$usrid', '".date("Y-m-d H:i:s")."', '%s', '$pub', '$pend', '$this->subj', '$this->ssubj', ".($this->no_points ? "'1'" : "NULL").");",
-		mysql_real_escape_string($this->desc)
+		mysqli_real_escape_string($GLOBALS['db']['link'], $this->desc)
 	);
-	if(!mysql_query($q)) return array("errors" => array("couldn't add contribution; ".mysql_error()));
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("couldn't add contribution; ".mysql_error()));
 	
 	$this->data = str_replace("[CID]", $cid, $this->data);
 	$ret['data'] = $this->data;
 	$ret['contribution_id'] = $cid;
 	
-	$q = "INSERT INTO users_contributions_data (contribution_id, data) VALUES ('$cid', '".mysql_real_escape_string($this->data)."')";
-	if(!mysql_query($q)) return array("errors" => array("Error adding contribution data; ".mysql_error()));
+	$q = "INSERT INTO users_contributions_data (contribution_id, data) VALUES ('$cid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->data)."')";
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) return array("errors" => array("Error adding contribution data; ".mysql_error()));
 	
 	if($pub && !$this->no_points) $this->recalculateContributions($usrid);
 	
@@ -187,7 +187,7 @@ function submitNew() {
 	
 	if($this->watch) {
 		$q = "INSERT INTO watchlist (usrid, supersubject) VALUES ('$usrid', '$this->ssubj');";
-		if(!mysql_query($q)) $errors[] = "Couldn't add $this->ssubj to watch list.";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add $this->ssubj to watch list.";
 	}
 	
 	return $ret;
@@ -197,7 +197,7 @@ function submitNew() {
 function markUpd($table, $field, $id, $mod_field='') {
 	if(!$mod_field) $mod_field = "modified";
 	$q = "UPDATE `$table` SET `$mod_field`='".date("Y-m-d H:i:s")."' WHERE `$field`='$id' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 }
 
 function contributeToGame($contr='') {
@@ -206,37 +206,37 @@ function contributeToGame($contr='') {
 	global $gid, $usrid;
 	
 	$q = "UPDATE games SET modified='".date("Y-m-d H:i:s")."' WHERE gid='$gid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	if(!$contr) $contr = "usrid:".$usrid;
 	
 	$query = "SELECT `contributors` FROM games WHERE gid='$gid' LIMIT 1";
-	$res = mysql_query($query);
-	$row = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$row = mysqli_fetch_object($res);
 	if(!$row->contributors) {
 		// none yet
 		$query2 = "UPDATE games SET `contributors`='$contr' WHERE gid='$gid'";
-		if(!mysql_query($query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
 	} else {
 		$cons = array();
 		$cons = explode(",", $row->contributors);
 		if(!in_array($contr, $cons)) {
 			$cons[] = $contr;
 			$query2 = "UPDATE games SET `contributors` = '".implode(",", $cons)."' WHERE gid='$gid'";
-			if(!mysql_query($query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $query2)) $errors[] = "Couldn't add to contributors; ".mysql_error();
 		}
 	}
 }
 
 function recalculateContributions($uid) {
 	
-	$r = mysql_query("SELECT * FROM users_contributions LEFT JOIN users_contributions_types USING (type_id) WHERE usrid='$uid' AND published='1'");
-	while($row = mysql_fetch_assoc($r)) {
+	$r = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_contributions LEFT JOIN users_contributions_types USING (type_id) WHERE usrid='$uid' AND published='1'");
+	while($row = mysqli_fetch_assoc($r)) {
 		$points = $points + $row['points'];
 	}
 	
 	$q = "UPDATE users SET contribution_score='$points' WHERE usrid='$uid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 }
 
@@ -254,18 +254,18 @@ function isPending() {
 				//unpublished game -> publish
 				$gid = substr($this->ssubj, 4);
 				$q = "SELECT * FROM games WHERE gid='$gid' LIMIT 1";
-				if($dat = mysql_fetch_object(mysql_query($q))) {
+				if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 					if($dat->unpublished) $pend = 0;
 				}
 			} elseif($this->ssubj) {
 				//if there's already a value in the field, pend it
 				list($table, $index_field, $index_val, $field) = explode(":", $this->subj);
-				$q = "SELECT `$field` FROM `$table` WHERE `$index_field` = '".mysql_real_escape_string($index_val)."' LIMIT 1";
-				$row = mysql_fetch_assoc(mysql_query($q));
+				$q = "SELECT `$field` FROM `$table` WHERE `$index_field` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $index_val)."' LIMIT 1";
+				$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 				if($row[$field] == "") $pend = 0;
 				//if anyone else edited it, pend it
-				/*$q = "SELECT usrid FROM users_contributions WHERE `subject`='".mysql_real_escape_string($this->subj)."' AND `published`='1' AND usrid !='$usrid' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) $pend = 1;
+				/*$q = "SELECT usrid FROM users_contributions WHERE `subject`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->subj)."' AND `published`='1' AND usrid !='$usrid' LIMIT 1";
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $pend = 1;
 				else $pend = 0;*/
 			}
 		}

@@ -30,8 +30,8 @@ if(isset($_SESSION['usrname'])) {
 		
 		$pass = base64_decode($_COOKIE['remember_usrpass']);
 		$q = "SELECT * FROM users WHERE usrid='".$_COOKIE['remember_usrid']."' AND password=PASSWORD('".base64_decode($_COOKIE['remember_usrpass'])."') LIMIT 1";
-		$res = mysql_query($q);
-		if($userdat = mysql_fetch_object($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $q);
+		if($userdat = mysqli_fetch_object($res)) {
 			
 			if(!$_SESSION['usrname'] = $userdat->username) $errors[] = "Couldn't set session variable 'usrname'.";
 			if(!$_SESSION['usrid'] = $userdat->usrid) $errors[] = "Couldn't set session variable 'usrid'.";
@@ -45,7 +45,7 @@ if(isset($_SESSION['usrname'])) {
 			if(!$errors) {
 				//update activity
 				$q2 = "UPDATE users SET activity='".date("Y-m-d H:i:s")."', previous_activity='".$userdat->activity."' WHERE usrid='".$_SESSION['usrid']."' LIMIT 1";
-				mysql_query($q2);
+				mysqli_query($GLOBALS['db']['link'], $q2);
 			}
 			
 		}
@@ -67,11 +67,11 @@ if(isset($_POST['do']) && $_POST['do'] == "login" && isset($_POST['username'])) 
 	$password = $_POST['password'];
 	
 	$q = sprintf("SELECT * FROM `users` WHERE `username` = '%s' AND `password` = password('$password') LIMIT 1",
-		mysql_real_escape_string($username));
-	$res = mysql_query($q);
-	if(mysql_num_rows($res)) {
+		mysqli_real_escape_string($GLOBALS['db']['link'], $username));
+	$res = mysqli_query($GLOBALS['db']['link'], $q);
+	if(mysqli_num_rows($res)) {
 		
-		if(!$userdat = mysql_fetch_object($res)) die("Error: Couldn't get user data");
+		if(!$userdat = mysqli_fetch_object($res)) die("Error: Couldn't get user data");
 		if(!$_SESSION['usrname'] = $userdat->username) die("Couldn't set session variable 'usrname'.");
 		if(!$_SESSION['usrid'] = $userdat->usrid) die("Couldn't set session variable 'usrid'.");
 		if(!$_SESSION['usrrank'] = $userdat->rank) die("Couldn't set user rank variable.");
@@ -86,7 +86,7 @@ if(isset($_POST['do']) && $_POST['do'] == "login" && isset($_POST['username'])) 
 		
 		//update activity
 		$q2 = "UPDATE users SET activity='".date("Y-m-d H:i:s")."', previous_activity='".$userdat->activity."' WHERE usrid='".$_SESSION['usrid']."' LIMIT 1";
-		mysql_query($q2);
+		mysqli_query($GLOBALS['db']['link'], $q2);
 		
 		if($_POST['ajax_login']) {
 			die("ok");
@@ -345,8 +345,8 @@ if($this->close_to != '' && $usrrank <= $this->close_to) {
 	$p = $_SERVER['SCRIPT_NAME'];
 	if(!in_array($p, $access)) {
 		$query = "SELECT * FROM users_ranks";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) {
 			$ranks[$row['rank']] = $row['description'];
 		}
 		echo '<div style="padding-top:15px">Sorry, but your status is <i>'.$ranks[$usrrank].'</i> and this site is currently closed to '.$ranks[$this->close_to].'s '.($this->close_to >= 1 ? 'and below' : '').($usrrank < 1 ? ' (registered users can access the site by <a href="#login">logging in</a>)' : '').'.</div>';
@@ -427,7 +427,7 @@ if(!$this->nocont) {
 			<?
 			//new pms?
 			$q = "SELECT * FROM pm WHERE `to`='$usrid' AND `read`='0'";
-			if($new_pms = mysql_num_rows(mysql_query($q))) {
+			if($new_pms = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 				echo ' ('.$new_pms.')';
 			}
 			?> &middot; 
@@ -613,8 +613,8 @@ function stripslashesDeep($value) {
 
 function getPlatforms() {
 	$query = "SELECT * FROM games_platforms";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$ret[$row[platform_id]][platform] = $row[platform];
 		$ret[$row[platform_id]][platform_shorthand] = $row[platform_shorthand];
 	}
@@ -623,7 +623,7 @@ function getPlatforms() {
 
 function getUserDat($uid) {
 	$q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE usrid='$uid' LIMIT 1";
-	if($dat = mysql_fetch_object(mysql_query($q))) {
+	if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		return $dat;
 	}
 }
@@ -633,7 +633,7 @@ function outputUser($uid = "", $avatar = TRUE, $link = TRUE, $substr = '') {
 	elseif(!is_numeric($uid)) return '<acronym title="ID # '.$uid.'">???</acronym>';
 	else {
 		$q = "SELECT * FROM users WHERE usrid='$uid' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			if($avatar && $dat->avatar) $style = 'background-image:url(/bin/img/avatars/tn/'.$dat->avatar.');';
 			elseif($avatar && !$dat->avatar) $style = 'background-image:url(/bin/img/avatars/tn/unknown.png);';
 			if($link) $ret = '<a href="/~'.$dat->username.'"'.($avatar ? ' class="user"' : '').' style="'.$style.'" title="'.$dat->username.'\'s profile">';
@@ -654,7 +654,7 @@ function outputUser($uid = "", $avatar = TRUE, $link = TRUE, $substr = '') {
 function outputPerson($pid, $linkto=TRUE) {
 	
 	$q = "SELECT name, name_url FROM people WHERE pid='$pid' LIMIT 1";
-	if($dat = mysql_fetch_object(mysql_query($q))) {
+	if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		if($linkto) echo '<a href="/people/~'.$dat->name_url.'">'.$dat->name.'</a>';
 		else echo $dat->name;
 	} else echo "Person ID#'$pid";
@@ -736,7 +736,7 @@ function formatDate ($date, $form = 1, $convert = FALSE) {
 	
 	if($convert && $usrid) {
 		$q = "SELECT time_zone FROM users_details WHERE usrid='$usrid' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$date = convertTimeZone($date, $dat->time_zone);
 		}
 	}
@@ -884,7 +884,7 @@ function outputTag($t, $loc='', $linkto=FALSE, $linkonly=FALSE, $inclpermalink=F
 	if(strstr($t, "gid:")) {
 		$x = explode(":", $t);
 		$q = "SELECT title, title_url FROM games WHERE gid='$x[1]' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($loc || $linkto) {
 			$ret = '<a href="'.($loc ? $loc.$t.($inclpermalink ? '/'.$dat->title_url : '') : '/games/'.$x[1].'/'.$dat->title_url).'">';
 			$endA = '</a>';
@@ -894,7 +894,7 @@ function outputTag($t, $loc='', $linkto=FALSE, $linkonly=FALSE, $inclpermalink=F
 	} elseif(strstr($t, "pid:")) {
 		$x = explode(":", $t);
 		$q = "SELECT name, name_url FROM people WHERE pid='$x[1]' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($loc || $linkto) {
 			$ret = '<a href="'.($loc ? $loc.$t.($inclpermalink ? '/'.$dat->name_url : '') : '/people/'.$x[1].'/'.$dat->name_url).'">';
 			$endA = '</a>';
@@ -904,7 +904,7 @@ function outputTag($t, $loc='', $linkto=FALSE, $linkonly=FALSE, $inclpermalink=F
 	} elseif(strstr($t, "aid:")) {
 		$albumid = str_replace("aid:", "", $t);
 		$q = "SELECT title, subtitle FROM albums WHERE albumid='$albumid' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($loc || $linkto) {
 			$ret = '<a href="/music/?id='.$albumid.'">';
 			$endA = '</a>';
@@ -914,7 +914,7 @@ function outputTag($t, $loc='', $linkto=FALSE, $linkonly=FALSE, $inclpermalink=F
 	} elseif(strstr($t, "group:")) {
 		list($x, $group_id) = explode(":", $t);
 		$q = "SELECT * FROM groups WHERE group_id='$group_id' LIMIT 1";
-		$dat = mysql_fetch_object(mysql_query($q));
+		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($loc || $linkto) {
 			$ret = '<a href="'.($loc ? $loc.$t : '/groups/~'.$dat->name_url).'">';
 			$endA = '</a>';
@@ -935,15 +935,15 @@ function outputGallery($dir='', $media_id='', $legend='', $style='', $limit='', 
 	//data
 	if($media_id) $query = "SELECT * FROM media WHERE media_id='$media_id' LIMIT 1";
 	else $query = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-	$res = mysql_query($query);
-	$dat = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$dat = mysqli_fetch_object($res);
 	$dir = $dat->directory;
 	
 	//captions
 	if($media_id) $query = "SELECT * FROM media_captions WHERE media_id='$media_id'";
 	else $query = "SELECT c.* FROM media_captions c, media m WHERE m.directory='$dir' AND c.media_id=m.media_id";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$capts[$row['file']] = $row['caption'];
 	}
 	
@@ -1017,10 +1017,10 @@ function addPageView ($id='', $pg='', $numformat='') {
 	global $db, $usrrank;
 	if(!$pg) $pg = preg_replace("/(index.php)$/", "", $_SERVER['SCRIPT_NAME']);
 	$query = "SELECT * FROM `pagecount` WHERE `page` = '$pg'";
-	$res = mysql_query($query);
-	if(!$row = mysql_fetch_object($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$row = mysqli_fetch_object($res)) {
 		$query = "INSERT INTO `pagecount` (`page`, `count`, `corresponding_id`) VALUES ('$pg', 1, '$id')";
-		mysql_query($query);
+		mysqli_query($GLOBALS['db']['link'], $query);
 		return '1';
 	} else {
 		if($usrrank > 6) {
@@ -1031,7 +1031,7 @@ function addPageView ($id='', $pg='', $numformat='') {
 			$pgcount = $row->count;
 			$pgcount++;
 			$query = "UPDATE `pagecount` SET `count` = '$pgcount'".($id ? ", `corresponding_id` = '$id'" : "")." WHERE `page` = '$pg'";
-			$res = mysql_query($query);
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
 			if($numformat) $pgcount = number_format($pgcount);
 			return $pgcount;
 		}
@@ -1047,8 +1047,8 @@ function printAd($size) {
 function mysqlNextAutoIncrement($table, $dontdie='') {
 	
 	$q = "SHOW TABLE STATUS LIKE '$table'";
-	$r 	= mysql_query($q) or die ( "Query failed: " . mysql_error() );
-	$row = mysql_fetch_assoc($r);
+	$r 	= mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysql_error() );
+	$row = mysqli_fetch_assoc($r);
 	if($row['Auto_increment']) return $row['Auto_increment'];
 	elseif(!$dontdie) die("Couldn't get incremental ID for `$table`");
 	
@@ -1120,7 +1120,7 @@ function nl2p($t) {
 
 function personProfile($pid) {
 	$q = "SELECT pid, name, name_url, title, assoc_co FROM people WHERE pid='$pid' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	if(!$dat) return '<div class="personprof">Couldn\'t get person data for ID # \'$pid\'.</div>';
 	$pic = "/bin/img/people/".(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/people/".$dat->pid."-tn.png") ? $dat->pid."-tn.png" : "nopicture-tn.png");
 	$cos = substr($dat->assoc_co, 1, -1);

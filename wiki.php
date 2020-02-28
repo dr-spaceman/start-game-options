@@ -40,8 +40,8 @@ $page->javascript.= '<script type="text/javascript" src="/bin/script/wiki.js"></
 
 if($_GET['view_version']) {
 	//view an id
-	$q = "SELECT * FROM wiki WHERE id='".mysql_real_escape_string($_GET['view_version'])."' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) {
+	$q = "SELECT * FROM wiki WHERE id='".mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['view_version'])."' LIMIT 1";
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		die("Error: Couldn't get wiki data.");
 	} else {
 		?>
@@ -92,11 +92,11 @@ if($_GET['compare']) {
 	<body style="background-color:white;">
 	
 	<?
-	$q = "SELECT * FROM wiki WHERE id='".mysql_real_escape_string($v[0])."' LIMIT 1";
-	if(!$t1 = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
+	$q = "SELECT * FROM wiki WHERE id='".mysqli_real_escape_string($GLOBALS['db']['link'], $v[0])."' LIMIT 1";
+	if(!$t1 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get wiki data for id # ".$v[0]);
 	
-	$q = "SELECT * FROM wiki WHERE id='".mysql_real_escape_string($v[1])."' LIMIT 1";
-	if(!$t2 = mysql_fetch_object(mysql_query($q))) die("Error: Couldn't get wiki data for id # ".$v[1]);
+	$q = "SELECT * FROM wiki WHERE id='".mysqli_real_escape_string($GLOBALS['db']['link'], $v[1])."' LIMIT 1";
+	if(!$t2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get wiki data for id # ".$v[1]);
 	
 	require_once $_SERVER['DOCUMENT_ROOT'].'/bin/php/Text_Diff/Diff.php';
 	require_once $_SERVER['DOCUMENT_ROOT'].'/bin/php/Text_Diff/Diff/Renderer/inline.php';
@@ -137,7 +137,7 @@ list($subj_field, $subj_id, $field) = explode("/", $subj);
 if($subj_field == "gid" && $field == "synopsis") {
 	//game synopsis
 	$q = "SELECT title, title_url, unpublished, creator FROM games WHERE gid='$subj_id' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$link = '/games/'.$subj_id.'/'.$dat->title_url;
 	$desc = '[gid='.$subj_id.'/] synopsis';
 	$type_id = 2;
@@ -158,7 +158,7 @@ if($subj_field == "gid" && $field == "synopsis") {
 } elseif($subj_field == "pid" && $field == "biography") {
 	//person bio
 	$q = "SELECT name, name_url FROM people WHERE pid='$subj_id' LIMIT 1";
-	$dat = mysql_fetch_object(mysql_query($q));
+	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	$link = '/people/~'.$dat->name_url;
 	$desc = '[pid='.$subj_id.'/] biography';
 	$type_id = 13;
@@ -196,12 +196,12 @@ if($_POST['submit']) {
 			$contr->subj = "wiki:id:".mysqlNextAutoIncrement("wiki").":";
 			$q = sprintf("INSERT INTO wiki (`field`, subject_field, subject_id, `text`, `notes`, usrid, `datetime`) VALUES 
 				('%s', '%s', '%s', '%s', '%s', '$usrid', '".date("Y-m-d H:i:s")."');",
-				mysql_real_escape_string($field),
-				mysql_real_escape_string($subj_field),
-				mysql_real_escape_string($subj_id),
-				mysql_real_escape_string($in['text']),
-				mysql_real_escape_string($in['notes']));
-			if(!mysql_query($q)) {
+				mysqli_real_escape_string($GLOBALS['db']['link'], $field),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $subj_field),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $subj_id),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['text']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes']));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				$errors[] = "Couldn't update wiki database; ".mysql_error();
 			} else {
 				$results[] = 'Your new text has been posted. <a href="'.$link.'">Go back to the text page</a> to see it or begin a new version below.';
@@ -211,10 +211,10 @@ if($_POST['submit']) {
 		
 		//give contr points?
 		$q = sprintf("SELECT * FROM wiki WHERE usrid='$usrid' AND `field`='%s' AND subject_field='%s' AND subject_id='%s' LIMIT 1",
-			mysql_real_escape_string($field),
-			mysql_real_escape_string($subj_field),
-			mysql_real_escape_string($subj_id));
-		if(mysql_num_rows(mysql_query($q))) $contr->no_points = TRUE;
+			mysqli_real_escape_string($GLOBALS['db']['link'], $field),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $subj_field),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $subj_id));
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr->no_points = TRUE;
 		
 		$contr_res = $contr->submitNew();
 		
@@ -248,10 +248,10 @@ case "edit":
 	if($in['text']) $row[0] = $in['text'];
 	else {
 		$q = sprintf("SELECT `text` FROM wiki WHERE `field`='%s' AND `subject_field`='%s' AND `subject_id`='%s' ORDER BY `datetime` DESC LIMIT 1",
-			mysql_real_escape_string($field),
-			mysql_real_escape_string($subj_field),
-			mysql_real_escape_string($subj_id));
-		$row = mysql_fetch_array(mysql_query($q));
+			mysqli_real_escape_string($GLOBALS['db']['link'], $field),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $subj_field),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $subj_id));
+		$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	}
 
 	?>
@@ -307,11 +307,11 @@ case "history":
 	?><br/><?
 	
 	$query = sprintf("SELECT * FROM wiki WHERE `field`='%s' AND `subject_field`='%s' AND `subject_id`='%s' ORDER BY `datetime` DESC",
-		mysql_real_escape_string($field),
-		mysql_real_escape_string($subj_field),
-		mysql_real_escape_string($subj_id));
-	$res = mysql_query($query);
-	if(!$versions = mysql_num_rows($res)) {
+		mysqli_real_escape_string($GLOBALS['db']['link'], $field),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $subj_field),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $subj_id));
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$versions = mysqli_num_rows($res)) {
 		echo "No one has submitted anything yet for this wiki.";
 	} else {
 		if($versions > 1) {
@@ -321,7 +321,7 @@ case "history":
 		<table border="0" cellpadding="0" cellspacing="0" width="100%" id="wiki-history">
 		<?
 		$i = 0;
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$v = $versions - $i;
 			$i++;
 			if($i == 1) {

@@ -31,26 +31,26 @@ class pg {
 			throw new Exception("No title given");
 			return;
 		}
-    $q = "SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($title)."' LIMIT 1";
-    if($this->row = mysql_fetch_assoc(mysql_query($q))){
-	    if($this->row['redirect_to'] && $replace_redirect_data == true){
-	    	$q = "SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($this->row['redirect_to'])."' LIMIT 1";
-	    	$this->row = mysql_fetch_assoc(mysql_query($q));
+	    $q = "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+	    if($this->row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
+		    if($this->row['redirect_to'] && $replace_redirect_data == true){
+		    	$q = "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->row['redirect_to'])."' LIMIT 1";
+		    	$this->row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
+		    }
+	    	$this->title = $this->row['title'];
+	    	$this->pgid = $this->row['pgid'];
+	    	$this->redirect_to = $this->row['redirect_to'];
+	    	$this->type = $this->row['type'];
+	    	$this->typePlural = $GLOBALS['pgtypes'][$this->type];
+	    	if($this->subcategory = $this->row['subcategory']) $this->subcategoryPlural = $GLOBALS['pgsubcategories'][$this->subcategory];
+	    	$this->row['index_data'] = json_decode($this->row['index_data'], true);
 	    }
-    	$this->title = $this->row['title'];
-    	$this->pgid = $this->row['pgid'];
-    	$this->redirect_to = $this->row['redirect_to'];
-    	$this->type = $this->row['type'];
-    	$this->typePlural = $GLOBALS['pgtypes'][$this->type];
-    	if($this->subcategory = $this->row['subcategory']) $this->subcategoryPlural = $GLOBALS['pgsubcategories'][$this->subcategory];
-    	$this->row['index_data'] = json_decode($this->row['index_data'], true);
-    }
-    $this->url = pageURL($this->title, $this->type);
-    $this->edit_url = "/pages/edit.php?title=".formatNameUrl($this->title, 1);
-    $this->link = '<a href="'.$this->url.'" class="pglink'.(!$this->pgid ? ' nocoverage' : '').'">'.$this->title.'</a>';
-  }
+	    $this->url = pageURL($this->title, $this->type);
+	    $this->edit_url = "/pages/edit.php?title=".formatNameUrl($this->title, 1);
+	    $this->link = '<a href="'.$this->url.'" class="pglink'.(!$this->pgid ? ' nocoverage' : '').'">'.$this->title.'</a>';
+	}
   
-  public function __toString(){ return $this->title; }
+  	public function __toString(){ return $this->title; }
 	
 	function loadData($source=''){
 		
@@ -107,7 +107,7 @@ class pg {
 		if($usrid){
 			// get user prefs to post to fb if user allows
 			$q = "SELECT * FROM users_prefs WHERE usrid='$usrid' LIMIT 1";
-			$usr_prefs = mysql_fetch_assoc(mysql_query($q));
+			$usr_prefs = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		}
 		
 		//Facebook data
@@ -181,13 +181,13 @@ class pg {
 		if(!$pgid = $this->pgid) return false;
 		
 		$q = "SELECT * FROM pages_tracks WHERE pgid='$pgid' AND usrid='".$GLOBALS['usrid']."' LIMIT 1";
-		if($row = mysql_fetch_assoc(mysql_query($q))){
+		if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 			$q = "UPDATE pages_tracks SET views='".(++$row['views'])."' WHERE pgid='$pgid' AND usrid='".$GLOBALS['usrid']."' LIMIT 1";
-			if(mysql_query($q)) return true;
+			if(mysqli_query($GLOBALS['db']['link'], $q)) return true;
 		}
 		
 		$q = "INSERT INTO pages_tracks (pgid, usrid, views) VALUES ('$pgid', '".$GLOBALS['usrid']."', '1');";
-		if(mysql_query($q)) return true;
+		if(mysqli_query($GLOBALS['db']['link'], $q)) return true;
 		
 		return false;
 		
@@ -206,8 +206,8 @@ class pg {
 		
 		if(!$this->index->{$index}){
 			$q = "SELECT `json` FROM pages_index_json WHERE `type` = '$index' LIMIT 1";
-			$r = mysql_query($q);
-			if(!$in = mysql_fetch_assoc($r)) return false;
+			$r = mysqli_query($GLOBALS['db']['link'], $q);
+			if(!$in = mysqli_fetch_assoc($r)) return false;
 			$this->index->{$index} = json_decode($in['json']);
 		}
 		
@@ -223,9 +223,9 @@ class pg {
 		// @return array titles of caught pages
 		
 		$ret = array();
-		$query = "SELECT DISTINCT(`title`) FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysql_real_escape_string($this->title)."' AND is_redirect = '1'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)) $ret[] = $row['title'];
+		$query = "SELECT DISTINCT(`title`) FROM pages_links LEFT JOIN pages ON (from_pgid = pgid) WHERE `to` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND is_redirect = '1'";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)) $ret[] = $row['title'];
 		return $ret;
 		
 	}

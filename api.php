@@ -90,9 +90,9 @@ function handle_base(){
     header('['.$resource.'] isn\'t a valid resource type');
   }
   $resource = $pgtypesF[$resource];
-  $query = "SELECT `title` FROM pages WHERE `type` = '".mysql_real_escape_string($resource)."' AND redirect_to = '' ORDER BY title_sort";
-  $res   = mysql_query($query);
-  while($row = mysql_fetch_assoc($res)){
+  $query = "SELECT `title` FROM pages WHERE `type` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $resource)."' AND redirect_to = '' ORDER BY title_sort";
+  $res   = mysqli_query($GLOBALS['db']['link'], $query);
+  while($row = mysqli_fetch_assoc($res)){
     $titles[] = $row['title'];
   }
   if(count($titles)){

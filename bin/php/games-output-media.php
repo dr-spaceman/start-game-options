@@ -41,13 +41,13 @@ $query = "SELECT m.*, c.`category`
 	FROM media m, media_tags t, media_categories as c 
 	WHERE t.tag='gid:".$gdat->gid."' AND m.media_id=t.media_id AND c.category_id=m.category_id AND m.unpublished != '1' 
 	ORDER BY m.datetime DESC";
-$res   = mysql_query($query);
-if(!mysql_num_rows($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+if(!mysqli_num_rows($res)) {
 	echo "No media uploaded yet :(<br/><br/><br/><br/>";
 	$page->footer();
 	exit;
 }
-while($row = mysql_fetch_assoc($res)) {
+while($row = mysqli_fetch_assoc($res)) {
 	$categories[$row['category_id']] = $row['category'];
 	$media[] = $row;
 }

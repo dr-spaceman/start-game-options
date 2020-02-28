@@ -237,7 +237,7 @@ function login($userdat){
 		    $fbuser = null;
 		  }
 		}
-	/*} elseif(!mysql_num_rows(mysql_query($q)) && !mysql_num_rows(mysql_query($q2)) && $_COOKIE['no_oauth'] != "ignore" && $userdat['registered'] != $userdat['activity']){
+	/*} elseif(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q)) && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q2)) && $_COOKIE['no_oauth'] != "ignore" && $userdat['registered'] != $userdat['activity']){
 		setcookie("no_oauth", "1", time()+60*60*24*100, "/");*/
 	} elseif(!$check_1 && !$check_2 && $userdat['registered'] != $userdat['activity']){
 		$GLOBALS['no_oauth'] = true;

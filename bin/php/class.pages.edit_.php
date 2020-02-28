@@ -30,7 +30,7 @@ class pgedit extends pg {
   	
 		if(!preg_match("/^[\d]{21}$/", $this->sessid)) throw new Exception("Invalid session ID");
 		$q = "SELECT * FROM pages_edit WHERE session_id = '".$this->sessid."' LIMIT 1";
-		if($this->sessionrow = mysql_fetch_object(mysql_query($q))) $this->sessionest = true;
+		if($this->sessionrow = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $this->sessionest = true;
 		
 	}
 	
@@ -451,10 +451,10 @@ class pgedit extends pg {
   	// @param $nopub Don't publish it to DB row
   	// @ret str usrid of Patron Saint
 		
-		$query = "SELECT SUM(`score`) AS total_score, usrid FROM pages_edit WHERE `title` = '".mysql_real_escape_string($this->title)."' AND `published` = '1' GROUP BY usrid ORDER BY total_score DESC;";
-		$res   = mysql_query($query);
+		$query = "SELECT SUM(`score`) AS total_score, usrid FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND `published` = '1' GROUP BY usrid ORDER BY total_score DESC;";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		$contr = array();
-		while($row = mysql_fetch_assoc($res)){
+		while($row = mysqli_fetch_assoc($res)){
 			
 			if($row['total_score'] < .5) continue;
 			
@@ -463,20 +463,20 @@ class pgedit extends pg {
 			$contr[$row['usrid']] = $row['total_score'];
 			
 			//watching
-			$q = "SELECT * FROM pages_watch WHERE usrid='".$row['usrid']."' AND `title`='".mysql_real_escape_string($this->title)."' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) $contr[$row['usrid']] = $contr[$row['usrid']] + 1;
+			$q = "SELECT * FROM pages_watch WHERE usrid='".$row['usrid']."' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' LIMIT 1";
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr[$row['usrid']] = $contr[$row['usrid']] + 1;
 			
 			//sblog posts
-			$q = "SELECT * FROM posts_tags LEFT JOIN posts USING(nid) WHERE tag = '".mysql_real_escape_string($this->title)."' AND posts.usrid='".$row['usrid']."'";
-			if($sblogs = mysql_num_rows(mysql_query($q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($sblogs * .5);
+			$q = "SELECT * FROM posts_tags LEFT JOIN posts USING(nid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND posts.usrid='".$row['usrid']."'";
+			if($sblogs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $contr[$row['usrid']] = $contr[$row['usrid']] + ($sblogs * .5);
 			
 		}
 		
 		arsort($contr);
 		
 		if(!$nopub){
-			$q = "UPDATE pages SET contributors = '".implode("|", array_keys($contr))."' WHERE title='".mysql_real_escape_string($this->title)."' LIMIT 1";
-			mysql_query($q);
+			$q = "UPDATE pages SET contributors = '".implode("|", array_keys($contr))."' WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' LIMIT 1";
+			mysqli_query($GLOBALS['db']['link'], $q);
 		}
 		
 		return $ps;
@@ -597,7 +597,7 @@ class pgedit extends pg {
 		
 		$page->header();
   	
-  	if($usrid) $is_watching = mysql_num_rows(mysql_query("SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='$usrid' LIMIT 1"));
+  	if($usrid) $is_watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='$usrid' LIMIT 1"));
 		
 		$here[$_SERVER['SCRIPT_NAME']] = "on";
 		$titleurl = formatNameURL($this->title);
@@ -672,8 +672,8 @@ class pgedit extends pg {
 					</fieldset>
 					
 					<?
-					$q = "SELECT * FROM pages_watch WHERE `title`='".mysql_real_escape_string($this->title)."' AND usrid='".$usrid."' LIMIT 1";
-					$watching = mysql_num_rows(mysql_query($q));
+					$q = "SELECT * FROM pages_watch WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->title)."' AND usrid='".$usrid."' LIMIT 1";
+					$watching = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 					
 					?>
 					<fieldset style="margin:20px 0 0; padding:15px; background-color:#EEE;">

@@ -7,15 +7,15 @@ if($_GET['mlist']){
 	$page->title = "Videogam.in mailing list";
 	$page->header();
 	$email = base64_decode($_GET['mlist']);
-	$q = "SELECT * FROM users WHERE email='".mysql_real_escape_string($email)."' LIMIT 1";
-	if(!$usr = mysql_fetch_assoc(mysql_query($q))) $page->kill('Sorry, but we couldn\'t find that user account. Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
+	$q = "SELECT * FROM users WHERE email='".mysqli_real_escape_string($GLOBALS['db']['link'], $email)."' LIMIT 1";
+	if(!$usr = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill('Sorry, but we couldn\'t find that user account. Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
 	$q = "SELECT * FROM users_prefs WHERE usrid='$usr[usrid]' LIMIT 1";
-	if(!mysql_num_rows(mysql_query($q))){
+	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 		$q = "INSERT INTO users_prefs (usrid) VALUES ('$usr[usrid]');";
-		if(!mysql_query($q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
 	}
 	$q = "UPDATE users_prefs SET mail_from_admins = '0' WHERE usrid = '$usr[usrid]'";
-	if(!mysql_query($q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $page->kill('There was a database error! Please log in and unsubscribe manually from your <a href="http://videogam.in/account.php?edit=prefs">account preferences</a> page. Sorry for the inconvenience.');
 	
 	?>
 	You have been successfully unsubscribed.
@@ -78,14 +78,14 @@ if($edit == 'details') {
 		if($in['email'] != $user->email) {
   		//Check if email address is already registered
 		  $q = "SELECT email from users where email = '".$in['email']."' and `usrid` != '$usrid'"; 
-		  if(mysql_num_rows(mysql_query($q))) {
+		  if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		  	$warnings[] = "The e-mail address <i>".$in['email']."</i> is already registered; Your e-mail address will remain unchanged (".$user->email.")";
 		  	$in['email'] = $user->email;
 		  } else {
 			  //de-validate email
 			  $query = "UPDATE `users` SET `verified` = 0 WHERE `usrid` = '$usrid' LIMIT 1";
 				if(!$errors) {
-					if(!mysql_query($query)) sendBug("Couldn't de-validate user $usrid who changed e-mail address (/account.php)");
+					if(!mysqli_query($GLOBALS['db']['link'], $query)) sendBug("Couldn't de-validate user $usrid who changed e-mail address (/account.php)");
 				}
 			}
 		}
@@ -99,8 +99,8 @@ if($edit == 'details') {
 					unset($new_username);
 					break;
 				}
-				$q = "SELECT * FROM users WHERE username = '".mysql_real_escape_string($new_username)."' OR username_old = '".mysql_real_escape_string($new_username)."' LIMIT 1"; 
-			  if(mysql_num_rows(mysql_query($q))){
+				$q = "SELECT * FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' OR username_old = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' LIMIT 1"; 
+			  if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 					$errors[] = "The  username '$new_username' is already taken.";
 			  	unset($new_username);
 					break;
@@ -136,17 +136,17 @@ if($edit == 'details') {
 			
 			//users main
 			$Query = sprintf("UPDATE users SET "
-				.($new_username ? "username='".mysql_real_escape_string($new_username)."', username_old='".mysql_real_escape_string($usrname)."'," : "").
+				.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."', username_old='".mysqli_real_escape_string($GLOBALS['db']['link'], $usrname)."'," : "").
 		  	($in['password1'] ? "password = password('$in[password1]')," : "")."
 	   		email = '%s',
 			  region = '".$in['region']."',
 				`gender` = '$in[gender]' 
 	   		WHERE usrid = '$usrid' LIMIT 1",
-	   			mysql_real_escape_string($in[email]));
+	   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[email]));
 	   	
 	   	//users_details
-	   	if($Result = mysql_query("SELECT * FROM users_details WHERE usrid='$usrid' LIMIT 1")) {
-				if(mysql_num_rows($Result)) {
+	   	if($Result = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_details WHERE usrid='$usrid' LIMIT 1")) {
+				if(mysqli_num_rows($Result)) {
 					$Query2 = sprintf("UPDATE users_details SET 
 			      name = '%s',
 			   		location = '%s',
@@ -158,26 +158,26 @@ if($edit == 'details') {
 						`time_zone` = '$in[time_zone]',
 						last_profile_update = now()
 			   		WHERE usrid = '$usrid' LIMIT 1",
-			   			mysql_real_escape_string($in[name]),
-			   			mysql_real_escape_string($in[location]),
-			   			mysql_real_escape_string($in[interests]),
-			   			mysql_real_escape_string($in[homepage]),
-			   			mysql_real_escape_string($im_str),
-			   			mysql_real_escape_string($in[handle]));
-					if(!mysql_query($Query2)) {
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[name]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[location]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[interests]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[homepage]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[handle]));
+					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
 						$errors[] = "Couldn't update details" . ($usrrank >= 8 ? " " . mysql_error() : "");
 					}
 				} else {
 					$Query2 = sprintf("INSERT INTO users_details 
 						(`usrid`,  `name`, `location`, `time_zone`,      `interests`, `homepage`, `dob`,                           `im`, `handle`, `last_profile_update`) VALUES 
 			      ('$usrid', '%s',   '%s',       '$in[time_zone]', '%s',        '%s',       '$in[year]-$in[month]-$in[day]', '%s', '%s',     now())",
-			   			mysql_real_escape_string($in[name]),
-			   			mysql_real_escape_string($in[location]),
-			   			mysql_real_escape_string($in[interests]),
-			   			mysql_real_escape_string($in[homepage]),
-			   			mysql_real_escape_string($im_str),
-			   			mysql_real_escape_String($in[handle]));
-					if(!mysql_query($Query2)) {
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[name]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[location]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[interests]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[homepage]),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in[handle]));
+					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
 						$errors[] = "Couldn't update (insert) details";
 					}
 				}
@@ -185,7 +185,7 @@ if($edit == 'details') {
 			
 			if (!$errors) {
 				//$Query for `users`
-	  		if (!mysql_query($Query)) {
+	  		if (!mysqli_query($GLOBALS['db']['link'], $Query)) {
 	  			$errors[] = "Couldn't update profile because of a database error " . ($usrrank >= 6 ? " [$Query] ".mysql_error() : '');
 	  		} else {
 	  			
@@ -212,8 +212,8 @@ if($edit == 'details') {
 	} else {
 		
 	  $Query = "SELECT * FROM users LEFT JOIN users_details ON users_details.usrid=users.usrid WHERE users.usrid = '$usrid' LIMIT 1";
-	  $Result = mysql_query ($Query);
-	  while ($row = mysql_fetch_array($Result)) {
+	  $Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	  while ($row = mysqli_fetch_assoc($Result)) {
 	    $in = $row;
 	  }
 	  
@@ -472,7 +472,7 @@ if($edit == "avatar") {
 		if($upload_avatar_result['filename']){
 			$avatar = "c/".$usrid."/".$upload_avatar_result['filename'];
 			$q = "UPDATE users SET avatar='$avatar' WHERE usrid='$user->id' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Could not record new avatar in database";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Could not record new avatar in database";
 			$user->setAvatar($avatar);
 		} else {
 			$errors[] = $upload_avatar_result['error'];
@@ -558,8 +558,8 @@ if($edit == "avatar") {
 			
 			//# of uses
 			$query = "SELECT * FROM users WHERE avatar != ''";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$uses[$row['avatar']]++;
 			}
 			
@@ -595,20 +595,20 @@ if($edit == "prefs") {
 	if($_POST) {
 		
 		//get column names
-		$result = mysql_query("SHOW COLUMNS FROM users_prefs");
-    while($row = mysql_fetch_assoc($result)){
+		$result = mysqli_query($GLOBALS['db']['link'], "SHOW COLUMNS FROM users_prefs");
+    while($row = mysqli_fetch_assoc($result)){
 			if($row['Field'] != "usrid") $users_prefs_fields[] = $row['Field'];
     }
 		
 		$q = "DELETE FROM users_prefs WHERE usrid='$usrid'";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		$q = "INSERT INTO `users_prefs` (`usrid`,`".implode("`,`", $users_prefs_fields)."`) VALUES ('$usrid'";
 		foreach($users_prefs_fields as $p){
-			$q.= ",'".mysql_real_escape_string($_POST['pref'][$p])."'";
+			$q.= ",'".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['pref'][$p])."'";
 		}
 		$q.= ");";
-		if(!mysql_query($q)) $errors[] = "Couldn't save preferences because of a database error";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't save preferences because of a database error";
 		else $results[] = "Preferences saved";
 		
 	}
@@ -625,7 +625,7 @@ if($edit == "prefs") {
 	echo accountHeader();
 	
 	$q = "SELECT * FROM users_prefs WHERE usrid='$usrid' LIMIT 1";
-	$pref = mysql_fetch_assoc(mysql_query($q));
+	$pref = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	?>
 	<form action="account.php?edit=prefs" method="post" id="acctprefs">
@@ -677,7 +677,7 @@ if($edit == "prefs") {
 			<legend>Facebook Connection</legend>
 			<?
 			$q = "SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='facebook' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($q))){
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				?>
 				You are connected to Facebook (<a href="http://facebook.com/<?=$row['oauth_username']?>" target="_blank"><?=$row['oauth_username']?></a>) [<a href="/login_fb.php">Reauthorize</a>]
 				<dl>
@@ -712,7 +712,7 @@ if($edit == "prefs") {
 			<legend>Twitter Connection</legend>
 			<?
 			$q = "SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='twitter' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($q))){
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				?>
 				You are connected to Twitter (<a href="https://twitter.com/#!/<?=$row['oauth_username']?>" target="_blank">@<?=$row['oauth_username']?></a>) [<a href="/bin/php/twitter/connect.php">Reauthorize</a>]
 				<dl style="display:none">
@@ -741,7 +741,7 @@ if($edit == "prefs") {
 			<legend>Steam Connection</legend>
 			<?
 			$q = "SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='steam' LIMIT 1";
-			if($row = mysql_fetch_assoc(mysql_query($q))){
+			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 				?>
 				You are connected to Steam (<a href="https://steamcommunity.com/id/<?=$row['oauth_username']?>" target="_blank"><?=$row['oauth_username']?></a>).
 				<?
@@ -840,8 +840,8 @@ if($edit == "games") {
 		
 		<?
 		$query = "SELECT my.*, g.title_url FROM my_games my LEFT JOIN games g USING (gid) WHERE usrid='$user->id' ORDER BY added DESC LIMIT 5";
-		$res   = mysql_query($query);
-		if(!$colnum = mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!$colnum = mysqli_num_rows($res)) {
 			echo '<div id="gamebox-space"><div style="padding:15px">'.$user->username.' hasn\'t put any games in '.$genderref[$user->gender].' box yet.</div></div><div id="gamebox-default"></div>';
 		} else {
 			
@@ -856,18 +856,18 @@ if($edit == "games") {
 				<table border="0" cellpadding="0" cellspacing="0" width="100%">
 					<tr>
 						<?
-						while($row = mysql_fetch_assoc($res)) {
+						while($row = mysqli_fetch_assoc($res)) {
 							
 							if($row['publication_id']) {
 								$img = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['publication_id']."-sm.png";
 								$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['title'] = $x->title;
 								$row['platform'] = $x->platform;
 							} elseif($row['platform_id']) {
 								$img = "/bin/uploads/user_boxart/".$row['id']."_sm.png";
 								$q = "SELECT * FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-								$x = mysql_fetch_object(mysql_query($q));
+								$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 								$row['platform'] = $x->platform;
 							} else {
 								$row['platform'] = "Unknown platform";
@@ -952,8 +952,8 @@ if($edit == "games") {
 				
 				<?
 				$query = "SELECT my.*, g.title_url FROM my_games my LEFT JOIN games g USING (gid) WHERE usrid='$usrid' ORDER BY added DESC";
-				$res   = mysql_query($query);
-				$num = mysql_num_rows($res);
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				$num = mysqli_num_rows($res);
 				$height = $num / 7;
 				$height = ceil($height) * 165;
 				?>
@@ -965,18 +965,18 @@ if($edit == "games") {
 					<div id="game-additions"></div>
 					<?
 					
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						
 						if($row['publication_id']) {
 							$img = "/games/files/".$row['gid']."/".$row['gid']."-box-".$row['publication_id']."-tn.png";
 							$q = "SELECT * FROM games_publications LEFT JOIN games_platforms USING (platform_id) WHERE id='".$row['publication_id']."' LIMIT 1";
-							$x = mysql_fetch_object(mysql_query($q));
+							$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 							$row['title'] = $x->title;
 							$row['platform'] = $x->platform;
 						} elseif($row['platform_id']) {
 							$img = "/bin/uploads/user_boxart/".$row['id']."_tn.png";
 							$q = "SELECT * FROM games_platforms WHERE platform_id='".$row['platform_id']."' LIMIT 1";
-							$x = mysql_fetch_object(mysql_query($q));
+							$x = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 							$row['platform'] = $x->platform;
 						} else {
 							$row['platform'] = "Unknown platform";

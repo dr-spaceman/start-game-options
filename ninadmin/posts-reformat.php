@@ -16,12 +16,12 @@ if(isset($min)){
 	$result = "Processing $min &ndash; $nextmin ...";
 	
 	$q = "SELECT * FROM posts LIMIT $min, $max";
-	$r = mysql_query($q);
-	if(!mysql_num_rows($r)){
+	$r = mysqli_query($GLOBALS['db']['link'], $q);
+	if(!mysqli_num_rows($r)){
 		$a->ret['result'] = "Fin.";
 		exit;
 	}
-	while($row = mysql_fetch_assoc($r)){
+	while($row = mysqli_fetch_assoc($r)){
 		
 		$post = new post($row);
 		$content = $post->content;
@@ -68,12 +68,12 @@ if(isset($min)){
 		$cont_str = json_encode($content);
 		
 		//$result.= htmlentities($cont_str).'</dd></dl>';continue;
-		$q = "UPDATE posts SET `content` = '".mysql_real_escape_string($cont_str)."' WHERE nid='$row[nid]' LIMIT 1";
+		$q = "UPDATE posts SET `content` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont_str)."' WHERE nid='$row[nid]' LIMIT 1";
 		//$result.= htmlentities($q).'</dd></dl>';continue;
-		if(!mysql_query($q)) $errors[] = "Critical error: Couldn't update db table [".htmlentities($q)."] ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't update db table [".htmlentities($q)."] ".mysql_error();
 		
-		$q = "INSERT INTO posts_edits (nid, usrid, `comments`, `content`) VALUES ('$row[nid]', 4651, '[BOT] Converting to new markup and Sblog 2.0 formatting (3rd round)', '".mysql_real_escape_string($cont_str)."');";
-		if(!mysql_query($q)) $errors[] = "Couldn't update pages_edits db table [".htmlentities($q)."] ".mysql_error();
+		$q = "INSERT INTO posts_edits (nid, usrid, `comments`, `content`) VALUES ('$row[nid]', 4651, '[BOT] Converting to new markup and Sblog 2.0 formatting (3rd round)', '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont_str)."');";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update pages_edits db table [".htmlentities($q)."] ".mysql_error();
 		
 		$result.= '<hr/>'.htmlentities($text_intro).'</dd></dl>';
 		

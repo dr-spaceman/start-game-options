@@ -29,7 +29,7 @@ $style[] = "/index/css/news.css";
 
 //details
 $query = "SELECT * FROM `people_index` WHERE `name` = '$person' LIMIT 1";
-if(!$dat = mysql_fetch_object(mysql_query($query))) {
+if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 	echo "No data found for '$person'.";
 	Foot();
 	exit;
@@ -48,8 +48,8 @@ include ("header_include.php");
 //interview
 if($interviewid) {
 	$query = "SELECT * FROM `people_interviews` WHERE `id` = '$interviewid'";
-	$res = mysql_query($query);
-	$row = mysql_fetch_object($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$row = mysqli_fetch_object($res);
 	$row->title = stripslashes($row->title);
 	$row->interview = stripslashes($row->interview);
 	$row->source_name = stripslashes($row->source_name);
@@ -75,7 +75,7 @@ if($interviewid) {
 //collaborate
 if($collabid) {
 	$query = "SELECT * FROM `people_index` WHERE `id` = '$collabid' LIMIT 1";
-	if(!$dat2 = mysql_fetch_object(mysql_query($query))) {
+	if(!$dat2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) {
 		echo "No data found for pid '$collabid'.";
 		Foot();
 		exit;
@@ -83,9 +83,9 @@ if($collabid) {
 		
 	//collab games
 	$query = "SELECT g.`indexid`, g.`id`, g.`title`, g.`platform`, g.`release_date` FROM `people_work` as p, `Games` as g WHERE (p.`pid` = '$dat->id' OR p.`pid` = '$dat2->id') AND p.`gid` != '' AND p.`gid` = g.`indexid` ORDER BY g.`$g_sortby` $orderby";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
-		while($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$g[$row[indexid]]++;
 			if($g[$row[indexid]] > 1) {
 				$row = stripslashes_deep($row);
@@ -100,15 +100,15 @@ if($collabid) {
 	
 	//collab albums
 	$query = "SELECT * FROM `people_work` WHERE (`pid` = '$dat->id' OR `pid` = '$dat2->id') and `albumid` != ''";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		unset($a);
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$a[$row[albumid]]++;
 			if($a[$row[albumid]] > 1) {
 				mysql_select_db($db[name3]);
-				$res2 = mysql_query("SELECT `title`, `subtitle` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
-				while($row2 = mysql_fetch_assoc($res2)) {
+				$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT `title`, `subtitle` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
+				while($row2 = mysqli_fetch_assoc($res2)) {
 					$row2 = stripslashes_deep($row2);
 					$i++;
 					if($i % 2) $trclass = ' class="odd"';
@@ -279,8 +279,8 @@ $printbio = reformatLinks($printbio);
 </table>
 
 <?	$query = "SELECT * FROM `people_work` WHERE `pid` = '$dat->id'";
-	$res = mysql_query($query);
-	$work_num = mysql_num_rows($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$work_num = mysqli_num_rows($res);
 ?>
 
 <div id="work">
@@ -288,8 +288,8 @@ $printbio = reformatLinks($printbio);
 
 <?	//games
 	$query = "SELECT p.*, g.`title`, g.`release_date`, FROM `people_work` as p, `Games` as g WHERE p.`pid` = '$dat->id' AND p.`gid` != '' AND p.`gid` = g.`indexid` ORDER BY g.`$g_sortby` $orderby";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		?>
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
@@ -298,7 +298,7 @@ $printbio = reformatLinks($printbio);
 			<th>Release Date <a href="?sortby=release&orderby=asc#credits" title="order credits by ascending release date">&uArr;</a><a href="?sortby=release&orderby=desc#credits" title="order credits by descending release date">&dArr;</a></th>
 			<th>Role</th>
 		</tr><?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$row = stripslashes_deep($row);
 			$row[notes] = reformatLinks($row[notes]);
 			$i++;
@@ -344,15 +344,15 @@ $printbio = reformatLinks($printbio);
 	
 	//albums
 	$query = "SELECT $db[name].`people_work`.*, $db[name3].`album_list`.`title`, $db[name3].`album_list`.`subtitle`, $db[name3].`album_list`.`datesort` FROM $db[name].`people_work`, $db[name3].`album_list` WHERE $db[name].`people_work`.`pid` = '$dat->id' and $db[name].`people_work`.`albumid` != '' AND $db[name].`people_work`.`albumid` = $db[name3].`album_list`.`albumid` ORDER BY $db[name3].`album_list`.`$a_sortby` $orderby";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		if($nogamework) echo '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>';
 		else echo '<tr><td colspan="5">'.pixel(1,10).'</td></tr><tr class="putborders">'
 		?><th colspan="2"><h3>Albums</h3>&nbsp;<a href="?sortby=title&orderby=asc#credits" title="order credits by ascending title">&uArr;</a><a href="?sortby=title&orderby=desc#credits" title="order credits by descending title">&dArr;</a></th>
 		<th nowrap colspan="2">release <a href="?sortby=release&orderby=asc#credits" title="order credits by ascending release date">&uArr;</a><a href="?sortby=release&orderby=desc#credits" title="order credits by descending release date">&dArr;</a></th>
 		<th>role</th></tr>
 		<?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$row = stripslashes_deep($row);
 			$row[notes] = reformatLinks($row[notes]);
 			$i++;
@@ -366,18 +366,18 @@ $printbio = reformatLinks($printbio);
 	
 	//albums
 	/*$query = "SELECT * FROM `people_work` WHERE `pid` = '$dat->id' and `albumid` != ''";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		if($nogamework) echo '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>';
 		else echo '<tr><td colspan="5">'.pixel(1,10).'</td></tr><tr class="putborders">'
 		?><th colspan="2"><h3>Albums</h3>&nbsp;<a href="?sortby=title&orderby=asc#credits" title="order credits by ascending title">&uArr;</a><a href="?sortby=title&orderby=desc#credits" title="order credits by descending title">&dArr;</a></th>
 		<th nowrap colspan="2">release <a href="?sortby=release&orderby=asc#credits" title="order credits by ascending release date">&uArr;</a><a href="?sortby=release&orderby=desc#credits" title="order credits by descending release date">&dArr;</a></th>
 		<th>role</th></tr>
 		<?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			mysql_select_db($db[name3]);
-			$res2 = mysql_query("SELECT `title`, `subtitle`, `datesort` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
-			while($row2 = mysql_fetch_assoc($res2)) {
+			$res2 = mysqli_query($GLOBALS['db']['link'], "SELECT `title`, `subtitle`, `datesort` from `album_list` WHERE `albumid` = '$row[albumid]' ORDER BY `title`");
+			while($row2 = mysqli_fetch_assoc($res2)) {
 				$row2 = stripslashes_deep($row2);
 				$row[notes] = reformatLinks($row[notes]);
 				$i++;
@@ -401,8 +401,8 @@ $printbio = reformatLinks($printbio);
 <?	// news
 	mysql_select_db($db[name]);
 	$query = "SELECT n.* FROM `people_news` as p, `news` as n WHERE p.`pid` = '$dat->id' and n.`id` = p.`nid` ORDER BY n.`date` DESC";
-	$res = mysql_query($query);
-	$news_num = mysql_num_rows($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$news_num = mysqli_num_rows($res);
 	if($news_num) {
 		?>
 		<div id="news">
@@ -410,7 +410,7 @@ $printbio = reformatLinks($printbio);
 		<?
 		$news = new news();
 		?><ul class="newslist"><?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			echo "<li>" . $news->newsitem($row, "", "people/$persondir") . "</li>\n";
 		}
 		?></ul></div>
@@ -419,13 +419,13 @@ $printbio = reformatLinks($printbio);
 
 	//interviews
 	$query = "SELECT * FROM `people_interviews` WHERE `pid` = '$dat->id' ORDER BY `date` DESC";
-	$res = mysql_query($query);
-	$interview_num = mysql_num_rows($res);
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	$interview_num = mysqli_num_rows($res);
 	if($interview_num) {
 		?>
 		<table border="0" cellpadding="0" cellspacing="0" width="100%" id="interviews"><tr><th colspan="2"><h2>Interviews</h2></th></tr>
 		<?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			if($i % 2) echo '<tr class="odd">';
 			else echo '<tr class="even">';
@@ -437,13 +437,13 @@ $printbio = reformatLinks($printbio);
 	
 	//links
 	$query = "SELECT * FROM `people_links` WHERE `pid` = '$dat->id'";
-	$res = mysql_query($query);
-	if(mysql_num_rows($res)) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	if(mysqli_num_rows($res)) {
 		?>
 		<div id="exlinks">
 		<h2>External Links</h2>
 		<dl><?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			if($i % 2) $trclass = "odd";
 			else $trclass = "even";
@@ -469,25 +469,25 @@ $printbio = reformatLinks($printbio);
 <div id="collab">See where <?=$person?> collaborated with:<br /><select name="collabperson" onChange="javascript:window.location='?collaborate='+this.options[this.selectedIndex].value">
 	<option value="" selected>...</option>
 <?	$query = "SELECT * FROM `people_index` WHERE `prolific` = '1' and `not_creator` = '0' ORDER BY `name`";
-	if($res = mysql_query($query)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 		echo '<optgroup label="Prolific Creators">';
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row[name] != $person) echo '<option value="' . $row[id] .'">' . $row[name] . '</option>' . "\n";
 		}
 		echo "</optgroup>";
 	}
 	$query = "SELECT * FROM `people_index` WHERE `prolific` = '0' and `not_creator` = '0' ORDER BY `name`";
-	if($res = mysql_query($query)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 		echo '<optgroup label="Other Creators">';
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row[name] != $person) echo '<option value="' . $row[id] .'">' . $row[name] . '</option>' . "\n";
 		}
 		echo "</optgroup>";
 	}
 	$query = "SELECT * FROM `people_index` WHERE `not_creator` = '1' ORDER BY `name`";
-	if($res = mysql_query($query)) {
+	if($res = mysqli_query($GLOBALS['db']['link'], $query)) {
 		echo '<optgroup label="Non-creators">';
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if($row[name] != $person) echo '<option value="' . $row[id] .'">' . $row[name] . '</option>' . "\n";
 		}
 		echo "</optgroup>";

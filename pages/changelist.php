@@ -17,8 +17,8 @@ if($chlisttype == "watchlist") {
 	
 	$watching = array();
 	$query = "SELECT * FROM pages_watch WHERE `usrid` = '$usrid' ORDER BY title";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) $watching[$row['title']] = $row;
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) $watching[$row['title']] = $row;
 	
 	$numwatching = count($watching);
 	
@@ -53,9 +53,9 @@ $changes = array();
 
 $users_output = array();
 
-$res   = mysql_query($query);
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
 $i = 0;
-while($row = mysql_fetch_assoc($res)) {
+while($row = mysqli_fetch_assoc($res)) {
 	
 	//skip drafts
 	if(!$row['published']) continue;
@@ -80,7 +80,7 @@ while($row = mysql_fetch_assoc($res)) {
 	
 	if($row['reverted_from']) {
 		$q = "SELECT datetime FROM pages_edit WHERE session_id='".$row['reverted_from']."' LIMIT 1";
-		$revdat = mysql_fetch_object(mysql_query($q));
+		$revdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		$row['edit_summary'] = '<i style="color:#888;">Reverted from <a href="javascript:void(0)" onclick="window.open(\'history.php?view_version='.$row['reverted_from'].'\',\'view_wiki_window\',\'width=930,height=600,scrollbars=yes\');">'.formatDate($revdat->datetime, 10).'</a></i> &nbsp; '.$row['edit_summary'];
 	}
 	

@@ -64,8 +64,8 @@ $Link = mysql_connect ($db[host], $db[user], $db[pass]) or printf ("Connection f
 
 //get array of people -- $people
 /*$query = "SELECT pid, name FROM people ORDER BY name";
-$res   = mysql_query($query);
-while($row = mysql_fetch_assoc($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+while($row = mysqli_fetch_assoc($res)) {
 	$people[] = array('pid' => $row['pid'], 'name' => $row['name']);
 }*/
 
@@ -150,8 +150,8 @@ if ($action == "new") {
 								<option value="">Clone an album...</option>
 								<?
 								$Query = "SELECT l.id, l.albumid, l.title, l.subtitle, l.datesort from albums as l order by title ASC, subtitle ASC";
-								$Result = mysql_query($Query);
-								while ($Array = mysql_fetch_array($Result)) {
+								$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+								while ($Array = mysqli_fetch_assoc($Result)) {
 									echo '<option value="'.$Array['albumid'].'">'.$Array['title'].' '.$Array['subtitle'].' ('.$Array['albumid'].'); '.$Array['datesort'].'</option>';
 								}
 								?>
@@ -175,9 +175,9 @@ if ($action == "new") {
 	//////////
 
 	$Query2 = "SELECT * from albums as l where albumid = '$editid' limit 1";
-	$Result2 = mysql_query ($Query2);
+	$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2);
 	unset($album1);
-	while ($Array2 = mysql_fetch_assoc($Result2)) {
+	while ($Array2 = mysqli_fetch_assoc($Result2)) {
 		$album1[] = $Array2;
 	}
 	
@@ -206,9 +206,9 @@ if ($action == "new") {
 		
 		unset($album1);
 		$Query2 = "SELECT * from albums as l where albumid = '$editid'";
-		$Result2 = mysql_query ($Query2, $Link);
+		$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2, $Link);
 		
-		while ($Array2 = mysql_fetch_array($Result2)) {
+		while ($Array2 = mysqli_fetch_assoc($Result2)) {
 		$album1[] = $Array2;
 		
 		}
@@ -303,8 +303,8 @@ if ($action == "new") {
 		//ger create/edit times
 		$i = 0;
 		$q = "SELECT * FROM albums_changelog WHERE album='$editid' ORDER BY datetime DESC";
-		$r = mysql_query($q);
-		while($row = mysql_fetch_assoc($r)) {
+		$r = mysqli_query($GLOBALS['db']['link'], $q);
+		while($row = mysqli_fetch_assoc($r)) {
 			$i++;
 			if($i == 1) {
 				$mod_user = $row['usrid'];
@@ -465,8 +465,8 @@ if ($action == "new") {
 							foreach($select_work as $s) {
 								list($table, $id) = explode("-", $s);
 								$query = "SELECT * FROM ".($table == "people_work" ? 'people_work LEFT JOIN people USING (pid)' : $table)." WHERE id='$id' LIMIT 1";
-								$res   = mysql_query($query);
-								while($p = mysql_fetch_assoc($res)) {
+								$res   = mysqli_query($GLOBALS['db']['link'], $query);
+								while($p = mysqli_fetch_assoc($res)) {
 									?>
 									<input type="hidden" name="ids[]" value="<?=$s?>"/>
 									<tr>
@@ -534,8 +534,8 @@ if ($action == "new") {
 								<select name="pid" id="pid">
 									<option value="">Select a person...</option>
 									<?
-									$res = mysql_query("SELECT pid, name, title, prolific FROM people ORDER BY name");
-									while($row = mysql_fetch_assoc($res)) {
+									$res = mysqli_query($GLOBALS['db']['link'], "SELECT pid, name, title, prolific FROM people ORDER BY name");
+									while($row = mysqli_fetch_assoc($res)) {
 										echo '<option value="'.$row['pid'].'"'.($row['prolific'] ? ' style="font-weight:bold"' : '').'>'.$row['name'].' ('.$row['title'].')</option>'."\n";
 									}
 									?>
@@ -581,14 +581,14 @@ if ($action == "new") {
 			unset($people);
 			
 			$Query3 = "SELECT * FROM people_work LEFT JOIN people USING (pid) WHERE people_work.albumid='$editid'";
-			$Result3 = mysql_query($Query3);
-			while($row = mysql_fetch_assoc($Result3)) {
+			$Result3 = mysqli_query($GLOBALS['db']['link'], $Query3);
+			while($row = mysqli_fetch_assoc($Result3)) {
 				$people[] = $row;
 			}
 			
 			$Query3 = "SELECT * FROM albums_other_people WHERE albumid='$editid'";
-			$Result3 = mysql_query($Query3);
-			while($row = mysql_fetch_assoc($Result3)) {
+			$Result3 = mysqli_query($GLOBALS['db']['link'], $Query3);
+			while($row = mysqli_fetch_assoc($Result3)) {
 				$people[] = $row;
 			}
 			
@@ -652,11 +652,11 @@ if ($action == "new") {
 		////////////
 		
 		$query = "SELECT * FROM albums_tracks WHERE albumid='$editid'";
-		$res   = mysql_query($query);
-		if($total_tracknum = mysql_num_rows($res)) {
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if($total_tracknum = mysqli_num_rows($res)) {
 			$query2 = "SELECT DISTINCT(disc) FROM albums_tracks WHERE albumid='$editid' ORDER BY disc";
-			$res2   = mysql_query($query2);
-			while($row = mysql_fetch_assoc($res2)) {
+			$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
+			while($row = mysqli_fetch_assoc($res2)) {
 				$discs[] = $row['disc'];
 			}
 		}
@@ -664,7 +664,7 @@ if ($action == "new") {
 		if($discs) {
 			foreach($discs as $disc) {
 				$q = "SELECT * FROM albums_tracks WHERE albumid='$editid' AND disc='$disc'";
-				$tracknum[$disc] = mysql_num_rows(mysql_query($q));
+				$tracknum[$disc] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q));
 			}
 		}
 		
@@ -824,13 +824,13 @@ if ($action == "new") {
 								</div>
 								<?
 								$Query3 = "SELECT name FROM people_work LEFT JOIN people USING (pid) WHERE people_work.albumid='$editid'";
-								$Result3 = mysql_query($Query3);
-								while($row = mysql_fetch_assoc($Result3)) {
+								$Result3 = mysqli_query($GLOBALS['db']['link'], $Query3);
+								while($row = mysqli_fetch_assoc($Result3)) {
 									$names[] = $row['name'];
 								}
 								$Query3 = "SELECT name FROM albums_other_people WHERE albumid='$editid'";
-								$Result3 = mysql_query($Query3);
-								while($row = mysql_fetch_assoc($Result3)) {
+								$Result3 = mysqli_query($GLOBALS['db']['link'], $Query3);
+								while($row = mysqli_fetch_assoc($Result3)) {
 									$names[] = $row['name'];
 								}
 								if($names) {
@@ -943,9 +943,9 @@ if ($action == "new") {
 					<input type="hidden" name="do" value="edit_tracks"/>
 					<?
 					$query = "SELECT * FROM albums_tracks LEFT JOIN albums_samples ON (albums_tracks.id=albums_samples.track_id) WHERE albums_tracks.albumid='$editid' ORDER BY disc, track_number";
-					$res   = mysql_query($query);
+					$res   = mysqli_query($GLOBALS['db']['link'], $query);
 					$i = 0;
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						$this_disc = $row['disc'];
 						if($c_disc != $this_disc) {
 							$c_disc = $this_disc;
@@ -1011,8 +1011,8 @@ if ($action == "new") {
 			
 			unset($tracklist);
 			$query = "SELECT * FROM albums_tracks LEFT JOIN albums_samples ON (albums_tracks.id=albums_samples.track_id) WHERE albums_tracks.albumid='$editid' ORDER BY disc, track_number";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				$tracklist[] = $row;
 				if($row['file']) $samplenum++;
 			}
@@ -1041,12 +1041,12 @@ if ($action == "new") {
 			<?
 			
 			$query = "SELECT * FROM albums_credits WHERE albumid='$editid' AND conttype='track'";
-			$res   = mysql_query($query);
-			if(mysql_num_rows($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			if(mysqli_num_rows($res)) {
 				?>
 				<ul>
 					<?
-					while($row = mysql_fetch_assoc($res)) {
+					while($row = mysqli_fetch_assoc($res)) {
 						echo '<li>'.$row['source'];
 						if($row['address']) echo ' <span style="color:#808080;">&lt;</span>'.$row['address'].'<span style="color:#808080;">&gt;</span>';
 						echo ' <a href="?step=3&action=edit&editid='.$editid.'&do=credits&dbupdate=1&delete_credit='.$row['id'].'" class="x" title="delete">X</a></li>'."\n";
@@ -1135,11 +1135,11 @@ if ($action == "new") {
 			}
 		
 			$Query = "SELECT l.id, l.albumid, l.title, l.subtitle, l.datesort from albums as l $qstring order by title ASC, subtitle ASC";
-			$Result = mysql_query($Query);
-			$cgames = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$cgames = mysqli_num_rows($Result);
 		
 			$j=0;
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 				$glist[$j] = "<tr>\n
 				<td width=\"70%\" style=\"font-size: 8pt; font-family: Verdana;\"$bglist[$j]>$Array[title] <em>$Array[subtitle]</em>	<br/>($Array[albumid]); $Array[datesort]<input type=\"hidden\" name=\"album5[$j][related]\" value=\"$Array[albumid]\">	</td>\n
 				<td width=\"30%\" style=\"font-size: 8pt; font-family: Verdana;\"$bglist[$j]>\n
@@ -1185,27 +1185,27 @@ if ($action == "new") {
 		} else {
 		
 			$Query = "SELECT l.id, l.albumid, l.title, l.subtitle, l.datesort from albums as l where albumid != '$editid' order by title ASC, subtitle ASC";
-			$Result = mysql_query($Query);
-			$cgames = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$cgames = mysqli_num_rows($Result);
 			
 			$Query2 = "SELECT r.type, r.album, r.related from albums_related as r where r.album = '$editid'";
-			$Result2 = mysql_query ($Query2, $Link);
+			$Result2 = mysqli_query($GLOBALS['db']['link'], $Query2, $Link);
 			$cgs = 0;
 			$sel = array();
-			while($row = mysql_fetch_assoc($Result2)) {
+			while($row = mysqli_fetch_assoc($Result2)) {
 				$cgs++;
 				$sel[$row['related']] = $row['type'];
 			}
 			
 			$j=0;
-			while ($Array2 = mysql_fetch_array($Result2)) {
+			while ($Array2 = mysqli_fetch_assoc($Result2)) {
 			$CompareArray[$j] = $Array2[related];
 			$j++;
 			}
 		
 			$j=0;
 			$glist = array();
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 				
 				$this_sel = FALSE;
 				if($sel[$Array['albumid']]) $this_sel = TRUE;
@@ -1292,16 +1292,16 @@ if ($action == "new") {
 		// check alternative edition
 		
 		$Querya = "SELECT * from albums_edition where album = '$editid' limit 1";
-		$Resulta = mysql_query ($Querya);
-		if ($row = mysql_fetch_assoc($Resulta)) {
+		$Resulta = mysqli_query($GLOBALS['db']['link'], $Querya);
+		if ($row = mysqli_fetch_assoc($Resulta)) {
 		$duchk = $row[group];
 		}
 		
 		if ($duchk) {
 		$Queryb = "SELECT e.album, e.group, e.revset, l.albumid, l.id from albums_edition as e, albums as l where e.group = '$duchk' and e.album = l.albumid and e.revset = 1 limit 1";
-		$Resultb = mysql_query ($Queryb);
+		$Resultb = mysqli_query($GLOBALS['db']['link'], $Queryb);
 		
-		while ($row = mysql_fetch_array($Resultb)) {
+		while ($row = mysqli_fetch_assoc($Resultb)) {
 		$newer = $row[album];
 		}
 		if ($newer != $editid) {
@@ -1323,9 +1323,9 @@ if ($action == "new") {
 		
 		
 		$Query = "SELECT * from albums_synopsis as d where d.album = '$alt'";
-		$Result = mysql_query($Query);
+		$Result = mysqli_query($GLOBALS['db']['link'], $Query);
 		
-		while ($Array = mysql_fetch_array($Result)) {
+		while ($Array = mysqli_fetch_assoc($Result)) {
 		$album6[] = $Array;
 		
 		}
@@ -1514,16 +1514,16 @@ if ($action == "new") {
 		// check alternative edition
 		
 		$Querya = "SELECT * from albums_edition where album = '$editid' limit 1";
-		$Resulta = mysql_query($Querya);
-		if ($row = mysql_fetch_assoc($Resulta)) {
+		$Resulta = mysqli_query($GLOBALS['db']['link'], $Querya);
+		if ($row = mysqli_fetch_assoc($Resulta)) {
 			$duchk = $row[group];
 		}
 		
 		if ($duchk) {
 			$Queryb = "SELECT e.album, e.group, e.revset, l.albumid, l.id from albums_edition as e, albums as l where e.group = '$duchk' and e.album = l.albumid and e.revset = 1 limit 1";
-			$Resultb = mysql_query($Queryb);
+			$Resultb = mysqli_query($GLOBALS['db']['link'], $Queryb);
 			
-			while ($row = mysql_fetch_array($Resultb)) {
+			while ($row = mysqli_fetch_assoc($Resultb)) {
 			$newer = $row[album];
 			}
 			if ($newer != $editid) {
@@ -1544,8 +1544,8 @@ if ($action == "new") {
 		// end check
 		
 		$Query = "SELECT * from albums_trivia as t where t.album = '$alt' and t.indexid = '$factedit' limit 1";
-		$Result = mysql_query($Query);
-		$factcheck = mysql_num_rows($Result);
+		$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+		$factcheck = mysqli_num_rows($Result);
 		
 		if ($factedit == "new") {
 		
@@ -1653,7 +1653,7 @@ if ($action == "new") {
 		
 		} elseif ($factcheck == "1") {
 		
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			$album6[] = $Array;
 			
 			}
@@ -1772,11 +1772,11 @@ if ($action == "new") {
 			unset($stock);
 			unset($vlnk);
 			$Query = "SELECT * from albums_buy as b where b.album = '$editid' and b.vendor = 'AnimeNation'";
-			$Result = mysql_query($Query);
-			$linkcount = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$linkcount = mysqli_num_rows($Result);
 			
 			if ($linkcount == 1) {
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			$album9a[0] = $Array;
 			
 			}
@@ -1816,11 +1816,11 @@ if ($action == "new") {
 			unset($stock);
 			unset($vlnk);
 			$Query = "SELECT * from albums_buy as b where b.album = '$editid' and b.vendor = 'GameMusic.com'";
-			$Result = mysql_query($Query);
-			$linkcount = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$linkcount = mysqli_num_rows($Result);
 			
 			if ($linkcount == 1) {
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			$album9a[1] = $Array;
 			
 			}
@@ -1859,11 +1859,11 @@ if ($action == "new") {
 			unset($stock);
 			unset($vlnk);
 			$Query = "SELECT * from albums_buy as b where b.album = '$editid' and b.vendor = 'Amazon.com'";
-			$Result = mysql_query($Query);
-			$linkcount = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$linkcount = mysqli_num_rows($Result);
 			
 			if ($linkcount == 1) {
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			$album9a[2] = $Array;
 			
 			}
@@ -1902,11 +1902,11 @@ if ($action == "new") {
 			unset($stock);
 			unset($vlnk);
 			$Query = "SELECT * from albums_buy as b where b.album = '$editid' and b.vendor = 'Play-Asia.com'";
-			$Result = mysql_query($Query);
-			$linkcount = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$linkcount = mysqli_num_rows($Result);
 			
 			if ($linkcount == 1) {
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			$album9a[3] = $Array;
 			
 			}
@@ -1943,8 +1943,8 @@ if ($action == "new") {
 			
 			
 			$Query = "SELECT * from albums_trivia as t where t.album = '$editid'";
-			$Result = mysql_query($Query);
-			$blah = mysql_num_rows($Result);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+			$blah = mysqli_num_rows($Result);
 			
 			
 			?>
@@ -1952,7 +1952,7 @@ if ($action == "new") {
 			<a href="albums.php?step=<?=$step?>&action=edit&editid=<?=$editid?>&factedit=new" class="arrow-right">Make a new factoid</a><br/><br/>
 			<?
 			
-			while ($Array = mysql_fetch_array($Result)) {
+			while ($Array = mysqli_fetch_assoc($Result)) {
 			?>
 			<div style="background-color: #EDEDED; border-style: solid; border-width: 0px 0px 1px 0px; border-color: #CCCCCC; padding: 10px;">
 			<span style="font-family: Arial; font-size: 12pt;"><a href="albums.php?step=<?=$step?>&action=edit&editid=<?=$editid?>&factedit=<?=$Array[indexid]?>">Edit this factoid</a><br/></span>
@@ -1986,7 +1986,7 @@ if ($action == "new") {
 			
 			<?
 			$q = "SELECT * from albums where albumid = '$editid' limit 1";
-			if(!$adat = mysql_fetch_object(mysql_query($q))) $errors[] = "Couldn't get album data";
+			if(!$adat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $errors[] = "Couldn't get album data";
 			?>
 			
 			<form action="albums.php" method="post">
@@ -2034,10 +2034,10 @@ if ($action == "new") {
 					<div id="linkshere">
 						<?
 						$query = "SELECT * FROM albums_buy WHERE album='$editid' AND not_commerce = '1'";
-						$res   = mysql_query($query);
-						if(!mysql_num_rows($res)) echo '<b id="nolinks">No links yet!</b>';
+						$res   = mysqli_query($GLOBALS['db']['link'], $query);
+						if(!mysqli_num_rows($res)) echo '<b id="nolinks">No links yet!</b>';
 						else {
-							while($row = mysql_fetch_assoc($res)) {
+							while($row = mysqli_fetch_assoc($res)) {
 								?>
 								<div style="margin:5px 0; font-size:15px;">
 									<?=$row['vendor']?> <span style="color:#888;">&lt;</span> <?=$row['code']?> <span style="color:#888;">&gt;</span> 
@@ -2073,7 +2073,7 @@ else {
 		
 		if($usrrank < 8) {
 			$q = "SELECT * FROM albums_changelog WHERE album='$aid' AND type='new' AND usrid='$usrid' LIMIT 1";
-			if(!mysql_num_rows(mysql_query($q))) die("Can't delete because you aren't the creator");
+			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("Can't delete because you aren't the creator");
 		}
 		
 		$tables = array(
@@ -2092,13 +2092,13 @@ else {
 		
 		while(list($table, $field) = each($tables)) {
 			$q = "DELETE FROM `$table` WHERE `$field` = '$aid'";
-			if(!mysql_query($q)) $errors[] = "Couldn't delete from $table table: $q";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from $table table: $q";
 			else $results[] = "Deleted from $table table";
 		}
 		
 		//changelog
 		$Query = "INSERT into albums_changelog (album, usrname, usrid, datetime, type) values ('$aid', '$usrname', '$usrid', '".date("Y-m-d H:i:s")."', 'delete')";
-		if(!mysql_query($Query)) $errors[] = "Couldn't update changelog. Deletion not recorded.";
+		if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't update changelog. Deletion not recorded.";
 		
 	}
 	
@@ -2119,8 +2119,8 @@ else {
 	
 	<?
 	$Query = "SELECT l.id, l.albumid, l.title, l.subtitle, l.datesort from albums as l order by title ASC, subtitle ASC";
-	$Result = mysql_query($Query);
-	while ($Array = mysql_fetch_array($Result)) {
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	while ($Array = mysqli_fetch_assoc($Result)) {
 		$list[] = "<option value=\"$Array[albumid]\">$Array[title] $Array[subtitle] ($Array[albumid]); $Array[datesort]</option>\n";
 	}
 	

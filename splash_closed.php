@@ -72,11 +72,11 @@
 	}
 	
 	if($_POST['email']) {
-		$q = "SELECT * FROM mailing_list WHERE `email` = '".mysql_real_escape_string($_POST['email'])."' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) echo "You are already subscribed!";
+		$q = "SELECT * FROM mailing_list WHERE `email` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['email'])."' LIMIT 1";
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) echo "You are already subscribed!";
 		else {
 			$q = "INSERT INTO mailing_list (email, `datetime`) VALUES ('".$_POST['email']."', '".date("Y-m-d H:i:s")."');";
-			if(!mysql_query($q)) echo "There was an error and the e-mail couldn't be added to the list.";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) echo "There was an error and the e-mail couldn't be added to the list.";
 			else echo "<b>Thanks!</b> We'll e-mail you with any pertinent updates and let you know when we're open.";
 		}
 	} else {

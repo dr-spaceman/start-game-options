@@ -14,8 +14,8 @@ if($_POST['iledit']){
 		
 		$d = formatName($img_session_description);
 		if($d == ""){ $ret['error'] = "Can't have a blank session title"; break; }
-		$q = "UPDATE images_sessions SET img_session_description = '".mysql_real_escape_string($d)."' WHERE img_session_id = '".mysql_real_escape_string($img_session_id)."' LIMIT 1";
-		if(!mysql_query($q)) $ret['error'] = 'Database error: '.mysql_error();
+		$q = "UPDATE images_sessions SET img_session_description = '".mysqli_real_escape_string($GLOBALS['db']['link'], $d)."' WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_session_id)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysql_error();
 		else $ret['res'] = $d;
 		
 	} else {
@@ -29,8 +29,8 @@ if($_POST['iledit']){
 		
 		if(!$field){ $ret['error'] = "The field name could not be determined."; break; }
 		
-		$q = "UPDATE images SET `".mysql_real_escape_string($field[0])."` = '".mysql_real_escape_string($field[1])."' WHERE img_id = '".mysql_real_escape_string($img_id)."' LIMIT 1";
-		if(!mysql_query($q)) $ret['error'] = 'Database error: '.mysql_error();
+		$q = "UPDATE images SET `".mysqli_real_escape_string($GLOBALS['db']['link'], $field[0])."` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $field[1])."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = 'Database error: '.mysql_error();
 		else{
 			if($field[0] == "img_description"){
 				$bb = new bbcode();
@@ -64,12 +64,12 @@ if($img_name = $_POST['gen_img_code']){
 		
 		//gallery
 		
-		$q = "SELECT * FROM images LEFT JOIN images_sessions USING(img_session_id) WHERE img_name='".mysql_real_escape_string($img_names[0])."' LIMIT 1";
-		$sess = mysql_fetch_object(mysql_query($q));
+		$q = "SELECT * FROM images LEFT JOIN images_sessions USING(img_session_id) WHERE img_name='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_names[0])."' LIMIT 1";
+		$sess = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		
 		foreach($img_names as $img_name){
-			$q = "SELECT * FROM images WHERE img_name='".mysql_real_escape_string($img_name)."' LIMIT 1";
-			$img = mysql_fetch_assoc(mysql_query($q));
+			$q = "SELECT * FROM images WHERE img_name='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_name)."' LIMIT 1";
+			$img = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 			$o_img_names.= '&nbsp;{img:'.$img_name.($img['img_title'] ? '|caption='.$img['img_title'] : '').'}'."\n";
 		}
 		?>
@@ -131,8 +131,8 @@ if($_POST['sort']){
 	$sort = str_replace("img-", "", $_POST['sort']);
 	$sort = explode(",", $sort);
 	foreach($sort as $img_id){
-		$q = "UPDATE images SET `sort` = '".++$i."' WHERE img_id = '".mysql_real_escape_string($img_id)."' LIMIT 1";
-		if(!mysql_query($q)) die("Couldn't save sort state because of a database error :(");
+		$q = "UPDATE images SET `sort` = '".++$i."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't save sort state because of a database error :(");
 	}
 	
 	die("ok");
@@ -147,9 +147,9 @@ if($_POST['load_tags']){
 	$imgids = explode(",", $str);
 	foreach($imgids as $imgid){
 		$imgid = trim($imgid);
-		$query = "SELECT tag FROM images_tags WHERE img_id = '".mysql_real_escape_string($imgid)."'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$query = "SELECT tag FROM images_tags WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $imgid)."'";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			if(!in_array($row['tag'], $tags)) $tags[] = trim($row['tag']);
 		}
 	}
@@ -186,12 +186,12 @@ if($_POST['mass_rm_tag'] && $_POST['ivar']){
 	$img_ids = array();
 	$img_ids = explode(",", $imgidsStr);
 	foreach($img_ids as $img_id){
-		$query = "SELECT `id` FROM images_tags WHERE img_id='".mysql_real_escape_string($img_id)."' AND `tag`='".mysql_real_escape_string($tag)."' LIMIT 1";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$query = "SELECT `id` FROM images_tags WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' AND `tag`='".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."' LIMIT 1";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$tag_ids[] = $row['id'];
-			$q = "DELETE FROM images_tags WHERE img_id='".mysql_real_escape_string($img_id)."' AND `tag`='".mysql_real_escape_string($tag)."'";
-			if(!mysql_query($q)) $ret['error'].= "Couldn't delete tag ($tag:$img_id); ";
+			$q = "DELETE FROM images_tags WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' AND `tag`='".mysqli_real_escape_string($GLOBALS['db']['link'], $tag)."'";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'].= "Couldn't delete tag ($tag:$img_id); ";
 		}
 	}
 	
@@ -227,8 +227,8 @@ if($_POST['mass_classify'] && $_POST['ivar']){
 	$catg = imgGetCategories();
 	
 	foreach($img_ids as $img_id){
-		$q = "UPDATE images SET img_category_id = '".mysql_real_escape_string($img_category_id_mass)."' WHERE img_id = '".mysql_real_escape_string($img_id)."' LIMIT 1";
-		if(!mysql_query($q)) $ret['error'] = "Couldn't classify image ($img_id:$img_category_id_mass); ";
+		$q = "UPDATE images SET img_category_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_category_id_mass)."' WHERE img_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_id)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $ret['error'] = "Couldn't classify image ($img_id:$img_category_id_mass); ";
 	}
 	
 	$catname = $catg[$img_category_id_mass]['img_category'];

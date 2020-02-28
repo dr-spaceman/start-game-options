@@ -15,9 +15,9 @@ class badges {
 		// look up badge info and est it as $this->badges[BADGE ID]
 		
 		if($this->badges[$bid]) return;
-		$query = "SELECT * FROM badges WHERE bid='".mysql_real_escape_string($bid)."' LIMIT 1";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$query = "SELECT * FROM badges WHERE bid='".mysqli_real_escape_string($GLOBALS['db']['link'], $bid)."' LIMIT 1";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$this->badges[$row['bid']] = $row;
 			$this->badges[$row['bid']]['value2'] = $this->values[$row['value']];
 		}
@@ -30,12 +30,12 @@ class badges {
 		
 		//make sure hasn't already earned
 		$q = "SELECT * FROM badges_earned WHERE bid='$bid' AND usrid='$uid' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) return false;
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) return false;
 		
 		$this->get($bid);
 		
 		$q = "INSERT INTO badges_earned (usrid, bid, `datetime`) VALUES ('$uid', '$bid', '".date("Y-m-d H:i:s")."');";
-		if(!mysql_query($q)) return false;
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) return false;
 		
 		if($uid == $GLOBALS['usrid']) $_SESSION['newbadges'][] = $bid;
 		
@@ -48,8 +48,8 @@ class badges {
 			$action =
 				'[[User:'.$GLOBALS['usrname'].']] earned the <a href="'.$url.'">'.$this->badges[$bid]['name'].'</a> badge.'.
 				'<div class="badge"><a href="'.$url.'"><img src="/bin/img/badges/'.$bid.'.png" alt="badge: '.htmlSC($this->badges[$bid]['name']).'" width="50" height="50"/></a></div>';
-			$q = "INSERT INTO stream (`action`, `action_type`, usrid) VALUES ('".mysql_real_escape_string($action)."', 'earn badge', '$uid');";
-			mysql_query($q);
+			$q = "INSERT INTO stream (`action`, `action_type`, usrid) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $action)."', 'earn badge', '$uid');";
+			mysqli_query($GLOBALS['db']['link'], $q);
 		} while(false);
 		
 		return true;
@@ -77,8 +77,8 @@ class badges {
 		
 		if($GLOBALS['usrid']){
 			//mark this badge as shown
-			$q = "UPDATE badges_earned SET `new` = '0' WHERE bid = '".mysql_real_escape_string($bid)."' AND usrid = '".$GLOBALS['usrid']."' LIMIT 1";
-			mysql_query($q);
+			$q = "UPDATE badges_earned SET `new` = '0' WHERE bid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $bid)."' AND usrid = '".$GLOBALS['usrid']."' LIMIT 1";
+			mysqli_query($GLOBALS['db']['link'], $q);
 		}
 		
 		return $ret;
@@ -92,10 +92,10 @@ class badges {
 		
 		if(!$usrid && $usrid != $GLOBALS['usrid']) return false;
 		
-		$query = "SELECT * FROM badges_earned LEFT JOIN badges USING (bid) WHERE usrid = '".mysql_real_escape_string($usrid)."' ORDER BY datetime";
-		$res   = mysql_query($query);
-		if(!mysql_num_rows($res)) return false;
-		while($row = mysql_fetch_assoc($res)) $rows[] = $row;
+		$query = "SELECT * FROM badges_earned LEFT JOIN badges USING (bid) WHERE usrid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $usrid)."' ORDER BY datetime";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		if(!mysqli_num_rows($res)) return false;
+		while($row = mysqli_fetch_assoc($res)) $rows[] = $row;
 		
 		return $rows;
 		
@@ -131,11 +131,11 @@ class badges {
 		$this->get($bid);
 		
 		if($usrid){
-			$q = "SELECT * FROM badges_earned WHERE bid = '".mysql_real_escape_string($bid)."' AND usrid = '".$usrid."' LIMIT 1";
-			if(!$earneddat = mysql_fetch_object(mysql_query($q))) return false;
+			$q = "SELECT * FROM badges_earned WHERE bid = '".mysqli_real_escape_string($GLOBALS['db']['link'], $bid)."' AND usrid = '".$usrid."' LIMIT 1";
+			if(!$earneddat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return false;
 		}
 		
-		$num = mysql_num_rows(mysql_query("SELECT * FROM badges_earned WHERE bid='".mysql_real_escape_string($bid)."';"));
+		$num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM badges_earned WHERE bid='".mysqli_real_escape_string($GLOBALS['db']['link'], $bid)."';"));
 		
 		$ret = '
 		<div class="showbadge badge">

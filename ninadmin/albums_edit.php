@@ -4,14 +4,14 @@ if ($create = $_POST['create']) {
 	
 	$album1[0][albumid] = strtoupper($album1[0][albumid]);
 	$Query = "SELECT l.id from albums as l order by l.id DESC limit 1";
-	$Result = mysql_query($Query);
-	while ($row = mysql_fetch_array($Result)) {
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	while ($row = mysqli_fetch_assoc($Result)) {
 		$num = $row[id];
 	}
 	
 	$Query = "SELECT l.albumid from albums as l where l.albumid = '".$album1[0][albumid]."'";
-	$Result = mysql_query($Query);
-	$trackcheck = mysql_num_rows($Result);
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
+	$trackcheck = mysqli_num_rows($Result);
 	if ($trackcheck == 0) {
 		$action = "edit";
 		$editid = $album1[0][albumid];
@@ -32,10 +32,10 @@ if($del = $_GET['delete_sample']) {
 			
 	// DELETE SAMPLE //
 	$q = "SELECT * FROM albums_samples WHERE track_id='$del' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) die("Couldn't $q");
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't $q");
 	else {
 		$q = "DELETE FROM albums_samples WHERE track_id='$del' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't delete from db";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from db";
 		else {
 			if(!unlink($rootpath."/".$albumpath."/media/samples/".$dat->file)) $errors[] = "Couldn't delete file $rootpath/$albumpath/media/samples/$dat->file";
 			else $results[] = "Deleted file";
@@ -78,76 +78,76 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				if(!$album1[0][albumid]) die("No album ID given");
 				$Query = "INSERT into albums (id, title, subtitle, keywords, cid, albumid, new) VALUES 
 					('$indexid', '{$album1[0][title]}', '{$album1[0][subtitle]}', '{$album1[0][keywords]}', '{$album1[0][cid]}', '{$album1[0][albumid]}', '{$album1[0]['new']}')";
-			    if(!$Result = mysql_query ($Query)) die("db error: ".mysql_error($Link)."<br />Query: ".$Query);
+			    if(!$Result = mysqli_query($GLOBALS['db']['link'], $Query)) die("db error: ".mysql_error($Link)."<br />Query: ".$Query);
 			  
 			  $aid = $album1[0][albumid];
 			  
 			  if($cl = $_POST['clone']) {
 			  	//albums_buy
 			  	$q = "SELECT * FROM albums_buy WHERE album = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
 			  		$q = "INSERT INTO albums_buy (album, code, vendor, price, stock) VALUES ('$aid', '$row[code]', '$row[vendor]', '$row[price]', '$row[stock]')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_buy; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_buy; ".mysql_error();
 			  	}
 			  	//albums_credits
 			  	$q = "SELECT * FROM albums_credits WHERE albumid = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
 			  		$q = "INSERT INTO albums_credits (albumid,source,address,conttype) VALUES ('$aid', '$row[source]', '$row[address]', '$row[conttype]')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_credits; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_credits; ".mysql_error();
 			  	}
 			  	//albums_other_people
 			  	$q = "SELECT * FROM albums_other_people WHERE albumid = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
-			  		$q = "INSERT INTO albums_other_people (albumid,name,role,notes,vital) VALUES ('$aid', '".mysql_real_escape_string($row['name'])."', '$row[role]', '".mysql_real_escape_string($row[notes])."', '$row[vital]')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_other_people; ".mysql_error();
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
+			  		$q = "INSERT INTO albums_other_people (albumid,name,role,notes,vital) VALUES ('$aid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['name'])."', '$row[role]', '".mysqli_real_escape_string($GLOBALS['db']['link'], $row[notes])."', '$row[vital]')";
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_other_people; ".mysql_error();
 			  	}
 			  	//albums_related
 			  	$q = "SELECT * FROM albums_related WHERE album = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
 			  		$q = "INSERT INTO albums_related (album,type,related) VALUES ('$aid', '$row[type]', '$row[related]')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_related; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_related; ".mysql_error();
 			  	}
 			  	$q = "INSERT INTO albums_related (album,type,related) VALUES ('$aid','5','$cl'), ('$cl','5','$aid');";
-			  	mysql_query($q);
+			  	mysqli_query($GLOBALS['db']['link'], $q);
 			  	//albums_synopsis
 			  	$q = "SELECT * FROM albums_synopsis WHERE album = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
-			  		$q = "INSERT INTO albums_synopsis (album,synopsis,author,link,date) VALUES ('$aid', '".mysql_real_escape_string($row[synopsis])."', '".mysql_real_escape_string($row[author])."', '".mysql_real_escape_string($row['link'])."', '".$row['date']."')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_synopsis; ".mysql_error();
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
+			  		$q = "INSERT INTO albums_synopsis (album,synopsis,author,link,date) VALUES ('$aid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $row[synopsis])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $row[author])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['link'])."', '".$row['date']."')";
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_synopsis; ".mysql_error();
 			  	}
 			  	//albums_tags
 			  	$q = "SELECT * FROM albums_tags WHERE albumid = '$cl'";
-			  	$r   = mysql_query($q);
-			  	while($row = mysql_fetch_assoc($r)) {
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
+			  	while($row = mysqli_fetch_assoc($r)) {
 			  		$q = "INSERT INTO albums_tags (albumid,gid) VALUES ('$aid', '$row[gid]')";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_tags; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_tags; ".mysql_error();
 			  	}
 			  	//albums_tracks
 			  	$q = "SELECT * FROM albums_tracks WHERE albumid = '$cl'";
-			  	$r   = mysql_query($q);
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
 			  	unset($q);
-			  	while($row = mysql_fetch_assoc($r)) {
-			  		$q.= "('$aid', '$row[disc]','$row[track_number]','".mysql_real_escape_string($row[track_name])."','".mysql_real_escape_string($row[artist])."','$row[type]','".mysql_real_escape_string($row[location])."','".$row['time']."'),";
+			  	while($row = mysqli_fetch_assoc($r)) {
+			  		$q.= "('$aid', '$row[disc]','$row[track_number]','".mysqli_real_escape_string($GLOBALS['db']['link'], $row[track_name])."','".mysqli_real_escape_string($GLOBALS['db']['link'], $row[artist])."','$row[type]','".mysqli_real_escape_string($GLOBALS['db']['link'], $row[location])."','".$row['time']."'),";
 			  	}
 			  	if($q) {
 			  		$q = "INSERT INTO albums_tracks (albumid,disc,track_number,track_name,artist,type,location,time) VALUES ".substr($q, 0, -1).";";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to albums_tracks; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to albums_tracks; ".mysql_error();
 			  	}
 			  	//people_work
 			  	$q = "SELECT * FROM people_work WHERE albumid = '$cl'";
-			  	$r   = mysql_query($q);
+			  	$r   = mysqli_query($GLOBALS['db']['link'], $q);
 			  	unset($q);
-			  	while($row = mysql_fetch_assoc($r)) {
+			  	while($row = mysqli_fetch_assoc($r)) {
 			  		$q.= "('$row[pid]', '$aid', '$row[role]','$row[notes]','$row[vital]'),";
 			  	}
 			  	if($q) {
 			  		$q = "INSERT INTO people_work (pid,albumid,role,notes,vital) VALUES ".substr($q, 0, -1).";";
-			  		if(!mysql_query($q)) $errors[] = "Couldn't clone row to people_work; ".mysql_error();
+			  		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't clone row to people_work; ".mysql_error();
 			  	}
 			  }
 			  
@@ -156,7 +156,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			else {
 			
 				$Query = "UPDATE albums SET title = '{$album1[0][title]}', subtitle = '{$album1[0][subtitle]}', keywords = '{$album1[0][keywords]}', coverimg = '{$album1[0][coverimg]}', jp = '{$album1[0][jp]}', publisher = '{$album1[0][publisher]}', cid = '{$album1[0][cid]}', datesort = '{$album1[0][datesort]}', `release` = '{$album1[0][release]}', price = '{$album1[0][price]}', compose = '{$album1[0][compose]}', arrange = '{$album1[0][arrange]}', perform = '{$album1[0][perform]}', series = '{$album1[0][series]}', new = '{$album1[0]['new']}', view = '{$album1[0][view]}', media = '{$album1[0][media]}', path = '{$album1[0][path]}' where albumid = '{$album1[0][albumid]}'";
-			    if(!$Result = mysql_query ($Query))
+			    if(!$Result = mysqli_query($GLOBALS['db']['link'], $Query))
 			    	die("db error: ".mysql_error($Link)."<br />Query: ".$Query);
 			    else $results[] = "Changes have been saved";
 			
@@ -180,7 +180,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				list($table, $id) = explode("-", $i);
 				if($in[$i]['linkto']) {
 					$q = "DELETE FROM albums_other_people WHERE id='$id' LIMIT 1";
-					if(!mysql_query($q)) $errors[] = "Couldn't link to the people db. All changes canceled for this person.";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't link to the people db. All changes canceled for this person.";
 					else {
 						$q = "INSERT INTO people_work (pid, role, vital, notes, albumid) VALUES ('".$in[$i]['linkto']."', '".htmlentities($in[$i]['role'], ENT_QUOTES)."', '$vital', '".addslashes($in[$i]['notes'])."', '$editid')";
 					}
@@ -189,7 +189,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 					if($in[$i]['name']) $q.= "`name`='".htmlentities($in[$i]['name'], ENT_QUOTES)."', ";
 					$q.= "`role`='".htmlentities($in[$i]['role'], ENT_QUOTES)."', `vital`='".$in[$i]['vital']."', `notes`='".addslashes($in[$i]['notes'])."' WHERE id='$id' LIMIT 1";
 				}
-				if(!mysql_query($q)) $errors[] = "Couldn't update entry: $q";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update entry: $q";
 				else $results[] = "Entry successfully updated";
 			}
 		}
@@ -201,7 +201,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			foreach($_POST['select_work'] as $s) {
 				list($table, $id) = explode("-", $s);
 				$q = "DELETE FROM $table WHERE id='$id' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't disassociated entry";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't disassociated entry";
 				else $results[] = "Successfully disassociated entry";
 			}
 			
@@ -227,20 +227,20 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				$row = "";
 				
 				$q = "SELECT * FROM people WHERE name='$name' OR name_url='$name_url' LIMIT 1";
-				if($row = mysql_fetch_assoc(mysql_query($q))) {
+				if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 					$indb = TRUE;
 					$pid = $row['pid'];
 					$q = sprintf("INSERT INTO people_work (pid, role, vital, notes, albumid) VALUES ('".$row['pid']."', '%s', '$vital', '%s', '$editid')",
-						mysql_real_escape_string($role),
-						mysql_real_escape_string($notes));
+						mysqli_real_escape_string($GLOBALS['db']['link'], $role),
+						mysqli_real_escape_string($GLOBALS['db']['link'], $notes));
 				} else {
 					$aop_id = mysqlNextAutoIncrement("albums_other_people");
 					$q = sprintf("INSERT INTO albums_other_people (name, role, vital, notes, albumid) VALUES ('%s', '%s', '$vital', '%s', '$editid')",
-						mysql_real_escape_string($name),
-						mysql_real_escape_string($role),
-						mysql_real_escape_string($notes));
+						mysqli_real_escape_string($GLOBALS['db']['link'], $name),
+						mysqli_real_escape_string($GLOBALS['db']['link'], $role),
+						mysqli_real_escape_string($GLOBALS['db']['link'], $notes));
 				}
-				if(!mysql_query($q)) $errors[] = "Error adding entry to database; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Error adding entry to database; ".mysql_error();
 				else {
 					$results[] = "$name credited with the role of $role";
 					if(!$indb) {
@@ -248,7 +248,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 					} else {
 						
 						$q = "SELECT * from albums where albumid = '$editid' limit 1";
-						$adat = mysql_fetch_object(mysql_query($q));
+						$adat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 						
 					}
 				}
@@ -260,7 +260,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			
 			if(!$aop_id = $_POST['albums_other_people_id']) $errors[] = "No entry id given.";
 			$q = "SELECT * FROM albums_other_people WHERE id='$aop_id' LIMIT 1";
-			if(!$row = mysql_fetch_assoc(mysql_query($q))) $errors[] = "Couldn't find data for ID # $aop_id ; ".mysql_error();
+			if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $errors[] = "Couldn't find data for ID # $aop_id ; ".mysql_error();
 			
 			$name = formatName($row['name']);
 			$name_url = formatNameURL($name);
@@ -272,7 +272,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			if(!$errors) {
 			
 				$q = "SELECT * FROM people WHERE name='$name' OR name_url='$name_url' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) {
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 					$errors[] = 'There was already a person in the database with the name "'.$name.'" or another name that is too similar';
 				} else {
 					
@@ -281,13 +281,13 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 					$pid = mysqlNextAutoIncrement("people");
 					$q = "INSERT INTO people (name, name_url, created, modified) VALUES 
 					('$name', '$name_url', '$now', '$now');";
-					if(!mysql_query($q)) $errors[] = "Couldn't add $name to the people database; ".mysql_error();
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add $name to the people database; ".mysql_error();
 					else {
 						$results[] = 'You successfully added '.$name.' to the People Database, but as of now there is no other information about this person. Please <a href="/people/'.$pid.'/'.$name_url.'/edit" target="_blank" class="arrow-link">edit '.$name.'\'s details</a>';
 						
 						//delete old credit entry without link to people db
 						$q = "DELETE FROM albums_other_people WHERE id='$aop_id' LIMIT 1";
-						if(!mysql_query($q)) $errors[] = "Couldn't delete old entry so this person is credited twice. ".mysql_error();
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete old entry so this person is credited twice. ".mysql_error();
 						
 					}
 					
@@ -306,7 +306,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		if(!$disc = $_POST['disc']) die("no disc name given");
 		
 		$q = "SELECT * FROM albums_tracks WHERE albumid='$albumid' AND disc='$disc'";
-		if($num = mysql_num_rows(mysql_query($q))) echo $num;
+		if($num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) echo $num;
 		else echo '0';
 	
 	} elseif ($_POST['do'] == "add_track") {
@@ -335,18 +335,18 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		
 		//already track number listed?
 		$q = "SELECT * FROM albums_tracks WHERE albumid='$albumid' AND disc='$disc' AND track_number='$track_number' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))) die("There is already a track listed as track number $track_number for this disc");
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("There is already a track listed as track number $track_number for this disc");
 		
 		$q = sprintf("INSERT INTO albums_tracks (albumid, disc, track_number, track_name, artist, `type`, `location`, `time`) VALUES 
 			('$albumid', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
-			mysql_real_escape_string($disc),
-			mysql_real_escape_string($track_number),
-			mysql_real_escape_string($track_name),
-			mysql_real_escape_string($artis),
-			mysql_real_escape_string($type),
-			mysql_real_escape_string($location),
-			mysql_real_escape_string($time));
-		if(!mysql_query($q)) die("Couldn't add track to database");
+			mysqli_real_escape_string($GLOBALS['db']['link'], $disc),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $track_number),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $track_name),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $artis),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $type),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $location),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $time));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't add track to database");
 		else echo "ok";
 		
 		exit;
@@ -364,7 +364,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		
 		//make sure there are no tracks already
 		$q = "SELECT * FROM albums_tracks WHERE albumid='$albumid' AND disc='$disc' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))){ $errors[] = "Error: There are already tracks posted for the disc '$disc'"; break; }
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){ $errors[] = "Error: There are already tracks posted for the disc '$disc'"; break; }
 		
 		$list = $v_list;
 		$list = trim($list);
@@ -401,10 +401,10 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		
 		$q = "INSERT INTO albums_tracks (albumid, disc, track_name, `time`, track_number) VALUES ";
 		foreach($qs as $n => $arr){
-			$q.= "('$albumid', '".mysql_real_escape_string($disc)."', '".mysql_real_escape_string($arr['track_name'])."', '".$arr['time']."', '$n'),";
+			$q.= "('$albumid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $disc)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $arr['track_name'])."', '".$arr['time']."', '$n'),";
 		}
 		$q = substr($q, 0, -1) . ";";
-		if(!mysql_query($q)) $errors[] = "Couldn't add tracks because of a database error; " . mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add tracks because of a database error; " . mysql_error();
 		else $results[] = "All tracks added. Please check the disc below for any formatting errors and input more info if available.";
 		
 	} while(false);
@@ -423,8 +423,8 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				if($new[$i] == "") $warnings[] = "There was no input detected for the new name of <i>".$old[$i]."</i> so it wasn't changed";
 				else {
 					$new[$i] = htmlentities($new[$i], ENT_QUOTES);
-					$q = "UPDATE albums_tracks SET disc='".mysql_real_escape_string($new[$i])."' WHERE disc='".htmlentities($old[$i], ENT_QUOTES)."' AND albumid='$albumid'";
-					if(!mysql_query($q)) $errors[] = "Couldn't change disc name from <i>".$old[$i]."</i> to <i>".$new[$i]."</i>";
+					$q = "UPDATE albums_tracks SET disc='".mysqli_real_escape_string($GLOBALS['db']['link'], $new[$i])."' WHERE disc='".htmlentities($old[$i], ENT_QUOTES)."' AND albumid='$albumid'";
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't change disc name from <i>".$old[$i]."</i> to <i>".$new[$i]."</i>";
 				}
 			}
 		}
@@ -442,12 +442,12 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				`location` = '%s',
 				`time` = '%s' 
 				WHERE id='".$i['id']."' LIMIT 1",
-			mysql_real_escape_string($i['track_name']),
-			mysql_real_escape_string($i['artist']),
-			mysql_real_escape_string($i['type']),
-			mysql_real_escape_string($i['location']),
-			mysql_real_escape_string($i['time']));
-			if(!mysql_query($q)) $errors[] = "Couldn't update track name <i>".$i['track_name']."</i>";	
+			mysqli_real_escape_string($GLOBALS['db']['link'], $i['track_name']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $i['artist']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $i['type']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $i['location']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $i['time']));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update track name <i>".$i['track_name']."</i>";	
 		}
 		if(!$errors) $results[] = "All track changes saved";
 		
@@ -456,15 +456,15 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			foreach($del as $d) {
 				
 				$q = "DELETE FROM albums_tracks WHERE id='$d' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't delete track id # $id";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete track id # $id";
 				
 				//samples?
 				if($_POST['in'][$d]['has_sample']) {
 					$q = "SELECT * FROM albums_samples WHERE track_id='$d' LIMIT 1";
-					if(!$dat = mysql_fetch_object(mysql_query($q))) $errors[] = "Couldn't delete corresponding track sample";
+					if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $errors[] = "Couldn't delete corresponding track sample";
 					else {
 						$q = "DELETE FROM albums_samples WHERE track_id='$d' LIMIT 1";
-						if(!mysql_query($q)) $errors[] = "Couldn't delete sample from db";
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete sample from db";
 						else {
 							if(!unlink($rootpath."/".$albumpath."/media/samples/".$dat->file)) $errors[] = "Couldn't delete sample file $rootpath/$albumpath/media/samples/$dat->file";
 							else $results[] = "Deleted sample file";
@@ -501,7 +501,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			      if ($handle->processed) {
 			      	$results[] = '<a href="/music/media/samples/'.$handle->file_dst_name.'" target="_blank">File</a> successfully uploaded';
 			      	$q = "INSERT INTO albums_samples (albumid, track_id, file, length, datetime, usrid) VALUES ('$editid', '".$in['track_id']."', '".addslashes($handle->file_dst_name)."', '".$in['length']."', '".date("Y-m-d H:i:s")."', '$usrid')";
-			      	if(!mysql_query($q)) {
+			      	if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			      		$errors[] = "Couldn't apend this info to the database; sample NOT added";
 			      		if(!unlink($dir."/".$handle->file_dst_name)) $errors[] = "Couldn't delete file $dir/$handle->file_dst_name";
 			      		else $results[] = "Successfully deleted file";
@@ -515,7 +515,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				}
 			} else {
 				$q = "INSERT INTO albums_samples (albumid, track_id, file, length, datetime, usrid) VALUES ('$editid', '".$in['track_id']."', '".$in['file']."', '".$in['length']."', '".date("Y-m-d H:i:s")."', '$usrid')";
-			  if(!mysql_query($q)) $errors[] = "Couldn't add saple to database";
+			  if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add saple to database";
 			  else $results[] = "Sample added";
 			}
 		}
@@ -532,14 +532,14 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		$address = preg_replace("%http://videogam.in/?%", "/", $address);
 		
 		$q = "INSERT INTO albums_credits (albumid, source, address, conttype) VALUES 
-			('$albumid', '".mysql_real_escape_string($source)."', '".mysql_real_escape_string($address)."', 'track')";
-		if(!mysql_query($q)) $errors[] = "Couldn't add to database $q";
+			('$albumid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $source)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $address)."', 'track')";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to database $q";
 		else $results[] = "Source successfully added";
 	
 	} elseif($x = $_GET['delete_credit']) {
 	
 		$q = "DELETE FROM albums_credits WHERE id='$x' LIMIT 1";
-		if(!mysql_query($q)) $errors[] = "Couldn't $q";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't $q";
 		else $results[] = "Successfully Deleted";
 	
 	} elseif ($process == "4") {
@@ -551,11 +551,11 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		$gids = $_POST['gids'];
 		
 		$Query = "DELETE from albums_tags where albumid = '$editid'"; 
-		if(!mysql_query($Query)) $errors[] = "Couldn't proceed with changes because $Query";
+		if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't proceed with changes because $Query";
 		else {
 			foreach($gids as $gid) {
 				$Query = "INSERT into albums_tags (gid, albumid) VALUES ('$gid', '$editid')";
-				if(!mysql_query($Query)) $errors[] = "Couldn't $Query";
+				if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't $Query";
 			}
 		}
 		if(!$errors) $results[] = "Changes successfully implemented";
@@ -571,22 +571,22 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		$in = $_POST['albumrel'];
 		
 		$q = "DELETE from albums_related where album = '$editid' OR related = '$editid'"; 
-		if(!mysql_query($q)) $errors[] = "Couldn't remove old album associations; New associations not recorded. ".mysql_error();
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove old album associations; New associations not recorded. ".mysql_error();
 		elseif($in['related']) {
 		
 			foreach($in['related'] as $aid) {
 				$type = $in[$aid]['type'];
 				
 				$Query = "INSERT INTO albums_related (`album`, `type`, `related`) VALUES ('$editid', '$type', '$aid')";
-				if(!mysql_query($Query)) $errors[] = "Error adding related album; ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Error adding related album; ".mysql_error();
 				
 				$q = "SELECT * FROM albums_related WHERE album = '$aid' AND related = '$editid'";
-				if(!mysql_num_rows(mysql_query($q))) {
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 					$q = "INSERT INTO albums_related (`album`, `type`, `related`) VALUES ('$aid', '$type', '$editid')";
-					if(!mysql_query($q)) $errors[] = "Error adding related album; ".mysql_error();
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Error adding related album; ".mysql_error();
 					else {
 						$q = "SELECT title, subtitle FROM albums WHERE albumid='$aid' LIMIT 1";
-						$dat = mysql_fetch_object(mysql_query($q));
+						$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 						$results[] = $dat->title.' <i>'.$dat->subtitle.'</i> was also marked with this relationship.';
 					}
 				}
@@ -616,16 +616,16 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 		if (!$album6[0][album] && $album6[0][synopsis]) {
 			$album6[0][album] = "$alt";
 			$Query = "INSERT into albums_synopsis values ('{$album6[0][album]}', '{$album6[0][synopsis]}', '{$album6[0][author]}', '{$album6[0][link]}', '{$album6[0][date]}')";
-			if(!mysql_query($Query)) $errors[] = "Couldn't update the database $Query";
+			if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't update the database $Query";
 			else $results[] = "Synopsis successfully added";
 		} else {
 			if (!$album6[0][synopsis]) {
 				$Query = "DELETE from `albums_synopsis` where `album` = '{$album6[0][album]}'"; 
-				if(!mysql_query($Query)) $errors[] = "Couldn't delete synopsis";
+				if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't delete synopsis";
 				else $results[] = "Synopsis successfully deleted";
 			} else {
 				$Query = "UPDATE `albums_synopsis` SET `synopsis` = '{$album6[0][synopsis]}', `author` = '{$album6[0][author]}', `link` = '{$album6[0][link]}', `date` = '{$album6[0][date]}' where `album` = '$alt'";
-			  if(!mysql_query($Query)) $errors[] = "Couldn't update the database";
+			  if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't update the database";
 				else $results[] = "Synopsis successfully edited";
 			}
 		}
@@ -714,8 +714,8 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			$album6[0]['link'] = preg_replace("%http://videogam.in/?%", "/", $album6[0]['link']);
 			
 			$Query = "INSERT into albums_trivia (album, fact, author, `link`, `date`) values 
-				('".$_POST['alt']."', '".mysql_real_escape_string($album6[0]['fact'])."', '".$album6[0]['author']."','".mysql_real_escape_string($album6[0]['link'])."','".$album6[0]['date']."')";
-			if(!mysql_query($Query)) $errors[] = "Couldn't $Query";
+				('".$_POST['alt']."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $album6[0]['fact'])."', '".$album6[0]['author']."','".mysqli_real_escape_string($GLOBALS['db']['link'], $album6[0]['link'])."','".$album6[0]['date']."')";
+			if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't $Query";
 			else $results[] = "Factoid added";
 			unset ($factedit);
 			
@@ -727,7 +727,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			
 			if($factdelete){
 				$q = "DELETE FROM albums_trivia WHERE indexid = '$factedit' LIMIT 1";
-				if(!mysql_query($q)) $errors[] = "Couldn't $q";
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't $q";
 				else $results[] = "Fact destoyed";
 				return;
 			}
@@ -743,12 +743,12 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			$album6[0]['link'] = preg_replace("%http://videogam.in/?%", "/", $album6[0]['link']);
 			
 			$Query = "UPDATE albums_trivia SET 
-				fact = '".mysql_real_escape_string($album6[0]['fact'])."', 
-				author = '".mysql_real_escape_string($album6[0]['author'])."', 
-				`link` = '".mysql_real_escape_string($album6[0]['link'])."', 
+				fact = '".mysqli_real_escape_string($GLOBALS['db']['link'], $album6[0]['fact'])."', 
+				author = '".mysqli_real_escape_string($GLOBALS['db']['link'], $album6[0]['author'])."', 
+				`link` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $album6[0]['link'])."', 
 				`date` = '{$album6[0][date]}' 
 				WHERE indexid = '$factedit' LIMIT 1";
-			if(!mysql_query($Query)) $errors[] = "Couldn't $Query";
+			if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't $Query";
 			else $results[] = "Factoid edited";
 			unset ($factedit);
 		
@@ -757,10 +757,10 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 			// Retailers & Links //
 			
 			$q = "UPDATE albums SET no_commerce = '".$_POST['no_commerce']."' WHERE albumid = '$editid' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Couldn't update no_commerce field; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update no_commerce field; ".mysql_error();
 			
 			$Query = "DELETE from albums_buy where album = '$editid'"; 
-			$Result = mysql_query ($Query);
+			$Result = mysqli_query($GLOBALS['db']['link'], $Query);
 			
 			for ($i=0; $i < count($album9a); $i++) {
 				if ($album9a[$i][code]) {
@@ -771,7 +771,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				if(substr($album9a[$i][code], 0, 4) != "http") $errors[] = "Couldn't save ".$album9a[$i]['vendor']." link; the URL must begin with http://";
 				else {
 					$Query = "INSERT into albums_buy (album, code, vendor, price, stock) VALUES ('$editid', '{$album9a[$i][code]}', '{$album9a[$i][vendor]}', '{$album9a[$i][price]}', '{$album9a[$i][stock]}')";
-					if(mysql_query($Query)) $results[] = $album9a[$i][vendor].' link saved';
+					if(mysqli_query($GLOBALS['db']['link'], $Query)) $results[] = $album9a[$i][vendor].' link saved';
 				}
 				}
 			}
@@ -780,8 +780,8 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 				for($i = 0; $i < count($links['name']); $i++) {
 					if(substr($links['url'][$i], 0, 4) != "http") $errors[] = "Couldn't add the link '".$links[url][$i]."' (".$links['name'][$i].") since it wasn't an http:// link";
 					else {
-						$Query = "INSERT into albums_buy (album, code, vendor, not_commerce) VALUES ('$editid', '".mysql_real_escape_string($links['url'][$i])."', '".mysql_real_escape_string($links['name'][$i])."', '1')";
-						if(!mysql_query($Query)) $errors[] = "Couldn't add link: ".$links['name'][$i]." <".$links['url'][$i]."> ;".mysql_error();
+						$Query = "INSERT into albums_buy (album, code, vendor, not_commerce) VALUES ('$editid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $links['url'][$i])."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $links['name'][$i])."', '1')";
+						if(!mysqli_query($GLOBALS['db']['link'], $Query)) $errors[] = "Couldn't add link: ".$links['name'][$i]." <".$links['url'][$i]."> ;".mysql_error();
 					}
 				}
 			}
@@ -800,7 +800,7 @@ if ($_POST['dbupdate'] == "1" || $_GET['dbupdate'] == "1") {
 	}
 	
 	$Query = "INSERT into albums_changelog (album, usrname, usrid, datetime, type) values ('$editid', '$usrname', '$usrid', '$datetime', '$type')";
-	$Result = mysql_query ($Query);
+	$Result = mysqli_query($GLOBALS['db']['link'], $Query);
 	
 }
 

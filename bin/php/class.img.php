@@ -41,8 +41,8 @@ function imgGetCategories(){
 	#
 	$categories = array();
 	$query = "SELECT * FROM `images_categories` order by sort";
-	$res = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)){
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)){
 		$categories[$row['img_category_id']] = $row;
 	}
 	return $categories;
@@ -77,8 +77,8 @@ class img {
 		if(ctype_digit($img_params)) $img_id = $img_params;
 		else $img_name = $img_params;
 		
-		$q = "SELECT * FROM images WHERE ".($img_name ? "img_name='".mysql_real_escape_string($img_name)."'" : "img_id='$img_id'")." LIMIT 1";
-		if(!$row = mysql_fetch_assoc(mysql_query($q))) return $this->emptyImg();
+		$q = "SELECT * FROM images WHERE ".($img_name ? "img_name='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_name)."'" : "img_id='$img_id'")." LIMIT 1";
+		if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return $this->emptyImg();
 		
 		$this->img_name = $row['img_name'];
 		$this->img_id = $row['img_id'];
@@ -156,31 +156,31 @@ class img {
 		
 		if(!$this->img_id){
 			if(!$this->img_name) return $this->removeError("No image data could be found with which to remove");
-			if(!$dat = mysql_fetch_object(mysql_query("SELECT img_id FROM images WHERE img_name = '".mysql_real_escape_string($this->img_name)."' LIMIT 1"))) return $this->removeError("No image data could be found with which to remove");
+			if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_id FROM images WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_name)."' LIMIT 1"))) return $this->removeError("No image data could be found with which to remove");
 			$this->img_id = $dat->img_id;
 		}
 		
-		$q = "SELECT * FROM images WHERE img_id='".mysql_real_escape_string($this->img_id)."' LIMIT 1";
-		if(!$img = mysql_fetch_object(mysql_query($q))) return $this->removeError("No image data found for image ID #".$this->img_id);
+		$q = "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1";
+		if(!$img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return $this->removeError("No image data found for image ID #".$this->img_id);
 		
-		$q = "DELETE FROM images WHERE img_id='".mysql_real_escape_string($this->img_id)."' LIMIT 1";
-		if(!mysql_query($q)){
-			$img = mysql_fetch_object(mysql_query("SELECT * FROM images WHERE img_id='".mysql_real_escape_string($this->img_id)."' LIMIT 1"));
+		$q = "DELETE FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)){
+			$img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1"));
 			if(!$img) return $this->removeError("Unknown error removing image: img_id:".$this->img_id."; ".mysql_error());
 			else return $this->removeError("Couldn't remove image file <i>".$img->img_name."</i> from database; ".mysql_error());
 		}
 		
 		$q = "SELECT * FROM images WHERE img_session_id = '$img->img_session_id'";
-		if($num_sess_imgs = mysql_num_rows(mysql_query($q))){
+		if($num_sess_imgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 			$q2 = "UPDATE images_sessions SET img_qty = '$num_sess_imgs' WHERE img_session_id = '$img->img_session_id' LIMIT 1";
 		} else {
 			$q2 = "DELETE FROM images_sessions WHERE img_session_id = '$img->img_session_id' LIMIT 1";
 		}
 		
-		$q = "DELETE FROM images_tags WHERE img_id='".mysql_real_escape_string($this->img_id)."'";
-		mysql_query($q);
+		$q = "DELETE FROM images_tags WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."'";
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
-		if(!mysql_query($q2)) return $this->removeError("Couldn't update session database table");
+		if(!mysqli_query($GLOBALS['db']['link'], $q2)) return $this->removeError("Couldn't update session database table");
 		
 		return true;
 		
@@ -195,7 +195,7 @@ class img {
 		// get info about this image's session, including previous & next files
 		
 		$q = "SELECT * FROM images_sessions WHERE img_session_id = '".$this->sessid."' LIMIT 1";
-		if(!$this->session_row = mysql_fetch_assoc(mysql_query($q))) return;
+		if(!$this->session_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return;
 		
 		/*if($this->session_data['img_qty'] > 1){
 			$q = "SELECT * FROM images WHERE ";*/
@@ -206,8 +206,8 @@ class img {
 		if(!$this->img_category_id) return;
 		if($this->img_category) return $this->img_category;
 		$query = "SELECT img_category FROM `images_categories` WHERE img_category_id = '$this->img_category_id' LIMIT 1";
-		$res = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			$this->img_category = $row['img_category'];
 		}
 		return $this->img_category;
@@ -262,11 +262,11 @@ class gallery {
 		if(!in_array($this->size, array('tn', 'ss', 'sm', 'op'))) $this->size = 'tn';
 		
 		if($this->sessid){
-			$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysql_real_escape_string($this->sessid)."' LIMIT 1";
-			if(!$img_session = mysql_fetch_assoc(mysql_query($q))) return '{Error displaying gallery: session ID "'.$this->sessid.'" doesn\'t exist}';
-			$query = "SELECT * FROM images WHERE img_session_id = '".mysql_real_escape_string($this->sessid)."' ORDER BY `sort` ASC";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->sessid)."' LIMIT 1";
+			if(!$img_session = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return '{Error displaying gallery: session ID "'.$this->sessid.'" doesn\'t exist}';
+			$query = "SELECT * FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->sessid)."' ORDER BY `sort` ASC";
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$img = new img($row['img_name']);
 				$row['src'] = $img->src;
 				$this->imgs[$row['img_name']] = $row;
@@ -281,8 +281,8 @@ class gallery {
 			if(is_array($this->files)){
 				//echo "FILES:";print_r($this->files);
 				foreach($this->files as $img_name){
-					$q = "SELECT * FROM images WHERE img_name = '".mysql_real_escape_string($img_name)."' LIMIT 1";
-					if($row = mysql_fetch_assoc(mysql_query($q))){
+					$q = "SELECT * FROM images WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_name)."' LIMIT 1";
+					if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 						$img = new img($img_name);
 						$row['src'] = $img->src;
 						$this->imgs[$row['img_name']] = $row;

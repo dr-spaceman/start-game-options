@@ -20,19 +20,19 @@ foreach($pg->data->credits->credit as $c){
 	
 	if($pg->type == "person"){
 		
-		$q = "SELECT * FROM credits WHERE person = '".mysql_real_escape_string($pg->title)."' AND work = '".mysql_real_escape_string($cname)."' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))){
-			$q = "UPDATE credits SET source_person = '1' WHERE person = '".mysql_real_escape_string($pg->title)."' AND work = '".mysql_real_escape_string($cname)."' LIMIT 1";
+		$q = "SELECT * FROM credits WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."' LIMIT 1";
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
+			$q = "UPDATE credits SET source_person = '1' WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."' LIMIT 1";
 		} else {
-			$q = "INSERT INTO credits (person, work, source_person) values ('".mysql_real_escape_string($pg->title)."', '".mysql_real_escape_string($cname)."', '1');";
+			$q = "INSERT INTO credits (person, work, source_person) values ('".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."', '1');";
 		}
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		if(substr($cname, 0, 8) == "AlbumID:"){
 			$albumid = str_replace("AlbumID:", "", $cname);
 			$query = "SELECT title, subtitle FROM albums WHERE albumid = '$albumid' LIMIT 1";
-			$res = mysql_query($query);
-			if($album = mysql_fetch_assoc($res)){
+			$res = mysqli_query($GLOBALS['db']['link'], $query);
+			if($album = mysqli_fetch_assoc($res)){
 				$cname.= "|".$album['title'].($album['subtitle'] ? ' - '.$album['subtitle'] : '');
 			}
 		}
@@ -41,13 +41,13 @@ foreach($pg->data->credits->credit as $c){
 		
 	} elseif($pg->type == "game"){
 		
-		$q = "SELECT * FROM credits WHERE person = '".mysql_real_escape_string($cname)."' AND work = '".mysql_real_escape_string($pg->title)."' LIMIT 1";
-		if(mysql_num_rows(mysql_query($q))){
-			$q = "UPDATE credits SET source_game = '1' WHERE person = '".mysql_real_escape_string($cname)."' AND work = '".mysql_real_escape_string($pg->title)."' LIMIT 1";
+		$q = "SELECT * FROM credits WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' LIMIT 1";
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
+			$q = "UPDATE credits SET source_game = '1' WHERE person = '".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."' AND work = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."' LIMIT 1";
 		} else {
-			$q = "INSERT INTO credits (person, work, source_game) values ('".mysql_real_escape_string($cname)."', '".mysql_real_escape_string($pg->title)."', '1');";
+			$q = "INSERT INTO credits (person, work, source_game) values ('".mysqli_real_escape_string($GLOBALS['db']['link'], $cname)."', '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg->title)."', '1');";
 		}
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 		foreach($c->roles->role as $r){
 			$creditsArr[(string)$r][] = (string)$c->name;

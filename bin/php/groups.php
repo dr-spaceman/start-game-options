@@ -18,7 +18,7 @@ $page->header();
 
 $groups->header();
 
-if($find = $_GET['find']) $findclause = " AND name LIKE '%".mysql_real_escape_string($find)."%'";
+if($find = $_GET['find']) $findclause = " AND name LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $find)."%'";
 
 if(!$orderby = $_GET['orderby']) $orderby = "name";
 if($orderby != "name" && $orderby != "created" && $orderby != "members") $orderby = "name";
@@ -27,7 +27,7 @@ if($orderby == "name" || $orderby == "created") {
 } else {
 	$query = "SELECT g.*, COUNT(gm.group_id) AS members FROM groups_members gm, groups g WHERE g.group_id=gm.group_id AND g.`status` != 'invite'$findclause GROUP BY gm.group_id ORDER BY members, name DESC";
 }
-$groupnum = mysql_num_rows(mysql_query($query));
+$groupnum = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 
 $max = 28;
 if(!$pg = $_GET['pg']) $pg = 1;
@@ -46,9 +46,9 @@ if($pg > 1) {
 
 <ol id="groupslist">
 <?
-$res = mysql_query($query);
+$res = mysqli_query($GLOBALS['db']['link'], $query);
 $i = 0;
-while($row = mysql_fetch_assoc($res)) {
+while($row = mysqli_fetch_assoc($res)) {
 	$img = "no";
 	if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/groups/".$row['group_id']."_icon.png")) $img = $row['group_id'];
 	if(strlen($row['name']) > 36) $p_name = substr($row['name'], 0, 35)."&hellip;";

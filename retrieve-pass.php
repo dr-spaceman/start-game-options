@@ -10,9 +10,9 @@ if($in = $_POST['in']) {
 		//find username or email
 		$in['username'] = trim($in['username']);
 		$in['email'] = trim($in['email']);
-		if($in['username']) $q = sprintf("SELECT * FROM users WHERE username='%s' LIMIT 1", mysql_real_escape_string($in['username']));
-		elseif($in['email']) $q = sprintf("SELECT * FROM users WHERE email='%s' LIMIT 1", mysql_real_escape_string($in['email']));
-		if(!$dat = mysql_fetch_object(mysql_query($q))) {
+		if($in['username']) $q = sprintf("SELECT * FROM users WHERE username='%s' LIMIT 1", mysqli_real_escape_string($GLOBALS['db']['link'], $in['username']));
+		elseif($in['email']) $q = sprintf("SELECT * FROM users WHERE email='%s' LIMIT 1", mysqli_real_escape_string($GLOBALS['db']['link'], $in['email']));
+		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			if($in['username']) $errors[] = "Couldn't find username '".$in['username']."' in the database";
 			elseif($in['email']) $errors[] = "Couldn't find e-mail address '".$in['email']."' in the database";
 		} else {
@@ -22,7 +22,7 @@ if($in = $_POST['in']) {
 			$code.= 'n';
 			$code.= rand(1,9);
 			$q = "INSERT INTO users_temp_pass (usrid, code) VALUES ('".$dat->usrid."', '$code')";
-			if(!mysql_query($q)) {
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 				$errors[] = "Couldn't complete process because of a database error. The staff has been notified of this error.";
 				sendBug("Couldn't reset password because of db error: $q");
 			} else {
@@ -49,9 +49,9 @@ if($_GET['do'] == "reset") {
 	if(!$_GET['usrid']) $error[] = "Fatal error: no user id given";
 	if(!$code = base64_decode($_GET['code'])) $errors[] = "Fatal error: no code given";
 	$q = sprintf("SELECT * FROM users_temp_pass WHERE usrid='%s' AND code='%s' LIMIT 1",
-		mysql_real_escape_string($_GET['usrid']),
-		mysql_real_escape_string($code));
-	if(!mysql_num_rows(mysql_query($q))) {
+		mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['usrid']),
+		mysqli_real_escape_string($GLOBALS['db']['link'], $code));
+	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		$errors[] = "Couldn't reconcile given data with database data. Password reset can't continue.";
 	} else {
 		
@@ -99,12 +99,12 @@ if($_POST['submit-new-pass']) {
 	if($p1 != $p2) die("Passwords don't match");
 	if(!$_POST['usrid']) die("No usrid given");
 	$q = "UPDATE users SET password = PASSWORD('$p1') WHERE usrid='".$_POST['usrid']."' LIMIT 1";
-	if(!mysql_query($q)) {
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 		$errors[] = "Couldn't reset password. The staff has been informed of this error.";
 		sendBug("Couldn't reset password: $q");
 	} else {
 		$q = "DELETE FROM users_temp_pass WHERE usrid='".$_POST['usrid']."'";
-		@mysql_query($q);
+		@mysqli_query($GLOBALS['db']['link'], $q);
 		$results[] = 'Password successfully reset! You may now <a href="#login">login</a> with your fresh new password';
 	}
 }

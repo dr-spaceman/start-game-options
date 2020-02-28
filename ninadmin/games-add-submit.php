@@ -14,8 +14,8 @@ if($action == "check_title") {
 	if(!$_POST['title']) die("No title given");
 	list($title, $title_url) = formatName($_POST['title'], TRUE);
 	
-	$q = "SELECT * FROM games WHERE title='".mysql_real_escape_string($title)."' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) {
+	$q = "SELECT * FROM games WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		?>
 		<p class="warn">The game <i><?=$title?></i> is already in the database (see <?=reformatLinks("[[G||".$title."]]")?> coverage).<br/>
 		<input type="button" value="Input another title" onclick="window.location='games-add.php';"/> or continue with the form to add it anyway.</p>
@@ -26,7 +26,7 @@ if($action == "check_title") {
 	<p><b>Unique Title URL:</b> http://videogam.in/games/~<input type="text" name="in[title_url]" id="input-title-url" value="<?=$title_url?>" size="40"/></p>
 	<?
 	$q = "SELECT * FROM games WHERE title_url='$title_url' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) {
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		?>
 		<p class="warn">The default title URL (<?=$title_url?>) is already in use. It's required that this value be unique in order to add the game to the database.</p>
 		<p><input type="button" value="Check title URL's uniqueness" onclick="checkTitleUrl(document.getElementById('input-title-url').value);"/><p>
@@ -49,7 +49,7 @@ if($action == "check_title_url") {
 	
 	if(ereg("/[^a-zA-Z0-9-]/", $_POST['title_url'])) die("Illegal characters (use only letters, numbers, and -)");
 	$q = "SELECT * FROM games WHERE title_url='".$_POST['title_url']."' LIMIT 1";
-	if(mysql_num_rows(mysql_query($q))) echo "Already taken";
+	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) echo "Already taken";
 	else echo '<input type="button" value="Continue &gt;" onclick="var oktosubmit = \'1\'; document.submittitleform.submit();" style="font-size:21px"/>';
 	
 	exit;
@@ -64,7 +64,7 @@ if($action == "insert_series") {
 	$series = htmlentities($series, ENT_QUOTES);
 	
 	$q = "INSERT INTO games_series (gid, series) VALUES ('$gid', '$series');";
-	if(!mysql_query($q)) die("bad");
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("bad");
 	else echo $series;
 	
 	exit;
@@ -79,7 +79,7 @@ if($action == "delete_series") {
 	$series = htmlentities($series, ENT_QUOTES);
 	
 	$q = "DELETE FROM games_series WHERE gid='$gid' AND series='$series' LIMIT 1";
-	if(!mysql_query($q)) die("Couldn't delete from database");
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't delete from database");
 	else echo "ok";
 	
 	exit;
@@ -91,7 +91,7 @@ if($step && !$_POST['submitform']) {
 	//user navigated here without submitting
 	
 	$q = "SELECT * FROM games WHERE gid='$editid' LIMIT 1";
-	if(!$in = mysql_fetch_assoc(mysql_query($q))) {
+	if(!$in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 		$errors[] = "Couldn't get data from database";
 	}
 	
@@ -100,7 +100,7 @@ if($step && !$_POST['submitform']) {
 	if(strstr($x, "||")) $in['series'] = explode("||", $x);
 	else $in['series'][0] = $x;
 	
-	$dbdat = mysql_fetch_object(mysql_query($q));
+	$dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 	
 	if($_POST['skipsubmit']) $step = $step + 1;
 	
@@ -110,7 +110,7 @@ if($step && !$_POST['submitform']) {
 		
 		// get $dbdat
 		$q = "SELECT * FROM games WHERE gid='$editid' LIMIT 1";
-		$dbdat = mysql_fetch_object(mysql_query($q));
+		$dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		
 	}
 	
@@ -123,13 +123,13 @@ if($step && !$_POST['submitform']) {
 		
 		//exists?
 		$q = "SELECT * FROM games WHERE title_url='$title_url' LIMIT 1";
-		if(!mysql_num_rows(mysql_query($q))) {
+		if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$now = date("Y-m-d H:i:s");
 			$q2 = "INSERT INTO games (title, title_url, creator, contributors, created, modified) VALUES 
-			('".mysql_real_escape_string($title)."', '$title_url', '$usrid', 'usrid:$usrid', '$now', '$now');";
-			if(!mysql_query($q2)) $errors[] = "Couldn't insert into db; ".mysql_error();
+			('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '$title_url', '$usrid', 'usrid:$usrid', '$now', '$now');";
+			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $errors[] = "Couldn't insert into db; ".mysql_error();
 			else {
-				if(!$dbdat = mysql_fetch_object(mysql_query($q))) die("Couldn't get game id");
+				if(!$dbdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't get game id");
 				$editid = $dbdat->gid;
 				
 				//dir
@@ -154,9 +154,9 @@ if($step && !$_POST['submitform']) {
 		
 		// SYNOPSIS //
 		
-		if($in['synopsis'] = mysql_real_escape_string($in['synopsis'])) {
+		if($in['synopsis'] = mysqli_real_escape_string($GLOBALS['db']['link'], $in['synopsis'])) {
 			$q = "UPDATE games SET synopsis='".$in['synopsis']."' WHERE gid='$editid' LIMIT 1";
-			if(!mysql_query($q)) $errors[] = "Couldn't update database";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database";
 			else $step = 2;
 		} else $step = 2;
 		
@@ -171,23 +171,23 @@ if($step && !$_POST['submitform']) {
 			developer='%s',
 			online='".$in['online']."' 
 			WHERE gid='$editid' LIMIT 1",
-			mysql_real_escape_string($in['developer']));
-		if(!mysql_query($q)) $errors[] = "Couldn't update database";
+			mysqli_real_escape_string($GLOBALS['db']['link'], $in['developer']));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database";
 		else $step = 3;
 		
 		//genres
 		$q = "DELETE FROM games_genres WHERE gid='$editid'";
-		mysql_query($q);
+		mysqli_query($GLOBALS['db']['link'], $q);
 		$q = "INSERT INTO games_genres (gid, genre) VALUES ";
 		if($in['genre']) {
 			$genres = array();
 			$genres = explode(",", $in['genre']);
 			foreach($genres as $genre) {
 				$genre = trim($genre);
-				if($genre != "") $q.= "('$editid', '".mysql_real_escape_string($genre)."'),";
+				if($genre != "") $q.= "('$editid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $genre)."'),";
 			}
 			$q = substr($q, 0, -1).";";
-			if(!mysql_query($q)) $errors[] = "Couldn't add genres to database; ".mysql_error();
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add genres to database; ".mysql_error();
 		}
 		
 	} elseif($step == "3") {
@@ -201,20 +201,20 @@ if($step && !$_POST['submitform']) {
 		
 		//get # of current pubs and decide if this should be the primary pub
 		$q = "SELECT * FROM games_publications WHERE gid='$editid'";
-		if(!mysql_num_rows(mysql_query($q))) {
+		if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 			$primary = '1';
 		} else {
 			$primary = '0';
 		}
 		
 		//get next id
-		$query = mysql_query("SHOW TABLE STATUS LIKE 'games_publications'");
-		$row = mysql_fetch_array($query);
+		$query = mysqli_query($GLOBALS['db']['link'], "SHOW TABLE STATUS LIKE 'games_publications'");
+		$row = mysqli_fetch_assoc($query);
 		if(!$next_id = $row['Auto_increment']) die("Couldn't get next database ID; ".mysql_error());
 		
 		$q = "INSERT INTO games_publications (gid,platform_id,title,region,release_date,`primary`) VALUES 
 			('$editid', '".$in['platform_id']."', '".$in['pub_title']."', '".$in['region']."', '".$in['year']."-".$in['month']."-".$in['day']."', '$primary')";
-		if(!mysql_query($q)) {
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) {
 			$errors[] = "Couldn't add publication to db: ".mysql_error();
 		} else {
 			$results[] = "Publication successfully added to the database.";
@@ -286,9 +286,9 @@ if($step && !$_POST['submitform']) {
 		if(!$errors) {
 			$q = sprintf("INSERT INTO people_work (pid, gid, role, notes, vital) VALUES 
 				('".$in['pid']."', '$editid', '%s', '%s', '".$in['vital']."');",
-				mysql_real_escape_string($in['role']),
-				mysql_real_escape_string($in['notes']));
-			if(!mysql_query($q)) $errors[] = "Couldn't add person to database";
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['role']),
+				mysqli_real_escape_string($GLOBALS['db']['link'], $in['notes']));
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add person to database";
 			else {
 				$results[] = "Person successfully added.";
 				$dbdat->people = $peoplestr;
@@ -324,10 +324,10 @@ if($step && !$_POST['submitform']) {
 			$dir = "/media/".$dir."-screens1";
 			
 			$q = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-			if(mysql_num_rows(mysql_query($q))) {
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$dir.= rand(10,99);
 				$q = "SELECT * FROM media WHERE directory='$dir' LIMIT 1";
-				if(mysql_num_rows(mysql_query($q))) $dir.= rand(10,99);
+				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $dir.= rand(10,99);
 			}
 			
 			//make dir
@@ -338,19 +338,19 @@ if($step && !$_POST['submitform']) {
 			
 			//get next media ID
 			$q = "SHOW TABLE STATUS LIKE 'media'";
-			$r = mysql_query($q) or die ( "Query failed: " . mysql_error() . "<br/>" . $q );
-			$row = mysql_fetch_assoc($r);
+			$r = mysqli_query($GLOBALS['db']['link'], $q) or die ( "Query failed: " . mysql_error() . "<br/>" . $q );
+			$row = mysqli_fetch_assoc($r);
 			if(!$nextid = $row['Auto_increment']) $errors[] = ("Couldn't get next id");
 			
 			$q = "INSERT INTO media (directory, category_id, description, gallery, datetime, usrid, quantity) VALUES 
 			('$dir', '1', '<i>".$dbdat->title."</i> screenshots', '1', '".date("Y-m-d H:i:s")."', '$usrid', '$filenum')";
 			if(!$errors) {
-				if(!mysql_query($q)) $errors[] = "Couldn't add to db: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to db: ".mysql_error();
 			}
 			
 			$q = "INSERT INTO media_tags (media_id, tag) VALUES ('$nextid', 'gid:$editid')";
 			if(!$errors) {
-				if(!mysql_query($q)) $errors[] = "Couldn't add to tag db: ".mysql_error();
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't add to tag db: ".mysql_error();
 			}
 		  
 		  if(!$errors) {
@@ -373,8 +373,8 @@ if($step && !$_POST['submitform']) {
 								$capt[$f] = strip_tags($capt[$f]);
 								$capt[$f] = htmlentities($capt[$f], ENT_QUOTES);
 								$q = sprintf("INSERT INTO media_captions (media_id, `file`, `caption`) VALUES ('$nextid', '".$handle->file_dst_name."', '%s')",
-									mysql_real_escape_string($capt[$f]));
-								if(!mysql_query($q)) $errors[] = "Could not add caption (\"".$capt[$f]."\") to ".$handle->file_dst_name;
+									mysqli_real_escape_string($GLOBALS['db']['link'], $capt[$f]));
+								if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Could not add caption (\"".$capt[$f]."\") to ".$handle->file_dst_name;
 							}
 							
 							//thumb

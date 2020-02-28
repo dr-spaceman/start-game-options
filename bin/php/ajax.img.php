@@ -75,8 +75,8 @@ if($_GET['load_img_data']){
 			'</ul>';
 		
 		//+1 view 
-		$q = "UPDATE images SET img_views = '".++$img->img_views."' WHERE img_name = '".mysql_real_escape_string($img->img_name)."' LIMIT 1";
-		mysql_query($q);
+		$q = "UPDATE images SET img_views = '".++$img->img_views."' WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $img->img_name)."' LIMIT 1";
+		mysqli_query($GLOBALS['db']['link'], $q);
 		
 	} while(false);
 	
@@ -87,8 +87,8 @@ if($_GET['load_img_data']){
 if($_POST['_action'] == "load_ins_form"){
 	
 	$query = "SELECT * FROM images_sessions WHERE usrid='$usrid' ORDER BY img_session_created DESC";
-	$sessres = mysql_query($query);
-	$num_sessions = mysql_num_rows($sessres);
+	$sessres = mysqli_query($GLOBALS['db']['link'], $query);
+	$num_sessions = mysqli_num_rows($sessres);
 	
 	?>
 	
@@ -102,17 +102,17 @@ if($_POST['_action'] == "load_ins_form"){
 		
 		if($_POST['form_key'] == "img_session_id" && $sessid = $_POST['form_val']){
 			
-			$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysql_real_escape_string($sessid)."' LIMIT 1";
-			$sessres = mysql_query($query);
-			if(!mysql_num_rows($sessres)) die("Couldn't find session data fro ID # $sessid</div>");
-			$sess = mysql_fetch_object($sessres);
+			$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+			$sessres = mysqli_query($GLOBALS['db']['link'], $query);
+			if(!mysqli_num_rows($sessres)) die("Couldn't find session data fro ID # $sessid</div>");
+			$sess = mysqli_fetch_object($sessres);
 			$query = "SELECT * FROM images WHERE img_session_id = '".$sessid."'";
-			$res   = mysql_query($query);
-			if($num = mysql_num_rows($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			if($num = mysqli_num_rows($res)){
 				?>
 				<ul class="imginslist imglist">
 					<?
-					while($row = mysql_fetch_assoc($res)){
+					while($row = mysqli_fetch_assoc($res)){
 						$img = new img($row['img_name']);
 						$src = $img->src;
 						?>
@@ -133,8 +133,8 @@ if($_POST['_action'] == "load_ins_form"){
 			?>
 			<ul class="imginslist sessionlist">
 				<?
-				while($row = mysql_fetch_assoc($sessres)){
-					$file = mysql_fetch_object(mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' LIMIT 1"));
+				while($row = mysqli_fetch_assoc($sessres)){
+					$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' LIMIT 1"));
 					$img = new img($file->img_name);
 					if($img->notfound) continue;
 					$src = $img->src;

@@ -11,8 +11,8 @@ if($orderby == "u.username") $orderdir = "ASC";
 else $orderdir = "DESC";
 
 $query = "SELECT mg.*, u.username FROM my_games mg, users u WHERE mg.gid='$gdat->gid' AND u.usrid=mg.usrid ORDER BY $orderby $orderdir".($orderby != "u.username" ? ", u.username" : "");
-$res   = mysql_query($query);
-if(!mysql_num_rows($res)) {
+$res   = mysqli_query($GLOBALS['db']['link'], $query);
+if(!mysqli_num_rows($res)) {
 	echo "There are no fans of this game yet.<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>";
 } else {
 	?>
@@ -25,7 +25,7 @@ if(!mysql_num_rows($res)) {
 			<th><a href="?sort=mg.play_online">Play Online</a></th>
 		</tr>
 		<?
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			?>
 			<tr>
 				<td class="username"><?=outputUser($row['usrid'])?></td>

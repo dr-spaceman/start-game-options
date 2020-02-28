@@ -14,7 +14,7 @@ if(!$type = $_GET['_type']) die("No index type given");
 $rebuild_tables = $_GET['_rebuildtables'] ? true : false;
 
 $query = "SELECT title FROM pages WHERE `type` = '$type' AND redirect_to = ''";
-$num_rows = mysql_num_rows(mysql_query($query));
+$num_rows = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 
 if(isset($_GET['_min'])){
 	
@@ -30,9 +30,9 @@ if(isset($_GET['_min'])){
 		
 		//json index
 		$q = "DELETE FROM pages_index_json WHERE `type` = '$type'";
-		if(!mysql_query($q)) die("Error on : $q");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error on : $q");
 		$q = "INSERT INTO pages_index_json (`type`, `json`) VALUES ('$type', '');";
-		if(!mysql_query($q)) die("Error on : $q");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error on : $q");
 		$json_blob = array();
 		
 	} else {
@@ -40,7 +40,7 @@ if(isset($_GET['_min'])){
 		$in = simplexml_load_string($f);
 		
 		$q = "SELECT `json` FROM pages_index_json WHERE `type`='$type' LIMIT 1";
-		if(!$row = mysql_fetch_assoc(mysql_query($q))) die("Error on : $q");
+		if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die("Error on : $q");
 		$json_blob = json_decode($row['json'], true);
 	}*/
 	
@@ -50,20 +50,20 @@ if(isset($_GET['_min'])){
 		
 		//json index
 		$q = "DELETE FROM pages_index_json WHERE `type` = '$type'";
-		if(!mysql_query($q)) die("Error on : $q");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error on : $q");
 		$q = "INSERT INTO pages_index_json (`type`, `letter`) VALUES ";
 		foreach($az as $a) $q.= "('$type', '$a'),";
 		$q = substr($q, 0, -1);
-		if(!mysql_query($q)) die("Error on : $q");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error on : $q");
 		
 	}
 	
 	$query.= " ORDER BY title_sort LIMIT ".($min ? $min - 2 : $min).", $num_handle;";
-	$res   = mysql_query($query);
-	if(!mysql_num_rows($res)){
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!mysqli_num_rows($res)){
 		die("Fin.".($rebuild_tables ? " Tables rebuilt." : ""));
 	}
-	while($row = mysql_fetch_assoc($res)){
+	while($row = mysqli_fetch_assoc($res)){
 		
 		$pg = new pgedit($row['title']);
 		$pg->loadData();
@@ -103,20 +103,20 @@ if(isset($_GET['_min'])){
 		unset($json_['description']);
 		unset($json_['rep_image']);
 		unset($json_['categories']);
-		$q = "UPDATE pages SET index_data = '".mysql_real_escape_string(json_encode($json_))."' WHERE pgid='".$pg->pgid."' LIMIT 1";
-		if(!mysql_query($q)) die("Couldn't update index_data field on pages database; ".mysql_error());
+		$q = "UPDATE pages SET index_data = '".mysqli_real_escape_string($GLOBALS['db']['link'], json_encode($json_))."' WHERE pgid='".$pg->pgid."' LIMIT 1";
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Couldn't update index_data field on pages database; ".mysql_error());
 		
 	}
 	
 	if(count($json_index)){
 		foreach($json_index as $ia => $json){
 			$q = "SELECT `json` FROM pages_index_json WHERE `type` = '$type' AND `letter` = '$ia' LIMIT 1";
-			$json_row = mysql_fetch_assoc(mysql_query($q));
+			$json_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 			$json_ = (array)json_decode($json_row['json']);
 			$json_arr = array_merge($json_, $json);
 			$json_str = json_encode($json_arr);
-			$q = "UPDATE pages_index_json SET `json` = '".mysql_real_escape_string($json_str)."' WHERE `type` = '$type' AND `letter` = '$ia' LIMIT 1";
-			if(!mysql_query($q)) die("Error on : $q");
+			$q = "UPDATE pages_index_json SET `json` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $json_str)."' WHERE `type` = '$type' AND `letter` = '$ia' LIMIT 1";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error on : $q");
 		}
 	}
 	

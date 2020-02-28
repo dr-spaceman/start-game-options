@@ -84,7 +84,7 @@ class shelfItem {
 			
 			if(!$row['platform'] && $this->img->img_name){
 				$q = "SELECT platform FROM games_publications WHERE img_name = '".(string)$this->img->img_name."' LIMIT 1";
-				if($row2 = mysql_fetch_assoc(mysql_query($q))) $row = array_merge((array)$row, $row2);
+				if($row2 = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) $row = array_merge((array)$row, $row2);
 			}
 			
 			$rd = $row['release_date'] ? $row['release_date'] : $row['release_year']."-".$row['release_month']."-".$row['release_day'];

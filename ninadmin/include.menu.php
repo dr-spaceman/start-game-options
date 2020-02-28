@@ -9,7 +9,7 @@
 		<?
 	if($usrrank >= 8) {
 		echo '<dd><a href="/ninadmin/user-contributions.php">User Contributions</a>';
-		$pend = mysql_num_rows(mysql_query("SELECT * FROM pending"));
+		$pend = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pending"));
 		if($pend) echo ' ('.$pend.')';
 		echo '</dd>';
 		}

@@ -6,7 +6,7 @@ require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php");
 
 if($id = $_POST['load_contr_data']) {
 	$q = "SELECT `data` FROM users_contributions_data WHERE contribution_id='$id' LIMIT 1";
-	if(!$dat = mysql_fetch_object(mysql_query($q))) die("<dt>No further data available</dt><dd>&nbsp;</dd>");
+	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("<dt>No further data available</dt><dd>&nbsp;</dd>");
 	$data = array();
 	$data = makeContrDataArr($dat->data);
 	while(list($key, $val) = each($data)) {
@@ -21,13 +21,13 @@ if($elem = $_POST['load_all_contr']) {
 	if($key == "usrid") {
 		
 		$query = "SELECT * FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE usrid='$val' ORDER BY datetime DESC";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		outputContributions($res, "usrid:".$uid);
 		
 	} else {
 		
 		$query = "SELECT * FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE supersubject='$elem' ORDER BY datetime DESC";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		outputContributions($res, $elem, FALSE);
 			
 	}
@@ -87,8 +87,8 @@ if($ssubj) {
 		LEFT JOIN users_contributions_data USING (contribution_id) 
 		WHERE supersubject='$ssubj' 
 		ORDER BY datetime DESC";
-	$res   = mysql_query($query);
-	if(!$count = mysql_num_rows($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	if(!$count = mysqli_num_rows($res)) {
 		echo "No contributions yet.";
 	} else {
 		
@@ -97,7 +97,7 @@ if($ssubj) {
 		<?
 		
 		$query.= " LIMIT 50";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		
 		outputContributions($res, $ssubj);
 		
@@ -108,14 +108,14 @@ if($ssubj) {
 if($uid) {
 	
 	$query = "SELECT * FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE usrid='$uid' ORDER BY datetime DESC";
-	if(!$count = mysql_num_rows(mysql_query($query))) {
+	if(!$count = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
 		echo $usr->username." has no contributions yet.";
 	} else {
 		
 		$tpoints = 0;
 		$query3 = "SELECT points FROM users_contributions LEFT JOIN users_contributions_types USING (type_id) WHERE usrid='$uid' AND published = '1'";
-		$res3   = mysql_query($query3);
-		while($row = mysql_fetch_assoc($res3)) {
+		$res3   = mysqli_query($GLOBALS['db']['link'], $query3);
+		while($row = mysqli_fetch_assoc($res3)) {
 			$tpoints = $tpoints + $row['points'];
 		}
 		
@@ -130,7 +130,7 @@ if($uid) {
 		<?
 		
 		$query.= " LIMIT 50";
-		$res   = mysql_query($query);
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		
 		outputContributions($res, "usrid:".$uid, FALSE);
 		
@@ -145,8 +145,8 @@ $page->footer();
 function outputContributions($res, $elem, $show_contributor = TRUE) {
 	
 	$query2 = "SELECT * FROM users_contributions_types";
-	$res2   = mysql_query($query2);
-	while($row = mysql_fetch_assoc($res2)) {
+	$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
+	while($row = mysqli_fetch_assoc($res2)) {
 		$points[$row['type_id']] = $row['points'];
 		$ctypes[$row['type_id']] = $row['description'];
 	}
@@ -161,7 +161,7 @@ function outputContributions($res, $elem, $show_contributor = TRUE) {
 		</tr>
 		<?
 		$cons = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$i++;
 			
 			if($show_contributor) {

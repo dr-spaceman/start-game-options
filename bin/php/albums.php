@@ -8,13 +8,13 @@ if($_POST['do'] == "get_fans") {
 	//fans list
 	
 	$query = "SELECT * FROM albums_ratings WHERE albumid='$albumid'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$fans[$row['usrid']]['rating'] = $row['rating'];
 	}
 	$query = "SELECT * FROM albums_collection WHERE albumid='$albumid'";
-	$res   = mysql_query($query);
-	while($row = mysql_fetch_assoc($res)) {
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	while($row = mysqli_fetch_assoc($res)) {
 		$fans[$row['usrid']][$row['action']] = TRUE;
 	}
 	
@@ -40,13 +40,13 @@ if($_POST['do'] == "get_fans") {
 	if(!$rating = $_POST['rating']) $rating = 0;
 	
 	$q = "DELETE FROM albums_ratings WHERE albumid='$albumid' AND usrid='$usrid' LIMIT 1";
-	mysql_query($q);
+	mysqli_query($GLOBALS['db']['link'], $q);
 	
 	if($rating == '0') {
 		echo '1';
 	} else {
 		$q = "INSERT INTO albums_ratings (albumid, rating, usrid, datetime) VALUES ('$albumid', '$rating', '$usrid', '".date("Y-m-d H:i:s")."')";
-		if(mysql_query($q)) echo "1";
+		if(mysqli_query($GLOBALS['db']['link'], $q)) echo "1";
 		else sendBug("User couldn't rate album. query: $q");
 	}
 	
@@ -64,7 +64,7 @@ if($_POST['do'] == "get_fans") {
 		$q = "DELETE FROM albums_collection WHERE action='$what' AND albumid='$albumid' AND usrid='$usrid' LIMIT 1";
 	}
 	
-	if(mysql_query($q)) {
+	if(mysqli_query($GLOBALS['db']['link'], $q)) {
 		echo "1";
 	} else {
 		sendBug("User couldn't update albums_collection db table. query: $q");

@@ -39,7 +39,7 @@ class link {
 				$link_text = trim($link_text);
 			}
 			$q = "SELECT `title`, `subtitle` FROM albums WHERE albumid='$x[1]' LIMIT 1";
-			if(!$album = mysql_fetch_object(mysql_query($q))) return '<a href="'.$ppd.'/music" class="pglink nocoverage" rel="nofollow" title="No data for AlbumID:'.$x[1].'">'.($link_text ? $link_text : $pg).'</a>';
+			if(!$album = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return '<a href="'.$ppd.'/music" class="pglink nocoverage" rel="nofollow" title="No data for AlbumID:'.$x[1].'">'.($link_text ? $link_text : $pg).'</a>';
 			return '<a href="'.$ppd.'/music?id='.$x[1].'" title="'.htmlSC($album->title.' '.$album->subtitle).'" class="pglink albumlink">'.($link_text ? $link_text : $album->title.($album->subtitle ? ' <i>'.$album->subtitle.'</i>' : '')).'</a>';
 		}
 		
@@ -50,8 +50,8 @@ class link {
 		$pg = formatName($pg);
 		$link_text = stripslashes($link_text);
 		
-		$q = "SELECT `type`, `title`, redirect_to FROM pages WHERE `title` = '".mysql_real_escape_string($pg)."' LIMIT 1";
-		if($dat = mysql_fetch_object(mysql_query($q))) {
+		$q = "SELECT `type`, `title`, redirect_to FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $pg)."' LIMIT 1";
+		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 			
 			if(!$link_text) $link_text = $dat->title;
 			
@@ -64,8 +64,8 @@ class link {
 			if($dat->redirect_to) {
 				return '<a href="'.$ppd.'/'.$pgtypes[$dat->type].'/'.formatNameURL($dat->title).'" title="This subject will redirect to a more appropriate page; Consider changing this link to the real destination page." class="pglink redirect">'.$link_text.'</a>';
 				//redirected pg
-				/*$q = "SELECT * FROM pages WHERE `title`='".mysql_real_escape_string($dat->redirect_to)."' LIMIT 1";
-				if(!$dat2 = mysql_fetch_object(mysql_query($q))) {
+				/*$q = "SELECT * FROM pages WHERE `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $dat->redirect_to)."' LIMIT 1";
+				if(!$dat2 = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 					return '<a href="'.$ppd.'/pages/handle.php?title='.formatNameURL($dat->title).'" style="border-bottom:1px dotted #CA3535;" class="tooltip" title="This page is assigned to redirect, but the redirect info can\'t be found.">'.$link_text.'<sup>&dagger;</sup></a>';
 				}*/
 			}

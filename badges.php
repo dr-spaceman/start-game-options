@@ -15,8 +15,8 @@ if($un){
 	$page->title = $un."'s badges - Videogam.in";
 	$page->header();
 	
-	$q = "SELECT * FROM users WHERE username = '".mysql_real_escape_string($un)."' LIMIT 1";
-	if(!$udat = mysql_fetch_object(mysql_query($q))) $page->die_("No user found named '$un'");
+	$q = "SELECT * FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $un)."' LIMIT 1";
+	if(!$udat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_("No user found named '$un'");
 	
 	if(!$bid) echo '<h1>'.$udat->username.'\'s Badges</h1>';
 	else {

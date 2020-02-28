@@ -207,7 +207,7 @@ if($_POST['submit_new']) {
 		if($heading) $desc = strip_tags($heading);
 		else {
 			$q = "SELECT `description` FROM media WHERE media_id='".$in['gallery']['dir']."' LIMIT 1";
-			$mdat = mysql_fetch_object(mysql_query($q));
+			$mdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$desc = strip_tags($mdat->description);
 		}
 		
@@ -295,14 +295,14 @@ if($_POST['submit_new']) {
 			//if it's going in a forum, inherit invisible & close values
 			if($tags) {
 				$q = "SELECT invisible, closed FROM forums WHERE included_tags='".$in['fid']."' LIMIT 1";
-				$fdat = mysql_fetch_object(mysql_query($q));
+				$fdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			}
 			
 			$tid = mysqlNextAutoIncrement("forums_topics");
 			$q = sprintf("INSERT INTO `forums_topics` (`type`,`title`,`usrid`,`created`,`last_post`,`last_post_usrid`,`invisible`,`closed`) VALUES 
 				('$type','%s','$usrid','$datetime','$datetime','$usrid','".$fdat->invisible."','".$fdat->closed."')",
-				mysql_real_escape_string($desc));
-			$res = mysql_query($q);
+				mysqli_real_escape_string($GLOBALS['db']['link'], $desc));
+			$res = mysqli_query($GLOBALS['db']['link'], $q);
 			if(!$res) $errors[] = "Couldn't insert into forums topics table";
 			else {
 				
@@ -311,8 +311,8 @@ if($_POST['submit_new']) {
 				
 				$query = sprintf("INSERT INTO forums_posts (tid,usrid,posted,message,ip) VALUES 
 					('$tid','$usrid','$datetime','%s','".$_SERVER['REMOTE_ADDR']."')",
-					mysql_real_escape_string($message));
-				$res = mysql_query($query);
+					mysqli_real_escape_string($GLOBALS['db']['link'], $message));
+				$res = mysqli_query($GLOBALS['db']['link'], $query);
 				if(!$res) {
 					die("Error: couldn't post into forums posts table");
 				} else {
@@ -335,10 +335,10 @@ if($_POST['submit_new']) {
 					if($tagsi) {
 						$q = "INSERT INTO forums_tags (`tid`, `tag`) VALUES ";
 						foreach($tagsi as $t) {
-							$q.= "('$tid', '".mysql_real_escape_string($t)."'),";
+							$q.= "('$tid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $t)."'),";
 						}
 						$q = substr($q, 0, -1).";";
-						if(!mysql_query($q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
+						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
 					}
 					
 					$forum->updatePosts($tid);
@@ -359,7 +359,7 @@ if($_POST['submit_new']) {
 			
 			//check if url already exists for this date
 			$q = "SELECT * FROM news WHERE description_url='$x[1]' AND datetime LIKE '".substr($dt, 0, 10)."%' LIMIT 1";
-			if(mysql_fetch_assoc(mysql_query($q))) {
+			if(mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 				$warnings[] = "The default URL, '$x[1]' already exists for this date. A random number was appended to the end of the URL as to not conflict with the current one. You may want to input a new one below.";
 				$x[1] = substr($x[1], 0, 43).rand(10,99);
 			}
@@ -368,8 +368,8 @@ if($_POST['submit_new']) {
 			
 			$nid = mysqlNextAutoIncrement("news");
 			$q = "INSERT INTO news (`description`,`description_url`,`content`,`usrid`,`type`,`public`,`blog`,`groups`,`options`,`datetime`) VALUES 
-				('".mysql_real_escape_string($x[0])."', '$x[1]', '".mysql_real_escape_string($cont)."', '$usrid', '".$in['type']."', '".$in['post_to']['public']."', '".$in['post_to']['blog']."', '$groupsi', '$opts', '$dt');";
-			if(!mysql_query($q)) $errors[] = "Couldn't insert into database; ".mysql_error();
+				('".mysqli_real_escape_string($GLOBALS['db']['link'], $x[0])."', '$x[1]', '".mysqli_real_escape_string($GLOBALS['db']['link'], $cont)."', '$usrid', '".$in['type']."', '".$in['post_to']['public']."', '".$in['post_to']['blog']."', '$groupsi', '$opts', '$dt');";
+			if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into database; ".mysql_error();
 			else {
 			
 				//tags
@@ -397,10 +397,10 @@ if($_POST['submit_new']) {
 				if($tagsi) {
 					$q = "INSERT INTO news_tags (`nid`, `tag`) VALUES ";
 					foreach($tagsi as $t) {
-						$q.= "('$nid', '".mysql_real_escape_string($t)."'),";
+						$q.= "('$nid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $t)."'),";
 					}
 					$q = substr($q, 0, -1).";";
-					if(!mysql_query($q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
+					if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert tags into database; ".mysql_error();
 				}
 				
 				//heading img
@@ -506,25 +506,25 @@ if($_POST['process_new']) {
 			foreach($_POST['gappend']['quote'] as $gid) {
 				$q = sprintf("INSERT INTO games_quotes (gid, quote, cut_off, quoter, usrid, datetime) VALUES 
 					('$gid', '%s', '1', '%s', '$usrid', '".date("Y-m-d H:i:s")."');",
-					mysql_real_escape_string($cont[0]),
-					mysql_real_escape_string($cont[1]));
-				if(!mysql_query($q)) $errors[] = "Couldn't insert into games quotes db; ".mysql_error();
+					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[0]),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[1]));
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games quotes db; ".mysql_error();
 			}
 		}
 		if($_POST['gappend']['link']) {
 			foreach($_POST['gappend']['link'] as $gid) {
 				$q = sprintf("INSERT INTO games_links (gid, url, site_name, description, usrid, datetime) VALUES 
 					('$gid', '$cont[0]', '%s', '%s', '$usrid', '".date("Y-m-d H:i:s")."');",
-					mysql_real_escape_string($cont[1]),
-					mysql_real_escape_string($cont[2]));
-				if(!mysql_query($q)) $errors[] = "Couldn't insert into games links db; ".mysql_error();
+					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[1]),
+					mysqli_real_escape_string($GLOBALS['db']['link'], $cont[2]));
+				if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't insert into games links db; ".mysql_error();
 			}
 		}
 	}
 	
 	//check if url already exists for this date
 	$q = "SELECT * FROM news WHERE description_url='".$in['description_url']."' AND datetime LIKE '".str_replace("/", "-", $in['date'])."%' AND nid != '".$in['nid']."' LIMIT 1";
-	if(mysql_fetch_assoc(mysql_query($q))) {
+	if(mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) {
 		$warnings[] = "The default URL, '".$in['description_url']."' already exists for this date. A random number was appended to the end of the URL as to not conflict with the current one. You may want to input a new one below.";
 		$in['description_url'] .= substr($in['description_url'], 0, 43).rand(10,99);
 	}
@@ -548,11 +548,11 @@ if($_POST['process_new']) {
 	}
 	
 	$q = "UPDATE news SET 
-		description='".mysql_real_escape_string($in['description'])."', 
-		description_url='".mysql_real_escape_string($in['description_url'])."', 
+		description='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['description'])."', 
+		description_url='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['description_url'])."', 
 		`options` = '".implode(" ", $in['options'])."' 
 		WHERE nid='".$in['nid']."' LIMIT 1";
-	if(!mysql_query($q)) $errors[] = "Couldn't update database to reflect description and URL; ".mysql_error();
+	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update database to reflect description and URL; ".mysql_error();
 	else {
 		header("Location: /news/".$in['date']."/".$in['description_url']);
 		exit;

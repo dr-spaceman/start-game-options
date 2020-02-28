@@ -26,8 +26,8 @@ if($_GET['load']){
 		}
 		$where = "AND (" . substr($where, 0, -4) . ")";
 	}
-	$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE (tag = '".mysql_real_escape_string($setid)."' OR tag LIKE '".mysql_real_escape_string($setid)."|%') $where ORDER BY img_timestamp ASC";
-	if(!$num_imgs = mysql_num_rows(mysql_query($query))){
+	$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE (tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."' OR tag LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."|%') $where ORDER BY img_timestamp ASC";
+	if(!$num_imgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
 		$ret['formatted'] = "<i>No images found.</i>";
 	}
 	
@@ -45,8 +45,8 @@ if($_GET['load']){
 		$ret['formatted'] = '<ul>';
 		
 		$query.= " LIMIT $min, 30";//$ret['errors'][] = $query;die(json_encode($ret));
-		$res = mysql_query($query);
-		while($image = mysql_fetch_assoc($res)){
+		$res = mysqli_query($GLOBALS['db']['link'], $query);
+		while($image = mysqli_fetch_assoc($res)){
 			
 			$img = new img($image['img_name']);
 			if($img->notfound) continue;
@@ -140,18 +140,18 @@ $sess = '';
 
 if($settype == "session"){
 	
-	$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysql_real_escape_string($setid)."' LIMIT 1";
-	if(!$sess = mysql_fetch_assoc(mysql_query($q))){
+	$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."' LIMIT 1";
+	if(!$sess = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){
 		require($_SERVER['DOCUMENT_ROOT']."/404.php");
 		exit;
 	}
 	
 	$title = $sess['img_session_description'];
 	
-	$query = "SELECT * FROM images WHERE img_session_id = '".mysql_real_escape_string($setid)."' ORDER BY `sort`";
-	$res   = mysql_query($query);
-	$num_imgs = mysql_num_rows($res);
-	while($row=mysql_fetch_assoc($res)){
+	$query = "SELECT * FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."' ORDER BY `sort`";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	$num_imgs = mysqli_num_rows($res);
+	while($row=mysqli_fetch_assoc($res)){
 		$imgs[] = $row;
 		$img_cats[$row['img_category_id']]++;
 	}
@@ -164,10 +164,10 @@ if($settype == "session"){
 	
 	$img_names = array();
 	
-	$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysql_real_escape_string($setid)."' OR tag LIKE '".mysql_real_escape_string($setid)."|%' ORDER BY img_timestamp ASC";
-	$res   = mysql_query($query);
-	$num_imgs = mysql_num_rows($res);
-	while($row = mysql_fetch_assoc($res)){
+	$query = "SELECT * FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."' OR tag LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."|%' ORDER BY img_timestamp ASC";
+	$res   = mysqli_query($GLOBALS['db']['link'], $query);
+	$num_imgs = mysqli_num_rows($res);
+	while($row = mysqli_fetch_assoc($res)){
 		$imgs[] = $row;
 		$img_names[] = $row['img_name'];
 		$img_cats[$row['img_category_id']]++;
@@ -178,9 +178,9 @@ if($settype == "session"){
 		$urlapnd = "/term/".formatNameURL($setid);
 		
 		//get images by description
-		$query = "SELECT * FROM images WHERE img_title LIKE '%".mysql_real_escape_string($setid)."%' OR img_description LIKE '%".mysql_real_escape_string($setid)."%'";
-		$res   = mysql_query($query);
-		while($row = mysql_fetch_assoc($res)){
+		$query = "SELECT * FROM images WHERE img_title LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."%' OR img_description LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $setid)."%'";
+		$res   = mysqli_query($GLOBALS['db']['link'], $query);
+		while($row = mysqli_fetch_assoc($res)){
 			if(in_array($row['img_name'], $img_names)) continue;
 			$num_imgs++;
 			$imgs[] = $row;
@@ -243,8 +243,8 @@ $cat = $_GET['cat'];
 		if(count($img_cats) > 1){
 			$images_categories[0] = array("img_category_id" => 0, "img_category" => "Unclassified", "img_category_description" => "");
 			$query = "SELECT * FROM images_categories ORDER BY sort";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$images_categories[$row['img_category_id']] = $row;
 			}
 			foreach($images_categories as $ic){

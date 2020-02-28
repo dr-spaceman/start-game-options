@@ -174,27 +174,27 @@ $page->header();
 			
 			//stream
 			$query = "SELECT * FROM `stream` WHERE DATE_SUB(CURDATE(),INTERVAL 7 DAY) <= `datetime`";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$li[$row['datetime']] = '<dd>'.$row['action'].'</dd>';
 			}
 			
 			//new pages
 			$query = "SELECT creator, `title`, `type`, `subcategory`, `created` FROM pages WHERE redirect_to='' ORDER BY `created` DESC LIMIT 8";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$o_user[$row['creator']] = $o_user[$row['creator']] ? $o_user[$row['creator']] : outputUser($row['creator'], false);
 				$li[$row['created']] = '<dd>'.$o_user[$row['creator']].' started the <b>[['.$row['title'].']]</b> '.($row['subcategory'] ? str_replace('Game ', '', $row['subcategory']) : $row['type']).' page</dd>';
 			}
 			
 			//uploads
 			$query = "SELECT * FROM images_sessions ORDER BY img_session_created DESC LIMIT 3";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$o_user[$row['usrid']] = $o_user[$row['usrid']] ? $o_user[$row['usrid']] : outputUser($row['usrid'], false);
 				$o = '<dd>'.$o_user[$row['usrid']].' uploaded '.$row['img_qty'].' image'.($row['img_qty'] != 1 ? 's' : '').' to the group <a href="/image/-/session/'.$row['img_session_id'].'" title="'.htmlSC($row['img_session_description']).'">'.$row['img_session_description'].'</a><div class="imgs">';
-				$query2 = mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 3");
-				while($file = mysql_fetch_assoc($query2)){
+				$query2 = mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 3");
+				while($file = mysqli_fetch_assoc($query2)){
 					$img = new img($file['img_name']);
 					$o.= '<a href="'.$img->src['url'].'" class="imgupl" rel="portal-'.$row['img_session_id'].'"><img src="'.$img->src['tn'].'" width="50" height="50" border="0" alt="'.htmlSC($img->img_title).'"/></a>';
 				}
@@ -204,16 +204,16 @@ $page->header();
 			
 			//albums
 			$query = "SELECT `datetime`, usrid, albumid, `title`, `subtitle` FROM albums_changelog LEFT JOIN albums ON (albums_changelog.album=albums.albumid) WHERE type='new' AND view='1' ORDER BY albums_changelog.datetime DESC limit 3";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				$o_user[$row['usrid']] = $o_user[$row['usrid']] ? $o_user[$row['usrid']] : outputUser($row['usrid'], false);
 				$li[$row['datetime']] = '<dd>'.$o_user[$row['usrid']].' started the <b><a href="/music/?id='.$row['albumid'].'">'.$row['title'].' <i>'.$row['subtitle'].'</i></a></b> album page</dd>';
 			}
 			
 			//love/hate
 			$query = "SELECT * FROM pages_fan ORDER BY `datetime` DESC";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
 				if(++$num_op_user[$row['usrid']] > 2) continue;
 				if(++$num_op > 10) break;
 				$o_user[$row['usrid']] = $o_user[$row['usrid']] ? $o_user[$row['usrid']] : outputUser($row['usrid'], false);
@@ -237,9 +237,9 @@ $page->header();
 		<ol style="margin:0 110px 0 -5px; padding:0; list-style:none;">
 			<?
 			$query = "SELECT * FROM images_sessions ORDER BY img_session_created DESC LIMIT 6";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)){
-				$file = mysql_fetch_object(mysql_query("SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)){
+				$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
 				$img = new img($file->img_name);
 				echo '<li style="float:left; margin:0; padding:0;"><a href="/image/-/session/'.$row['img_session_id'].'" title="'.htmlSC($row['img_session_description']).'" style="display:block; margin:0 0 5px 5px;"><img src="'.$img->src['ss'].'" height="100" border="0" alt="'.htmlSC($img->img_title).'"/></a></li>';
 			}
@@ -251,8 +251,8 @@ $page->header();
 		<ul style="margin:0; padding:0; list-style:none;">
 			<?
 			$query = "SELECT * FROM albums_changelog LEFT JOIN albums ON (albums_changelog.album=albums.albumid) WHERE type='new' AND view='1' ORDER BY albums_changelog.datetime DESC limit 5";
-			$res   = mysql_query($query);
-			while($row = mysql_fetch_assoc($res)) {
+			$res   = mysqli_query($GLOBALS['db']['link'], $query);
+			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li style="margin:0 0 3px; color:#666;">'.outputUser($row['usrid'], false).' created <b><a href="/music/?id='.$row['albumid'].'">'.$row['title'].' <i>'.$row['subtitle'].'</i></a></b></li>';
 			}
 			?>
@@ -266,9 +266,9 @@ $page->header();
 				<?
 				$noshow = array("Matt", "Jeriaska", "Rahul", "Ziyad", "Videogamin", "Xavi");
 				$query = "SELECT usrid, username, avatar FROM `users` ORDER BY score_total DESC limit 20";
-				$res   = mysql_query($query);
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
 				$i = 0;
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = mysqli_fetch_assoc($res)) {
 					if(in_array($row['username'], $noshow)) continue;
 					if(++$i > 7) break;
 					echo '<li><a href="/~'.$row['username'].'" class="user"><span class="avatar" style="background-image:url(\'/bin/img/avatars/tn/'.$row['avatar'].'\');"></span>'.$row['username'].'</a></li>';
@@ -281,8 +281,8 @@ $page->header();
 			<ul style="margin:5px 0 0; padding:0; line-height:25px; font-size:110%; color:#888; list-style:none;">
 				<?
 				$query = "SELECT usrid, registered FROM users ORDER BY `registered` DESC limit 7";
-				$res   = mysql_query($query);
-				while($row = mysql_fetch_assoc($res)) {
+				$res   = mysqli_query($GLOBALS['db']['link'], $query);
+				while($row = mysqli_fetch_assoc($res)) {
 					echo '<li>'.outputUser($row['usrid']).' registered '.timeSince($row['registered']).' ago</li>';
 				}
 				?>
