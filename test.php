@@ -12,3 +12,4 @@ while ($row = mysqli_fetch_assoc($res)) {
 echo "Goodbye cruel world!";
 
 // foo
+// bar
