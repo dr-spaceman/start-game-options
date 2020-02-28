@@ -185,7 +185,7 @@ else $tweet = $tweets[rand(0, (count($tweets) - 1))];*/
 		<dl style="width:120px; right:0; border-top:19px solid transparent; <?=(!$usrid ? 'background-color:transparent !important; border-color:transparent !important;' : '')?>" class="last-child hovact">
 			<?
 			if($usrid){
-				$new_pms = mysql_num_rows(mysql_query("SELECT * FROM pm WHERE `to`='$usrid' AND `read`='0'"));
+				$new_pms = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pm WHERE `to`='$usrid' AND `read`='0'"));
 				?>
 				<dd class="usr"><?=$user->output()?></dd>
 				<dd class="more">

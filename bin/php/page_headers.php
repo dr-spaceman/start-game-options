@@ -1,6 +1,6 @@
 <?
 ini_set("error_reporting", 6135);
-require "class.db.php";
+require "db.php";
 require "page_functions.php";
 require "bbcode.php";
 require "class.user.php";
@@ -8,8 +8,6 @@ require "class.user.php";
 $default_email = "mat.berti@gmail.com";
 
 //$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
-
-$db = new Db();
 
 $errors   = array();
 $warnings = array();
@@ -44,10 +42,11 @@ if(isset($_SESSION['usrname'])){
 		list($usrid_, $password_) = explode("```", $usrsession);
 		$q = sprintf(
 			"SELECT * FROM users WHERE usrid='%s' AND password=PASSWORD('%s') LIMIT 1",
-			$GLOBALS['db']->res($usrid_),
-			$GLOBALS['db']->res($password_)
+			mysqli_real_escape_string($GLOBALS['db']['link'], $usrid_),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $password_)
 		);
-		if($userdat = $GLOBALS['db']->selectFirst($q)){
+		if($res = mysqli_query($GLOBALS['db']['link'], $q)) {
+			$userdat = mysqli_fetch_assoc($GLOBALS['db']['link'], $res);
 			login($userdat);
 		}
 	
@@ -61,19 +60,19 @@ if(isset($_POST['do']) && $_POST['do'] == "login" && isset($_POST['username'])) 
 		//an email address was given
 		$query = sprintf(
 			"SELECT * FROM `users` WHERE `email` = '%s' AND `password` = password('%s') LIMIT 1",
-			$GLOBALS['db']->res($_POST['username']),
-			$GLOBALS['db']->res($_POST['password'])
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['username']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['password'])
 		);
 	} else {
 		//a username was given
 		$query = sprintf(
 			"SELECT * FROM `users` WHERE `username` = '%s' AND `password` = password('%s') LIMIT 1",
-			$GLOBALS['db']->res($_POST['username']),
-			$GLOBALS['db']->res($_POST['password'])
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['username']),
+			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['password'])
 		);
 	}
 	
-	if($userdat = $GLOBALS['db']->selectFirst($query)) {
+	if($userdat = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))) {
 		
 		login($userdat);
 		
@@ -219,8 +218,8 @@ function login($userdat){
 	updateActivity();
 	
 	//fb login
-	$check_1 = $GLOBALS['db']->select("SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='facebook' LIMIT 1");
-	$check_2 = $GLOBALS['db']->select("SELECT * FROM users_oauth WHERE usrid='$usrid' LIMIT 1");
+	$check_1 = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_oauth WHERE usrid='$usrid' AND oauth_provider='facebook' LIMIT 1"));
+	$check_2 = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_oauth WHERE usrid='$usrid' LIMIT 1"));
 	if(!$fbuser && $check_1) {
 		require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/fb/src/facebook.php";
 		$fb = array(
@@ -257,11 +256,11 @@ function updateActivity(){
 	
 	//update activity
 	$query = "UPDATE users SET activity='".date("Y-m-d H:i:s")."', previous_activity='".$u->activity."' WHERE usrid='".$usrid."' LIMIT 1";
-	$GLOBALS['db']->query($query);
+	mysqli_query($GLOBALS['db']['link'], $query);
 	
 	//record current scores and counts
 	$query = "SELECT * FROM users_data WHERE usrid = '".$usrid."' AND `date` = '".date("Y-m-d")."' LIMIT 1";
-	if(!$GLOBALS['db']->select($query)) {
+	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
 		
 		$u->calcScore(); //recalculate score
 		
@@ -269,7 +268,7 @@ function updateActivity(){
 			$q2 = "INSERT INTO users_data 
 			  (usrid,    `date`,               ".implode(", ", array_keys($u->score['vars'])).",      score_forums,              score_pages,              score_sblogs,              score_total) VALUES 
 				('$usrid', '".date("Y-m-d")."', '".implode("', '", array_values($u->score['vars']))."', '".$u->score['forums']."', '".$u->score['pages']."', '".$u->score['sblogs']."', '".$u->score['total']."');";
-			$GLOBALS['db']->query($q2);
+			mysqli_query($GLOBALS['db']['link'], $q2);
 		}
 		
 		$q2 = "UPDATE users SET 
@@ -278,7 +277,7 @@ function updateActivity(){
 			score_sblogs = '".$u->score['sblogs']."',
 			score_total = '".$u->score['total']."'
 			WHERE usrid = '$usrid' LIMIT 1";
-		$GLOBALS['db']->query($q2);
+		mysqli_query($GLOBALS['db']['link'], $q2);
 		
 	}
 	
@@ -302,8 +301,8 @@ function newBadges(){
 	$new = array();
 	
 	$query = "SELECT * FROM badges_earned WHERE usrid = '".$GLOBALS['usrid']."' AND `new` = '1';";
-	$rows = $GLOBALS['db']->select($query);
-	foreach($rows as $row) {
+	$res = mysqli_query($GLOBALS['db']['link'], $query);
+	while ($row = mysqli_fetch_assoc($res)) {
 		$new[] = $row['bid'];
 	}
 	
