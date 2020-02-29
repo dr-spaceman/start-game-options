@@ -1,6 +1,16 @@
 <?
 require_once "page.php";
 
+class User_ {
+
+	public $usrid;
+
+	const BANNED = 0;
+
+	function getAvatar() {}
+}
+
+// Old method is below, preserbed for backward compatibility
 class user {
 	
 	var $notfound; //set to TRUE if after __construct user is not found
@@ -165,7 +175,7 @@ class user {
 		$this->calculateScore($vars);
 	}
 	
-	function calculateScore($vars='', $single_var=''){
+	function calculateScore($vars=array(), $single_var=''){
 		
 		// Calculate user score
 		
@@ -190,6 +200,7 @@ class user {
 		if($single_var && in_array($single_var, array_keys($vars_queries))) return mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $vars_queries[$single_var]));
 		
 		if(!$vars){
+			$vars = array();
 			foreach($vars_queries as $var => $query) $vars[$var] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 			$vars['contribution_score'] = $this->data['contribution_score'];
 			$vars['forum_rating'] = $this->data['forum_rating'];

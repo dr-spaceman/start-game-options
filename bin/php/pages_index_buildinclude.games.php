@@ -11,7 +11,7 @@ if($pg->type == "game" && $pg->pgid){
 	mysqli_query($GLOBALS['db']['link'], $q);
 	if((string)$pg->data->credits){
 		$pglinks = new pglinks();
-		$pglinks->regex = '@::\s*\[\[('.implode(':|', $GLOBALS['pgnamespaces']).')?:?(.*?)\]\]@ise';
+		$pglinks->regex = '@::\s*\[\[('.implode(':|', $GLOBALS['pgnamespaces']).')?:?(.*?)\]\]@is';
 		if($exlinks = $pglinks->extractFrom((string)$pg->data->credits)){
 			$queries = array();
 			foreach($exlinks as $link){

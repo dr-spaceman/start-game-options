@@ -45,7 +45,7 @@ do if($_POST){
 	                "X-Mailer: PHP/" . phpversion();
 	$mail_to      = $default_email;
 	$mail_subject = "Videogam.in Message";
-	$mail_message = "The following message is from ".$name." <".$email.">:\n\n".$message.($frompage ? "\n\nPage: http://videogam.in".$frompage : "\n\nThis message was sent via contact form from ".$_SERVER['SCRIPT_NAME']);
+	$mail_message = "The following message is from ".$name." <".$email.">:\n\n".$message.($frompage ? "\n\nPage: http://videogamin.squarehaven.com".$frompage : "\n\nThis message was sent via contact form from ".$_SERVER['SCRIPT_NAME']);
 	$mail_result  = mail($mail_to, $mail_subject, $mail_message, $mail_headers);
 	
 	if($mail_result){

@@ -92,7 +92,7 @@ if(isset($_POST['do']) && $_POST['do'] == "login" && isset($_POST['username'])) 
 		    <title>Logging in <?=$_SESSION['usrname']?></title>
 		    <link rel="stylesheet" type="text/css" href="/bin/css/screen.css"/>
 		    <? if(!$GLOBALS['no_oauth']){ ?>
-		    <meta http-equiv="REFRESH" content="0; url=<?=$_SERVER['REQUEST_URI']?>">
+		    <meta http-equiv="REFRESH" content="0; url=<?=$_SERVER['REQUEST_URI']?>" />
 		  	<? } else { ?>
 		    <script type="text/javascript" src="/bin/script/jquery.js"></script>
 				<script>
@@ -262,11 +262,10 @@ function updateActivity(){
 	$query = "SELECT * FROM users_data WHERE usrid = '".$usrid."' AND `date` = '".date("Y-m-d")."' LIMIT 1";
 	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
 		
-		$u->calcScore(); //recalculate score
+		$u->calculateScore(); //recalculate score
 		
 		if($u->score['total'] >= 1){
-			$q2 = "INSERT INTO users_data 
-			  (usrid,    `date`,               ".implode(", ", array_keys($u->score['vars'])).",      score_forums,              score_pages,              score_sblogs,              score_total) VALUES 
+			$q2 = "INSERT INTO users_data (usrid, `date`, ".implode(", ", array_keys($u->score['vars'])).", score_forums, score_pages, score_sblogs, score_total) VALUES 
 				('$usrid', '".date("Y-m-d")."', '".implode("', '", array_values($u->score['vars']))."', '".$u->score['forums']."', '".$u->score['pages']."', '".$u->score['sblogs']."', '".$u->score['total']."');";
 			mysqli_query($GLOBALS['db']['link'], $q2);
 		}

@@ -166,7 +166,7 @@ if($action == "preview_link") {
 					<td>
 						<label><input type="checkbox" name="" value=""/> Send the following link request to:</label> 
 						<input type="text" name="in[to]" value="email address" class="resetonfocus" onfocus="$(this).removeClass('resetonfocus').val('');"/>
-						<p style="margin-right:6px"><textarea name="in[message]" style="width:100%; height:4em;">Hello, it's <?=$usrname?> from over at Videogam.in (http://Videogam.in). We noticed your site and have deemed it a respectable establishment, so we thought it apt to notify our users about you. We posted a link to your site on our <?=$gdat->title?> overview (located at http://videogam.in/games/~<?=$gdat->title_url?>) and wonder if you would care to have a link exchange with us. We have some buttons and HTML-ready text links at http://videogam.in/links.php#linkback. Thanks!
+						<p style="margin-right:6px"><textarea name="in[message]" style="width:100%; height:4em;">Hello, it's <?=$usrname?> from over at Videogam.in (http://videogamin.squarehaven.com). We noticed your site and have deemed it a respectable establishment, so we thought it apt to notify our users about you. We posted a link to your site on our <?=$gdat->title?> overview (located at http://videogamin.squarehaven.com/games/~<?=$gdat->title_url?>) and wonder if you would care to have a link exchange with us. We have some buttons and HTML-ready text links at http://videogamin.squarehaven.com/links.php#linkback. Thanks!
 - <?=$usrname?></textarea></p>
 						<p>(or just copy the message to send in a form)</p>
 					</td>
@@ -423,7 +423,7 @@ if($action == "submit pub") {
 				mysqli_real_escape_string($GLOBALS['db']['link'], $in['placeholder_img'])
 			);
 			if(!mysqli_query($GLOBALS['db']['link'], $q)) {
-				sendBug("Error adding a user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogam.in/games/$gid)\nuser: $usrname (http://videogam.in/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
+				sendBug("Error adding a user-submitted publication (box art) to a gamepage\n\ngid: $gid (http://videogamin.squarehaven.com/games/$gid)\nuser: $usrname (http://videogamin.squarehaven.com/~$usrname)\ndb query: ".$q."\nerror: ".mysqli_error($GLOBALS['db']['link']));
 				die("Error saving to database; ".mysqli_error($GLOBALS['db']['link']));
 			}
 			

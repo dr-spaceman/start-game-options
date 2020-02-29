@@ -155,17 +155,17 @@ function submitNew() {
 		}
 		
 		$em_desc = bb2html($this->desc, "prepend_domain");
-		$em_desc = str_replace('="/', '="http://videogam.in/', $em_desc);
-		$datatbl = str_replace('="/', '="http://videogam.in/', $datatbl);
+		$em_desc = str_replace('="/', '="http://videogamin.squarehaven.com/', $em_desc);
+		$datatbl = str_replace('="/', '="http://videogamin.squarehaven.com/', $datatbl);
 		
 		//notify admin via email
 		$to      = $default_email;
 		$subject = 'New Videogam.in submission'.(!$pub ? ' [approval required]' : '');
 		$message = '<html>
-			<a href="http://videogam.in/~'.$usrname.'">'.$usrname.'</a> has contributed something!
+			<a href="http://videogamin.squarehaven.com/~'.$usrname.'">'.$usrname.'</a> has contributed something!
 			<p><big style="padding:3px 5px; border:1px solid #DDD; background-color:#F5F5F5;">'.$em_desc.'</big></p>
 			Data:<dl style="margin:1em;">'.$datatbl.'</dl>
-			'.(!$pub ? 'A <a href="http://videogam.in/ninadmin/user-contributions.php">review</a> is required for this submission.' : '').'
+			'.(!$pub ? 'A <a href="http://videogamin.squarehaven.com/ninadmin/user-contributions.php">review</a> is required for this submission.' : '').'
 			</html>';
 		$headers = 'From: noreply@videogam.in' . "\r\n" .
 			'Reply-To: noreply@videogam.in' . "\r\n" .

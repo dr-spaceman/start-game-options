@@ -14,7 +14,7 @@ if($_GET['init']){
 	if(!mysqli_num_rows($res)) die("Finished");
 	while($row = mysqli_fetch_assoc($res)){
 		
-		$usr = $row[usrid];
+		$usr = $row['usrid'];
 		$ins = array();
 		$userdat = getUserDat($usr);
 		$ins['num_forumposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_posts WHERE usrid = '$usr'"));

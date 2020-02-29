@@ -788,7 +788,8 @@ class pgedit extends pg {
 		if($this->type == "game"){
 			$result = $this->data->xpath("//publication");
 			$json['platforms'] = array();
-			while(list( , $node) = each($result)){
+			//while(list( , $node) = each($result)){
+			foreach($result as $foobar => $node){
 				$pf = (string)$node->platform;
 				$pglinks = new pglinks();
 				if($exlinks = $pglinks->extractFrom((string)$node->platform)){

@@ -252,14 +252,10 @@ switch($section){
 		}
 		
 		
-		//query
-		$query = "SELECT * FROM collection WHERE usrid='$u->id' $where ORDER BY sort ASC, date_added DESC";
-		$num_total_shelf_items = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
-		
+		// Build the query
 		$min = is_numeric($_GET['min']) ? $_GET['min'] : 0;
 		$max = $_GET['max'] == "*" ? $num_total_shelf_items : 50;
-		
-		$query.= " LIMIT $min, $max";
+		$query = "SELECT SQL_CALC_FOUND_ROWS * FROM collection WHERE usrid='$u->id' $where ORDER BY sort ASC, date_added DESC LIMIT $min, $max";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		$num_shelf_items = 0;
 		while($row = mysqli_fetch_assoc($res)){
@@ -270,6 +266,11 @@ switch($section){
 			$o_shelf.= $shelf->outputItem($row);
 			$num_shelf_items++;
 		}
+
+		$query = "SELECT FOUND_ROWS() AS totalRows";
+    	$num_rows = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query));
+		$num_total_shelf_items = $num_rows[0];
+		
 		
 		if(($min + $num_shelf_items) < $num_total_shelf_items) $o_shelf.= '<div id="load-more" data-section="collection" data-min="'.($min + $max).'" data-usrid="'.$u->id.'"><a>Load more</a></div>';
 		

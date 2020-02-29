@@ -54,7 +54,7 @@ function imgMakeSessionId(){
 
 class img {
 	
-	public $notfound; //set to TRUE if after __construct image is not found in database
+	public $notfound = false; //set to TRUE if after __construct image is not found in database
 	public $sessid; // Session ID for uploads
 	public $img_name;
 	public $img_id;

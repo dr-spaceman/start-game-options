@@ -39,7 +39,7 @@ if($sessid = $_GET['view_version']) {
 	
 	$pg->header();
 	
-	$message = 'This is a version or draft of the <i>'.$title.'</i> page, as created by '.outputUser($pe->usrid).' on '.$pe->datetime.'. It may differ from the <b><a href="'.pageURL($title, $row[type]).'">current version</a></b>.';
+	$message = 'This is a version or draft of the <i>'.$title.'</i> page, as created by '.outputUser($pe->usrid).' on '.$pe->datetime.'. It may differ from the <b><a href="'.pageURL($title, $row['type']).'">current version</a></b>.';
 	$message = addslashes($message);
 	if($usrrank >= 8) $message2 = 'Admin: <a href="/pages/edit.php?destroysession='.$sessid.'&returnonfail='.$titleurl.'" class="red">Destroy this revision</a>';
 	

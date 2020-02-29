@@ -112,7 +112,7 @@ class pglinks {
 		}
 	}
 	
-	function buildLink($attr, $title){
+	function buildLink($attr, $title) {
 		
 		# @var $attr array [title, href, target, class, id, tag ('cite', 'i', 'b', 'strong', etc.)]
 		# @var $title link words, ie <a>$title</a>
@@ -139,7 +139,7 @@ class pglinks {
 		
 	}
 	
-	function extractFrom($str, $unique=true, $alpha=false){
+	function extractFrom($str, $unique=true, $alpha=false) {
 		
 		// return array of links extracted from a string
 		
@@ -199,6 +199,22 @@ class pglinks {
 		}
 		return $tags;
 		
+	}
+
+	/**
+	 * Strip links from text
+	 * Right now, this only strips and returns the text value of the first link found
+	 * @param  string $str Input text to strip
+	 * @return string      Output text stripped
+	 */
+	public static function strip ($str) {
+		if(!strstr($str, "[[")) return $str;
+
+		// There should be a better way to do this!
+		$pglinks = new pglinks();
+		if($exlinks = $pglinks->extractFrom($str)){
+			$str = $exlinks[0]['tag'];
+		}
 	}
 	
 }

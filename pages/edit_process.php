@@ -1,9 +1,11 @@
 <?
+/* Old Method
 error_reporting(0);
-function userErrorHandler($errno, $errmsg, $filename, $linenum, $vars){
-	$errortype = array (E_ERROR=>'Error',E_WARNING=>'Warning',E_PARSE=>'Parsing Error',E_NOTICE=>'Notice',E_CORE_ERROR=>'Core Error',E_CORE_WARNING=>'Core Warning',E_COMPILE_ERROR=>'Compile Error',E_COMPILE_WARNING=>'Compile Warning',E_USER_ERROR=>'User Error',E_USER_WARNING=>'User Warning',E_USER_NOTICE=>'User Notice',E_STRICT=>'Runtime Notice',E_RECOVERABLE_ERROR=>'Catchable Fatal Error');
-	if($errortype[$errno] == "Notice") return; //Don't show notices
-	$GLOBALS['ret']['error'].= $errmsg . ' [ERROR '.$linenum.'] ['.$filename.']' . "\n";
+function userErrorHandler($errno, $errmsg, $filename, $linenum, $vars){*/
+function userErrorHandler($errno, $errstr, $errfile, $errline){
+	$errortype = array (E_ERROR=>'Error',E_WARNING=>'Warning',E_PARSE=>'Parsing Error',E_NOTICE=>"Notice",E_CORE_ERROR=>'Core Error',E_CORE_WARNING=>'Core Warning',E_COMPILE_ERROR=>'Compile Error',E_COMPILE_WARNING=>'Compile Warning',E_USER_ERROR=>'User Error',E_USER_WARNING=>'User Warning',E_USER_NOTICE=>'User Notice',E_STRICT=>'Runtime Notice',E_RECOVERABLE_ERROR=>'Catchable Fatal Error');
+	if($errortype[$errno] == "Notice") return true; //Don't show notices
+	$GLOBALS['ret']['error'].= $errstr . ' [ERROR '.$errline.'] ['.$errfile.']' . "\n";
 	$GLOBALS['ret']['error_vars'] = $vars;
 }
 $old_error_handler = set_error_handler("userErrorHandler");
@@ -349,7 +351,7 @@ if($field == "publish"){
 	// PUBLISH //
 	
 	//redirection
-	preg_match("@^#REDIRECT ?\[\[(.*?)\]\]@ise", $ed->data->content, $matches);
+	preg_match("@^#REDIRECT ?\[\[(.*?)\]\]@is", $ed->data->content, $matches);
 	$redirect_to = $matches[1];
 	$redirect_to = trim($redirect_to);
 	if($redirect_to != "") {
@@ -603,7 +605,7 @@ if($field == "publish"){
 			$mail = array();
 			$mail['headers'] = 'From: noreply@videogam.in' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
 			$mail['subj'] = "[Videogam.in] $title page changed";
-			$mail['message'] = $user_row['username'].",\n".$usrname." has changed the Videogam.in page for $title. Since you've edited this page before and it's on your watch list we thought you might like to know!\n\nSee the newly changed page at http://videogam.in".$ed->url."\n\n".($enddata['edit_summary'] ? 'Edit summary: '.$enddata['edit_summary'] : "$usrname did not leave an edit summary of these changes. Please review the changes to make sure they are up to standards.")."\n\nSincerely,\nThe Videogam.in Page Change Notification Robot";
+			$mail['message'] = $user_row['username'].",\n".$usrname." has changed the Videogam.in page for $title. Since you've edited this page before and it's on your watch list we thought you might like to know!\n\nSee the newly changed page at http://videogamin.squarehaven.com".$ed->url."\n\n".($enddata['edit_summary'] ? 'Edit summary: '.$enddata['edit_summary'] : "$usrname did not leave an edit summary of these changes. Please review the changes to make sure they are up to standards.")."\n\nSincerely,\nThe Videogam.in Page Change Notification Robot";
 			if(!@mail($user_row['email'], $mail['subj'], $mail['message'], $mail['headers'])) sendBug('Couldnt e-mail page watcher. Details:'.implode('; ', $mail));
 		} while(false);
 	}
@@ -622,7 +624,7 @@ if($field == "publish"){
 			$mail = array();
 			$mail['headers'] = 'From: noreply@videogam.in' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
 			$mail['subj'] = "[Videogam.in] You're no longer the Patron Saint of $title";
-			$mail['message'] = $user_former_ps->username.",\n".$usrname." has changed the Videogam.in page for $title, making them its newly revered Patron Saint. Do not have pity on yourself, as ".$usrname." is not forever enshrined as such...\n\nIf you seek to avenge this egregious dishonor to your name, go forth! Contribute more to this page by navigating to http://videogam.in".$ed->url." with the utmost haste.\n\nSincerely,\nThe Videogam.in Notification Robot";
+			$mail['message'] = $user_former_ps->username.",\n".$usrname." has changed the Videogam.in page for $title, making them its newly revered Patron Saint. Do not have pity on yourself, as ".$usrname." is not forever enshrined as such...\n\nIf you seek to avenge this egregious dishonor to your name, go forth! Contribute more to this page by navigating to http://videogamin.squarehaven.com".$ed->url." with the utmost haste.\n\nSincerely,\nThe Videogam.in Notification Robot";
 			if(!@mail($user_former_ps->email, $mail['subj'], $mail['message'], $mail['headers'])) sendBug('Couldnt e-mail old Patron Saint. Details:'.implode('; ', $mail));
 		}	catch(Exception $e){}
 		

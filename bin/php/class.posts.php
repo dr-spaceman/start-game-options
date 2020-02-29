@@ -194,6 +194,7 @@ class posts {
 		/* LIST */
 		
 		if(!$rows){
+			$rows = array();
 			$rows_nids = array();
 			$this->q.= " LIMIT ".(($this->pg - 1) * $this->max).", ".$this->max.";";//echo $this->q;
 			$res = mysqli_query($GLOBALS['db']['link'], $this->q);

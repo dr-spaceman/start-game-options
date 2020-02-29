@@ -15,7 +15,7 @@ if($_POST['collection_entry_input']){
 	
 	if(!in_array($in['ownership'], array("own","own-digital","want","play"))) $a->kill("There was an input error in the [ownership] field");
 	
-	if(preg_match("/[^0-9]/", $in['completion'])) $a->kill("There was an input error in the [completion] field ($in[completion])");
+	if(preg_match("/[^0-9]/", $in['completion'])) $a->kill("There was an input error in the [completion] field (".$in['completion'].")");
 	
 	/*if($in['img_name']){
 		$q = "SELECT platform FROM games_publications WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['img_name'])."' LIMIT 1";
@@ -83,26 +83,32 @@ if($_POST['collection_entry_input']){
 		purchase_date = ".($purchase_date ? "'$purchase_date'" : "NULL").",
 		purchase_price = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['purchase_price'])."',
 		purchase_currency = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['purchase_currency'])."',
-		playing = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in[playing])."',
+		playing = '".mysqli_real_escape_string($GLOBALS['db']['link'], ".$in['playing'].")."',
 		play_start = ".($play_start ? "'$play_start'" : "NULL").",
 		`network` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['network'])."',
 		product_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['product_id'])."',
 		`condition` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['condition'])."',
-		incl_media = '$in[incl_media]',
-		incl_box = '$in[incl_box]',
-		incl_manual = '$in[incl_manual]',
-		incl_inserts = '$in[incl_inserts]'
+		incl_media = '".$in['incl_media']."',
+		incl_box = '".$in['incl_box']."',
+		incl_manual = '".$in['incl_manual']."',
+		incl_inserts = '".$in['incl_inserts']."'
 		WHERE usrid='$usrid' AND title='".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."' LIMIT 1";
 	if(mysqli_query($GLOBALS['db']['link'], $q)){
 		$a->ret['success'] = 1;
 		$a->ret['shelf_position'] = $sort;
 		if($_POST['return_new_shelf_item']){
-			$shelf = new shelfItem();
+			$shelf_item_properties = $in;
+			$shelf_item_properties['type'] = "game";
+			$shelf_item_properties['filename'] = $in['img_name'];
+			$a->ret['formatted'] = ShelfItem::output($shelf_item_properties);
+			// How to do this?
+			$a->ret['shelf_id'] = "UHHHHHHHHHHH";
+			/* OLD
 			$shelf->type = "game";
 			$shelf->img = $in['img_name'];
 			$in['href'] = pageURL($in['title'], "game");
 			$a->ret['formatted'] = $shelf->outputItem($in);
-			$a->ret['shelf_id'] = $shelf->id;
+			$a->ret['shelf_id'] = $shelf->id;*/
 		}
 	} else {
 		$a->error("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));

@@ -1246,7 +1246,7 @@ class forum {
 		$res = mysqli_query($GLOBALS['db']['link'], $q);
 		while($row = mysqli_fetch_assoc($res)) {
 			$navtree.= '</optgroup><optgroup label="'.$row['category'].'">';
-			$q2 = "SELECT * FROM forums WHERE cid='$row['cid']' AND `invisible` <= ".$usrrank;
+			$q2 = "SELECT * FROM forums WHERE cid='".$row['cid']."' AND `invisible` <= ".$usrrank;
 			$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
 			while($row2 = mysqli_fetch_assoc($res2)) {
 				$navtree.= '<option value="?fid='.$row2['fid'].'">'.$row2['title']."</option>\n";

@@ -30,7 +30,7 @@ if($in = $_POST['in']) {
 				$p_code = urlencode($p_code);
 				$to      = $dat->email;
 				$subject = 'Videogam.in password reset instructions';
-				$message = "Dear ".$dat->username.",\nYou (or someone else) requested your Videogam.in password to be reset. If it wasn't you ignore this message without any change to your account. Otherwise, to reset your password please navigate to the following URL:\n\nhttp://videogam.in/retrieve-pass.php?do=reset&usrid=".$dat->usrid."&code=$p_code\n(Your username is ".$dat->username.")\n\nSincerely,\nThe Videogam.in Password-changing Robot";
+				$message = "Dear ".$dat->username.",\nYou (or someone else) requested your Videogam.in password to be reset. If it wasn't you ignore this message without any change to your account. Otherwise, to reset your password please navigate to the following URL:\n\nhttp://videogamin.squarehaven.com/retrieve-pass.php?do=reset&usrid=".$dat->usrid."&code=$p_code\n(Your username is ".$dat->username.")\n\nSincerely,\nThe Videogam.in Password-changing Robot";
 				$headers = 'From: no-reply@videogam.in' . "\r\n" .
 				    'Reply-To: no-reply@videogam.in' . "\r\n" .
 				    'X-Mailer: PHP/' . phpversion();

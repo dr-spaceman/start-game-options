@@ -63,7 +63,7 @@ if($_POST['send']){
 			
 			//$message = "You have received a message from a Videogam.in user:\n\nFrom: ".$_POST['name']."\nSubject: ".strip_tags($subject)."\nMessage:\n".$message;
 			$message = wordwrap($message, 70);
-			if($usrid) $message.= "\n\n>> ".$usrname."'s profile: http://videogam.in/~".$usrname;
+			if($usrid) $message.= "\n\n>> ".$usrname."'s profile: http://videogamin.squarehaven.com/~".$usrname;
 			$message.= "\n\n>> This message was sent via <".$_SERVER['SCRIPT_URI'].">";
 			$headers = 'From: Videogam.in <noreply@videogam.in>' . "\r\n" .
 			    'Reply-To: ' . $_POST['email'] . "\r\n" .
@@ -102,7 +102,7 @@ if($_POST['send']){
 			//e-mail recipient if s/he allows e-mails
 			$dat = getUserDat($to);
 			if($dat->pm_notify) {
-				$message = "Dear $user,\nYou have received a private message from ".$usrname."!\n---> http://videogam.in/messages.php?view=$messageid\n\nSincerely,\nThe Vapid Videogam.in Private Messaging Robot\n\nP.S.: You can turn off these notifications via your account page\n-> http://videogam.in/account.php?edit=prefs";
+				$message = "Dear $user,\nYou have received a private message from ".$usrname."!\n---> http://videogamin.squarehaven.com/messages.php?view=$messageid\n\nSincerely,\nThe Vapid Videogam.in Private Messaging Robot\n\nP.S.: You can turn off these notifications via your account page\n-> http://videogamin.squarehaven.com/account.php?edit=prefs";
 				$headers = 'From: noreply@videogam.in'."\r\n" .
 				    'Reply-To: noreply@videogam.in'."\r\n" .
 				    'X-Mailer: PHP/' . phpversion();

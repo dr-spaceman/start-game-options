@@ -779,38 +779,32 @@ if($this->type == "game" && $row->publications->publication[0]){
 	
 	require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
 
-	//$shelf = new shelf();
+	$shelf = new Shelf();
 	
-	$num_pubs = 0;
-	$pubs = array();
-	$publications = array();
-	if($row->publications) $publications = $row->publications->children();
-	foreach($publications as $pub){
+	foreach($row->publications->children() as $pub){
+
+		// If no box art, don't show this item
+		if(!$pub->img_name || (string)$pub->img_name == '') continue;
 		
-		if(!$pub->img_name || (string)$pub->img_name == '') continue; // Don't show it if there's no box art
+		$shelf_item_properties = array(
+			'type'     => "game",
+			'img_name' => (string) $pub->img_name,
+			'title'    => (string) $pub->title,
+			'platform' => pglinks::strip((string) $pub->platform),
+			'region'   => (string) $pub->region,
+			'release_year'  => (string) $pub->release_year,
+			'release_month' => (string) $pub->release_month,
+			'release_day'   => (string) $pub->release_day,
+		);
 		
-		$p = array();
+		$shelf->addItem($shelf_item_properties);
 		
-		$shelf = new shelfItem();
-		$shelf->type = "game";
-		$shelf->img = (string)$pub->img_name;
-		
-		if($shelf->img->img_category_id != 4) continue; //if the image isnt categorized as box art, skip it
-		
-		$p['href']     = $shelf->img->src['url'];
-		$p['platform'] = (string)$pub->platform;
-		$p['title']    = (string)$pub->title;
-		$p['region']   = (string)$pub->region;
-		$p['release_year']  = (string)$pub->release_year;
-		$p['release_month'] = (string)$pub->release_month;
-		$p['release_day']   = (string)$pub->release_day;
-		$num_pubs++;
-		
-		$o_boxes.= $shelf->outputItem($p);
+		// ??????????!!!!!!!!!!!!!!!!!!!
+		//if($shelf->img->img_category_id != 4) continue; //if the image isnt categorized as box art, skip it
 	
 	}
-	
-	if($num_pubs){
+
+	if($shelf->num_items > 0) {
 		
 		$sec = array("class" => "shelf horizontal gameshelf pgsection", "id" => "boxart");
 		$page->openSection($sec);
@@ -819,16 +813,7 @@ if($this->type == "game" && $row->publications->publication[0]){
 		<h3>Box Art</h3>
 		<?
 		
-		if($num_pubs > 5){
-			?>
-			<a href="/js.htm" title="Traverse left" class="trav prev" onclick="shelf.traverse($(this).parent(), -1, 6); return false;"></a>
-			<a href="/js.htm" title="Traverse right" class="trav next" onclick="shelf.traverse($(this).parent(), 1, 6); return false;"></a>
-			<?
-		}
-		
-		?>
-		<div class="shelf-container" style="width:<?=($num_pubs * 198 + 800)?>px;"><?=$o_boxes?></div>
-		<?
+		echo $shelf->output();
 		
 		$page->closeSection();
 		

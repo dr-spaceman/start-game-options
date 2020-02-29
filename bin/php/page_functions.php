@@ -315,6 +315,12 @@ function mysqlNextAutoIncrement($table, $dontdie='') {
 	
 }
 
+/**
+ * Encode special characters for HTML output
+ * @param  string $x    Input
+ * @param  string $opts Options like "bbcode"
+ * @return string       Formatted output
+ */
 function htmlSC($x, $opts='') {
 	
 	// < > ' "
