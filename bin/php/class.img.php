@@ -57,6 +57,8 @@ class Img {
 	public $established;
 	public $optimized; // t or f if optimized size exitst
 	public $src;
+
+	const UPLOAD_TEMP_DIR = "/bin/uploads/temp/";
 	
 	function __construct($img_params=""){
 		

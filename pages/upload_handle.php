@@ -1,6 +1,7 @@
 <?
-require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
-require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php";
+require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
 
 // accept and process an image upload
 // form for accepting img upload
@@ -14,9 +15,13 @@ if($_FILES['upl']['name'] || $imgurl){
 	$fdir = rawurlencode($fdir);
 	$fdir = "/pages/files/".preg_replace("/[^a-zA-Z0-9-_]/", "", $fdir)."/";
 	
-	if($imgurl){
+	if($imgurl) {
 		
-		if(!filter_var($imgurl, FILTER_VALIDATE_URL)){ $jscript = 'alert("The given URL is not valid");'; unset($_POST); }
+		// Validate the URL
+		if(!filter_var($imgurl, FILTER_VALIDATE_URL)) {
+			$jscript = 'alert("The given URL couldn\'t be validated. Please try downloading the image to your local disc and manually upload.");';
+			unset($_POST);
+		}
 		
 		/*$ext = substr($imgurl, -4);
 		$ext = strtolower($ext);
@@ -26,13 +31,24 @@ if($_FILES['upl']['name'] || $imgurl){
 		$x = explode("/", $imgurl);
 		$br = count($x) - 1;
 		
-		$file = $_SERVER['DOCUMENT_ROOT']."/bin/temp/".$x[$br];
-		if(!copy($imgurl, $file)){ $jscript = 'alert("'.$x[$br].' -- Couldn\'t copy the remote file to the local server");'; unset($_POST); }
-		if(!file_exists($file)){ $jscript = 'alert("'.$x[$br].' -- Couldn\'t copy the remote file to the local server (file not found)");'; unset($_POST); }
+		$file = $_SERVER['DOCUMENT_ROOT'] . Img::UPLOAD_TEMP_DIR . $x[$br];
+		if(!@copy($imgurl, $file)) {
+			$errors= error_get_last();
+			$jscript = 'alert("'.$x[$br].' COPY ERROR: '.$errors['type'].'; '.$errors['message'].' (Couldn\'t copy the remote file to the local server) ['.$imgurl.']['.$file.']");';
+			unset($_POST);
+		} else {
+			if(!file_exists($file)) {
+				$jscript = 'alert("'.$x[$br].' -- Couldn\'t copy the remote file to the local server (file not found)");';
+				unset($_POST);
+			}
+			
+			if(!getimagesize($file)) {
+				$jscript = 'alert("'.$x[$br].' -- Couldn\'t copy the remote file to the local server (file may not be an image)");';
+				unset($_POST);
+			}
 		
-		if(!getimagesize($file)){ $jscript = 'alert("'.$x[$br].' -- Couldn\'t copy the remote file to the local server (file may not be an image)");'; unset($_POST); }
-		
-		if(!$_POST) unlink($file);
+			if(!$_POST) unlink($file);
+		}
 	
 	} else {
 		

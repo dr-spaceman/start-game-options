@@ -25,10 +25,9 @@
 // | This script is free to use, don't abuse.                               |
 // +------------------------------------------------------------------------+
 
-namespace Verot\Upload;
+//namespace Verot\Upload;
 
 if (!defined('IMG_WEBP')) define('IMG_WEBP', 32);
-die("Class.upload loading...");
 
 /**
  * Class upload

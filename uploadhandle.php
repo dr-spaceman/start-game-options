@@ -87,7 +87,7 @@ if($action == "submimg"){
 			$x = explode("/", $f);
 			$br = count($x) - 1;
 			
-			$file = $_SERVER['DOCUMENT_ROOT']."/bin/temp/".$x[$br];
+			$file = $_SERVER['DOCUMENT_ROOT'] . Img::UPLOAD_TEMP_DIR . $x[$br];
 			if(!copy($f, $file)) NNdie("Couldn't copy the remote file ($f) to the local server");
 		} else $file = $f;
 		if(!file_exists($file)) NNdie("Couldn't copy the remote file ($file) to the local server ($file) [file not found]");
