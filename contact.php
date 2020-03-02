@@ -78,7 +78,7 @@ do if($_POST){
 		Your message has been sent!
 		<?
 	
-		if($usrrank >= 9) echo "<p>[" . htmlentities($mail_headers) . "]</p>";
+		if($usrrank >= User::SUPERADMIN) echo "<p>[" . htmlentities($mail_headers) . "]</p>";
 		
 		$page->footer(); exit;
 		

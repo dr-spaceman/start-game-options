@@ -1,34 +1,47 @@
 <?
 require_once "page.php";
 
-class User_ {
+/**
+ * New class
+ */
 
-	public $usrid;
+class User extends user_old {
 
-	const BANNED = 0;
+	const GUEST = 0;
+	const RESTRICTED = 1;
+	const MEMBER = 2;
+	const VIP = 3;
+	const TRUSTED = 4;
+	const MODERATOR = 5;
+	const ADMIN = 6;
+	const MIDADMIN = 7;
+	const HIGHADMIN = 8;
+	const SUPERADMIN = 9;
 
-	function getAvatar() {}
+	function __construct($params) {
+		parent::__construct($params);
+	}
 }
 
-// Old method is below, preserbed for backward compatibility
-class user {
+// Old method is below, preserved for backward compatibility
+class user_old {
 	
-	var $notfound; //set to TRUE if after __construct user is not found
-	var $id;
-	var $username;
-	var $rank;
-	var $region;
-	var $email;
-	var $gender;
-	var $registered;
-	var $activity;
-	var $previous_activity;
-	var $url;
-	var $data = array(); // user contribution data; call getScore()
-	var $score;       // score data; call calcScore()
-	//var $avatar; //comment out so it will be picked up by __set()
-	var $avatar_src;
-	var $preferences = array();
+	public $notfound; //set to TRUE if after __construct user is not found
+	public $id;
+	public $username;
+	public $rank;
+	public $region;
+	public $email;
+	public $gender;
+	public $registered;
+	public $activity;
+	public $previous_activity;
+	public $url;
+	public $data = array(); // user contribution data; call getScore()
+	public $score;       // score data; call calcScore()
+	//public $avatar; //comment out so it will be picked up by __set()
+	public $avatar_src;
+	public $preferences = array();
 	
 	function __construct($params){
 		

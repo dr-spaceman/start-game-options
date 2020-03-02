@@ -20,13 +20,18 @@ if($action == "submimg"){
 		$ret = array();
 	}
 	
-	$img_tag = $_POST['img_tag']; // a string or array with tagwords to tag this image with
-	$img_category_id = $_POST['img_category_id']; // a given category id to attribute to this image
+	/** @var string/array A string or array with tagwords to tag this image with */
+	$img_tag = $_POST['img_tag'];
+	
+	/** @var integer A given category id to attribute to this image */
+	$img_category_id = (int) $_POST['img_category_id'];
+	
+	// Check if the given category id is valid
 	if($img_category_id && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images_categories WHERE img_category_id = '$img_category_id' LIMIT 1"))) unset($img_category_id);
 	
 	// evaluate $handler [sessid, usrid] and use these given vars
 	// otherwise fall back on defaults
-	parse_str(base64_decode($_POST['handler']), $handler);//print_r($handler);exit;
+	parse_str(base64_decode($_POST['handler']), $handler);
 	
 	if($handler['img_tag']) $img_tag = $handler['img_tag'];
 	
@@ -35,18 +40,28 @@ if($action == "submimg"){
 		$img = new img($img_name);
 		if($img->notfound) NNdie("Couldn't find image data for '$img_name'");
 		
-		if($img->usrid != $usrid && $usrrank < 4) NNdie("Sorry, but you don't have access to replace this image.");
+		// Check and see if the user can do this
+		// If the user is replacing an image uploaded by someone else, she must be trusted
+		if($img->usrid != $usrid && $usrrank < User::TRUSTED) NNdie("Sorry, but you don't have access to replace this image. Only a user with \"trusted\" status can do that.");
 		
 		$handler['sessid'] = $img->img_session_id;
 		
 	}
 	
-	$sessid = $handler['sessid'];
+	$sessid = (int) $handler['sessid'];
 	
+	// Wait! Why would the given usrid be different than the one in the current session...?
+	// Seems to be assigned by $_POST['handler']
+	/*Old Code:
 	if($handler['usrid']) $usrid = $handler['usrid'];
 	if(!$usrid) NNdie('no user session registered; Please log in to upload.');
-	$q = "SELECT * FROM users WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $usrid)."' LIMIT 1";
-	if(!$usr = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) NNdie("Couldn't find user details");
+	$q = "SELECT * FROM users WHERE usrid='".(int)$usrid."' LIMIT 1";
+	if(!$usr = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) NNdie("Couldn't find user details");*/
+
+	// Investigate...
+	if(isset($handler['usrid']) && $handler['usrid'] != $usrid) {
+		NNdie("A coding investigation is taking place... Cannot continue. [ERROR uploadhandle.php 62]");
+	}
 	
 	$dir = "/images/".substr($sessid, 12, 7); // images/USRID
 	if(!is_dir($_SERVER['DOCUMENT_ROOT'].$dir)){
@@ -58,9 +73,9 @@ if($action == "submimg"){
 		mkdir($_SERVER['DOCUMENT_ROOT'].$dir."/tn", 0777);
 	}
 	
-	if(!$file['name'] && $_POST['upl_src']){
+	if(!$file['name'] && $_POST['upl_src']) {
 		$f = $_POST['upl_src'];
-		if($_SERVER['HTTP_HOST'] == "videogam.in") $f = str_replace("http://videogam.in", $_SERVER['DOCUMENT_ROOT'], $f);
+		if($_SERVER['HTTP_HOST'] == "videogamin.squarehaven.com") $f = str_replace("http://videogamin.squarehaven.com", $_SERVER['DOCUMENT_ROOT'], $f);
 		if(substr($f, 0, 4) == "http"){
 			if(!filter_var($f, FILTER_VALIDATE_URL)) NNdie("The given file URL is not valid");
 			
@@ -93,7 +108,9 @@ if($action == "submimg"){
 	list($width, $height, $type, $attr) = $imagesize;
 	
 	$handle = new Upload($file);
-	if ($handle->uploaded){
+	if (!$handle->uploaded) {
+		NNdie($handle->error);
+	} else {
 		
 		$mime = $handle->file_src_mime;
 		$mimes = array("image/jpeg","image/jpg","image/gif","image/png","image/x-ms-bmp");
@@ -136,8 +153,8 @@ if($action == "submimg"){
 		  
 		}
 	  
-	  $handle->file_new_name_body = $file_body;
-	  $handle->file_new_name_ext  = $file_ext;
+		$handle->file_new_name_body = $file_body;
+		$handle->file_new_name_ext  = $file_ext;
 		$handle->file_safe_name     = false;
 		$handle->file_auto_rename   = false;
 		$handle->file_overwrite     = true;
@@ -281,7 +298,7 @@ if($action == "submimg"){
 			if(!$handle->processed) NNdie($handle->error);
 			
 		} else NNdie($handle->error);
-	} else NNdie($handle->error);
+	}
 	
 	if($_POST['formsubm'] || $actionhandle == "quick upload") header("Location: /uploads.php?sessid=".$sessid);
 	

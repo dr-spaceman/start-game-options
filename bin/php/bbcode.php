@@ -915,10 +915,13 @@ function strip_tags_attributes($string, $allowtags=NULL, $allowattributes=NULL){
             $allowattributes = implode(")(?<!",$allowattributes); 
         if (strlen($allowattributes) > 0) 
             $allowattributes = "(?<!".$allowattributes.")"; 
-        $string = preg_replace_callback("/<[^>]*>/i",create_function(
-            '$matches', 
-            'return preg_replace("/ [^ =]*'.$allowattributes.'=(\"[^\"]*\"|\'[^\']*\')/i", "", $matches[0]);'    
-        ),$string); 
+        $string = preg_replace_callback(
+        	"/<[^>]*>/i", 
+        	function($matches) {
+        		return preg_replace("/ [^ =]*'.$allowattributes.'=(\"[^\"]*\"|\'[^\']*\')/i", "", $matches[0]);
+        	},
+        	$string
+       	); 
     }
 	
 	$string = str_replace($allow['p'], $allow['f'], $string);

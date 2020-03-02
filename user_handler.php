@@ -1,4 +1,10 @@
 <?
+
+/**
+ * Output a user profile
+ * This is accessed with HTTP GET /~username/path
+ */
+
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.posts.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
@@ -546,29 +552,37 @@ switch($section){
 		//collection
 		$query = "SELECT * FROM collection WHERE usrid='$u->id' ORDER BY date_added DESC";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
-		while($row = mysqli_fetch_assoc($res)){
-			$shelf = new shelfItem();
-			$shelf->type = "game";
-			$row['no_headings'] = true;
-			$row['href'] = pageURL($row['title'], "game");
-			$shelf_height = 245;
-			if($row['img_name']){
-				$shelf->img = $row['img_name'];
-				$shelf_height = $shelf->tn->height + 43;
+		if (mysqli_num_rows($res)) {
+			$shelf = new Shelf();
+			while($row = mysqli_fetch_assoc($res)){
+				$shelf_item_properties = array(
+					"type" => "game",
+
+				);
+				$shelf = new shelfItem($shelf_item_properties);
+
+				$row['no_headings'] = true;
+				$row['href'] = pageURL($row['title'], "game");
+				$shelf_height = 245;
+				if($row['img_name']){
+					$shelf->img = $row['img_name'];
+					$shelf_height = $shelf->tn->height + 43;
+				}
+				$shelf_offset = -245 + $shelf_height + 10;
+				if($shelf_offset > 0){
+					$shelf_height-= $shelf_offset;
+					$shelf_offset = 0;
+				}
+				$s = array(
+					"class" => "shelf",
+					"datetime" => $row['date_added'],
+					"img" => '<div class="shelf gameshelf horizontal" style="height:'.$shelf_height.'px;">'.$shelf->outputItem().'</div></div>',
+					"description" => '[['.$row['title'].']]<br/><span class="pf">'.$row['platform'].'</span>'
+				);
+				streamItem($s);
 			}
-			$shelf_offset = -245 + $shelf_height + 10;
-			if($shelf_offset > 0){
-				$shelf_height-= $shelf_offset;
-				$shelf_offset = 0;
-			}
-			$s = array(
-				"class" => "shelf",
-				"datetime" => $row['date_added'],
-				"img" => '<div class="shelf gameshelf horizontal" style="height:'.$shelf_height.'px;"><div class="shelf-container" style="margin-top:'.$shelf_offset.'px">'.$shelf->outputItem($row).'</div></div>',
-				"description" => '[['.$row['title'].']]<br/><span class="pf">'.$row['platform'].'</span>'
-			);
-			streamItem($s);
 		}
+		
 		
 		//pages
 		$query = "SELECT `title`, `type`, `subcategory`, `created`, rep_image FROM pages WHERE redirect_to='' and creator='$u->id' ORDER BY `created`";

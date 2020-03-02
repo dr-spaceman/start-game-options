@@ -46,7 +46,7 @@ if(isset($_SESSION['usrname'])){
 			mysqli_real_escape_string($GLOBALS['db']['link'], $password_)
 		);
 		if($res = mysqli_query($GLOBALS['db']['link'], $q)) {
-			$userdat = mysqli_fetch_assoc($GLOBALS['db']['link'], $res);
+			$userdat = mysqli_fetch_assoc($res);
 			login($userdat);
 		}
 	

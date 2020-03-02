@@ -4,7 +4,7 @@ $page = new page();
 require_once $_SERVER["DOCUMENT_ROOT"]."/pages/class.pages.edit.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";
 
-$img_sessid = imgMakeSessionId();
+$img_sessid = img::makeSessionIS();
 
 if($sessid = $_GET['destroysession']){
 	

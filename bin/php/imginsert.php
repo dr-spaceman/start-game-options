@@ -33,7 +33,7 @@ function loadMyImgSessions($min=0, $max=30) {
 	return $ret;
 }
 
-$sessid = imgMakeSessionID();
+$sessid = img::makeSessionID();
 
 $act = $_GET['action'] ? $_GET['action'] : $_POST['action'];
 if($act){

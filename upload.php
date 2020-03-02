@@ -10,7 +10,7 @@ if($sessid = $_GET['sessid']){
 	}
 	$editsession = true;
 } else {
-	$sessid = imgMakeSessionId();
+	$sessid = img::MakeSessionID();
 }
 
 $page->title = "Videogam.in / Upload";

@@ -286,7 +286,7 @@ $user->getPreferences();
 					<div class="forms form-image">
 						<div id="image-items">
 							<?
-							$sessid = imgMakeSessionId();
+							$sessid = img::makeSessionID();
 							$handler = base64_encode('sessid='.$sessid);
 							$imgtmpl = '<div class="image-item" ondragenter="event.stopPropagation(); event.preventDefault();" ondragover="event.stopPropagation(); event.preventDefault();" ondrop="event.stopPropagation(); event.preventDefault(); nnHandleImageDrop(event, {parent_key:\'image-%I\', handler:\''.$handler.'\'});"><input type="hidden" name="cont[img_names][]" value="%s" id="image-%I-filename"/><img src="%s" id="image-%I-img" width="100" height="100"/><a href="%s" class="imgupl"></a><div class="blank" title="Drop an image file from your desktop here to upload"></div><strong>%s</strong><ul><li><span class="arrow-left" style="color:#888">Drop here</span></li><li><a data-imagei="%I" data-nav="upload" data-handler="'.$handler.'">Upload an image</a></li><li><a data-imagei="%I" data-nav="" data-handler="'.$handler.'">Browse uploads</a></li></ul><a class="rm ximg-small" style="top:3px; right:3px;">remove</a></div>';
 							$i = 0;

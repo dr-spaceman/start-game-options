@@ -13,7 +13,7 @@ require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
 
 <a href="/">Videogam.in Home Page</a>
 
-<? if($usrrank == 9) print_r($_SERVER); ?>
+<? if($usrrank == User::SUPERADMIN) print_r($_SERVER); ?>
 
 </body>
 </html>

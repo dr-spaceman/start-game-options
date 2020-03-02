@@ -19,7 +19,7 @@ $reply_to_id = $_POST['reply_to_id'];
 $to = $_POST['to']; // a usrid
 
 //email isnt allowed any more (except by admins)
-if($usrrank < 8) $method = "pm";
+if($usrrank < User::ADMIN) $method = "pm";
 
 if($user && $method == "pm" && !$usrid) {
 	$page->header();
@@ -154,7 +154,7 @@ if(!$user) {
 	
 	if($method == "email") {
 		//does user allow emails?
-		if(/*!$usr->mail_from_users &&*/ $usrrank <= 8) {
+		if(/*!$usr->mail_from_users &&*/ $usrrank <= User::ADMIN) {
 			echo 'Sorry, '.$usr->username.' doesn\'t allow mail from other users. You may of course send them a <a href="?user='.$usr->username.'&method=pm">private message</a> though!';
 			$page->footer();
 			exit;

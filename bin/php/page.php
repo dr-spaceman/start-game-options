@@ -8,7 +8,7 @@ require "page_headers.php";
 	}
 }*/
 
-if($usrrank == 1) die("*");
+if($usrrank == User::RESTRICTED) die("*");
 
 class page {
 
@@ -196,7 +196,7 @@ else $tweet = $tweets[rand(0, (count($tweets) - 1))];*/
 						<li><a href="/uploads.php" rel="nofollow">Uploads</a></li>
 						<li><a href="/posts/manage.php" title="manage your Sblog posts" rel="nofollow">Sblog Manager</a></li>
 						<li><a href="/messages.php" rel="nofollow">Messaging</a></li>
-						<?=($usrrank >= 6 ? '<li><a href="/ninadmin/" rel="nofollow">Admin Panel</a></li>' : '')?>
+						<?=($usrrank >= User::ADMIN ? '<li><a href="/ninadmin/" rel="nofollow">Admin Panel</a></li>' : '')?>
 						<li><a href="?do=logout" rel="nofollow">Log out</a></li>
 					</ul>
 				</dd>
@@ -304,7 +304,7 @@ function closeAllSections(){
 
 function footer() {
 
-global $db, $usrid, $usrname, $usrrank, $results, $errors, $warnings;
+global $db, $usrid, $usrname, $results, $errors, $warnings;
 
 $this->called_sections['footer'] = 1;
 

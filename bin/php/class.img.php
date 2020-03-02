@@ -48,11 +48,7 @@ function imgGetCategories(){
 	return $categories;
 }
 
-function imgMakeSessionId(){
-	return date("ymdHis").sprintf("%07d",$GLOBALS['usrid']).mt_rand(0,9).mt_rand(0,9);
-}
-
-class img {
+class Img {
 	
 	public $notfound = false; //set to TRUE if after __construct image is not found in database
 	public $sessid; // Session ID for uploads
@@ -188,6 +184,14 @@ class img {
 	function removeError($error_message=''){
 		$this->img_remove_error = $error_message ? $error_message : "An unknown error occurred.";
 		return false;
+	}
+
+	/**
+	 * Create a unique (hopefully...) integer to identify upload sessions
+	 * @return integer The ID
+	 */
+	public static function makeSessionID() {
+		return date("ymdHis").sprintf("%07d",$GLOBALS['usrid']).mt_rand(0,9).mt_rand(0,9);
 	}
 	
 	function getSessionData(){
