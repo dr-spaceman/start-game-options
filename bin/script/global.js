@@ -425,7 +425,8 @@ $(document).ready(function(){
 				if(res.success) setTimeout(function(){ $el.addClass("finished") }, 200);
 				if(res.formatted && res.shelf_id){
 					//new shelf item
-					var $shelf_item = $("#shelf-item-id-"+res.shelf_id);
+					//var $shelf_item = $("#shelf-item-id-"+res.shelf_id);
+					var $shelf_item = $("#collection-shelf-items :nth-child("+res.shelf_position+")");
 					if(res.added){ // user just added it
 						if(res.shelf_position == 0) $("#collection-shelf-items").prepend(res.formatted);
 						else{
@@ -435,9 +436,11 @@ $(document).ready(function(){
 					} else if($shelf_item.length == 0){
 						console.log("Error: couldn't find #shelf-item-id-"+res.shelf_id);
 					} else {
-						var shelf_item_index = $shelf_item.index();
+						/*var shelf_item_index = $shelf_item.index();
 						$shelf_item.remove();
-						$("#collection-shelf-items .shelf-item").eq(shelf_item_index).before(res.formatted);
+						$("#collection-shelf-items .shelf-item").eq(shelf_item_index).before(res.formatted);*/
+						$shelf_item.before(res.formatted);
+						$shelf_item.remove();
 					}
 				}
 				$("#pgop-form-collection").pause(1400).fadeOut(function(){ $el.removeClass("loading finished") });

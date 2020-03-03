@@ -785,22 +785,23 @@ if($this->type == "game" && $row->publications->publication[0]){
 
 		// If no box art, don't show this item
 		if(!$pub->img_name || (string)$pub->img_name == '') continue;
+
+		$img = new Img((string)$pub->img_name);
+
+		//if the image isnt categorized as box art, skip it
+		if($img->img_category_id != 4) continue; 
 		
 		$shelf_item_properties = array(
-			'type'     => "game",
-			'img_name' => (string) $pub->img_name,
-			'title'    => (string) $pub->title,
+			'type' => "game",
+			'img' => $img,
+			'title' => (string) $pub->title,
 			'platform' => pglinks::strip((string) $pub->platform),
-			'region'   => (string) $pub->region,
-			'release_year'  => (string) $pub->release_year,
-			'release_month' => (string) $pub->release_month,
-			'release_day'   => (string) $pub->release_day,
+			'region' => (string) $pub->region,
+			'release_date' => (int) $pub->release_year . "-" . (int) $pub->release_month . "-" . (int) $pub->release_day,
 		);
-		
+
 		$shelf->addItem($shelf_item_properties);
 		
-		// ??????????!!!!!!!!!!!!!!!!!!!
-		//if($shelf->img->img_category_id != 4) continue; //if the image isnt categorized as box art, skip it
 	
 	}
 

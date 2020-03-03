@@ -21,7 +21,7 @@ if($settype && $img_name == "-"){
 	exit;
 }
 
-$img = new img($img_name);
+$img = new Img($img_name);
 if($img->notfound){
 	if(isset($_GET['showimage'])){
 		header("Content-Type: image/png");

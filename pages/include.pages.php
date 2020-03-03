@@ -19,7 +19,7 @@ $pgsubcategories = array(
 	"Game genre"     => "genres"
 );
 
-$pgnamespaces = array("Category", "Tag", "AlbumID", "User", "Special");
+define("PAGES_NAMESPACES", array("Category", "Tag", "AlbumID", "User", "Special"));
 
 $pg_tags_tables = array(
 	"posts_tags"  => "tag",

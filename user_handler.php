@@ -2,7 +2,8 @@
 
 /**
  * Output a user profile
- * This is accessed with HTTP GET /~username/path
+ * This is accessed with GET /~{username}/{path} via .htaccess
+ * And asyncronously GET /user_handler.php?load=true&section=stream&min=50&usrid=1 HTTP/1.1
  */
 
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
@@ -11,14 +12,17 @@ require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
 
 include_once $_SERVER['DOCUMENT_ROOT']."/pages/include.pages.php";
 
-$_uname = trim($_GET['username']);
-$_uid = trim($_GET['usrid']);
-$load = false;
+$user_params = array("username" => trim($_GET['username']), "usrid" => trim($_GET['usrid']));
+$user = new User($user_params);
+
+$http_request = false;
 $section = $_GET['section'] ? $_GET['section'] : "stream";
 $path = array();
+
+// $vars arr captures query string of properties, eg from a form to filter data to return
 if($_GET['vars']) parse_str($_GET['vars'], $vars); // in the form of a query string
 
-if(strstr($_GET['path'], "/")){
+if(strstr($_GET['path'], "/")) {
 	if(substr($_GET['path'], 0, 1) == "/") $_GET['path'] = substr($_GET['path'], 1);
 	$path = explode("/", $_GET['path']);
 }
@@ -26,38 +30,21 @@ else $path[0] = $_GET['path'];
 if($path[0]) $section = $path[0];
 
 if($_GET['load']){
-	// AJAX request
-	$load = true;
+	// Information requested via HTTP/AJAX; Prepare a JSON response!
+	$http_request = true;
 	$ret = array();
 	require $_SERVER['DOCUMENT_ROOT']."/bin/php/class.ajax.php";
 	$ajax = new ajax();
 }
 
 $page = new page();
-$page->title = "Videogam.in Users / $_uname";
+$page->title = "Videogam.in Users / " . $user->username;
 $page->superminimalist = true;
 $page->css[] = "/user_profile.css";
 
-if(!$_uname && !$_uid){
+if(!$user->id){
 	
-	if($load) $ajax->kill("No user data given");
-	
-	$page->header();
-	?>
-	<h2>User Profiles</h2>
-	<input type="text" name="fuser" id="fuser"/>
-	<input type="button" value="Find User" onclick="document.location='/~'+document.getElementById('fuser').value;"/>
-	<?
-	$page->footer();
-	exit;
-}
-
-$params = array("username" => $_uname, "usrid" => $_uid);
-$u = new user($params);
-
-if($u->notfound){
-	
-	if($load) $ajax->kill("User not on file.");
+	if($http_request) $ajax->kill("User not on file.");
 	
 	$page->header();
 	?>
@@ -70,8 +57,8 @@ if($u->notfound){
 	exit;
 }
 
-$u->getDetails();
-$u->getScore();
+$user->getDetails();
+$user->getScore();
 
 $page->javascripts[] = "/bin/script/jquery.isotope.js";
 $page->javascripts[] = "/user_profile.js";
@@ -90,7 +77,7 @@ switch($section){
 		$posts = new posts();
 		if($section == "blog") $posts->query_params['category'] = "blog";
 		$posts->query_params = $vars;
-		$posts->query_params['user'] = $u->username;
+		$posts->query_params['user'] = $user->username;
 		$posts->parseParams();
 		$posts->buildQuery();
 		
@@ -106,10 +93,10 @@ switch($section){
 		
 		$page->title.= " / Fan Space";
 		
-		$query = "SELECT * FROM pages_fan WHERE usrid = '$u->id' ORDER BY `title`";
+		$query = "SELECT * FROM pages_fan WHERE usrid = '$user->id' ORDER BY `title`";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		if(!$num_fan = mysqli_num_rows($res)){
-			$ret['formatted'] = $u->username.' isn\'t a fan of anything.';
+			$ret['formatted'] = $user->username.' isn\'t a fan of anything.';
 			break;
 		}
 		
@@ -189,24 +176,28 @@ switch($section){
 		
 		$page->title.= " / Game Collection";
 		
+		// First build the form for filtering collection display
+
 		//get a list of platforms for the select box
-		$query = "SELECT COUNT(*) AS `rows`, `platform` FROM collection WHERE usrid='$u->id' GROUP BY `platform` ORDER BY `platform`";
+		$query = "SELECT COUNT(*) AS `rows`, `platform` FROM collection WHERE usrid='$user->id' GROUP BY `platform` ORDER BY `platform`";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)) $options_platforms.= '<li class="fauxselect-option" data-value="'.htmlsc($row['platform']).'">'.$row['platform'].'</li>';
 		
 		//get a list of networks for the select box
-		$networks = array(); $networks_2 = array();
-		$query = "SELECT COUNT(*) AS `rows`, `network` FROM collection WHERE usrid='$u->id' GROUP BY `network` ORDER BY `network`";
+		$networks = array();
+		$networks_2 = array();
+		if(!isset($vars['network'])) $vars['network'] = array();
+		$query = "SELECT COUNT(*) AS `rows`, `network` FROM collection WHERE usrid='$user->id' GROUP BY `network` ORDER BY `network`";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)){
 			if($row['network'] == "other"){ $networks_2[] = "other"; continue; }
 			if($row['network']) $networks[] = $row['network'];
 		}
 		if(count($networks_2)) $networks = array_merge($networks, $networks_2);
-		foreach($networks as $network) $options_networks.= '<li><label><input type="checkbox" name="network[]" value="'.htmlsc($network).'"'.($vars['network'] && in_array($network, $vars['network']) ? ' checked' : '').'/> '.($network == "other" ? "Other network" : $network).'</label></li>';
-		if(count($networks)&1) $options_networks.= '<li>&nbsp;</li>';
+		foreach($networks as $network) $options_networks.= '<li><label><input type="checkbox" name="network[]" value="'.htmlsc($network).'"'.(in_array($network, $vars['network']) ? ' checked' : '').'/> '.($network == "other" ? "Other network" : $network).'</label></li>';
+		if(count($networks)) $options_networks.= '<li>&nbsp;</li>';
 		
-		//apply filters
+		//Next apply filters
 		$where = '';
 		if(!$vars){
 			$vars = array();
@@ -257,40 +248,51 @@ switch($section){
 			else $vars['condition'] = '';
 		}
 		
+		$shelf = new Shelf();
+
+		$shelf_output_props = array(
+			"output_nav" => false,
+			"output_container" => false,
+		);
 		
 		// Build the query
+		
+		/**Removed LIMIT (Is there any reason to do this...? Don't we want to display the whole collection?)
 		$min = is_numeric($_GET['min']) ? $_GET['min'] : 0;
-		$max = $_GET['max'] == "*" ? $num_total_shelf_items : 50;
-		$query = "SELECT SQL_CALC_FOUND_ROWS * FROM collection WHERE usrid='$u->id' $where ORDER BY sort ASC, date_added DESC LIMIT $min, $max";
+		$max = $_GET['max'] == "*" ? 99 : 50;*/
+
+		$query = "SELECT * FROM collection WHERE usrid='$user->id' $where ORDER BY sort ASC, date_added DESC";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
-		$num_shelf_items = 0;
-		while($row = mysqli_fetch_assoc($res)){
-			$shelf = new shelfItem();
-			$shelf->type = "game";
-			$shelf->img = $row['img_name'];
-			$row['href'] = pageURL($row['title'], "game");
-			$o_shelf.= $shelf->outputItem($row);
-			$num_shelf_items++;
+		if ($rows_num = mysqli_num_rows($res)) {
+			while($row = mysqli_fetch_assoc($res)){
+				$shelf_item_properties = $row;
+				$shelf_item_properties['type'] = "game";
+				$shelf_item_properties['img'] = new Img($row['img_name']);
+				$shelf_item_properties['href'] = pageURL($row['title'], "game");
+				$shelf->addItem($shelf_item_properties);
+			}
+
+			/*$query = "SELECT FOUND_ROWS() AS totalRows";
+	    	$num_rows = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query));
+			$num_total_shelf_items = $num_rows[0];*/
+			$num_total_shelf_items = $rows_num;
+			
+			/*if($http_request) {
+				$ret['formatted'] = $shelf->output();
+				break;
+			}*/
+
 		}
 
-		$query = "SELECT FOUND_ROWS() AS totalRows";
-    	$num_rows = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query));
-		$num_total_shelf_items = $num_rows[0];
+		$min = 0;
+		$max = $num_total_shelf_items;
 		
-		
-		if(($min + $num_shelf_items) < $num_total_shelf_items) $o_shelf.= '<div id="load-more" data-section="collection" data-min="'.($min + $max).'" data-usrid="'.$u->id.'"><a>Load more</a></div>';
-		
-		if($load && $min){
-			$ret['formatted'] = $o_shelf;
+		if (!$shelf->num_items && !$has_vars && $user->id != $usrid) {
+			$ret['formatted'] = $user->username." hasn't collected any games yet.";
 			break;
 		}
 		
-		if(!$num_shelf_items && !$has_vars && $u->id != $usrid){
-			$ret['formatted'] = $u->username." hasn't collected any games yet.";
-			break;
-		}
-		
-		$num_shelf_rows = ceil($num_shelf_items / 5);
+		$num_shelf_rows = ceil($shelf->num_items / 5);
 		
 		$show_options = array(
 			"own-all" => "owned",
@@ -299,7 +301,7 @@ switch($section){
 			"want" => "wanted",
 			"play" => "played"
 		);
-		foreach($show_options as $option => $formatted){
+		foreach ($show_options as $option => $formatted) {
 			$options_show.= '<li class="fauxselect-option" data-value="'.$option.'" onclick="$(\'#collection-nav-ownership-output\').html(\''.$formatted.'\')">'.$formatted.'</li>';
 		}
 		
@@ -310,7 +312,7 @@ switch($section){
 					<form onsubmit="return false">
 						<div class="nav-top">
 							<div class="controls">
-								'.($usrid == $u->id ? '
+								'.($usrid == $user->id ? '
 								<div class="buttons">
 									<button type="button" id="collection-nav-edit">Edit Collection</button> 
 									<button type="button" id="collection-nav-add" class="blue">Add a Game</button>
@@ -401,8 +403,8 @@ switch($section){
 						</div><!--/.details-->
 					</form>
 				</nav>
-				'.(!$num_shelf_items ? 'No games found' : '
-				<div class="shelf gameshelf" style="position:static;"><div class="shelf-container"><div class="container" id="collection-shelf-items">' . $o_shelf . '<div id="collection-shelf-end" style="clear:both"></div></div></div></div>').'
+				'.(!$shelf->num_items ? 'No games found' : '
+				<div class="shelf gameshelf" style="position:static;"><div class="shelf-container"><div class="container" id="collection-shelf-items">' . $shelf->output($shelf_output_props) . ((($min + $shelf->num_items) < $num_total_shelf_items) ? '<div id="load-more" data-section="collection" data-min="'.($min + $max).'" data-usrid="'.$user->id.'"><a>Load more</a></div>' : '') . '<div id="collection-shelf-end" style="clear:both"></div></div></div></div>').'
 			</div>
 			<div id="collection-add" class="bodyoverlay">
 				<a class="ximg rm" onclick="$(this).parent().fadeOut()">Close</a>
@@ -447,7 +449,7 @@ switch($section){
 		
 		$bid = $path[1];
 		
-		$ret['formatted'] = ($bid ? $badges->show($bid, $u->id) . '<div class="hr" style="margin:10px 0;"></div>' : '') . $badges->collection($u->id, $u->username);
+		$ret['formatted'] = ($bid ? $badges->show($bid, $user->id) . '<div class="hr" style="margin:10px 0;"></div>' : '') . $badges->collection($user->id, $user->username);
 		
 		break;
 	
@@ -463,6 +465,9 @@ switch($section){
 		
 		// STREAM //
 		
+		// Problem! Right now ALL stream items EVER are fetched and processed, then filtered by date for the current page.
+		// It would be better to paginate by date
+		
 		$page->title.= " / Activity";
 		
 		require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
@@ -471,8 +476,10 @@ switch($section){
 		$genderref2 = array("male" => "him", "female" => "her", "asexual" => "it", "" => "them");
 		$genderref3 = array("male" => "he", "female" => "she", "asexual" => "it", "" => "they");
 		
-		if($u->rank >= 3) $status = "vip";
-		if($u->rank >= 7) $status = "staff";
+		if($user->rank >= User::VIP) $status = "vip";
+		if($user->rank >= User::ADMIN) $status = "staff";
+		
+		$limit = 25;
 		
 		$stream = array();
 		
@@ -487,7 +494,7 @@ switch($section){
 		
 		function a_repimg($imgfile=''){
 			if($imgfile == '') return '';
-		  if(substr($imgfile, 0, 4) == "img:"){
+		  	if(substr($imgfile, 0, 4) == "img:"){
 				$img_name = substr($imgfile, 4);
 				$img = new img($img_name);
 				$imgfile = $img->src['url'];
@@ -503,18 +510,18 @@ switch($section){
 		// Badges
 		require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
 		$_badges = new badges();
-		foreach($_badges->badgesEarnedList($u->id) as $row){
+		foreach($_badges->badgesEarnedList($user->id) as $row){
 			$s = array(
 				"class" => "badge",
 				"datetime" => $row['datetime'],
-				"img" => '<a href="/~'.$u->username.'/badges/'.$row['bid'].'/'.formatNameURL($row['name']).'" class="badge user-profile-nav"><img src="/bin/img/badges/'.$row['bid'].'.png" width="140" height="140" border="0" title="'.htmlSC($row['name']).'"/></a>',
+				"img" => '<a href="/~'.$user->username.'/badges/'.$row['bid'].'/'.formatNameURL($row['name']).'" class="badge user-profile-nav"><img src="/bin/img/badges/'.$row['bid'].'.png" width="140" height="140" border="0" title="'.htmlSC($row['name']).'"/></a>',
 				"description" => '<big><b>'.$row['name'].'</b></big><blockquote>'.$row['description'].'</blockquote>'
 			);
 			streamItem($s);
 		}
 		
 		// Love & Hate
-		$query = "SELECT op, remarks, `datetime`, `type`, `title`, `description`, rep_image FROM pages_fan LEFT JOIN pages USING(`title`) WHERE usrid = '$u->id' ORDER BY op, datetime DESC";
+		$query = "SELECT op, remarks, `datetime`, `type`, `title`, `description`, rep_image FROM pages_fan LEFT JOIN pages USING(`title`) WHERE usrid = '$user->id' ORDER BY op, datetime DESC";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)){
 			if(substr($row['title'], 0, 8) == "AlbumId:"){
@@ -537,8 +544,8 @@ switch($section){
 				streamItem($s);
 				continue;
 			}
-		  $title_sc = htmlSC($row['title']);
-		  $repimgtn = a_repimg($row['rep_image']);
+			$title_sc = htmlSC($row['title']);
+			$repimgtn = a_repimg($row['rep_image']);
 			$url = pageURL($row['title'], $row['type']);
 			$s = array(
 				"class" => "fan ".$row['op'],
@@ -550,25 +557,22 @@ switch($section){
 		}
 		
 		//collection
-		$query = "SELECT * FROM collection WHERE usrid='$u->id' ORDER BY date_added DESC";
+		$query = "SELECT * FROM collection WHERE usrid='$user->id' ORDER BY date_added DESC";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		if (mysqli_num_rows($res)) {
-			$shelf = new Shelf();
-			while($row = mysqli_fetch_assoc($res)){
-				$shelf_item_properties = array(
+			while ($row = mysqli_fetch_assoc($res)) {
+				$shelfitem_properties = array(
 					"type" => "game",
-
 				);
-				$shelf = new shelfItem($shelf_item_properties);
+				if($row['img_name']){
+					$shelfitem_properties['img'] = new Img($row['img_name']);
+				}
+				$shelfitem = new shelfItem($shelfitem_properties);
 
 				$row['no_headings'] = true;
 				$row['href'] = pageURL($row['title'], "game");
-				$shelf_height = 245;
-				if($row['img_name']){
-					$shelf->img = $row['img_name'];
-					$shelf_height = $shelf->tn->height + 43;
-				}
-				$shelf_offset = -245 + $shelf_height + 10;
+				$shelf_height = $shelfitem->thumb_height + 43; // Why + 43 ................????????????
+				$shelf_offset = -245 + $shelf_height + 10; // Not sure what's going on here....
 				if($shelf_offset > 0){
 					$shelf_height-= $shelf_offset;
 					$shelf_offset = 0;
@@ -576,7 +580,7 @@ switch($section){
 				$s = array(
 					"class" => "shelf",
 					"datetime" => $row['date_added'],
-					"img" => '<div class="shelf gameshelf horizontal" style="height:'.$shelf_height.'px;">'.$shelf->outputItem().'</div></div>',
+					"img" => '<div class="shelf gameshelf horizontal" style="height:'.$shelf_height.'px;"><div class="shelf-container">'.$shelfitem->output().'</div></div>',
 					"description" => '[['.$row['title'].']]<br/><span class="pf">'.$row['platform'].'</span>'
 				);
 				streamItem($s);
@@ -585,7 +589,7 @@ switch($section){
 		
 		
 		//pages
-		$query = "SELECT `title`, `type`, `subcategory`, `created`, rep_image FROM pages WHERE redirect_to='' and creator='$u->id' ORDER BY `created`";
+		$query = "SELECT `title`, `type`, `subcategory`, `created`, rep_image FROM pages WHERE redirect_to='' and creator='$user->id' ORDER BY `created`";
 		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)){
 			$class = "patronsaint";
@@ -601,13 +605,13 @@ switch($section){
 		}
 		
 		// other stream stuff
-		$query = "SELECT * FROM stream WHERE usrid = '$u->id' AND action_type != 'earn badge'";
+		$query = "SELECT * FROM stream WHERE usrid = '$user->id' AND action_type != 'earn badge'";
 		$res = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)){
 			$class = "";
 			if(strstr($row['action'], "Patron Saint")){
 				$class = "patronsaint";
-				$row['action'] = str_replace("[[User:{$u->username}]] became the ", "", $row['action']);
+				$row['action'] = str_replace("[[User:{$user->username}]] became the ", "", $row['action']);
 				$row['action'] = '<big>'.ucfirst($row['action']).'</big>';
 			}
 			$s = array(
@@ -622,32 +626,32 @@ switch($section){
 		krsort($stream);
 		
 		$o_stream = '';
-		$i = 0;
 		$min = is_numeric($_GET['min']) ? $_GET['min'] : 0;
-		$max = $min + 25;
+		$max = $min + $limit;
+		$i = 0;
 		foreach($stream as $row){
 			if($i++ < $min) continue;
 			$o_stream.= $row;
 			if($i >= $max){
-				$o_stream.= '<div id="load-more" data-section="stream" data-min="'.$max.'" data-usrid="'.$u->id.'"><a>Load more</a></div>';
+				$o_stream.= '<div id="load-more" data-section="stream" data-min="'.$max.'" data-usrid="'.$user->id.'"><a>Load more</a></div>';
 				break;
 			}
 		}
 		$bb = new bbcode();
 		$o_stream = $bb->bb2html($o_stream);
 		
-		$unlen = strlen($u->username);
+		$unlen = strlen($user->username);
 		if($unlen > 14) $h1class = "ultracondensed";
 		elseif($unlen > 11) $h1class = "condensed";
 		
-		if($u->homepage){
-			preg_match('@^(http|https|ftp)://([^/]*)/?.*@i', $u->homepage, $matches);
+		if($user->homepage){
+			preg_match('@^(http|https|ftp)://([^/]*)/?.*@i', $user->homepage, $matches);
 			$o = str_replace("www.", "", $matches[2]);
 			if(strlen($o) > 14) $o = substr($o, 0, 43).'&hellip;';
 			if(strlen($o) > 26) $o = substr($o, 0, 25).'<br/>'.substr($o, 25);
-			$o_homepage = '<dt>Web</dt>'."\n".'<dd><a href="'.$u->homepage.'" target="_blank" style="white-space:nowrap">'.$o.'</a></dd>'."\n";
+			$o_homepage = '<dt>Web</dt>'."\n".'<dd><a href="'.$user->homepage.'" target="_blank" style="white-space:nowrap">'.$o.'</a></dd>'."\n";
 		}
-		$bday = formatDate($u->dob, 9);
+		$bday = formatDate($user->dob, 9);
 		
 		if($min){
 			$ret['formatted'] = $o_stream;
@@ -660,17 +664,17 @@ switch($section){
 				
 				'.($status ? '<span class="userstatus '.$status.'" title="'.$status.'"></span>' : '').'
 				
-				<div class="useravatarcontainer">'.$u->avatar("big").'<span class="overlay"></span></div>
+				<div class="useravatarcontainer">'.$user->avatar("big").'<span class="overlay"></span></div>
 				
 				<div class="container">
 					<dl>
-						'.($u->handle ? '<dd class="handle">'.$u->handle.'</dd>' : '').'
-						'.($u->interests ? '<dd class="bio">'.$u->interests.'</dd>' : '').'
-						<dd class="since">Member for <b title="'.$u->registered.'">'.timeSince($u->registered).'</b></dd>
-						<dd class="since">Last seen <b title="'.$u->activity.'">'.timeSince($u->activity).'</b> ago</dd>
+						'.($user->handle ? '<dd class="handle">'.$user->handle.'</dd>' : '').'
+						'.($user->interests ? '<dd class="bio">'.$user->interests.'</dd>' : '').'
+						<dd class="since">Member for <b title="'.$user->registered.'">'.timeSince($user->registered).'</b></dd>
+						<dd class="since">Last seen <b title="'.$user->activity.'">'.timeSince($user->activity).'</b> ago</dd>
 						<dd class="buttons">
-							<a href="/~'.$u->username.'/blog">Blog<span style="width:16px; height:16px; background-position:-40px -40px;"></span></a>
-							<a href="/contact-user.php?user='.$u->username.'&method=pm">Contact<span style="width:20px; height:16px; background-position:0 -40px;"></span></a>
+							<a href="/~'.$user->username.'/blog">Blog<span style="width:16px; height:16px; background-position:-40px -40px;"></span></a>
+							<a href="/contact-user.php?user='.$user->username.'&method=pm">Contact<span style="width:20px; height:16px; background-position:0 -40px;"></span></a>
 							<!--<script src="http://connect.facebook.net/en_US/all.js#xfbml=1"></script><fb:like layout="button_count" show_faces="false" width="90" font="arial"></fb:like>-->
 						</dd>
 					</dl>
@@ -679,13 +683,13 @@ switch($section){
 				<div class="rolodex">
 					<dl>
 						<dt class="top">Name</dt>
-						<dd class="top">'.($u->name ? $u->name : '?').'</dd>
+						<dd class="top">'.($user->name ? $user->name : '?').'</dd>
 						
 						<dt>Location</dt>
-						<dd>'.($u->location ? $u->location : '?').'</dd>
+						<dd>'.($user->location ? $user->location : '?').'</dd>
 						
 						<dt>Gender</dt>
-						<dd>'.($u->gender ? ($u->gender == "asexual" ? 'Asexual or Robot' : ucwords($u->gender)) : '?').'</dd>
+						<dd>'.($user->gender ? ($user->gender == "asexual" ? 'Asexual or Robot' : ucwords($user->gender)) : '?').'</dd>
 						
 						'.($bday ? '<dt>Birthday</dt><dd>'.$bday.'</dd>' : '').$o_homepage.'
 					</dl>
@@ -693,16 +697,16 @@ switch($section){
 				
 				<div class="score" style="margin:15px 0 0;">
 					<dl>
-						<dt>'.number_format($u->score['vars']['num_forumposts']).'</dt>
+						<dt>'.number_format($user->score['vars']['num_forumposts']).'</dt>
 						<dd>Forum Posts</dd>
 						
-						<dt>'.number_format($u->score['vars']['num_sblogposts']).'</dt>
+						<dt>'.number_format($user->score['vars']['num_sblogposts']).'</dt>
 						<dd>Sblog Posts</dd>
 						
-						<dt>'.number_format($u->score['vars']['num_pageedits']).'</dt>
+						<dt>'.number_format($user->score['vars']['num_pageedits']).'</dt>
 						<dd>Page Edits</dd>
 						
-						<dt style="background-color:#E11E1E;">'.number_format(ceil($u->score['total'])).'</dt>
+						<dt style="background-color:#E11E1E;">'.number_format(ceil($user->score['total'])).'</dt>
 						<dd><b>Reputation</b></dd>
 					</dl>
 				</div>
@@ -716,7 +720,7 @@ switch($section){
 		
 }
 
-if($load){
+if($http_request){
 	$ajax->ret = $ret;
 	exit();
 }
@@ -733,20 +737,20 @@ if($section != "posts"){
 ?>
 <script>$.jGrowl("You've accessed the new profile stream. This is a work in progress!")</script>
 
-<div id="user-profile-header" data-uid="<?=$u->id?>" data-uname="<?=$u->username?>">
+<div id="user-profile-header" data-uid="<?=$user->id?>" data-uname="<?=$user->username?>">
 	
-	<h1 title="#<?=$u->id?>" class="<?=$h1class?>"><?=$u->username?></h1>
+	<h1 title="#<?=$user->id?>" class="<?=$h1class?>"><?=$user->username?></h1>
 	
 	<nav>
 		<ul>
-			<li class="<?=$on['stream']?>" data-section="stream"><a href="/~<?=$u->username?>" class="user-profile-nav">Activity</a></li>
-			<li class="<?=$on['posts']?>" data-section="posts"><a href="/~<?=$u->username?>/posts/" class="user-profile-nav">Sblog</a></li>
-			<li class="<?=$on['fan']?>" data-section="fan"><a href="/~<?=$u->username?>/fan" class="user-profile-nav">Fan Space</a></li>
-			<li class="<?=$on['collection']?>" data-section="collection"><a href="/~<?=$u->username?>/collection" class="user-profile-nav">Game Collection</a></li>
-			<li class="<?=$on['badges']?>" data-section="badges"><a href="/~<?=$u->username?>/badges" class="user-profile-nav">Badges</a></li>
-			<li class="<?=$on['edits']?>" data-section="edits"><a href="/~<?=$u->username?>/edits" class="user-profile-nav">Page Edits</a></li>
-			<li class="<?=$on['forumposts']?>" data-section="forumposts"><a href="/~<?=$u->username?>/forumposts" class="user-profile-nav">Forum Posts</a></li>
-			<li class="<?=$on['reputation']?>" data-section="reputation"><a href="/~<?=$u->username?>/reputation" class="user-profile-nav">Reputation</a></li>
+			<li class="<?=$on['stream']?>" data-section="stream"><a href="/~<?=$user->username?>" class="user-profile-nav">Activity</a></li>
+			<li class="<?=$on['posts']?>" data-section="posts"><a href="/~<?=$user->username?>/posts/" class="user-profile-nav">Sblog</a></li>
+			<li class="<?=$on['fan']?>" data-section="fan"><a href="/~<?=$user->username?>/fan" class="user-profile-nav">Fan Space</a></li>
+			<li class="<?=$on['collection']?>" data-section="collection"><a href="/~<?=$user->username?>/collection" class="user-profile-nav">Game Collection</a></li>
+			<li class="<?=$on['badges']?>" data-section="badges"><a href="/~<?=$user->username?>/badges" class="user-profile-nav">Badges</a></li>
+			<li class="<?=$on['edits']?>" data-section="edits"><a href="/~<?=$user->username?>/edits" class="user-profile-nav">Page Edits</a></li>
+			<li class="<?=$on['forumposts']?>" data-section="forumposts"><a href="/~<?=$user->username?>/forumposts" class="user-profile-nav">Forum Posts</a></li>
+			<li class="<?=$on['reputation']?>" data-section="reputation"><a href="/~<?=$user->username?>/reputation" class="user-profile-nav">Reputation</a></li>
 		</ul>
 	</nav>
 	

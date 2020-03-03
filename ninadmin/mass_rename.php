@@ -75,12 +75,12 @@ $page->footer();
 
 function replaceLink($l){
 	
-	global $title, $newtitle, $pgnamespaces;
+	global $title, $newtitle;
 	
 	$ch = $l;
 	
 	$thisns = '';
-	foreach($pgnamespaces as $ns){
+	foreach(PAGES_NAMESPACES as $ns){
 		if(strpos($l, $ns.":") === 0){
 			$thisns = $ns.":";
 			$ch = str_replace($thisns, "", $ch);

@@ -2,6 +2,7 @@
 #
 # Class to handle linking to content pages
 #
+#
 
 include_once $_SERVER['DOCUMENT_ROOT']."/pages/include.pages.php";
 
@@ -15,7 +16,7 @@ class pglinks {
 	var $rm_duplicates;  // @ remove duplicate links
 	
 	function __construct(){
-		$this->regex = '@\[\[('.implode(':|', $GLOBALS['pgnamespaces']).':)?(.*?)\]\](s|\'s)?@is';
+		$this->regex = '@\[\[('.implode(':|', PAGES_NAMESPACES).':)?(.*?)\]\](s|\'s)?@is';
 	}
 	
 	function parse($text){
@@ -212,8 +213,8 @@ class pglinks {
 
 		// There should be a better way to do this!
 		$pglinks = new pglinks();
-		if($exlinks = $pglinks->extractFrom($str)){
-			$str = $exlinks[0]['tag'];
+		if($exlinks = $pglinks->extractFrom($str)) {
+			return $exlinks[0]['tag'];
 		}
 	}
 	

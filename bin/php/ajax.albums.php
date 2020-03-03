@@ -1,7 +1,8 @@
 <?
-require $_SERVER['DOCUMENT_ROOT']."/bin/php/class.ajax.php";
+require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page_headers.php";
+require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.ajax.php";
 
-$ajax = new ajax();
+$ajax = new ajax(); 
 
 if(!$albumid = $_POST['albumid']) $ajax->kill("No album id");
 

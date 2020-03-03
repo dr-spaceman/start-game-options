@@ -1,11 +1,12 @@
 <?
-require_once "page.php";
 
 /**
  * New class
  */
 
 class User extends user_old {
+
+	private $logged_in = false;
 
 	const GUEST = 0;
 	const RESTRICTED = 1;
@@ -21,6 +22,14 @@ class User extends user_old {
 	function __construct($params) {
 		parent::__construct($params);
 	}
+
+	function isLoggedIn() {
+		return $this->logged_in;
+	}
+}
+
+class Admin extends User {
+
 }
 
 // Old method is below, preserved for backward compatibility
