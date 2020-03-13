@@ -8,8 +8,9 @@ $forum = new forum();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
 
-$q = trim($_GET['q']);//die($q);
-$q_url = urlencode($q);
+$query_raw = trim($_GET['q']);
+$query_url = urlencode($query_raw);
+$query_html = htmlspecialchars($query_raw);
 $what = trim($_GET['what']);
 if(!in_array($what, array("content","posts","albums","forums","groups"))) $what = "all";
 $min  = ($_GET['min'] ? $_GET['min'] : '0'); //starting point for db SELECT if $what!='all'
@@ -17,7 +18,7 @@ if($what == "all") $min = '0';
 $min *= 1;
 $max = 20; //maximum rows to fetch from each db on individual searches (ie, not ALL RESULTS page)
 
-$page->title = $q." - Videogam.in search";
+$page->title = $query_html." - Videogam.in search";
 
 $page->width = "fixed";
 $page->freestyle.= '
@@ -75,29 +76,28 @@ $page->header();
 $page->openSection(array("id"=>"searchres", "class"=>"searchsubj-".$what));
 
 ?>
-<h1>Search: <?=$q?></h1>
+<h1>Search: <?=$query_html?></h1>
 
 <div class="nav">
 	<form action="/search.php" method="get">
-		<input type="text" name="q" value="<?=htmlSC($q)?>" style="width:240px; font-size:130%;"/>
+		<input type="text" name="q" value="<?=$query_html?>" style="width:240px; font-size:130%;"/>
 		<input type="submit" value="Search" style="font-size:130%;"/>
 		<input type="hidden" name="what" value="<?=$what?>"/>
 	</form>
 	<ul>
-		<li class="<?=($what=="all"?"on":"")?>"><a href="/search.php?what=all&q=<?=urlencode($q)?>">Everything</a></li>
-		<li class="<?=($what=="content"?"on":"")?>"><a href="/search.php?what=content&q=<?=urlencode($q)?>">Pages</a></li>
-		<li class="<?=($what=="posts"?"on":"")?>"><a href="/#/posts/?query=<?=urlencode($q)?>">News & Blogs</a></li>
-		<li class="<?=($what=="albums"?"on":"")?>"><a href="/search.php?what=albums&q=<?=urlencode($q)?>">Albums</a></li>
-		<li class="<?=($what=="forums"?"on":"")?>"><a href="/search.php?what=forums&q=<?=urlencode($q)?>">Forums</a></li>
-		<li class="<?=($what=="groups"?"on":"")?>"><a href="/search.php?what=groups&q=<?=urlencode($q)?>">Groups</a></li>
-		<li><a href="/image/-/term/<?=$q_url?>">Images</a></li>
+		<li class="<?=($what=="all"?"on":"")?>"><a href="/search.php?what=all&q=<?=$query_url?>">Everything</a></li>
+		<li class="<?=($what=="content"?"on":"")?>"><a href="/search.php?what=content&q=<?=$query_url?>">Pages</a></li>
+		<li class="<?=($what=="posts"?"on":"")?>"><a href="/#/posts/?query=<?=$query_url?>">News & Blogs</a></li>
+		<li class="<?=($what=="albums"?"on":"")?>"><a href="/search.php?what=albums&q=<?=$query_url?>">Albums</a></li>
+		<li class="<?=($what=="forums"?"on":"")?>"><a href="/search.php?what=forums&q=<?=$query_url?>">Forums</a></li>
+		<li class="<?=($what=="groups"?"on":"")?>"><a href="/search.php?what=groups&q=<?=$query_url?>">Groups</a></li>
+		<li><a href="/image/-/term/<?=$query_url?>">Images</a></li>
 	</ul>
 </div>
 
 <?
 
-if(!$q) $page->kill("<p></p><big>Please input a search term</big>");
-//$page->kill($q);
+if(!$query_raw) $page->kill("<p></p><big>Please input a search term</big>");
 
 $matches = array();
 $num = array();
@@ -107,20 +107,20 @@ if($what=="all" || $what=="content"){
 	
 	$types['content'] = "Content Pages";
 	
-	$q_formatted = formatName($q);
+	$query_formatted = formatName($query_raw);
 	
 	/*$query = "SELECT `title`, `description` FROM pages WHERE redirect_to='' AND `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."' LIMIT 1";
 	if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))) $matches['content'] = '<fieldset id="exactmatch"><legend>Exact Match</legend><big>'.bb2html('[['.$row['title'].']]</big>'.($row['description'] ? '<div style="margin-top:3px">'.$row['description'].'</div>' : ''), "pages_only").'</fieldset>';
 	else $matches['content'] = '<fieldset id="exactmatch"><legend>Create This Page!</legend>There is no page named <i>'.$q.'</i> yet. <b><a href="/pages/edit.php?title='.formatNameURL($q).'" class="arrow-right">Start the <i>'.$q.'</i> page</a></b></fieldset>';*/
 	
-	$query = "SELECT `title`, `description`, `type`, MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score`
-		FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."')
+	$query = "SELECT `title`, `description`, `type`, MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AS `score`
+		FROM pages WHERE redirect_to='' AND MATCH (`title`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."')
 		ORDER BY `score` DESC";
 	if($num['content'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
 		$res = mysqli_query($GLOBALS['db']['link'], $query.($what!="content" ? " LIMIT 8" : " LIMIT $min, $max"));
 		$o = '';
 		while($row = mysqli_fetch_assoc($res)) {
-			if(strtolower($row['title']) == strtolower($q_formatted)) continue; // we'll output a pglabel below that will capture an exact match
+			if(strtolower($row['title']) == strtolower($query_formatted)) continue; // we'll output a pglabel below that will capture an exact match
 			$o.= '<dt><big>[['.$row['title'].']] ('.ucfirst($row['type']).')</big></dt>'.($row['description'] ? '<dd>'.$row['description'].'</dd>' : '');
 		}
 		$matches['content'].= '<dl>'.links($o).'</dl>';
@@ -131,7 +131,7 @@ if($what=="all" || $what=="content"){
 if($what=="all" || $what=="posts"){
 	$types['posts'] = "News & Blogs";
 	if($what=="all") $posts->max = 10;
-	$posts->query_params['query'] = $q;
+	$posts->query_params['query'] = $query_raw;
 	$posts->buildQuery();
 	$matches['posts'] = $posts->postsList("open_archived");
 }
@@ -139,8 +139,8 @@ if($what=="all" || $what=="posts"){
 //Albums
 if($what=="all" || $what=="albums"){
 	$types['albums'] = "Game Music";
-	$query = "SELECT `albumid`, `title`, `subtitle`, `cid`, `release`, MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score`
-		FROM albums WHERE `view` = '1' AND MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') 
+	$query = "SELECT `albumid`, `title`, `subtitle`, `cid`, `release`, MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AS `score`
+		FROM albums WHERE `view` = '1' AND MATCH (`title`, `subtitle`, `keywords`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') 
 		ORDER BY `score` DESC";
 	if($num['albums'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
 		$res = mysqli_query($GLOBALS['db']['link'], $query.($what!="albums" ? " LIMIT 5" : " LIMIT $min, $max"));
@@ -163,15 +163,15 @@ while($what=="all" || $what=="forums"){
 	$max = $forum->topics_per_page;
 	
 	//first, search topic titles
-	$query = "SELECT tid, MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score` 
-		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$usrrank';";
+	$query = "SELECT tid, MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AS `score` 
+		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AND `invisible` <= '$usrrank';";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) {
 		$tids[$row['tid']] = $row['score'];
 	}
 	//next, search post messages
-	$query = "SELECT tid, MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS `score` 
-		FROM forums_posts WHERE MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."');";
+	$query = "SELECT tid, MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AS `score` 
+		FROM forums_posts WHERE MATCH (`message`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."');";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) {
 		$tids[$row['tid']] = $tids[$row['tid']] + $row['score'];
@@ -204,17 +204,17 @@ while($what=="all" || $what=="groups"){
 if($what == "all"){
 	
 	$types['images'] = "Images";
-	$moreurl['images'] = "/image/-/term/".$q_url;
+	$moreurl['images'] = "/image/-/term/".$query_url;
 	
 	$imgs = array();
 	
 	//get images by tag
-	$query = "SELECT DISTINCT(img_name) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."' OR `tag` LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."|%'";
+	$query = "SELECT DISTINCT(img_name) FROM images_tags LEFT JOIN images USING (img_id) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."' OR `tag` LIKE '".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."|%'";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) $imgs[] = $row['img_name'];
 	
 	//get images by description
-	$query = "SELECT img_name FROM images WHERE img_title LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%' OR img_description LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."%'";
+	$query = "SELECT img_name FROM images WHERE img_title LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."%' OR img_description LIKE '%".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."%'";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)){
 		if(!in_array($row['img_name'], $imgs)) $imgs[] = $row['img_name'];
@@ -231,12 +231,12 @@ if($what == "all"){
 }
 
 if(!count($matches)){
-	echo '<big style="display:block;margin:30px 0 0;">No results for <i>'.$q.'</i>.</big>';
+	echo '<big style="display:block;margin:30px 0 0;">No results for <i>'.$query_html.'</i>.</big>';
 } else {
 	foreach($matches as $type => $cont){
 		?>
 		<div class="searchres res-<?=$type?>">
-			<?=($what=="all" && $num[$type] > 10 ? '<div class="more label"><a href="'.($moreurl[$type] ? $moreurl[$type] : '/search.php?what='.$type.'&q='.urlencode($q)).'" class="arrow-right">Show all <b>'.$num[$type].'</b> results in <b>'.$types[$type].'</b></a></div>' : '')?>
+			<?=($what=="all" && $num[$type] > 10 ? '<div class="more label"><a href="'.($moreurl[$type] ? $moreurl[$type] : '/search.php?what='.$type.'&q='.$query_url).'" class="arrow-right">Show all <b>'.$num[$type].'</b> results in <b>'.$types[$type].'</b></a></div>' : '')?>
 			<h2><?=$types[$type]?></h2>
 			<?
 			
@@ -254,7 +254,7 @@ if(!count($matches)){
 				$pgnav = '
 				<div class="pgnav" style="float:right;">
 					<ul>
-						'.($pgthis > 1 ? '<li><b><a href="/search.php?what='.$type.'&min='.($min - $max).'&q='.urlencode($q).'" class="arrow-left">Previous</a></b></li>' : '<li class="off"><span><span class="arrow-left">Previous</span></span></li>');
+						'.($pgthis > 1 ? '<li><b><a href="/search.php?what='.$type.'&min='.($min - $max).'&q='.$query_url.'" class="arrow-left">Previous</a></b></li>' : '<li class="off"><span><span class="arrow-left">Previous</span></span></li>');
 						for($i=1; $i<=$pgnum; $i++){
 							if($i==1 || $i==$pgnum || $pgthis == $i) true; //first, last, this pg
 							elseif($i > ($pgthis - 3) && $i < ($pgthis + 3)) true; //thispg +- 3
@@ -265,10 +265,10 @@ if(!count($matches)){
 								}
 							}
 							else continue;
-							$pgnav.= '<li class="'.($pgthis == $i ? 'on' : '').'"><a href="/search.php?what='.$type.'&min='.(($i - 1) * $max).'&q='.urlencode($q).'">'.($i == 1 ? 'Page ' : '').$i.'</a></li>';
+							$pgnav.= '<li class="'.($pgthis == $i ? 'on' : '').'"><a href="/search.php?what='.$type.'&min='.(($i - 1) * $max).'&q='.$query_url.'">'.($i == 1 ? 'Page ' : '').$i.'</a></li>';
 						}
 						$pgnav.= 
-						($pgthis != $pgnum ? '<li><b><a href="/search?what='.$type.'&min='.($min + $max).'&q='.urlencode($q).'" class="arrow-right">Next</a></b></li>' : '<li class="off"><span><span class="arrow-right">Next</span></span></li>').'
+						($pgthis != $pgnum ? '<li><b><a href="/search?what='.$type.'&min='.($min + $max).'&q='.$query_url.'" class="arrow-right">Next</a></b></li>' : '<li class="off"><span><span class="arrow-right">Next</span></span></li>').'
 					</ul>
 				</div>
 				<br style="clear:both;"/>';
@@ -276,7 +276,7 @@ if(!count($matches)){
 			}
 			
 			if($type == "content"){
-				echo pglabel($q_formatted);
+				echo pglabel($query_formatted);
 				echo $cont;
 			} elseif($type == "posts"){
 				
