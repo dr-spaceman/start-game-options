@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Vgsite;
 
@@ -60,11 +60,7 @@ class User
      */
     public function __construct(array $params, $dbh, $logger=[])
     {
-        $this->dbh = $dbh;
-        if (!empty($logger)) {
-            $this->logger = $logger;
-            $this->logger->debug("User object construction", $params);
-        }
+        if (!$this->instance) {}
 
         if (isset($params['user_id'])) $this->user_id = (int) $params['user_id'];
         if (isset($params['rank'])) $this->rank = $params['rank'];
@@ -73,6 +69,20 @@ class User
             $this->data[$key] = $val;
         }
 	}
+
+    public static function instance($dbh, $logger=[]): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self;
+        }
+
+        return self::$instance;
+        $this->dbh = $dbh;
+        if (!empty($logger)) {
+            $this->logger = $logger;
+            $this->logger->debug("User object construction", $params);
+        }
+    }
 
     public function getId(): int
     {
@@ -90,7 +100,7 @@ class User
         $this->avatar_tn_src = "/bin/img/avatars/tn/".($this->data['avatar'] ?: 'unknown.png');
     }
 
-    public static function getById(int $user_id, $dbh, $logger=[]): ?User
+    public static function getById(int $user_id, $dbh, $logger=[]): ?self
     {
         $sql = "SELECT * FROM users WHERE user_id = :user_id LIMIT 1";
         $statement = $dbh->prepare($sql);
@@ -103,7 +113,7 @@ class User
         return new self($row, $dbh, $logger);
     }
 
-    public static function getByUsername($username, $dbh, $logger=[]): ?User
+    public static function getByUsername($username, $dbh, $logger=[]): ?self
     {
         $sql = "SELECT * FROM users WHERE username = ? LIMIT 1";
         $statement = $dbh->prepare($sql);
@@ -116,7 +126,7 @@ class User
         return new self($row, $dbh, $logger);
     }
 
-    public static function getByEmail($email, $dbh, $logger=[]): ?User
+    public static function getByEmail($email, $dbh, $logger=[]): ?self
     {
         $sql = "SELECT * FROM users WHERE email = ? LIMIT 1";
         $statement = $dbh->prepare($sql);

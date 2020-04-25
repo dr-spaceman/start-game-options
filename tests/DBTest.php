@@ -9,7 +9,6 @@ use Vgsite\DB;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
 $dotenv->load();
 
-// require __DIR__."/../config/config_db.php";
 $pdo = DB::instance();
 
 class DBTest extends TestCase
@@ -18,12 +17,24 @@ class DBTest extends TestCase
     {
         $this->assertInstanceOf(PDO::class, $GLOBALS['pdo']);
     }
-    
-    public function testDBFetch()
+
+    public function testDBInsert()
     {
-        $stmt = $GLOBALS['pdo']->query("SELECT foo, bar FROM test WHERE id=1 LIMIT 1");
-        $this->assertEquals($stmt->fetchColumn(), 'foo');
-        $this->assertStringContainsString($stmt->fetchColumn(1), 'bar');
+        $id_string = uniqid();
+        $sql = sprintf("INSERT INTO `test` (`foo`, `bar`) VALUES ('fuuuu', '%s');", $id_string);
+        $this->assertNotFalse($GLOBALS['pdo']->query($sql));
+
+        return $id_string;
+    }
+    
+    /**
+     @depends testDBInsert
+     */
+    public function testDBFetch($id_string)
+    {
+        $sql = sprintf("SELECT foo, bar FROM test WHERE bar='%s' LIMIT 1", $id_string);
+        $stmt = $GLOBALS['pdo']->query($sql);
+        $this->assertStringContainsString('fuu', $stmt->fetchColumn());
         $this->assertFalse(strpos($stmt->fetchColumn(1), 'baz'));
 
         $data = $GLOBALS['pdo']->query("SELECT * FROM users")->fetchAll(PDO::FETCH_UNIQUE);
@@ -34,20 +45,19 @@ class DBTest extends TestCase
         $this->assertFalse($user_exists);
     }
 
-    public function testDBInsert()
+    /**
+     @depends testDBInsert
+     */
+    public function testDBDelete($id_string)
     {
-        $id_string = uniqid();
-        $sql = sprintf("INSERT INTO `test` (`foo`, `bar`) VALUES ('fuuuu', '%s');", $id_string);
+        $sql = sprintf("DELETE FROM `test` WHERE bar = '%s'", $id_string);
         $this->assertNotFalse($GLOBALS['pdo']->query($sql));
-
-        $sql = sprintf("SELECT bar FROM test WHERE bar='%s' LIMIT 1", $id_string);
-        $stmt = $GLOBALS['pdo']->query($sql);
-        $this->assertEquals($stmt->fetchColumn(), $id_string);
     }
 
-    public function testUserStaticFetch()
+    public function testInstantiated()
     {
-        // $user = User::instance($pdo, $logger)->getByUsername('test');
-
+        $obj = \Vgsite\TestClassInstantiated::instance($GLOBALS['pdo'])->get(1);
+        var_dump($obj);
+        $this->assertEquals(1, $obj->id);
     }
 }
