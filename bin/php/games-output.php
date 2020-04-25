@@ -84,9 +84,9 @@ if($submit == "Add Link") {
 				
 				$q2 = "SELECT * FROM games_links WHERE datetime='$datetime' LIMIT 1";
 				$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q2));
-				$udat = getUserDat($usrid);
-				$headers = "From: $usrname <".$udat->email.">\r\n" .
-    			'Reply-To: ' . $udat->email . "\r\n" .
+				$user = User::getById($usrid);
+				$headers = "From: $usrname <".$user->data['email'].">\r\n" .
+    			'Reply-To: ' . $user->data['email'] . "\r\n" .
     			'X-Mailer: PHP/' . phpversion();
 				mail($default_email, "Videogam.in link submission", "The following link has been posted on the $gdat->title overview page:\n\n$in[site_name]\n$in[url]\n$in[description]\n\nTo remove this link: http://videogam.in/ninadmin/games-mod.php?id=$gdat->gid&what=links&delete=$dat->id\n", $headers);
 				$results[] = "Your link has been successfully posted. Thanks for your contribution!";

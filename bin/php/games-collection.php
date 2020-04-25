@@ -539,10 +539,10 @@ if($do == "user_upload") {
 
 if($action == "show my games") {
 	
-	$uid = $_POST['uid'];
+	$uid = filter_input(INPUT_POST, 'uid', FILTER_SANITIZE_NUMBER_INT);
 	$whichones = $_POST['whichones'];
 	
-	$dat = getUserDat($uid);
+	$dat = User::getById($uid)['data'];
 	$genderref = array("male" => "his", "female" => "her", "asexual" => "its", "" => "their");
 	$genderref2 = array("male" => "him", "female" => "her", "asexual" => "it", "" => "them");
 	
@@ -563,7 +563,7 @@ if($action == "show my games") {
 	
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	if(!mysqli_num_rows($res)) {
-		echo '<div style="padding:15px">'.$dat->username.' hasn\'t put any of those games in '.$genderref[$dat->gender].' box yet.</div>';
+		echo '<div style="padding:15px">'.$dat['username'].' hasn\'t put any of those games in '.$genderref[$dat['gender']].' box yet.</div>';
 	} else {
 		
 		$i = 0;
@@ -627,13 +627,13 @@ if($action == "show my games") {
 			if($row['play_online']) {
 				if($playtitle) $playtitle.= " and ";
 				$playtitle.= "I play this game online";
-				if($row['online_id']) $addid = ' ('.$genderref[$dat->gender].' online ID is \''.$row['online_id'].'\' if you want to play with '.$genderref2[$dat->gender].')';
+				if($row['online_id']) $addid = ' ('.$genderref[$dat['gender']].' online ID is \''.$row['online_id'].'\' if you want to play with '.$genderref2[$dat['gender']].')';
 				else $addid = "";
 				$stuff[] = "<b>plays this game online</b>".$addid;
 				$push = "";
 			} else $push = " this game";
 			if($num = count($stuff)) {
-				$dostuff = $dat->username." ";
+				$dostuff = $dat['username']." ";
 				if($num == 1) $dostuff.= $stuff[0];
 				elseif($num == 2) $dostuff.= implode(" and ", $stuff);
 				elseif($num == 3) $dostuff.= "<b>owns</b>, <b>plays</b>, and <b>plays this game online</b>".$addid;

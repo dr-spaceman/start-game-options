@@ -14,22 +14,22 @@ if($_GET['init']){
 	if(!mysqli_num_rows($res)) die("Finished");
 	while($row = mysqli_fetch_assoc($res)){
 		
-		$usr = $row['usrid'];
+		$user_id = $row['usrid'];
 		$ins = array();
-		$userdat = getUserDat($usr);
-		$ins['num_forumposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_posts WHERE usrid = '$usr'"));
-		$ins['num_pageedits'] =  mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages_edit` WHERE `usrid` = '$usr' AND published='1'"));
-		$ins['num_ps'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages` WHERE `contributors` = '$usr' OR `contributors` LIKE '$usr|%'"));
-		$ins['num_sblogposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `posts` WHERE `usrid` = '$usr' AND unpublished='0' AND pending='0'"));
-		$ins['contribution_score'] = $userdat->contribution_score;
-		$ins['forum_rating'] = $userdat->forum_rating;
-		$ins['sblog_rating'] = $userdat->sblog_rating;
+		$user = User::getById($user_id);
+		$ins['num_forumposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_posts WHERE usrid = '$user_id'"));
+		$ins['num_pageedits'] =  mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages_edit` WHERE `usrid` = '$user_id' AND published='1'"));
+		$ins['num_ps'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `pages` WHERE `contributors` = '$user_id' OR `contributors` LIKE '$user_id|%'"));
+		$ins['num_sblogposts'] = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM `posts` WHERE `usrid` = '$user_id' AND unpublished='0' AND pending='0'"));
+		$ins['contribution_score'] = $user->data['contribution_score'];
+		$ins['forum_rating'] = $user->data['forum_rating'];
+		$ins['sblog_rating'] = $user->data['sblog_rating'];
 		
-		$score = UserCalcScore($usr, $ins);
+		$score = UserCalcScore($user_id, $ins);
 		
-		if($score['total'] >= 1 && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_data WHERE usrid = '".$usr."' AND `date` = '".date("Y-m-d")."' LIMIT 1"))){
+		if($score['total'] >= 1 && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_data WHERE usrid = '".$user_id."' AND `date` = '".date("Y-m-d")."' LIMIT 1"))){
 			$q2 = "INSERT INTO users_data (usrid, `date`, ".implode(", ", array_keys($ins)).", score_forums, score_pages, score_sblogs, score_total) VALUES 
-				('$usr', '".date("Y-m-d")."', '".implode("', '", array_values($ins))."', '".$score['forums']."', '".$score['pages']."', '".$score['sblogs']."', '".$score['total']."');";
+				('$user_id', '".date("Y-m-d")."', '".implode("', '", array_values($ins))."', '".$score['forums']."', '".$score['pages']."', '".$score['sblogs']."', '".$score['total']."');";
 			if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysqli_error($GLOBALS['db']['link']);
 		}
 		
@@ -38,7 +38,7 @@ if($_GET['init']){
 			score_pages = '".$score['pages']."',
 			score_sblogs = '".$score['sblogs']."',
 			score_total = '".$score['total']."'
-			WHERE usrid = '$usr' LIMIT 1";
+			WHERE usrid = '$user_id' LIMIT 1";
 		if(!mysqli_query($GLOBALS['db']['link'], $q2)) $err = "Error on Query: $q2; ".mysqli_error($GLOBALS['db']['link']);
 		
 	}

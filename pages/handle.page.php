@@ -1117,7 +1117,7 @@ if($this->row['modifier'] == $usrid){
 	
 }
 
-if(!$this->pgid && $_SERVER['HTTP_REFERER'] != "http://videogam.in/content/Special:most_requested"){
+if(!$this->pgid && !strstr($_SERVER['HTTP_REFERER'], "/Special:most_requested")){
 	// track this page view
 	$q = "INSERT INTO pagecount_requestfail (`title`,`url`,`referrer`) VALUES ('".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."', '".$_SERVER['REQUEST_URI']."', '".$_SERVER['HTTP_REFERER']."')";
 	mysqli_query($GLOBALS['db']['link'], $q);

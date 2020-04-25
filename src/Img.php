@@ -1,4 +1,6 @@
-<?
+<?php
+
+namespace Vgsite;
 
 $img_sizes = array(
 	'tn'         => 'tn',
@@ -48,19 +50,34 @@ function imgGetCategories(){
 	return $categories;
 }
 
-class Img {
+class Img 
+{
 	
-	public $notfound = false; //set to TRUE if after __construct image is not found in database
-	public $sessid; // Session ID for uploads
-	public $img_name;
+	public $notfound = true;
+
+	/**
+	 * Session ID for uploads
+	 * @var [type]
+	 */
+	public $img_session_id = '121006204647000000199';
+	public $img_name = 'unknown.png';
 	public $img_id;
 	public $established;
 	public $optimized; // t or f if optimized size exitst
 	public $src;
+	public $img_size = 3810;
+	public $img_width = 601;
+	public $img_height = 601;
+	public $img_minor_mime = "png";
+	public $img_category_id = 0;
+	public $img_title;
+	public $img_description;
+	public $sort;
 
 	const UPLOAD_TEMP_DIR = "/bin/uploads/temp/";
 	
-	function __construct($img_params=""){
+	public function __construct($img_params="")
+	{
 		
 		# var $img_params string Either the numeric img_id or the img_name (ie "DonkeyKong.jpg")
 		# if not found, sets $notfound=true and grabs "unknown.png", a placeholder image
@@ -81,7 +98,7 @@ class Img {
 		$this->img_name = $row['img_name'];
 		$this->img_id = $row['img_id'];
 		$this->img_session_id = $row['img_session_id'];
-		$this->sessid = $row['img_session_id'];
+		$this->img_session_id = $row['img_session_id'];
 		$this->img_size = $row['img_size'];
 		$this->img_width = $row['img_width'];
 		$this->img_height = $row['img_height'];
@@ -99,24 +116,8 @@ class Img {
 		
 	}
 	
-	function emptyImg(){
-		$this->notfound = true;
-		$this->img_name = "unknown.png";
-		$this->img_id = 0;
-		$this->img_session_id = '121006204647000000199';
-		$this->img_size = 3810;
-		$this->img_width = 601;
-		$this->img_height = 601;
-		$this->img_minor_mime = "png";
-		$this->img_category_id = 0;
-		$this->img_title = "";
-		$this->img_description = "";
-		$this->sort = 0;
-		$this->src = $this->src();
-		return false;
-	}
-	
-	function src(){
+	function src()
+	{
 		
 		// @return array list of img files and URLs
 		
@@ -200,7 +201,7 @@ class Img {
 		
 		// get info about this image's session, including previous & next files
 		
-		$q = "SELECT * FROM images_sessions WHERE img_session_id = '".$this->sessid."' LIMIT 1";
+		$q = "SELECT * FROM images_sessions WHERE img_session_id = '".$this->img_session_id."' LIMIT 1";
 		if(!$this->session_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return;
 		
 		/*if($this->session_data['img_qty'] > 1){
@@ -224,7 +225,7 @@ class Img {
 class gallery {
 	
 	var $id;
-	var $sessid;
+	var $img_session_id;
 	var $parsed; // t or f if parse()
 	var $bbcode;
 	var $html;
@@ -249,7 +250,7 @@ class gallery {
 			$opts = array();
 			$opts = explode("|", $this->opt_str);
 			foreach($opts as $opt){
-				if(substr($opt, 0, 8)=="session=") $this->sessid = substr($opt, 8);
+				if(substr($opt, 0, 8)=="session=") $this->img_session_id = substr($opt, 8);
 				if(substr($opt, 0, 8)=="caption=") $this->caption = substr($opt, 8);
 				if(substr($opt, 0, 5)=="show=") $this->show = substr($opt, 5);
 				if(in_array($opt, array_keys($GLOBALS['img_sizes']))) $this->size = $GLOBALS['img_sizes'][$opt];
@@ -267,10 +268,10 @@ class gallery {
 		
 		if(!in_array($this->size, array('tn', 'ss', 'sm', 'op'))) $this->size = 'tn';
 		
-		if($this->sessid){
-			$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->sessid)."' LIMIT 1";
-			if(!$img_session = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return '{Error displaying gallery: session ID "'.$this->sessid.'" doesn\'t exist}';
-			$query = "SELECT * FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->sessid)."' ORDER BY `sort` ASC";
+		if($this->img_session_id){
+			$q = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_session_id)."' LIMIT 1";
+			if(!$img_session = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return '{Error displaying gallery: session ID "'.$this->img_session_id.'" doesn\'t exist}';
+			$query = "SELECT * FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_session_id)."' ORDER BY `sort` ASC";
 			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			while($row = mysqli_fetch_assoc($res)){
 				$img = new img($row['img_name']);
@@ -315,7 +316,7 @@ class gallery {
 		}
 		
 		$this->bbcode = '[gallery';
-		if($this->sessid) $this->bbcode.= '|session='.$this->sessid;
+		if($this->img_session_id) $this->bbcode.= '|session='.$this->img_session_id;
 		if($this->size) $this->bbcode.= '|'.$this->size;
 		if($this->width) $this->bbcode.= '|'.$this->width;
 		if($this->caption) $this->bbcode.= '|caption='.$this->caption;
@@ -345,5 +346,3 @@ class gallery {
 	}
 	
 }
-
-?>

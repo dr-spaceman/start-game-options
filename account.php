@@ -99,7 +99,7 @@ if($edit == 'details') {
 					unset($new_username);
 					break;
 				}
-				$q = "SELECT * FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' OR username_old = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' LIMIT 1"; 
+				$q = "SELECT * FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' LIMIT 1"; 
 			  if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
 					$errors[] = "The  username '$new_username' is already taken.";
 			  	unset($new_username);
@@ -110,6 +110,11 @@ if($edit == 'details') {
 			  	unset($new_username);
 			  	break;
 			  }
+
+			  $sql = "INSERT INTO `users_change_username` (`user_id`, `username_old`, `username_new`) VALUES (?, ?, ?);";
+			  $statement = $pdo->prepare($sql);
+			  $statement->execute([$usrid, $usrname, $new_username]);
+			  
 			} while(false);
 			
 			$in['name'] = htmlSC($in['name']);
@@ -136,13 +141,14 @@ if($edit == 'details') {
 			
 			//users main
 			$Query = sprintf("UPDATE users SET "
-				.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."', username_old='".mysqli_real_escape_string($GLOBALS['db']['link'], $usrname)."'," : "").
+				.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."'," : "").
 		  	($in['password1'] ? "password = password('".$in['password1']."')," : "")."
 	   		email = '%s',
 			  region = '".$in['region']."',
 				`gender` = '".$in['gender']."' 
 	   		WHERE usrid = '$usrid' LIMIT 1",
 	   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['email']));
+
 	   	
 	   	//users_details
 	   	if($Result = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_details WHERE usrid='$usrid' LIMIT 1")) {

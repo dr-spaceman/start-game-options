@@ -29,7 +29,7 @@ if(isset($_POST['min'])){
 			continue;
 		}
 		$row['email'] = trim($row['email']);
-		if(validateEmail($row['email'])) $to[$row['email']] = $row['username'];
+		if (filter_var($row['email'], FILTER_VALIDATE_EMAIL) $to[$row['email']] = $row['username'];
 	}
 	
 	if(!$_POST['testmail']){
@@ -57,8 +57,8 @@ if(isset($_POST['min'])){
 		->setFrom(array('no-reply@videogam.in' => 'Videogam.in'));
 	
 	if($_POST['testmail']){
-		$me = getUserDat($usrid);
-		$to = array($me->email => $me->username);
+		$me = User::getById($usrid);
+		$to = array($me->data['email'] => $me->getUsername());
 	}
 	
 	foreach($to as $address => $name){

@@ -1,1 +1,0 @@
-<? require_once $_SERVER['DOCUMENT_ROOT']."/pages/class.pages.php"; ?>

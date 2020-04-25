@@ -1,4 +1,4 @@
-<?
+<?php
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";

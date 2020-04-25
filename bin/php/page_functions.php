@@ -107,38 +107,6 @@ function pageURL($title, $pgtype='', $encode=1){
 
 function sendBug($desc) { global $default_email; $desc = wordwrap($desc, 70); @mail($default_email, "Videogam.in Auto-Bug Report", $desc); }
 
-function validateEmail($email){
-	if(!eregi("^[^@]+@.+\.[a-z]{2,6}$", $email)) return FALSE;
-	return TRUE;
-}
-
-/*function getPlatforms() {
-	$query = "SELECT * FROM games_platforms";
-	$res = mysqli_query($GLOBALS['db']['link'], $query);
-	while($row = mysqli_fetch_assoc($res)) {
-		$ret[$row[platform_id]][platform] = $row[platform];
-		$ret[$row[platform_id]][platform_shorthand] = $row[platform_shorthand];
-	}
-	return $ret;
-}*/
-
-function getUserDat($params=''){
-	// @param $params array or string
-	// @return obj
-	
-	if(!$params) $params = $GLOBALS['usrid'];
-	$uid = is_string($params) ? $params : $params['usrid'];
-	if($uid)                    $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE usrid='".mysqli_real_escape_string($GLOBALS['db']['link'], $uid)."' LIMIT 1";
-	elseif($params['username']) $q = "SELECT * FROM users LEFT JOIN users_details USING (usrid) LEFT JOIN users_prefs USING (usrid) WHERE username='".mysqli_real_escape_string($GLOBALS['db']['link'], $params['username'])."' LIMIT 1";
-	else return false;
-	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return false;
-	
-	$dat->avatar_src = "/bin/img/avatars/".($dat->avatar ? $dat->avatar : 'unknown.png');
-	$dat->avatar_tn_src = "/bin/img/avatars/tn/".($dat->avatar ? $dat->avatar : 'unknown.png');
-	
-	return $dat;
-}
-
 function formatDate ($date, $form = 1, $convert = FALSE) {
 	global $usrid;
 	

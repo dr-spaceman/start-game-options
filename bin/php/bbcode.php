@@ -1,6 +1,10 @@
-<?
+<?php
+
+require '../vendor/autoload.php';
+
+Use Vgsite\Img;
+
 require_once "class.pglinks.php";
-require_once "class.img.php";
 
 $footnotes_grouping_i = 0; //increase for every grouping and assign links accordingly so there's no conflicts
 

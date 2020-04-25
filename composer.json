@@ -1,0 +1,16 @@
+{
+    "autoload": {
+        "psr-4": {
+          "Vgsite\\" : "src"
+        }
+    },
+    "require": {
+        "monolog/monolog": "2.0.*",
+        "nesbot/carbon": "^2.31",
+        "respect/validation": "^2.0",
+        "vlucas/phpdotenv": "^4.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
+}

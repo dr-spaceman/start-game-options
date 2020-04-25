@@ -956,7 +956,7 @@ if($what == "links") {
 		
 		if($usrrank < 7) die("Can't do this with rank");
 		
-		$q = "SELECT * FROM games_links WHERE id='$del' LIMIT 1";
+		$sql = "SELECT * FROM games_links WHERE id='$del' LIMIT 1";
 		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Link id #$del not in db");
 		
 		$q = "DELETE FROM games_links WHERE id='$del' LIMIT 1";
@@ -964,13 +964,6 @@ if($what == "links") {
 			$errors[] = "Couldn't delete";
 		} else {
 			adminAction("games link: game:$gdat[title] Site:$dat->site_name URL:$dat->url Posted:$dat->datetime by ".outputUser($dat->usrid, FALSE, FALSE), "deleted");
-			//notify superuser
-			if($dat->usrid && ($dat->usrid != $usrid)) {
-				$udat = getUserDat($dat->usrid);
-				if($udat->rank == 9) {
-					mail($udat->email, "Videogam.in: link deleted", "A link you posted has been deleted by ".outputUser($usrid, FALSE, FALSE).":\n\nSite:".$dat->site_name."\nURL:".$dat->url."\nGame:".$gdat[title]."\nhttp://theVideogam.in.com/games/".$gdat[platform_shorthand]."/".$gdat[title_url]."/");
-				}
-			}
 			$results[] = "Deleted";
 		}
 		
@@ -1118,11 +1111,11 @@ if($what == "trivia") {
 		
 		if(!$factid = $_POST['factid']) die("No fact id given");
 		
-		if($usrrank < 9) {
+		if($usrrank < User::SUPERADMIN) {
 			$q = "SELECT usrid FROM games_trivia WHERE id='$factid' LIMIT 1";
 			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
-			$udat = getUserDat($dat->usrid);
-			if($udat->rank > $usrrank) $errors[] = "You don't have permission to edit this item since the item's author outranks you.";
+			$user = User::getById($dat->usrid);
+			if($user->getRank() > $usrrank) $errors[] = "You don't have permission to edit this item since the item's author outranks you.";
 		}
 		
 		if(!$errors) {

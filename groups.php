@@ -394,16 +394,16 @@ if($path != "") {
 				}
 			}
 			
-			$udat = getUserDat($usrid);
-			$mail_message = "Hello, you have been invited by your friend, ".$udat->username.($udat->name && $udat->username != $udat->name ? " (".$udat->name.")" : "")." to join the Videogam.in gaming group, ".$gdat->name."!\n\nAbout this group:\n".strip_tags($gdat->about)."\n\n";
-					if($_POST['inv_message']) $mail_message.= $udat->username." writes:\n".$_POST['inv_message']."\n\n";
+			$user_data = User::getById($usrid);
+			$mail_message = "Hello, you have been invited by your friend, ".$user_data['username'].($user_data['name'] && $user_data['username'] != $user_data['name'] ? " (".$user_data['name'].")" : "")." to join the Videogam.in gaming group, ".$gdat->name."!\n\nAbout this group:\n".strip_tags($gdat->about)."\n\n";
+					if($_POST['inv_message']) $mail_message.= $user_data['username']." writes:\n".$_POST['inv_message']."\n\n";
 					$mail_message.= "Check out the group hub here ----> http://videogam.in/groups/".$gdat->group_id."/".formatNameURL($gdat->name);
 			
 			if(count($adds)) {
 				
 				$mres = array();
 				foreach($adds as $add) {
-					$headers = "From: ".$udat->username." <".$udat->email.">\r\n" .
+					$headers = "From: ".$user_data['username']." <".$user_data['email'].">\r\n" .
 						'X-Mailer: PHP/' . phpversion();
 					if(!mail($add, "Invitation to join $gdat->name", $mail_message, $headers)) {
 						sendBug('Couldnt e-mail invitation to join group; to:'.$add.'; '.$headers);

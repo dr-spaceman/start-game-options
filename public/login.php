@@ -1,77 +1,66 @@
-<?
-ini_set("error_reporting", 6135);
-require "db.php";
-require "page_functions.php";
-require "bbcode.php";
-require "class.user.php";
+<?php
 
-$default_email = "mat.berti@gmail.com";
+require '../vendor/autoload.php';
 
-//$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Vgsite\User;
 
-$errors   = array();
-$warnings = array();
-$results  = array();
-
-$html_tag = '<!DOCTYPE html>
-<html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
-$root = $_SERVER['DOCUMENT_ROOT'];
-
-session_set_cookie_params(6000);
-session_start();
-
-$usrid   = null;
-$usrname = null;
-$usrrank = 0;
-
-//set login vars
-if(isset($_SESSION['usrname'])){
-	
-	$usrname = $_SESSION['usrname'];
-	$usrid = $_SESSION['usrid'];
-	$usrrank = base64_decode($_SESSION['usrkey']);
-	$usrlastlogin = $_SESSION['usrlastlogin'];
-
-} else {
-	
-	if(isset($_COOKIE['usrsession'])){
-		
-		//login user from remembered cookie
-		
-		$usrsession = base64_decode($_COOKIE['usrsession']);
-		list($usrid_, $password_) = explode("```", $usrsession);
-		$q = sprintf(
-			"SELECT * FROM users WHERE usrid='%s' AND password=PASSWORD('%s') LIMIT 1",
-			mysqli_real_escape_string($GLOBALS['db']['link'], $usrid_),
-			mysqli_real_escape_string($GLOBALS['db']['link'], $password_)
-		);
-		if($res = mysqli_query($GLOBALS['db']['link'], $q)) {
-			$userdat = mysqli_fetch_assoc($res);
-			login($userdat);
-		}
-	
-	}
-}
+require_once (__DIR__."/../src/config.php");
 
 //login
-if(isset($_POST['do']) && $_POST['do'] == "login" && isset($_POST['username'])) {
-	
-	if(strstr($_POST['username'], "@")){
-		//an email address was given
-		$query = sprintf(
-			"SELECT * FROM `users` WHERE `email` = '%s' AND `password` = password('%s') LIMIT 1",
-			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['username']),
-			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['password'])
+if(isset($_POST['login'])) {
+
+	try {
+		$username = filter_input(INPUT_POST, "username");
+        if (!$username) {
+            throw new Exception('Username or email is required to login');
+        }
+
+        $email = '';
+        if(strstr($username, "@")) {
+            $email = filter_var($username, FILTER_VALIDATE_EMAIL);
+            if (!$email) {
+                throw new Exception("The e-mail address '$email' couldn't be validated. Please try again!");
+            }
+        }
+
+        $password = filter_input(INPUT_POST, "password");
+        if (!$password) {
+            throw new Exception('Password is required.');
+        }
+		
+		$user = isset($email) ? User::getByEmail($email) : User::getByUsername($username);
+
+		if (password_verify($password, $user->data['password']) === false) {
+			throw new Exception('Invalid password');
+		}
+
+		// Re-hash password if necessary
+		$currentHashAlgorithm = PASSWORD_DEFAULT;
+		$passwordNeedsRehash = password_needs_rehash(
+			$user->data['password'],
+			$currentHashAlgorithm
 		);
-	} else {
-		//a username was given
-		$query = sprintf(
-			"SELECT * FROM `users` WHERE `username` = '%s' AND `password` = password('%s') LIMIT 1",
-			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['username']),
-			mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['password'])
-		);
+		if ($passwordNeedsRehash === true) {
+			// Save new password hash
+			$user->data['password'] = password_hash(
+				$password,
+				$currentHashAlgorithm
+			);
+			$user->save();
+		}
+
+		$_SESSION['logged_in'] = 'true';
+		$_SESSION['email'] = $email;
+
+		// Everything's ok... do something now
+	} catch (Exception $e) {
+		
 	}
-	
+
+	// the rest is untouched and needs to be looked at
+
 	if($userdat = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))) {
 		
 		login($userdat);
@@ -247,66 +236,61 @@ function login($userdat){
 	
 }
 
-function updateActivity(){
-	
-	global $usrid;
-	
-	$u = new user($usrid);
-	$u->getDetails(); //$dob for birthday badge
-	
-	//update activity
-	$query = "UPDATE users SET activity='".date("Y-m-d H:i:s")."', previous_activity='".$u->activity."' WHERE usrid='".$usrid."' LIMIT 1";
-	mysqli_query($GLOBALS['db']['link'], $query);
-	
-	//record current scores and counts
-	$query = "SELECT * FROM users_data WHERE usrid = '".$usrid."' AND `date` = '".date("Y-m-d")."' LIMIT 1";
-	if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
-		
-		$u->calculateScore(); //recalculate score
-		
-		if($u->score['total'] >= 1){
-			$q2 = "INSERT INTO users_data (usrid, `date`, ".implode(", ", array_keys($u->score['vars'])).", score_forums, score_pages, score_sblogs, score_total) VALUES 
-				('$usrid', '".date("Y-m-d")."', '".implode("', '", array_values($u->score['vars']))."', '".$u->score['forums']."', '".$u->score['pages']."', '".$u->score['sblogs']."', '".$u->score['total']."');";
-			mysqli_query($GLOBALS['db']['link'], $q2);
-		}
-		
-		$q2 = "UPDATE users SET 
-			score_forums = '".$u->score['forums']."',
-			score_pages = '".$u->score['pages']."',
-			score_sblogs = '".$u->score['sblogs']."',
-			score_total = '".$u->score['total']."'
-			WHERE usrid = '$usrid' LIMIT 1";
-		mysqli_query($GLOBALS['db']['link'], $q2);
-		
-	}
-	
-	//badges
-	//check birthday
-	$dob = str_replace("-", "", $u->dob);
-	$dob = substr($dob, 4);
-	if($dob == date("md")){
-		require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
-		$_badges = new badges();
-		$_badges->earn(37);
-	}
-	
-}
 
-function newBadges(){
+
+// OLD
+
+require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+$page = new page();
+
+if($usrid) header("Location: /");
+
+$page->title = "Log in to Videogam.in";
+$page->freestyle.= '
+	#loginform { font-size:14px; }
+	#loginform BIG INPUT { padding:7px 0; font-size:14px; text-indent:10px; }
+	#loginform INPUT[type=submit] { font-weight:bold; font-size:15px; padding:5px 15px; }
+	#loginform LABEL { display:block; margin:10px 0 3px; }
+';
+$page->minimalist = true;
+$page->header();
+
+?>
+<div style="width:225px; margin:40px auto 0;">
 	
-	// check for new badges earned since last login
-	// return array badge IDs
+	<h1>Log in</h1>
 	
-	$new = array();
+	<div class="hr"></div>
 	
-	$query = "SELECT * FROM badges_earned WHERE usrid = '".$GLOBALS['usrid']."' AND `new` = '1';";
-	$res = mysqli_query($GLOBALS['db']['link'], $query);
-	while ($row = mysqli_fetch_assoc($res)) {
-		$new[] = $row['bid'];
-	}
+	<a href="/login_fb.php" style="display:block;" onclick="$.cookie('lastpage', '<?=$_SERVER['HTTP_REFERER']?>', {expires:1, path:'/'})"><img src="/bin/img/fbconnect_225.png" width="225" height="33" alt="Login with Facebook"/></a>
 	
-	return $new;
+	<div class="hr"></div>
 	
-}
+	<form method="post" action="<?=$_SERVER['HTTP_REFERER']?>" id="loginform">
+		<input type="hidden" name="do" value="login"/>
+		
+		<label for="login-username" style="height:0; overflow:hidden;">Username:</label>
+		<big><input type="text" name="username" placeholder="Videogam.in username or e-mail" id="login-username" maxlength="25" style="width:100%"/></big>
+		
+		<label for="login-password" style="height:0; overflow:hidden;">Password:</label>
+		<big><input type="password" name="password" placeholder="Password" id="login-password" maxlength="25" style="width:100%"/></big>
+		
+		<label style="float:right"><input type="submit" name="login" value="Log in"/></label>
+		
+		<label style="line-height:33px"><input type="checkbox" name="remember" value="1"/> Remember me</label>
+		
+	</form>
 	
+	<div class="hr"></div>
+	
+	<ul style="margin:20px 0 0; font-size:110%;">
+		<li><a href="/retrieve-pass.php">Reset password</a></li>
+		<li><a href="/register.php">Register a new account</a></li>
+	</ul>
+
+</div>
+<?
+
+$page->footer();
+
 ?>

@@ -16,7 +16,7 @@ elseif($_POST['subject']) $subject = $_POST['subject'];
 $subject = htmlentities($subject, ENT_QUOTES);
 $message = htmlentities($_POST['message'], ENT_QUOTES);
 $reply_to_id = $_POST['reply_to_id'];
-$to = $_POST['to']; // a usrid
+$to = filter_input(INPUT_POST, 'to'); // a usrid
 
 if($user && $method == "pm" && !$usrid) {
 	$page->header();
@@ -39,8 +39,8 @@ if($_POST['send']) {
 	if($method == "email") {
 		
 		//get $to
-		$usr = getUserDat($to);
-		if(!$usr->email) $errors[] = "Couldn't get user's e-mail address from the database! Try <a href=\"?user=$user&method=pm\">sending a private message</a> instead (make sure to copy your message below).";
+		$usr = User::getById($to);
+		if(!$usr->data['email']) $errors[] = "Couldn't get user's e-mail address from the database! Try <a href=\"?user=$user&method=pm\">sending a private message</a> instead (make sure to copy your message below).";
 		
 		$sdat = getUserDat($usrid);
 		
@@ -54,7 +54,7 @@ if($_POST['send']) {
 			    'Reply-To: ' . $_POST['email'] . "\r\n" .
 			    'X-Mailer: PHP/' . phpversion();
 			
-			if(mail($usr->email, "Message from a Videogam.in user: ".strip_tags($subject), $message, $headers)) {
+			if(mail($usr->data['email'], "Message from a Videogam.in user: ".strip_tags($subject), $message, $headers)) {
 				$page->header();
 				?>
 				<h2>Message Sent</h2>
@@ -129,17 +129,13 @@ if(!$user) {
 
 } else {
 	
-	$query = "SELECT * FROM users LEFT JOIN users_prefs USING (usrid) WHERE username='$user' LIMIT 1";
-	$res = mysqli_query($GLOBALS['db']['link'], $query);
-	if(!$usr = mysqli_fetch_object($res)) {
-		echo "Couldn't get user info for username '$user'";
-		$page->footer();
-	}
+	$usr = User::getByUsername($user);
+	$usr_prefs = $usr->getPreferences();
 	
 	if($method == "email") {
 		//does user allow emails?
-		if(!$usr->mail_from_users && $usrrank <= 8) {
-			echo 'Sorry, '.$usr->username.' doesn\'t allow mail from other users. You may of course send them a <a href="?user='.$usr->username.'&method=pm">private message</a> though!';
+		if(!$usr_prefs['mail_from_users'] && $usrrank <= 8) {
+			echo 'Sorry, '.$usr->getUsername().' doesn\'t allow mail from other users. You may of course send them a <a href="?user='.$usr->getUsername().'&method=pm">private message</a> though!';
 			$page->footer();
 			exit;
 		}
