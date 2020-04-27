@@ -3,9 +3,24 @@
 namespace Vgsite;
 
 use Vgsite\Exceptions\UserException;
-use Vgsite\DB;
+use Vgsite\Avatar;
 
-class User 
+interface UserInterface
+{
+    private $dbh;
+    private $logger;
+    private $user_id;
+    private $rank;
+    public $data;
+    public function getId(): int {}
+    public function getRank(): int {}
+    public function getAvatar(): Avatar {}
+    public function insert(): bool {}
+    public function save(): bool {}
+    public function delete(): bool {}
+}
+
+class User implements UserInterface
 {
 	public const GUEST = 0;
 	public const RESTRICTED = 1;
@@ -96,8 +111,7 @@ class User
 
     public function getAvatar()
     {
-        $this->avatar_src = "/bin/img/avatars/".($this->data['avatar'] ?: 'unknown.png');
-        $this->avatar_tn_src = "/bin/img/avatars/tn/".($this->data['avatar'] ?: 'unknown.png');
+        return new Avatar($this->data['avatar']);
     }
 
     public static function getById(int $user_id, $dbh, $logger=[]): ?self

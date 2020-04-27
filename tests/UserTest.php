@@ -12,7 +12,7 @@ class UserTest extends TestCase
 {
     public function testUserLazy()
     {
-        $user = UserLazyLoader::getUserById(TEST_USER_ID);
+        $user = UserLazyLoader::getById(TEST_USER_ID);
         $this->assertInstanceOf(User::class, $user);
         $this->assertEquals($user->data['email'], 'test@test.com');
         $this->assertEquals($user->data['user_id'], TEST_USER_ID);
@@ -20,8 +20,9 @@ class UserTest extends TestCase
 
     public function testUserStaticFetch()
     {
-        // $user = User::instance($pdo, $logger)->getByUsername('test');
-
+        $user = new User::getById()
+        $user = new User((UserBuilder($pdo, $logger))->getById(TEST_USER_ID));
+        $user = User::instance($pdo, $logger)->getByUsername('test');
     }
 
     public function testRanks()
