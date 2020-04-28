@@ -74,7 +74,8 @@ class Image
     public $img_description;
     public $sort;
 
-    public const UPLOAD_TEMP_DIR = "var/uploads";
+    public const IMAGES_DIR = ROOT_DIR.'/assets/images/';
+    public const UPLOAD_TEMP_DIR = ROOT_DIR.'/var/uploads';
     
     public function __construct($img_params="")
     {

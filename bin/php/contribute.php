@@ -25,7 +25,7 @@ function setSessId() {
 	
 
 function submitNew() {
-	global $usrid, $usrname, $usrrank, $default_email;
+	global $usrid, $usrname, $usrrank;
 	
 	if(!$this->type) return array("errors" => array("type_id required for contribution"));
 	if(!$this->desc) return array("errors" => array("description required for contribution"));
@@ -159,7 +159,7 @@ function submitNew() {
 		$datatbl = str_replace('="/', '="http://videogamin.squarehaven.com/', $datatbl);
 		
 		//notify admin via email
-		$to      = $default_email;
+		$to      = getenv('NOTIFICATION_EMAIL');
 		$subject = 'New Videogam.in submission'.(!$pub ? ' [approval required]' : '');
 		$message = '<html>
 			<a href="http://videogamin.squarehaven.com/~'.$usrname.'">'.$usrname.'</a> has contributed something!

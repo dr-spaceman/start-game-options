@@ -73,10 +73,10 @@ do if($_POST){
 		
 		$headers = 'From: '.$usrname.'<'.$usr->email.'>'."\r\n" .
     'X-Mailer: PHP/' . phpversion();
-		if (mail($default_email, "Videogam.in Move Request", "$usrname has requested that $old_title be renamed to $new_title. Reason:\n\n".$_POST['edit_summary']."\n\nTo follow through with this request: http://videogam.in/pages/move.php?title=".urlencode($titleurl)."&to=".urlencode($new_title)."&reason=".urlencode($_POST['edit_summary'])."\n\n", $headers)) {
+		if (mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in Move Request", "$usrname has requested that $old_title be renamed to $new_title. Reason:\n\n".$_POST['edit_summary']."\n\nTo follow through with this request: http://videogam.in/pages/move.php?title=".urlencode($titleurl)."&to=".urlencode($new_title)."&reason=".urlencode($_POST['edit_summary'])."\n\n", $headers)) {
 	 		$results[] = "Your move request has been sent. Thanks for helping keep things tidy around here.";
 		} else {
-	 		$errors[] = "There was an error and your request could not be sent. Please email $default_email to request this move and mention the error.";
+	 		$errors[] = "There was an error and your request could not be sent. Please email getenv('NOTIFICATION_EMAIL') to request this move and mention the error.";
 		}
 		
 		break;

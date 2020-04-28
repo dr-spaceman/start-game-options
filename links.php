@@ -15,7 +15,7 @@ if($_POST['submit']) {
 	if($_POST['name'] && ($_POST['url'] != 'http://' || $_POST['url'] != '')) {
 		if($_POST['math'] != $_POST['math1'] + $_POST['math2']) die("Your math is wrong. Are you a human?");
 		else {
-			if(mail($default_email,"Videogam.in link submission", $_POST['name']."\n".$_POST['url']."\n".$_POST['description']."\n\nhttp://videogam.in/links.php")) {
+			if(mail(getenv('NOTIFICATION_EMAIL'),"Videogam.in link submission", $_POST['name']."\n".$_POST['url']."\n".$_POST['description']."\n\nhttp://videogam.in/links.php")) {
 				$results[] = "Your link has been successfully submited to the editors.";
 			} else {
 				$errors[] = "There was an error submitting your link. Please make us aware of the error by submitting a <a href=\"/bug.php\">bug report</a>.";

@@ -34,7 +34,7 @@ do if($_POST){
 		$q = "DELETE FROM pages WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't remove page because of a database error: ".$q;
 		
-		@mail($default_email, "[Videogam.in] Remove page alert", "$usrname has deleted $title (http://videogam.in".$ed->url.").");
+		@mail(getenv('NOTIFICATION_EMAIL'), "[Videogam.in] Remove page alert", "$usrname has deleted $title (http://videogam.in".$ed->url.").");
 		
 	} else {
 		

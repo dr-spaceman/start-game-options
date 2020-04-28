@@ -1,18 +1,14 @@
 <?php
 
+require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
+
 use PHPUnit\Framework\TestCase;
 use Vgsite\User;
-use Vgsite\DB;
 use Verot\Upload;
 
 define("TEST_USER_ID", 2);
 define("TEST_IMAGE_SRC", "http://videogamin.squarehaven.com/magus.jpg");
 define("TEST_ID", uniqid());
-
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
-$dotenv->load();
-
-$pdo = DB::instance();
 
 class ImageTest extends TestCase
 {
@@ -21,11 +17,20 @@ class ImageTest extends TestCase
         $upload = new Upload(TEST_IMAGE_SRC);
         $this->assertTrue($upload->uploaded);
         $upload->file_new_name_body = TEST_ID;
-        $upload->process->(__DIR__.'/../'.Image::UPLOAD_TEMP_DIR);
+        $upload_dir = __DIR__.'/../'.Image::UPLOAD_TEMP_DIR;
+        $upload_temp_img = $upload_dir.'/'.TEST_ID.'.jpg';
+        $upload->process->($upload_dir);
+        $this->assertTrue(file_exists($upload_temp_img));
+
+        return $upload_temp_img;
     }
-    public function testImageInsert()
+
+    /**
+     * @depends testUpload
+     */
+    public function testImageInsert($image_loc)
     {
-        $image = new Image(['img_name' => 'test.png'], $GLOBALS['pdo']);
+        $image = Image::getBySrc($image_loc, $GLOBALS['pdo'], $GLOBALS['logger']);
         $this->assertTrue($image->insert());
 
         return $image;

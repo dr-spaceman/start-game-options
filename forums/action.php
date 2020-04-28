@@ -1339,7 +1339,7 @@ if($_POST['submit_tag_suggestion']) {
 	if($usrid != 1) {
 		$q = "SELECT `title` FROM forums_topics WHERE tid='$tid' LIMIT 1";
 		$topic = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
-		@mail($default_email, "Videogam.in: new forum tag", outputUser($usrid, FALSE, FALSE)." has tagged the forum topic:\n\n   $topic->title\n\nwith a new tag:\n\n   $tag (".outputTag($tag).")\n\nView the topic at http://videogam.in/forums/?tid=$tid");
+		@mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in: new forum tag", outputUser($usrid, FALSE, FALSE)." has tagged the forum topic:\n\n   $topic->title\n\nwith a new tag:\n\n   $tag (".outputTag($tag).")\n\nView the topic at http://videogam.in/forums/?tid=$tid");
 	}
 	?>
 	<span onmouseover="$(this).children('.x').show();" onmouseout="$(this).children('.x').hide();">

@@ -1,12 +1,10 @@
 <?php
 
-require '../vendor/autoload.php';
+require_once (__DIR__.'/../config/bootstrap.php');
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Vgsite\User;
-
-require_once (__DIR__."/../src/config.php");
 
 //login
 if(isset($_POST['login'])) {

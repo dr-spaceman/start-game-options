@@ -105,7 +105,7 @@ function pageURL($title, $pgtype='', $encode=1){
 	
 }
 
-function sendBug($desc) { global $default_email; $desc = wordwrap($desc, 70); @mail($default_email, "Videogam.in Auto-Bug Report", $desc); }
+function sendBug($desc) { $desc = wordwrap($desc, 70); @mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in Auto-Bug Report", $desc); }
 
 function formatDate ($date, $form = 1, $convert = FALSE) {
 	global $usrid;

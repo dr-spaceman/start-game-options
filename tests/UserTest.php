@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
+require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
+
 use PHPUnit\Framework\TestCase;
 use Vgsite\User;
-use Vgsite\DB;
 
 define("TEST_USER_ID", 2);
-
-$pdo = DB::instance();
 
 class UserTest extends TestCase
 {

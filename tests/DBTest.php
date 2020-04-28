@@ -1,15 +1,11 @@
 <?php
 
-define("TEST_USER_ID", 2);
+require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
 use Vgsite\User;
-use Vgsite\DB;
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
-$dotenv->load();
-
-$pdo = DB::instance();
+define("TEST_USER_ID", 2);
 
 class DBTest extends TestCase
 {

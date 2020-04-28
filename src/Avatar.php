@@ -15,6 +15,7 @@ class Avatar
     public function __construct($src)
     {
         $this->src = $src;
+        //old properties
         $this->avatar_src = "/bin/img/avatars/".($this->data['avatar'] ?: 'unknown.png');
         $this->avatar_tn_src = "/bin/img/avatars/tn/".($this->data['avatar'] ?: 'unknown.png');
     }

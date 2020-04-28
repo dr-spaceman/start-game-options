@@ -60,7 +60,7 @@ if($action == "submimg"){
 
 	// Investigate...
 	if(isset($handler['usrid']) && $handler['usrid'] != $usrid) {
-		NNdie("A coding investigation is taking place... Cannot continue. [ERROR uploadhandle.php 62]");
+		NNdie("A coding investigation is taking place... Cannot continue. [ERROR ".__FILE__." ".__LINE__."]");
 	}
 	
 	$dir = "/images/".substr($sessid, 12, 7); // images/USRID

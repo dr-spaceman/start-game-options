@@ -1250,8 +1250,8 @@ if($do == "post_quote") {
 			$q2 = "SELECT username, email FROM `users` WHERE `usrid` = '$row[usrid]' LIMIT 1";
 			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q2));
 			$mail_message = $dat->username.",\n".outputUser($usrid, FALSE, FALSE)." has replied to the Videogam.in forum topic \"".$row['title']."\".\n---> http://videogam.in/forums/?tid=$tid&page=unread\n\nSincerely,\nThe Videogam.in Forum Notification Robot\n\nP.S.: You received this e-mail because you are subscribed to this topic. To unsubscribe, go here -> http://videogam.in/forums/action.php?unsubscribe=".base64_encode($row['usrid'].';;'.$row['tid'])."";
-			$headers = 'From: ' . $default_email . "\r\n" .
-				'Reply-To: ' . $default_email . "\r\n" .
+			$headers = 'From: ' . getenv('NOTIFICATION_EMAIL') . "\r\n" .
+				'Reply-To: ' . getenv('NOTIFICATION_EMAIL') . "\r\n" .
 				'X-Mailer: PHP/' . phpversion();
 			if(!mail($dat->email, "New Videogam.in forum post", $mail_message, $headers)) sendBug('Couldnt e-mail forum subscriber. Details:'."$dat->email, New Videogam.in forum post, $mail_message, $headers");
 		}
@@ -1416,7 +1416,7 @@ if($_POST['submit_tag_suggestion']) {
 	if($usrid != 1) {
 		$q = "SELECT `title` FROM forums_topics WHERE tid='$tid' LIMIT 1";
 		$topic = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
-		@mail($default_email, "Videogam.in: new forum tag", outputUser($usrid, FALSE, FALSE)." has tagged the forum topic:\n\n   $topic->title\n\nwith a new tag:\n\n   $tag (".outputTag($tag).")\n\nView the topic at http://videogam.in/forums/?tid=$tid");
+		@mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in: new forum tag", outputUser($usrid, FALSE, FALSE)." has tagged the forum topic:\n\n   $topic->title\n\nwith a new tag:\n\n   $tag (".outputTag($tag).")\n\nView the topic at http://videogam.in/forums/?tid=$tid");
 	}
 	?>
 	<span onmouseover="$(this).children('.x').show();" onmouseout="$(this).children('.x').hide();">

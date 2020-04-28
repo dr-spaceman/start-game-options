@@ -88,7 +88,7 @@ if($submit == "Add Link") {
 				$headers = "From: $usrname <".$user->data['email'].">\r\n" .
     			'Reply-To: ' . $user->data['email'] . "\r\n" .
     			'X-Mailer: PHP/' . phpversion();
-				mail($default_email, "Videogam.in link submission", "The following link has been posted on the $gdat->title overview page:\n\n$in[site_name]\n$in[url]\n$in[description]\n\nTo remove this link: http://videogam.in/ninadmin/games-mod.php?id=$gdat->gid&what=links&delete=$dat->id\n", $headers);
+				mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in link submission", "The following link has been posted on the $gdat->title overview page:\n\n$in[site_name]\n$in[url]\n$in[description]\n\nTo remove this link: http://videogam.in/ninadmin/games-mod.php?id=$gdat->gid&what=links&delete=$dat->id\n", $headers);
 				$results[] = "Your link has been successfully posted. Thanks for your contribution!";
 				
 				if($in['to'] == "email address") unset($in['to']);

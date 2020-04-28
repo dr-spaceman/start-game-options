@@ -41,7 +41,7 @@ if($_POST['send']){
 	
 	if($usrid == 9 || $usrid == 4222){
 		
-		mail($default_email, "Videogam.in message", "To ".outputUser($to, FALSE, FALSE)."\n\n".$message);
+		mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in message", "To ".outputUser($to, FALSE, FALSE)."\n\n".$message);
 		
 		$page->header();
 				?>

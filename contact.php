@@ -43,7 +43,7 @@ do if($_POST){
 	$mail_headers = "From: Videogam.in <noreply@videogam.in>\r\n" . 
 	                "Reply-To: " . $email . "\r\n" .
 	                "X-Mailer: PHP/" . phpversion();
-	$mail_to      = $default_email;
+	$mail_to      = getenv('NOTIFICATION_EMAIL');
 	$mail_subject = "Videogam.in Message";
 	$mail_message = "The following message is from ".$name." <".$email.">:\n\n".$message.($frompage ? "\n\nPage: http://videogamin.squarehaven.com".$frompage : "\n\nThis message was sent via contact form from ".$_SERVER['SCRIPT_NAME']);
 	$mail_result  = mail($mail_to, $mail_subject, $mail_message, $mail_headers);
@@ -52,8 +52,8 @@ do if($_POST){
  		$results[] = "<b>Success!</b> Your message has been sent.".($frompage ? ' <b><a href="'.$frompage.'" class="arrow-left">Back to where you came from</a></b>' : '');
  		$ret['success'] = 1;
 	} else {
- 		$errors[1] = 'There was an error and your message could not be sent. Please email <a href="mailto:'.$default_email.'">'.$default_email.'</a>.';
- 		$ret['error'] = "There was an error and your message could not be sent. Please email <$default_email>.";
+ 		$errors[1] = 'There was an error and your message could not be sent. Please email <a href="mailto:'.getenv('NOTIFICATION_EMAIL').'">'.getenv('NOTIFICATION_EMAIL').'</a>.';
+ 		$ret['error'] = "There was an error and your message could not be sent. Please email <getenv('NOTIFICATION_EMAIL')>.";
 	}
 	
 	if($_POST['_ajax']){

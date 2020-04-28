@@ -164,7 +164,7 @@ if($contribute) {
 		while (list($k, $v) = each($in)) {
 			$message.= "$k: $v\n";
 		}
-		if(mail($default_email, $subject, $message, $headers)) {
+		if(mail(getenv('NOTIFICATION_EMAIL'), $subject, $message, $headers)) {
 			echo "Your contribution has been submitted to the Square Haven webmasters. Thanks!<br /><a href=\".\">Back to ".$person."'s profile</a>";
 			Foot();
 			exit;

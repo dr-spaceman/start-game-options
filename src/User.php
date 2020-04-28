@@ -73,10 +73,8 @@ class User implements UserInterface
      * @param PDO      $dbh     Database Injection
      * @param Monolog  $logger  Logger Injection
      */
-    public function __construct(array $params, $dbh, $logger=[])
+    public function __construct(array $params)
     {
-        if (!$this->instance) {}
-
         if (isset($params['user_id'])) $this->user_id = (int) $params['user_id'];
         if (isset($params['rank'])) $this->rank = $params['rank'];
 

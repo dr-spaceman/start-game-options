@@ -15,10 +15,10 @@ if($inp['message']) {
 	if($_POST['math'] != $_POST['math1'] + $_POST['math2']) {
 		$errors[] = "Sorry but your math appears to be wrong. Please revalidate the form.";
 	} else {
-		if (mail($default_email,"Videogam.in Job Application","The following message is from $inp[name]:\n\n".$inp[message]."\n\nThis message was sent via contact form from ".$_SERVER['SCRIPT_URI'],"From:$inp[email]")) {
+		if (mail(getenv('NOTIFICATION_EMAIL'),"Videogam.in Job Application","The following message is from $inp[name]:\n\n".$inp[message]."\n\nThis message was sent via contact form from ".$_SERVER['SCRIPT_URI'],"From:$inp[email]")) {
 	 		$results[] = "<b>Success!</b> Your message is en route.";
 		} else {
-	 		$errors[] = "Sorry for the inconvenience, but there was an error and your message could not be sent. Please email $default_email instead.";
+	 		$errors[] = "Sorry for the inconvenience, but there was an error and your message could not be sent. Please email getenv('NOTIFICATION_EMAIL') instead.";
 		}
 	}
 }

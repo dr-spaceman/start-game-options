@@ -1,7 +1,5 @@
 <?php
 
-require '../vendor/autoload.php';
-
 Use Vgsite\Img;
 
 require_once "class.pglinks.php";

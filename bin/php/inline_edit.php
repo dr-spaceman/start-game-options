@@ -352,7 +352,7 @@ if($_POST) {
 						else $results[] = "Publication #$pubid deleted";
 					} else {
 						//suggest
-						$to      = $default_email;
+						$to      = getenv('NOTIFICATION_EMAIL');
 						$subject = '[Videogam.in] Suggest destruction';
 						$message = '<html>
 							'.$usrname.' suggests deleting <a href="/games/'.$gid.'/">publication #'.$pubid.'</a>
@@ -420,7 +420,7 @@ if($_POST) {
 					$newf = "/bin/deleted-files/".str_replace("/", "--", $curr)."--".rand(10000, 99999);
 					rename($_SERVER['DOCUMENT_ROOT'].$curr, $_SERVER['DOCUMENT_ROOT'].$newf);
 				}
-				if($usrid != 1) @mail($default_email, "[Videogam.in] New game bg img!", "A new image has been uploaded by ".outputUser($usrid, false, false)." to http://videogam.in/games/$id\n\n".($newf ? "Note old img here -> http://videogam.in/$newf\n\n" : ""));
+				if($usrid != 1) @mail(getenv('NOTIFICATION_EMAIL'), "[Videogam.in] New game bg img!", "A new image has been uploaded by ".outputUser($usrid, false, false)." to http://videogam.in/games/$id\n\n".($newf ? "Note old img here -> http://videogam.in/$newf\n\n" : ""));
 				
 				// Upload
 				include_once("class.upload.php");

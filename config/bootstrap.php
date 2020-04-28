@@ -1,20 +1,19 @@
 <?php
 
+define('ROOT_DIR', realpath(__DIR__.'/..'));
+define('TEMPLATE_DIR', ROOT_DIR.'/templates');
+
+require_once ROOT_DIR.'/vendor/autoload.php';
+
 use Vgsite\User;
 use Monolog\Logger;
 
 ini_set("error_reporting", 6135);
-ini_set("session.save_path", __DIR__."/../var/sessions");
+ini_set("session.save_path", ROOT_DIR.'/var/sessions');
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(ROOT_DIR);
 $dotenv->load();
 $dotenv->required(['ENVIRONMENT', 'DB_HOST', 'DB_USERNAME', 'DB_PASSWORD', 'DB_NAME_MAIN']);
-
-define("TEMPLATE_PATH", "templates");
-define("APP_NAME", "Videogam.in");
-define("APP_DOMAIN", "videogamin.squarehaven.com");
-define("DEFAULT_EMAIL", "mat.berti@gmail.com");
-define("ENVIRONMENT", getenv('ENVIRONMENT'));
 
 $pdo = Vgsite\DB::instance();
 
@@ -22,23 +21,22 @@ session_start();
 
 $logger = new Logger('app');
 // Register a handler -- file loc and minimum error level to record
-$logger->pushHandler(new Monolog\Handler\StreamHandler(__DIR__."/../var/logs/app.log", (ENVIRONMENT == "development" ? Logger::DEBUG : Logger::INFO)));
+$logger->pushHandler(new Monolog\Handler\StreamHandler(__DIR__."/../var/logs/app.log", (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
 // Inject details of error source
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
 
 // Catch uncaught exceptions
 set_exception_handler(function (\Throwable $e) {
     $GLOBALS['logger']->warning($e);
-    if (ENVIRONMENT == "development") echo $e;
+    if (getenv('ENVIRONMENT') == "development") echo $e;
     else echo $e->getMessage();
 });
 
 // OLDER STUFF BELOW //
 
 
-
-require "page_functions.php";
-require "bbcode.php";
+require "../bin/php/page_functions.php";
+require "../bin/php/bbcode.php";
 
 //$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
 

@@ -5,3 +5,4 @@ log
 .ht*
 composer.phar
 /vendor/
+/var/sessions/*

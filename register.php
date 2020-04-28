@@ -251,7 +251,7 @@ $page->footer();
 
 
 function sendVerificationEmail($user) {
-	global $db, $default_email;
+	global $db;
 	
 	$query = "SELECT * FROM `users` WHERE `username` = '$user' LIMIT 1";
 	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) die("Couldn't get user data for '$user'");
@@ -259,8 +259,8 @@ function sendVerificationEmail($user) {
 	$to = $dat->email;
   $subject = 'Videogam.in verification e-mail';
   $body = "Dearest $username,\nVerify your Videogam.in user account by visiting the following URL:\n\nhttp://thevideogam.in/register.php?verify=".base64_encode($username)."\n\nThanks!\n-The happy Videogam.in user validation robot\n";
-  $headers = 'From: ' . $default_email . "\r\n" .
-    'Reply-To: ' . $default_email . "\r\n" .
+  $headers = 'From: ' . getenv('NOTIFICATION_EMAIL') . "\r\n" .
+    'Reply-To: ' . getenv('NOTIFICATION_EMAIL') . "\r\n" .
     'X-Mailer: PHP/' . phpversion();
   
   if(mail($to, $subject, $body, $headers)) return TRUE;
