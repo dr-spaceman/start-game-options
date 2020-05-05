@@ -6,9 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Vgsite\User;
 use Verot\Upload;
 
-define("TEST_USER_ID", 2);
 define("TEST_IMAGE_SRC", "http://videogamin.squarehaven.com/magus.jpg");
-define("TEST_ID", uniqid());
 
 class ImageTest extends TestCase
 {
@@ -59,21 +57,5 @@ class ImageTest extends TestCase
         $stmt = $GLOBALS['pdo']->query("SELECT 1 FROM users WHERE email='foo123@marypoppins69burt.com'");
         $user_exists = $stmt->fetchColumn();
         $this->assertFalse($user_exists);
-    }
-
-    /**
-     @depends testDBInsert
-     */
-    public function testDBDelete($id_string)
-    {
-        $sql = sprintf("DELETE FROM `test` WHERE bar = '%s'", $id_string);
-        $this->assertNotFalse($GLOBALS['pdo']->query($sql));
-    }
-
-    public function testInstantiated()
-    {
-        $obj = \Vgsite\TestClassInstantiated::instance($GLOBALS['pdo'])->get(1);
-        var_dump($obj);
-        $this->assertEquals(1, $obj->id);
     }
 }

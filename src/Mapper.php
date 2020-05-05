@@ -1,44 +1,114 @@
 <?php
 
+namespace Vgsite;
+
+/**
+ * Handle database queries and logging
+ */
 abstract class Mapper
 {
+    /**
+     * Database primary key field name
+     */
+    protected $id_field = 'id';
+
+    /**
+     * Registry object
+     * @var PDO object
+     */
     protected $pdo;
 
-    function __construct(\PDO $pdo)
+    /**
+     * Registry object
+     * @var Monolog object
+     */
+    protected $logger;
+    
+    /**
+     * PDO statements
+     * @var PDOStatement object
+     */
+    protected $select_statement;
+    protected $select_all_statement;
+    protected $save_statement;
+    protected $insert_statement;
+    protected $delete_statement;
+
+    public function __construct()
     {
-        $this->pdo = $pdo;
+        $registry = Registry::instance();
+        $this->pdo = $registry->get('pdo');
+        $this->logger = $registry->get('logger');
     }
 
-    public function find(int $id): DomainObject
+    public function getPdo(): \PDO
     {
-        $this->selectstmt()->execute([$id]);
-        $row = $this->selectstmt()->fetch();
-        $this->selectstmt()->closeCursor();
-        if (! is_array($row)) {
-            return null;
-        }
-        if (! isset($row['id'])) {
-            return null;
-        }
-
-        $object = $this->createObject($row);
-        return $object;
+        return $this->pdo;
     }
 
-    public function createObject(array $raw): DomainObject
+    public function findById(int $id): ?DomainObject
     {
-        $obj = $this->doCreateObject($raw);
+        $cached = $this->getCached($id);
+        if (!is_null($cached)) {
+            return $cached;
+        }
+
+        $this->select_statement->execute([$id]);
+        $row = $this->select_statement->fetch();
+        $this->select_statement->closeCursor();
+
+        if (!is_array($row)) {
+            return null;
+        }
+
+        return $this->createObject($row);
+    }
+
+    protected function getCached($id=null): ?DomainObject
+    {
+        if (is_null($id) || $id < 1) {
+            return null;
+        }
+
+        return ObjectCache::exists(
+            $this->targetClass(),
+            $id
+        );
+    }
+
+    protected function addCache(DomainObject $obj)
+    {
+        ObjectCache::add($obj);
+    }
+
+    public function createObject(array $row): DomainObject
+    {
+        $cached = $this->getCached($row[$this->id_field]);
+        if (!is_null($cached)) {
+            return $cached;
+        }
+
+        $obj = $this->doCreateObject($row);
+        $this->addCache($obj);
+
         return $obj;
     }
 
     public function insert(DomainObject $obj)
     {
-        $this->doInsert($obj);
+        $this->addCache($obj);
+        return $this->doInsert($obj);
     }
     
-    abstract public function update(DomainObject $object);
-    abstract protected function doCreateObject(array $raw): DomainObject;
+    abstract public function findAll(): Collection;
+    abstract public function getCollection(array $rows): Collection;
+    /**
+     * Create a DomainObject from an array
+     * @param  array  $row A multidimentional array, or one ordered as the class constructor requires
+     * @return DomainObject      
+     */
+    abstract protected function doCreateObject(array $row): DomainObject;
+    abstract public function save(DomainObject $object);
     abstract protected function doInsert(DomainObject $object);
-    abstract protected function selectStmt(): \PDOStatement;
     abstract protected function targetClass(): string;
 }

@@ -3,18 +3,18 @@
 namespace Vgsite\Shelf;
 
 interface ShelfItemInterface {
-    public function output();
+    // Possible new constructor?
+    public function __construct(Publication $publication, Image $image, GameCollectionItem $coll_item);
+    public function render(): string;
 }
 
 class GameShelfItem extends ShelfItem implements ShelfItemInterface {
-
 }
 
 class AlbumShelfItem extends ShelfItem implements ShelfItemInterface {
-
 }
 
-class ShelfItem {
+class ShelfItem implements ShelfItemInterface {
 
     private $instance = false;
 
@@ -50,7 +50,7 @@ class ShelfItem {
     /** @var array Overloaded properties */
     private $properties = array();
 
-    public function __construct($props = array()) {
+    public function __construct($props=[]) {
 
         if (isset($props['default_item_height'])) $this->default_item_height = (int) $props['default_item_height'];
 
@@ -82,11 +82,11 @@ class ShelfItem {
             // An image from the `images` database has been specified
 
             $this->img = $props['img'];
-            if($this->img->img_category_id == 15){ //logo/icon
+            if ($this->img->img_category_id == 15) { //logo/icon
                 // Don't show the image
                 /*$this->filename = $this->img->src['tn'];
                 $this->thumb_height = 100;*/
-            } elseif(in_array($this->img->img_category_id, array(1,11,12,13,14))){ //screenshots
+            } elseif (in_array($this->img->img_category_id, array(1,11,12,13,14))){ //screenshots
                 // Don't show the image
                 /*$this->filename = $this->img->src['sm'];
                 $this->thumb_height = 1000;
@@ -117,7 +117,7 @@ class ShelfItem {
      * @param  array  $props Properties to modify output
      * @return string        HTML
      */
-    public function output($props = array()) {
+    public function render($props = array()) {
 
         // Properties that modify output:
         // [platform] a platform name (eg. "Nintendo DS"), evaluated for special box art orientation

@@ -3,24 +3,8 @@
 namespace Vgsite;
 
 use Vgsite\Exceptions\UserException;
-use Vgsite\Avatar;
 
-interface UserInterface
-{
-    private $dbh;
-    private $logger;
-    private $user_id;
-    private $rank;
-    public $data;
-    public function getId(): int {}
-    public function getRank(): int {}
-    public function getAvatar(): Avatar {}
-    public function insert(): bool {}
-    public function save(): bool {}
-    public function delete(): bool {}
-}
-
-class User implements UserInterface
+class User extends DomainObject
 {
 	public const GUEST = 0;
 	public const RESTRICTED = 1;
@@ -45,61 +29,82 @@ class User implements UserInterface
         self::SUPERADMIN => 'SUPERADMIN',
     ];
 
-    /**
-     * Database handler
-     * @var PDO
-     */
-    private $dbh;
-
-    /**
-     * Logger handler
-     * @var Monolog
-     */
-    private $logger;
-
-    private $user_id;
-    private $rank = 0;
-
-    /**
-     * Data that corresponds to the Database columns
-     * @var array
-     */
-    public $data = [];
+    protected $id = -1;
+    protected $username;
+    protected $password;
+    protected $email;
+    protected $rank = 0;
 
     /**
      * User construction
      * May be passed by static functions like self::getByEmail
-     * @param array    $params  Corresponds to DB Users table
-     * @param PDO      $dbh     Database Injection
-     * @param Monolog  $logger  Logger Injection
+     * Construction doesn't verify variables; Pass to set*() to filter
      */
-    public function __construct(array $params)
+    public function __construct(int $id, string $username, string $password, string $email, int $rank=self::GUEST)
     {
-        if (isset($params['user_id'])) $this->user_id = (int) $params['user_id'];
-        if (isset($params['rank'])) $this->rank = $params['rank'];
-
-        foreach ($params as $key => $val) {
-            $this->data[$key] = $val;
-        }
+        $this->username = $username;
+        $this->password = $password;
+        $this->email = $email;
+        $this->rank = $rank;
+        parent::__construct($id);
 	}
 
-    public static function instance($dbh, $logger=[]): self
+    public function getProperties(): array
     {
-        if (self::$instance === null) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
-        $this->dbh = $dbh;
-        if (!empty($logger)) {
-            $this->logger = $logger;
-            $this->logger->debug("User object construction", $params);
-        }
+        return array(
+            'user_id' => $this->id,
+            'username' => $this->username,
+            'password' => $this->password,
+            'email' => $this->email,
+            'rank' => $this->rank,
+        );
     }
 
-    public function getId(): int
+    public function getUsername(): string
     {
-        return $this->user_id;
+        return $this->username;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password, $hash=true)
+    {
+        $password_check = trim($password);
+        if ($password_check != $password) {
+            throw new \InvalidArgumentException("Password can't be blank or have whitespace at the beginning or end");
+        }
+
+        if ($hash === true) {
+            $password = password_hash($password, PASSWORD_DEFAULT);
+            if ($password === false) {
+                throw new Exception("Password couldn't be secured because of an error");
+            }
+        }
+
+        $this->password = $password;
+    }
+
+    public function hashPassword(string $password)
+    {
+
+        $this->setPassword($password_hash);
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail($email)
+    {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new \InvalidArgumentException("Email `{$email}` couldn't be validated");
+        }
+
+        $this->email = $email;
     }
 
     public function getRank(): int
@@ -107,53 +112,42 @@ class User implements UserInterface
         return $this->rank;
     }
 
-    public function getAvatar()
+    public function setRank(int $rank)
+    {
+        if (!isset(static::$ranks[$rank])) {
+            throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
+        }
+
+        $this->rank = $rank;
+    }
+
+    public function getAvatar(): Avatar
     {
         return new Avatar($this->data['avatar']);
     }
 
-    public static function getById(int $user_id, $dbh, $logger=[]): ?self
+    public static function findById(int $id): ?DomainObject
     {
-        $sql = "SELECT * FROM users WHERE user_id = :user_id LIMIT 1";
-        $statement = $dbh->prepare($sql);
-        $statement->bindValue(':user_id', $user_id);
-        $statement->execute();
-        if (!$row = $statement->fetch()) {
-            return null;
-        }
-
-        return new self($row, $dbh, $logger);
+        $mapper = new UserMapper();
+        return $mapper->findById($id);
     }
 
-    public static function getByUsername($username, $dbh, $logger=[]): ?self
+    public static function findByUsername(string $username): ?DomainObject
     {
-        $sql = "SELECT * FROM users WHERE username = ? LIMIT 1";
-        $statement = $dbh->prepare($sql);
-        $statement->bindValue(1, $username);
-        $statement->execute();
-        if (!$row = $statement->fetch()) {
-            return null;
-        }
-
-        return new self($row, $dbh, $logger);
+        $mapper = new UserMapper();
+        return $mapper->findByUsername($username);
     }
 
-    public static function getByEmail($email, $dbh, $logger=[]): ?self
+    public static function findByEmail(string $email): ?DomainObject
     {
-        $sql = "SELECT * FROM users WHERE email = ? LIMIT 1";
-        $statement = $dbh->prepare($sql);
-        $statement->bindValue(1, $email);
-        $statement->execute();
-        if (!$row = $statement->fetch()) {
-            return null;
-        }
-
-        return new self($row, $dbh, $logger);
+        $mapper = new UserMapper();
+        return $mapper->findByEmail($email);
     }
 
-    public static function getAll()
+    public static function findAll()
     {
-
+        $mapper = new UserMapper();
+        return $mapper->findAll();
     }
 
 	/**
@@ -173,80 +167,17 @@ class User implements UserInterface
      */
     public static function getRankName(int $rank): string
     {
-        if (!isset(static::$ranks[$rank]))
+        if (!isset(static::$ranks[$rank])) {
             throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
+        }
 
         return static::$ranks[$rank];
     }
 
-	public function isLoggedIn(): bool
-    {
-		return $this->logged_in;
-	}
-
-	/**
-     * Update the user in the database using $this->data parameters
-     * @return Boolean    
-     */
-    public function save(): bool
-    {
-        if (isset($this->user_id) === false)
-            throw new Exception("Couldn't save User: The user id hasn't been set.");
-
-        $sql = "UPDATE `users` SET `email`=:email,`password`=:password,`rank`=:rank WHERE `user_id`=:user_id";
-        $statement = $this->dbh->prepare($sql);
-        $statement->bindValue(':email', $this->data['email']);
-        $statement->bindValue(':password', $this->data['password']);
-        $statement->bindValue(':rank', $this->data['rank']);
-        $statement->bindValue(':user_id', $this->user_id);
-        if (!$statement->execute()) {
-            throw new Exception("Error saving User data");
-            if ($this->logger) $this->logger->error("Error saving User data at User::save()", $this->data);
-        }
-
-        if ($this->logger) $this->logger->info("Save User data ", $this->data);
-
-        return true;
-    }
-
-    public function insert(): bool
-    {
-        $datetime = date("Y-m-d H:i:s");
-        $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password);";
-        $statement = $this->dbh->prepare($sql);
-        $statement->bindValue(':username', $this->data['username']);
-        $statement->bindValue(':email', $this->data['email']);
-        $statement->bindValue(':password', $this->data['password']);
-        $statement->execute();
-
-        $this->user_id = $this->dbh->lastInsertId();
-
-        $_SESSION['logged_in'] = 'true';
-        $_SESSION['user_id'] = $this->user_id;
-
-        if ($this->logger) $this->logger->info("Insert into Users user_id:".$this->user_id, $this->data);
-         
-        return true;
-    }
-
-    public function delete(): bool
-    {
-        if (!$this->user_id)
-            throw new Exception("Couldn't delete User: user_id hasn't been set.");
-
-        $sql = sprintf("DELETE FROM users WHERE user_id = %d LIMIT 1", (int) $this->user_id);
-        $statement = $this->dbh->query($sql);
-        $statement->execute();
-
-        if ($this->logger) $this->logger->info("DELETE user user_id:".$this->user_id, $this->data);
-
-        return true;
-    }
-
-    public function getPreferences(): array
+    public function getPreferences(): ?array
     {
         $sql = "SELECT * FROM users_prefs WHERE user_id = $this->getId() LIMIT 1";
-        $statement = $dbh->query();
+        $statement = $pdo->query();
         if (!$row = $statement->fetch()) {
             return null;
         }

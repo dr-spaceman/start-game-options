@@ -50,7 +50,7 @@ function imgGetCategories(){
     return $categories;
 }
 
-class Image 
+class Image extends DomainObject
 {
     
     public $notfound = true;
@@ -77,7 +77,7 @@ class Image
     public const IMAGES_DIR = ROOT_DIR.'/assets/images/';
     public const UPLOAD_TEMP_DIR = ROOT_DIR.'/var/uploads';
     
-    public function __construct($img_params="")
+    public function __construct($img_id, $img_name)
     {
         
         # var $img_params string Either the numeric img_id or the img_name (ie "DonkeyKong.jpg")

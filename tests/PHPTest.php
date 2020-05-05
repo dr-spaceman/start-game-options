@@ -3,7 +3,6 @@
 require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
-use Pced\Exception;
 
 class PHPTest extends TestCase
 {

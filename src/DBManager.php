@@ -4,27 +4,13 @@ namespace Vgsite;
 
 use \PDO;
 
-class DB
+abstract class DBManager
 {
-    protected static $instance;
-    protected $pdo;
+    private $pdo;
 
-    private function __construct()
+    public function __construct()
     {
-    }
-
-    public static function instance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
-    }
-
-    public function set($options=[])
-    {
-        if (!empty($this->pdo)) {
+        if (isset($this->pdo)) {
             return null;
         }
 
