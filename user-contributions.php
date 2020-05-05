@@ -108,7 +108,8 @@ if($ssubj) {
 if($uid) {
 	
 	$query = "SELECT * FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE usrid='$uid' ORDER BY datetime DESC";
-	if(!$count = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))) {
+	$query_count = "SELECT COUNT(*) FROM users_contributions LEFT JOIN users_contributions_data USING (contribution_id) WHERE usrid='$uid' ORDER BY datetime DESC";
+	if(!$count = $GLOBALS['pdo']->query($query_count)->fetchColumn()) {
 		echo $usr->username." has no contributions yet.";
 	} else {
 		

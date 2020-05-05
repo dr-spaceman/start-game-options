@@ -203,15 +203,16 @@ if($action == "submimg"){
 				}
 				
 				//images_sessions
-				$query = "SELECT * FROM images_sessions WHERE img_session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
-				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query))){
+				$query = "SELECT * FROM images_sessions WHERE img_session_id=? LIMIT 1";
+				$statement = $GLOBALS['pdo']->prepare($query);
+				$statement->execute([$sessid]);
+				if (!$sessdat = $statement->fetch()) {
 					$img_session_description = $img_category_id && $tags[0] ? $tags[0] : date("Y-M-d");
 					$q = "INSERT INTO images_sessions (`img_session_id`, `img_session_description`, `usrid`) VALUES 
 						('$sessid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $img_session_description)."', '$usrid')";
 					if(!mysqli_query($GLOBALS['db']['link'], $q)) NNdie("Couldn't begin session with database");
 				}
-				$sessdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
-				$q = "UPDATE images_sessions SET img_qty = '".($sessdat->img_qty + 1)."', img_session_modified = CURRENT_TIMESTAMP() WHERE img_session_id='".$sessid."' LIMIT 1";
+				$q = "UPDATE images_sessions SET img_qty = '".($sessdat['img_qty'] + 1)."', img_session_modified = CURRENT_TIMESTAMP() WHERE img_session_id='".$sessid."' LIMIT 1";
 				mysqli_query($GLOBALS['db']['link'], $q);
 				
 			}

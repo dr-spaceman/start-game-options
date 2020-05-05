@@ -64,6 +64,17 @@ abstract class Mapper
         return $this->createObject($row);
     }
 
+    public function findAll(): Collection
+    {
+        $this->select_all_statement->execute([]);
+        $rows = array();
+        while ($row = $this->select_all_statement->fetch()) {
+            $rows[] = $row;
+        }
+
+        return $this->getCollection($rows);
+    }
+
     protected function getCached($id=null): ?DomainObject
     {
         if (is_null($id) || $id < 1) {
@@ -100,7 +111,6 @@ abstract class Mapper
         return $this->doInsert($obj);
     }
     
-    abstract public function findAll(): Collection;
     abstract public function getCollection(array $rows): Collection;
     /**
      * Create a DomainObject from an array

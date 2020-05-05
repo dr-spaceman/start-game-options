@@ -9,13 +9,6 @@ use Vgsite\UserCollection;
 
 class UserTest extends TestCase
 {
-    public function testUserLazyLoaderFindsUsers()
-    {
-        $user = Vgsite\UserLazyLoader::findById(TEST_USER_ID);
-        $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals($user->getEmail(), TEST_USER_EMAIL);
-        $this->assertEquals($user->getId(), TEST_USER_ID);
-    }
 
     public function testUserStaticMethodsFindUsers()
     {

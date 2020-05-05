@@ -34,8 +34,6 @@ abstract class DomainObject
     }
 
     abstract public static function findById(int $id): ?DomainObject;
-   
-    abstract public static function findAll();
 
     function __clone()
     {

@@ -36,8 +36,11 @@ class DBTest extends TestCase
         $stmt = $GLOBALS['pdo']->query($sql);
         $this->assertStringContainsString('fuu', $stmt->fetchColumn());
 
-        $data = $GLOBALS['pdo']->query("SELECT * FROM users")->fetchAll(PDO::FETCH_UNIQUE);
-        $this->assertEquals($data[TEST_USER_ID]['email'], 'test@test.com');
+        $num_rows = $GLOBALS['pdo']->query("SELECT COUNT(*) FROM users")->fetchColumn();
+        $this->assertTrue($num_rows > 100);
+
+        $foo = $GLOBALS['pdo']->query("SELECT * FROM test WHERE foo='baz_xyz'")->fetchColumn();
+        var_dump($foo);
 
         $stmt = $GLOBALS['pdo']->query("SELECT 1 FROM users WHERE email='foo123@marypoppins69burt.com'");
         $user_exists = $stmt->fetchColumn();
@@ -66,11 +69,5 @@ class DBTest extends TestCase
         $statement = $GLOBALS['pdo']->prepare($sql);
         $this->assertNotFalse($statement->execute([TEST_ID]));
         $this->assertEquals(1, $statement->rowCount());
-    }
-
-    public function testInstantiated()
-    {
-        $obj = \Vgsite\TestClassInstantiated::instance($GLOBALS['pdo'])->get(1);
-        $this->assertEquals(1, $obj->id);
     }
 }

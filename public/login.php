@@ -27,22 +27,26 @@ if(isset($_POST['login'])) {
         if (!$password) {
             throw new Exception('Password is required.');
         }
-
-        $user_mapper = new UserMapper();
 		
-		$user = isset($email) ? $user_mapper->findByEmail($email) : $user_mapper->findByUsername($username);
+		$user = isset($email) ? User::getByEmail($email) : User::getByUsername($username);
 
-		if (password_verify($password, $user->getPassword()) === false) {
+		if (password_verify($password, $user->getPassword() === false) {
 			throw new Exception('Invalid password');
 		}
 
 		// Re-hash password if necessary
 		$currentHashAlgorithm = PASSWORD_DEFAULT;
-		$passwordNeedsRehash = password_needs_rehash($user->getPassword(), $currentHashAlgorithm);
+		$passwordNeedsRehash = password_needs_rehash(
+			$user->data['password'],
+			$currentHashAlgorithm
+		);
 		if ($passwordNeedsRehash === true) {
 			// Save new password hash
-			$user->setPassword($password);
-			$user_mapper->save($user);
+			$user->data['password'] = password_hash(
+				$password,
+				$currentHashAlgorithm
+			);
+			$user->save();
 		}
 
 		$_SESSION['logged_in'] = 'true';

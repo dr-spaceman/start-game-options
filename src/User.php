@@ -36,6 +36,13 @@ class User extends DomainObject
     protected $rank = 0;
 
     /**
+     * Details loaded from the other table columns via mapper
+     * There's probably a better way to do it!!!
+     * @var array
+     */
+    public $details = [];
+
+    /**
      * User construction
      * May be passed by static functions like self::getByEmail
      * Construction doesn't verify variables; Pass to set*() to filter
@@ -49,6 +56,9 @@ class User extends DomainObject
         parent::__construct($id);
 	}
 
+    /**
+     * An array of private properties for Logging, debugging, etc.
+     */
     public function getProperties(): array
     {
         return array(
@@ -144,12 +154,6 @@ class User extends DomainObject
         return $mapper->findByEmail($email);
     }
 
-    public static function findAll()
-    {
-        $mapper = new UserMapper();
-        return $mapper->findAll();
-    }
-
 	/**
      * Gets all supported ranks.
      *
@@ -174,15 +178,9 @@ class User extends DomainObject
         return static::$ranks[$rank];
     }
 
-    public function getPreferences(): ?array
+    public function getDetail(string $key)
     {
-        $sql = "SELECT * FROM users_prefs WHERE user_id = $this->getId() LIMIT 1";
-        $statement = $pdo->query();
-        if (!$row = $statement->fetch()) {
-            return null;
-        }
-
-        return $row;
+        return $this->details[$key];
     }
 }
 

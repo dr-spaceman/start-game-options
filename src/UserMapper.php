@@ -49,13 +49,6 @@ class UserMapper extends Mapper
         return $this->createObject($row);
     }
 
-    public function findAll(): Collection
-    {
-        $this->select_all_statement->execute([]);
-
-        return $this->getCollection($this->select_all_statement->fetchAll());
-    }
-
     protected function targetClass(): string
     {
         return User::class;
@@ -68,13 +61,17 @@ class UserMapper extends Mapper
 
     protected function doCreateObject(array $row): DomainObject
     {
-        return new User(
+        $user = new User(
             (int)($row['user_id'] ?: $row[0]),
             $row['username'] ?: $row[1],
             $row['password'] ?: $row[2],
             $row['email'] ?: $row[3],
             (int)($row['rank'] ?: $row[4]),
         );
+
+        $user->details = array_diff($row, $user->getProperties());
+
+        return $user;
     }
 
     protected function doInsert(DomainObject $user): bool
@@ -134,5 +131,29 @@ class UserMapper extends Mapper
     public function selectStatement(): \PDOStatement
     {
         return $this->select_statement;
+    }
+
+    public function getPreferences(User $user): ?array
+    {
+        $sql = "SELECT * FROM users_prefs WHERE user_id=? LIMIT 1";
+        $statement = $this->pdo->prepare();
+        $statement->execute([$user->getId()]);
+        if (!$row = $statement->fetch()) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    public function getAllDetails(User $user): array
+    {
+        $sql = "SELECT * FROM users LEFT JOIN users_details USING (user_id) WHERE user_id=? LIMIT 1";
+        $statement = $this->pdo->prepare();
+        $statement->execute([$user->getId()]);
+        if (!$row = $statement->fetch()) {
+            return null;
+        }
+
+        return $row;
     }
 }
