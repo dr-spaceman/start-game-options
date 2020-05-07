@@ -206,9 +206,8 @@ if($edit == 'details') {
 	  			
 	  			//badge for profile info
 	  			if($in['name'] && $in['location'] && $in['interests'] && $in['handle'] && ($in['month'] > 0) && ($in['day'] > 0)){
-	  				$_badges = new badges;
-						if($_badges->earn(20)) $page->badges[] = 20;
-					}
+	  				if (Badge::earn(20)) $page->badges[] = 20;
+				}
 					
 	  		}
 			}
@@ -271,11 +270,10 @@ if($edit == 'details') {
 	if (!$in['homepage']) $in['homepage'] = 'http://';
 	
 	// register notice
-	if ($_GET['justregistered'] == 1){
+	if ($_GET['justregistered'] == 1) {
 		
 		//badge
-		$_badges = new badges;
-		if($_badges->earn(1)) $_badges->showEarned(1);
+		if (Badge::earn(1, $user)) $_badges->showEarned(1);
 		
 		?>
 		<div style="margin:0 20px 20px; padding:20px; border-width:0 1px 1px 0; border-style:solid; border-color:#CCC; background-color:white;">

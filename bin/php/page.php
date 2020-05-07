@@ -487,15 +487,11 @@ if($usrid && $_COOKIE['no_oauth'] == '1'){
 }*/
 
 // display new badges
-// $_SESSION['newbadges'] set by page_headers.php
-
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
-$_badges = new badges();
 
 //Resetti badge
 if($_COOKIE['unsavedSess']){
 	echo '<script type="text/javascript"> $.cookie("unsavedSess", null, {path:"/"}); </script>';
-	$_badges->earn(54);
+	Badge::findById(54)->earn($user);
 }
 
 if($_SESSION['newbadges'] || $this->badges){

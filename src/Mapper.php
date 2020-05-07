@@ -10,7 +10,8 @@ abstract class Mapper
     /**
      * Database primary key field name
      */
-    protected $id_field = 'id';
+    protected $db_id_field = 'id';
+    abstract protected $db_table;
 
     /**
      * Registry object
@@ -28,6 +29,7 @@ abstract class Mapper
      * PDO statements
      * @var PDOStatement object
      */
+    protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
     protected $select_statement;
     protected $select_all_statement;
     protected $save_statement;
@@ -39,6 +41,8 @@ abstract class Mapper
         $registry = Registry::instance();
         $this->pdo = $registry->get('pdo');
         $this->logger = $registry->get('logger');
+
+        $this->select_statement = $this->pdo->prepare(sprintf($this->select_sql, $this->db_table, $this->db_id_field));
     }
 
     public function getPdo(): \PDO
@@ -92,6 +96,11 @@ abstract class Mapper
         ObjectCache::add($obj);
     }
 
+    /**
+     * Create a DomainObject from an array
+     * @param  array  $row A multidimentional array, or one ordered as the class constructor requires
+     * @return DomainObject
+     */
     public function createObject(array $row): DomainObject
     {
         $cached = $this->getCached($row[$this->id_field]);
@@ -112,11 +121,6 @@ abstract class Mapper
     }
     
     abstract public function getCollection(array $rows): Collection;
-    /**
-     * Create a DomainObject from an array
-     * @param  array  $row A multidimentional array, or one ordered as the class constructor requires
-     * @return DomainObject      
-     */
     abstract protected function doCreateObject(array $row): DomainObject;
     abstract public function save(DomainObject $object);
     abstract protected function doInsert(DomainObject $object);

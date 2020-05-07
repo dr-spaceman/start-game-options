@@ -2,8 +2,6 @@
 
 namespace Vgsite;
 
-use Vgsite\Collection;
-
 /**
  * Common attributes and methods for objects
  */
@@ -35,7 +33,7 @@ abstract class DomainObject
 
     abstract public static function findById(int $id): ?DomainObject;
 
-    function __clone()
+    public function __clone()
     {
         $this->id = -1;
     }

@@ -4,32 +4,67 @@ namespace Vgsite;
 
 class Badges extends DomainObject
 {
-    public function __construct() {
-        //???
-        $this->values = array("garbage", "bronze", "silver", "gold", "gold", "gold", "gold");
-    } 
+    public const GARBAGE = 0;
+    public const BRONZE = 1;
+    public const SILVER = 2;
+    public const GOLD = 3;
+    public const _SOMENAME_ = 4;
+    public const _SOMEOTHERNAME_ = 5;
 
-    public static function findById(int $id): ?DomainObject
-    {
+    private static $values = [
+        self::GARBAGE => 'garbage',
+        self::BRONZE => 'bronze',
+        self::SILVER => 'silver',
+        self::GOLD => 'gold',
+        self::_SOMENAME_ => 'gold',
+        self::_SOMEOTHERNAME_ => 'gold',
+    ];
+    
+    public function __construct(int $badge_id, string $name, string $description, int $value=1, int $sort=0) {
+        parent::construct();
+        $this->badge_id = $badge_id;
+        $this->name = $name;
+        $this->description = $description;
+        $this->value = ($this->getValueName[$value] ? $value : null);
+        $this->sort = $sort;
 
+        $registry = Registry::instance();
+        $this->pdo = $registry->get('pdo');
+        $this->logger = $registry->get('logger');
     }
 
-    public static function earn(int $badge_id, User $user)
+    public static function findById(int $id): ?Badge
+    {
+        $mapper = new BadgeMapper();
+        return $mapper->findById($id);
+    }
+    }
+
+    /**
+     * Add a badge to User collection
+     * @param  User   $user     User object
+     * @return bool             Return true if success adding | false if badge is already in collection
+     */
+    public function earn(User $user): bool
     {
         //make sure hasn't already earned
-        $sql = sprintf("SELECT (*) FROM badges_earned WHERE badge_id='%d' AND user_id='%d' LIMIT 1", $badge_id, $user->getId());
-        if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) return false;
+        $sql = sprintf("SELECT (*) FROM badges_earned WHERE badge_id='%d' AND user_id='%d' LIMIT 1", $this->badge_id, $user->getId());
+        $statement = $this->pdo->query($sql);
+        if ($statement->fetchColumn()) return false;
         
         $badge = static::findById($badge_id);
         
-        $q = "INSERT INTO badges_earned (user_id, badge_id, `datetime`) VALUES ('$user->getId()', '$badge_id', '".date("Y-m-d H:i:s")."');";
-        if(!mysqli_query($GLOBALS['db']['link'], $q)) return false;
+        $sql = "INSERT INTO badges_earned (`user_id`, `badge_id`, `datetime`) VALUES (?, ?, ?);";
+        $statement = $this->pdo->prepare();
+        $statement->execute([$user->getId(), $badge_id, date("Y-m-d H:i:s")]);
         
         if ($user->getId() == $GLOBALS['user_id']) $_SESSION['newbadges'][] = $badge_id;
-        
-        if ($badge_id == 1) return true;
 
         // Insert stream
+        
+        // Don't stream Newbie badge
+        if ($badge_id == 1) return true;
+        
         $url = '/~'.$user->getUsername().'/#/badges/'.$badge_id.'/'.formatNameURL($badge->getName());
         $action = '[[User:'.$user->getUsername().']] earned the <a href="'.$url.'">'.$badge->getName().'</a> badge.'.
                 '<div class="badge"><a href="'.$url.'"><img src="/bin/img/badges/'.$badge_id.'.png" alt="badge: '.htmlSC($badge->getName()).'" width="50" height="50"/></a></div>';
@@ -39,31 +74,14 @@ class Badges extends DomainObject
 
     }
     
-    function get($badge_id){
-        
-        // look up badge info and est it as $this->badges[BADGE ID]
-        
-        if($this->badges[$badge_id]) return;
-        $query = "SELECT * FROM badges WHERE badge_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $badge_id)."' LIMIT 1";
-        $res   = mysqli_query($GLOBALS['db']['link'], $query);
-        while($row = mysqli_fetch_assoc($res)){
-            $this->badges[$row['badge_id']] = $row;
-            $this->badges[$row['badge_id']]['value2'] = $this->values[$row['value']];
-        }
-    }
-    
-    function showEarned($badge_id){
-        
-        //show an earned badge
-        
-        $this->get($badge_id);
-        
+    public static function showEarned(User $user)
+    {
         $ret = '
         <div class="badge badgeearn">
             <div class="container">
                 <a href="#close" class="preventdefault ximg close">close</a>
                 <h5>You earned a new badge!</h5>
-                <h6>'.$this->badges[$badge_id]['name'].'</h6>
+                <h6>'.$this->name.'</h6>
                 <div class="badgeimg"><img src="/bin/img/badges/'.$badge_id.'.png" alt="badge: '.htmlSC($this->badges[$badge_id]['name']).'"/></div>
                 <big>'.bb2html($this->badges[$badge_id]['description']).'</big>
                 <div class="message"><b>Congratulations'.($GLOBALS['usrname'] ? ', '.$GLOBALS['usrname'] : '').'!</b> This <span class="value '.$this->badges[$badge_id]['value2'].'">'.ucwords($this->badges[$badge_id]['value2']).' badge</span> will be shown on your profile page along with dozens of other badges you can earn for contributing at Videogam.in.</div>
@@ -145,5 +163,29 @@ class Badges extends DomainObject
         
         return $ret;
         
+    }
+
+    /**
+     * Gets all supported values
+     *
+     * @return array Assoc array with human-readable level names => level codes.
+     */
+    public static function getValues(): array
+    {
+        return array_flip(static::$values);
+    }
+
+    /**
+     * Gets the name of the logging level.
+     *
+     * @throws \Psr\Log\InvalidArgumentException If rank is not defined
+     */
+    public static function getValueName(int $value): string
+    {
+        if (!isset(static::$values[$value])) {
+            throw new \InvalidArgumentException('Value "'.$value.'" is not defined, use one of: '.implode(', ', array_keys(static::$values)));
+        }
+
+        return static::$values[$value];
     }
 }

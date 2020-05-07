@@ -81,7 +81,7 @@ if ($rows = $statement->fetchAll(PDO::FETCH_COLUMN)) {
 $dob = str_replace("-", "", $user_details['dob']);
 $dob = substr($dob, 4);
 if ($dob == date("md")) {
-    Badges::earn(37, $user);
+    Badge::findById(37)->earn($user);
 }
 
 // Update activity

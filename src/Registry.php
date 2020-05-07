@@ -18,7 +18,7 @@ class Registry
         return self::$instance;
     }
 
-    function get($key) 
+    public function get($key) 
     {
         if (isset($this->registry[$key])) {
             return $this->registry[$key];
@@ -27,9 +27,18 @@ class Registry
         return null;
     }
 
-    function set($key, $value) 
+    public function set($key, $value) 
     {
         $this->registry[$key] = $value;
+    }
+
+    public function getBadgeMapper(): BadgeMapper
+    {
+        return new BadgeMapper();
+    }
+    public function getBadgeCollection(): BadgeCollection
+    {
+        return new BadgeCollection();
     }
 }
 
