@@ -25,6 +25,8 @@ abstract class Mapper
      * @var Monolog object
      */
     protected $logger;
+
+    protected $identity_map;
     
     /**
      * PDO statements
@@ -42,6 +44,7 @@ abstract class Mapper
     {
         $this->pdo = Registry::get('pdo');
         $this->logger = Registry::get('logger');
+        $this->identity_map = new IdentityMap();
 
         $this->select_statement = $this->pdo->prepare(sprintf($this->select_sql, $this->db_table, $this->db_id_field));
         $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
@@ -54,9 +57,12 @@ abstract class Mapper
 
     public function findById(int $id): ?DomainObject
     {
-        $cached = $this->getCached($id);
-        if (!is_null($cached)) {
-            return $cached;
+        // $cached = $this->getCached($id);
+        // if (!is_null($cached)) {
+        //     return $cached;
+        // }
+        if (true === $this->identity_map->hasId($id)) {
+            return $this->identity_map->getObject($id);
         }
 
         $this->select_statement->execute([$id]);
@@ -81,22 +87,22 @@ abstract class Mapper
         return $this->getCollection($rows);
     }
 
-    protected function getCached($id=null): ?DomainObject
-    {
-        if (is_null($id) || $id < 1) {
-            return null;
-        }
+    // protected function getCached($id=null): ?DomainObject
+    // {
+    //     if (is_null($id) || $id < 1) {
+    //         return null;
+    //     }
 
-        return ObjectCache::get(
-            $this->targetClass(),
-            $id,
-        );
-    }
+    //     return ObjectCache::get(
+    //         $this->targetClass(),
+    //         $id,
+    //     );
+    // }
 
-    protected function addCache(DomainObject $obj)
-    {
-        ObjectCache::set($obj);
-    }
+    // protected function addCache(DomainObject $obj)
+    // {
+    //     ObjectCache::set($obj);
+    // }
 
     /**
      * Create a DomainObject from an array
@@ -105,13 +111,14 @@ abstract class Mapper
      */
     public function createObject(array $row): DomainObject
     {
-        $cached = $this->getCached($row[$this->id_field]);
-        if (!is_null($cached)) {
-            return $cached;
-        }
+        // $cached = $this->getCached($row[$this->id_field]);
+        // if (!is_null($cached)) {
+        //     return $cached;
+        // }
 
         $obj = $this->doCreateObject($row);
-        $this->addCache($obj);
+        // $this->addCache($obj);
+        $this->identity_map->set($id, $obj);
 
         return $obj;
     }
@@ -119,9 +126,13 @@ abstract class Mapper
     public function insert(DomainObject $obj)
     {
         $insert_result = $this->doInsert($obj);
-        $this->addCache($obj);
 
         return $insert_result;
+    }
+
+    public function __destruct()
+    {
+        unset($this->pdo, $this->logger, $this->identity_map);
     }
     
     abstract public function getCollection(array $rows): Collection;

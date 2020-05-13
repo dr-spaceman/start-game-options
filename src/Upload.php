@@ -11,6 +11,8 @@ class Upload extends UploadHandler
      */
     private $image;
 
+    private $copied_file;
+
     public const ALLOWED_FILE_TYPES = array("image/jpeg","image/jpg","image/gif","image/png","image/x-ms-bmp");
 
     /**
@@ -40,10 +42,12 @@ class Upload extends UploadHandler
                 $x = explode("/", $file_remote);
                 $br = count($x) - 1;
                 
-                $file = Image::UPLOAD_TEMP_DIR . $x[$br];
+                $file = Image::UPLOAD_TEMP_DIR.'/'.$x[$br];
                 if (!copy($file_remote, $file)) {
                     throw new UploadException("Couldn't copy the remote file ($file_remote) to the local server");
                 }
+
+                $this->copied_file = $file;
             } else {
                 $file = $file_remote;
             }
@@ -74,7 +78,7 @@ class Upload extends UploadHandler
      * @param  User|null $user        User who uploaded the image
      * @return Image                  Image object created by preparing and uploading the image
      */
-    public function prepare($session_id, int $category_id, User $user)
+    public function prepare(int $session_id, int $category_id, User $user)
     {
         if (empty($session_id)) {
             throw new \InvalidArgumentException('Image Session ID is required for an upload session');
@@ -153,6 +157,10 @@ class Upload extends UploadHandler
         $image_params['user_id'] = $user->getId();
 
         $this->image = new Image($image_params);
+
+        if ($this->copied_file) {
+            unlink($this->copied_file);
+        }
     }
 
     /**

@@ -117,17 +117,16 @@ class Image extends DomainObject
      * Session ID for uploads
      * @var [type]
      */
-    public $img_session_id = '121006204647000000199';
+    public $img_session_id;
     public $img_name = 'unknown.png';
     public $img_id;
-    public $established;
     public $optimized; // t or f if optimized size exitst
     public $src;
     public $img_size = 3810;
     public $img_width = 601;
     public $img_height = 601;
     public $img_minor_mime = "png";
-    public $img_category_id = 0;
+    public $img_category_id;
     public $img_title;
     public $img_description;
     public $sort;
@@ -189,7 +188,7 @@ class Image extends DomainObject
 
     public function getDir()
     {
-        self::IMAGES_DIR.'/'.substr($this->img_session_id, 12, 7);
+        return self::IMAGES_DIR.'/'.substr($this->img_session_id, 12, 7);
     }
 
     public function getUrl()

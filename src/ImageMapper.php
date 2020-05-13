@@ -20,7 +20,7 @@ class ImageMapper extends Mapper
         $save_keys = implode(',', array_map(function($field) {
             return "`{$field}`=:{$field}";
         }, $this->save_fields));
-        $save_sql = "UPDATE `images` SET $save_keys WHERE img_id=:img_id LIMIT 1";echo $save_sql.PHP_EOL;
+        $save_sql = "UPDATE `images` SET $save_keys WHERE img_id=:img_id LIMIT 1";
         $this->save_statement = $this->pdo->prepare($save_sql);
         
         $this->insert_fields = array_diff(Image::PROPERTIES_KEYS, ['img_id']);
@@ -40,28 +40,6 @@ class ImageMapper extends Mapper
         }
 
         return $this->createObject($row);
-    }
-
-    public function findAllBySessionId(int $session_id): ?Collection
-    {
-        $statement = $this->pdo->prepare("SELECT img_session_id, img_session_description FROM images_sessions WHERE img_session_id=? LIMIT 1");
-        $statement->execute([$session_id]);
-        $row = $statement->fetch();
-
-        if (empty($row)) {
-            return null;
-        }
-
-        $sql = "SELECT * FROM images WHERE img_session_id=?";
-        $statement = $this->pdo->prepare($sql);
-        $statement->execute([$session_id]);
-        $rows = $statement->fetchAll();
-
-        if (empty($rows)) {
-            return null;
-        }
-
-        return new ImageCollection($rows, $this, (int)$row['img_session_id'], $row['img_session_description']);
     }
 
     protected function targetClass(): string
@@ -111,7 +89,7 @@ class ImageMapper extends Mapper
     public function save(DomainObject $image): bool
     {
         foreach ($this->save_fields as $key) {
-            $this->save_statement->bindValue($key, $image->{$key});echo 'bind '.$key.':'.$image->$key.PHP_EOL;
+            $this->save_statement->bindValue($key, $image->{$key});
         }
         $this->save_statement->bindValue(':img_id', $image->img_id);
         $this->save_statement->execute();
@@ -146,6 +124,8 @@ class ImageMapper extends Mapper
                     $this->deleteTag($tag['id']);
                 }
             }
+
+            $this->pdo->commit();
         } catch (Exception $e) {
             $this->pdo->rollback();
             if ($this->logger) $this->logger->error("Delete Image failure: ".$e->getMessage(), ['img_name'=>$image->img_name, 'img_id'=>$image->getId()]);
@@ -153,7 +133,9 @@ class ImageMapper extends Mapper
             return false;
         }
 
-        if ($this->logger) $this->logger->info("Delete Image ", $image->getProperties());
+        if ($this->logger) $this->logger->info("Delete Image ", $image->getProperties());var_dump($image);
+        copy($image->src['original'], Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->img_name);
+        unlink($image->src['original']);
         unset($image);
         
         return true;
@@ -163,6 +145,61 @@ class ImageMapper extends Mapper
     {
         return $this->select_statement;
     }
+
+    /**
+     * Collection/Session methods
+     */
+
+    public function findAllBySessionId(int $session_id): ?Collection
+    {
+        echo 'ImageMapper::findAllBySessionId('.$session_id.')'.PHP_EOL;
+        $statement = $this->pdo->prepare("SELECT img_session_id, img_session_description FROM images_sessions WHERE img_session_id=? LIMIT 1");
+        $statement->execute([$session_id]);
+        $row = $statement->fetch();
+
+        if (empty($row)) {
+            return null;
+        }
+
+        $sql = "SELECT * FROM images WHERE img_session_id=?";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute([$session_id]);
+        $rows = $statement->fetchAll();
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        return new ImageCollection($rows, $this, (int)$row['img_session_id'], $row['img_session_description']);
+    }
+
+    /* Save collection in DB */
+    public function saveSession(ImageCollection $collection)
+    {
+        if ($collection->is_new) {
+            if (empty($collection->getId())) {
+                throw new \InvalidArgumentException("Session ID needed to insert image collection into databse");
+            }
+
+            $sql = "INSERT INTO images_sessions (img_session_id, img_session_description, img_qty, usrid, img_session_created) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())";
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$collection->getId(), $collection->description, $collection->count, $_SESSION['user_id']]);
+        } else {
+            if (empty($collection->getId())) {
+                throw new \InvalidArgumentException("Session ID needed to update image collection in databse");
+            }
+
+            $sql = "UPDATE images_sessions SET img_session_description=?, img_qty=?, img_session_modified=CURRENT_TIMESTAMP() WHERE img_session_id=? LIMIT 1";
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$collection->description, $collection->count, $collection->getId()]);
+        }
+
+        return ($statement->rowCount() == 1);
+    }
+
+    /**
+     * Tag methods
+     */
 
     public function findAllTagsByImageId(int $id, $sort='img_tag_timestamp'): ?array
     {

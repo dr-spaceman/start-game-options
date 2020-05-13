@@ -88,102 +88,112 @@ class ImageTest extends TestCase
         $this->assertEquals('bar', $image_check->img_description);
     }
 
-    // public function testUploadNotAnImageThrowsException()
-    // {
-    //     $this->expectException(UploadException::class);
-    //     $upload = new Upload('http://squarehaven.com/features/albums/jp/SSCX-10039.txt');
-    // }
+    public function testUploadNotAnImageThrowsException()
+    {
+        $this->expectException(UploadException::class);
+        $upload = new Upload('http://squarehaven.com/features/albums/jp/SSCX-10039.txt');
+    }
 
-    // /**
-    //  * @depends testLoadImageMapper
-    //  */
-    // public function testImageFetch($mapper)
-    // {
-    //     $this->assertInstanceOf(ImageMapper::class, $mapper);
-    //     $image = $mapper->findByName(TEST_ID.'.jpg');
-    //     $this->assertNotNull($image);
-    //     $this->assertNotNull($mapper->findById($image->getId()));
-    //     $this->assertNotNull(Image::findById($image->getId()));
-    //     $this->assertNotNull(Image::findByName(TEST_ID.'.jpg'));
+    /**
+     * @depends testLoadImageMapper
+     */
+    public function testImageFetch($mapper)
+    {
+        $this->assertInstanceOf(ImageMapper::class, $mapper);
+        $image = $mapper->findByName(TEST_ID.'.jpg');
+        $this->assertNotNull($image);
+        $this->assertNotNull($mapper->findById($image->getId()));
+        $this->assertNotNull(Image::findById($image->getId()));
+        $this->assertNotNull(Image::findByName(TEST_ID.'.jpg'));
 
-    //     return $image;
-    // }
+        return $image;
+    }
 
-    // /**
-    //  * @depends testSaveUpload
-    //  * @depends testImageCollectionConstruction
-    //  */
-    // public function testImageCollectionAddItem($image, $collection)
-    // {
-    //     $this->assertEquals(0, $collection->count);
-    //     $collection->add($image);
-    //     $this->assertEquals($collection->getId(), $image->img_session_id);
+    /**
+     * @depends testSaveUpload
+     * @depends testImageCollectionConstruction
+     */
+    public function testImageCollectionAddItem($image, $collection)
+    {
+        $this->assertEquals(0, $collection->count);
+        $collection->add($image);
+        $this->assertEquals($collection->getId(), $image->img_session_id);
 
-    //     $upload = new Upload(TEST_IMAGE_SRC);
-    //     $upload->prepare($collection->getId(), Image::OFFICIALART, $GLOBALS['current_user']);
-    //     $image_2 = $upload->insertImage();
-    //     $collection->add($image_2);
-    //     $this->assertEquals(2, $collection->count);
+        $upload = new Upload(TEST_IMAGE_SRC);
+        $upload->setFilename(TEST_ID.'_1');
+        $upload->prepare($collection->getId(), Image::OFFICIALART, $GLOBALS['current_user']);
+        $image_2 = $upload->insertImage();
+        $collection->add($image_2);
+        $this->assertEquals(2, $collection->count);
 
-    //     return $collection;
-    // }
+        return $collection;
+    }
 
-    // /**
-    //  * @depends testImageCollectionAddItem
-    //  */
-    // public function testImageCollectionGeneratorIterates($collection)
-    // {
-    //     $i = 0;
-    //     foreach ($collection->getGenerator() as $image) {
-    //         $this->assertInstanceOf(Image::class, $image);
-    //         $i++;
-    //     }
-    //     $this->assertEquals(2, $i);
-    // }
+    /**
+     * @depends testImageCollectionAddItem
+     * @depends testLoadImageMapper
+     */
+    public function testImageCollectionSave($collection, $mapper)
+    {
+        $this->assertTrue($mapper->saveSession($collection));
+    }
 
-    // /**
-    //  * @depends testImageCollectionAddItem
-    //  * @depends testLoadImageMapper
-    //  */
-    // public function testImageCollectionFindAllBySessionId($collection, $mapper)
-    // {
-    //     $session_id = $collection->getId();
-    //     $collection_check = $mapper->findAllBySessionId($session_id);
-    //     $this->assertInstanceOf(ImageCollection::class, $collection_check);
-    //     $this->assertEquals(2, $collection_check->count);
+    /**
+     * @depends testImageCollectionAddItem
+     */
+    public function testImageCollectionGeneratorIterates($collection)
+    {
+        $i = 0;
+        foreach ($collection->getGenerator() as $image) {
+            $this->assertInstanceOf(Image::class, $image);
+            $i++;
+        }
+        $this->assertEquals(2, $i);
+    }
 
-    //     return $collection_check;
-    // }
+    /**
+     * @depends testImageCollectionAddItem
+     * @depends testLoadImageMapper
+     */
+    public function testImageCollectionFindAllBySessionId($collection, $mapper)
+    {
+        $session_id = $collection->getId();
+        $collection_check = $mapper->findAllBySessionId($session_id);
+        $this->assertInstanceOf(ImageCollection::class, $collection_check);
+        $this->assertEquals(2, $collection_check->count);
 
-    // /**
-    //  * @depends testImageCollectionFindAllBySessionId
-    //  * @depends testLoadImageMapper
-    //  */
-    // public function testImageDelete(ImageCollection $collection, ImageMapper $mapper)
-    // {
-    //     foreach($collection->getGenerator() as $image) {
-    //         $check_image_id[] = $images->getId();
-    //         $this->assertTrue($mapper->delete($image));
-    //     }
+        return $collection_check;
+    }
 
-    //     foreach ($check_image_id as $id) {
-    //         $this->assertNull($mapper->findById($id));
-    //     }
+    /**
+     * @depends testImageCollectionFindAllBySessionId
+     * @depends testLoadImageMapper
+     */
+    public function testImageDelete(ImageCollection $collection, ImageMapper $mapper)
+    {
+        foreach($collection->getGenerator() as $image) {
+            $check_image_id[] = $image->getId();
+            $this->assertTrue($mapper->delete($image));
+        }
 
-    //     $this->assertNull($mapper->findAllBySessionId($collection->getId()));
-    // }
+        foreach ($check_image_id as $id) {
+            $this->assertNull($mapper->findById($id));
+        }
 
-    // public function testImageCategoriesAreAccessible()
-    // {
-    //     $this->assertEquals(Image::SCREENSHOT, 1);
-    //     $this->assertEquals(Image::getCategories()[Image::BOXART], 'Box art, Official');
-    //     $this->assertEquals(Image::getCategoryName(Image::SCREENSHOT_TITLE), "Screenshots, Title screen");
-    //     $this->assertEquals(Image::getCategoryDescription(Image::OFFICIALART), "Official illustrations");
-    // }
+        $this->assertNull($mapper->findAllBySessionId($collection->getId()));
+    }
 
-    // public function testImageCategoriesThrowExceptionWhenInvalidArgumentGiven()
-    // {
-    //     $this->expectException(InvalidArgumentException::class);
-    //     Image::getCategoryName(99);
-    // }
+    public function testImageCategoriesAreAccessible()
+    {
+        $this->assertEquals(Image::SCREENSHOT, 1);
+        $this->assertEquals(Image::getCategories()[Image::BOXART], 'Box art, Official');
+        $this->assertEquals(Image::getCategoryName(Image::SCREENSHOT_TITLE), "Screenshots, Title screen");
+        $this->assertEquals(Image::getCategoryDescription(Image::OFFICIALART), "Official illustrations");
+    }
+
+    public function testImageCategoriesThrowExceptionWhenInvalidArgumentGiven()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Image::getCategoryName(99);
+    }
 }

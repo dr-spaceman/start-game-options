@@ -5,4 +5,8 @@ log
 .ht*
 composer.phar
 /vendor/
+/var/cache/*
+/var/deleted_files/*
+/var/logs/*
 /var/sessions/*
+/var/uploads/*
