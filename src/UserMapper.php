@@ -148,7 +148,7 @@ class UserMapper extends Mapper
     public function getAllDetails(User $user): array
     {
         $sql = "SELECT * FROM users LEFT JOIN users_details USING (user_id) WHERE user_id=? LIMIT 1";
-        $statement = $this->pdo->prepare();
+        $statement = $this->pdo->prepare($sql);
         $statement->execute([$user->getId()]);
         if (!$row = $statement->fetch()) {
             return null;

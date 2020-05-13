@@ -2,14 +2,24 @@
 
 namespace Vgsite;
 
+/**
+ * Store instantiated objects and variables for access among classes
+ */
+
 class Registry
 {
     private static $instance = null;
-    private $registry = array();
+    private $registry = [];
 
-    private function __construct() {}
+    /**
+     * Mappers instantiated and stored here
+     * @var array
+     */
+    private $mappers = array();
 
-    static function instance()
+    private function __construct() {echo 'new Registry***************'.PHP_EOL;}
+
+    private static function instance(): self
     {
         if (is_null(self::$instance)) {
             self::$instance = new self();
@@ -18,27 +28,40 @@ class Registry
         return self::$instance;
     }
 
-    public function get($key) 
+    public static function get($key) 
     {
-        if (isset($this->registry[$key])) {
-            return $this->registry[$key];
+        echo 'Registry::get('.$key.'):';
+        $inst = self::instance();
+        if (isset($inst->registry[$key])) {
+            echo 'found'.PHP_EOL;
+            return $inst->registry[$key];
         }
+        echo 'notfound'.PHP_EOL;
 
         return null;
     }
 
-    public function set($key, $value) 
+    public static function set($key, $value)
     {
-        $this->registry[$key] = $value;
+        $inst = self::instance();
+        $inst->registry[$key] = $value;
+        echo 'Registry::set('.$key.')'.PHP_EOL;
     }
 
-    public function getBadgeMapper(): BadgeMapper
+    public static function getMapper($class)
     {
-        return new BadgeMapper();
-    }
-    public function getBadgeCollection(): BadgeCollection
-    {
-        return new BadgeCollection();
+        echo 'Registry::getMapper('.$class.'):';
+        $inst = self::instance();
+        if (isset($inst->mappers[$class])) {
+            echo 'found'.PHP_EOL;
+            return $inst->mappers[$class];
+        }
+
+        echo 'notfound;instantiating'.PHP_EOL;
+        $mapper_class = $class.'Mapper';
+        $inst->mappers[$class] = new $mapper_class;
+
+        return $inst->mappers[$class];
     }
 }
 

@@ -1,5 +1,5 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 ?><!DOCTYPE html>
 <html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">
 <head>

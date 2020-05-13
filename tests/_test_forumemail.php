@@ -1,7 +1,7 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 include("forums/action.php");
-echo $html_tag;
+echo Page::HTML_TAG;
 ?><head>
 <link rel="stylesheet" type="text/css" href="/bin/css/screen.css" media="screen"/>
 </head>

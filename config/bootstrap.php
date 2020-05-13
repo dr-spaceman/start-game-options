@@ -1,7 +1,10 @@
 <?php
 
 define('ROOT_DIR', realpath(__DIR__.'/..'));
+define('PUBLIC_DIR', ROOT_DIR.'/public');
 define('TEMPLATE_DIR', ROOT_DIR.'/templates');
+define('CACHE_DIR', ROOT_DIR.'/var/cache');
+define('LOGS_DIR', ROOT_DIR.'/var/logs');
 
 require_once ROOT_DIR.'/vendor/autoload.php';
 
@@ -43,10 +46,17 @@ try {
 // Register logger
 $logger = new Logger('app');
 // Register a handler -- file loc and minimum error level to record
-$logger->pushHandler(new Monolog\Handler\StreamHandler(__DIR__."/../var/logs/app.log", (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
+$logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
 // Inject details of error source
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
 $registry->set('logger', $logger);
+
+// Templates
+$loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);
+$template = new \Twig\Environment($loader, [
+    'cache' => CACHE_DIR.'/compilation_cache',
+    'debug' => (getenv('ENVIRONMENT') == "development" ? true : false),
+]);
 
 // Catch uncaught exceptions
 set_exception_handler(function (\Throwable $e) {
@@ -57,34 +67,23 @@ set_exception_handler(function (\Throwable $e) {
 
 session_start();
 
-// OLDER STUFF BELOW //
-
-
-require "../bin/php/page_functions.php";
-require "../bin/php/bbcode.php";
-
 //$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
 
 $errors   = array();
 $warnings = array();
 $results  = array();
 
-$html_tag = '<!DOCTYPE html>
-<html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
-$root = $_SERVER['DOCUMENT_ROOT'];
-
 $usrid   = null;
 $usrname = null;
-$usrrank = 0;
+$_SESSION['user_rank'] = 0;
 
 //set login vars
-if(isset($_SESSION['usrname'])) {
-	
-	$usrname = $_SESSION['usrname'];
-	$usrid = $_SESSION['usrid'];
-	$usrrank = base64_decode($_SESSION['usrkey']);
-	$usrlastlogin = $_SESSION['usrlastlogin'];
-
+if ($_SESSION['logged_in'] && $_SESSION['user_id']) {
+    $current_user = User::findById($_SESSION['user_id']);
+    // Dicouraged old variable references
+	$usrname = $current_user->getUsername();
+	$usrid = $_SESSION['user_id'];
+	$usrlastlogin = $current_user->getLastLogin();
 } else {
 	
 	if(isset($_COOKIE['usrsession'])) {
@@ -105,3 +104,8 @@ if(isset($_SESSION['usrname'])) {
 	
 	}
 }
+
+if($_SESSION['user_rank'] == User::RESTRICTED) die("*");
+
+require ROOT_DIR.'/src/required_functions.php';
+require "../bin/php/bbcode.php";

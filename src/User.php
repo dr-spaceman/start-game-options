@@ -154,21 +154,11 @@ class User extends DomainObject
         return $mapper->findByEmail($email);
     }
 
-	/**
-     * Gets all supported ranks.
-     *
-     * @return array Assoc array with human-readable level names => level codes.
-     */
     public static function getRanks(): array
     {
         return array_flip(static::$ranks);
     }
 
-    /**
-     * Gets the name of the logging level.
-     *
-     * @throws \Psr\Log\InvalidArgumentException If rank is not defined
-     */
     public static function getRankName(int $rank): string
     {
         if (!isset(static::$ranks[$rank])) {
@@ -178,9 +168,29 @@ class User extends DomainObject
         return static::$ranks[$rank];
     }
 
+    public function getLastLogin()
+    {
+        return $this->getDetail('activity');
+    }
+
     public function getDetail(string $key)
     {
         return $this->details[$key];
+    }
+
+    /**
+     * Render user in HTML form
+     */
+    public function render($show_avatar=true, $link_profile=true)
+    {
+        $ret = '';
+        if ($link_profile) $ret.= '<a href="/~'.$this->username.'" title="'.$this->username.'\'s profile">';
+        if ($show_avatar) $ret.= $this->avatar("thumbnail");
+        $ret.= '<span class="username">'.$this->username.'</span>';
+        if ($link_profile) $ret.= '</a>';
+        $ret = '<span class="user">'.$ret.'</span>';
+        
+        return $ret;
     }
 }
 

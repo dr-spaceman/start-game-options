@@ -5,13 +5,14 @@ namespace Vgsite;
 /**
  * Handle database queries and logging
  */
+
 abstract class Mapper
 {
     /**
-     * Database primary key field name
+     * Database table name and primary key field name
      */
+    protected $db_table;
     protected $db_id_field = 'id';
-    abstract protected $db_table;
 
     /**
      * Registry object
@@ -31,6 +32,7 @@ abstract class Mapper
      */
     protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
     protected $select_statement;
+    protected $select_all_sql = "SELECT * FROM `%s`";
     protected $select_all_statement;
     protected $save_statement;
     protected $insert_statement;
@@ -38,11 +40,11 @@ abstract class Mapper
 
     public function __construct()
     {
-        $registry = Registry::instance();
-        $this->pdo = $registry->get('pdo');
-        $this->logger = $registry->get('logger');
+        $this->pdo = Registry::get('pdo');
+        $this->logger = Registry::get('logger');
 
         $this->select_statement = $this->pdo->prepare(sprintf($this->select_sql, $this->db_table, $this->db_id_field));
+        $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
     }
 
     public function getPdo(): \PDO
@@ -85,15 +87,15 @@ abstract class Mapper
             return null;
         }
 
-        return ObjectCache::exists(
+        return ObjectCache::get(
             $this->targetClass(),
-            $id
+            $id,
         );
     }
 
     protected function addCache(DomainObject $obj)
     {
-        ObjectCache::add($obj);
+        ObjectCache::set($obj);
     }
 
     /**
@@ -116,8 +118,10 @@ abstract class Mapper
 
     public function insert(DomainObject $obj)
     {
+        $insert_result = $this->doInsert($obj);
         $this->addCache($obj);
-        return $this->doInsert($obj);
+
+        return $insert_result;
     }
     
     abstract public function getCollection(array $rows): Collection;

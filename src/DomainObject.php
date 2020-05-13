@@ -11,9 +11,32 @@ abstract class DomainObject
 
     public function __construct(int $id)
     {
+        echo 'new DomainObject['.static::class.':'.$id.']'.PHP_EOL;
         if (!is_null($id)) {
             $this->id = $id;
         }
+    }
+
+    protected function getMapper()
+    {
+        return Registry::getMapper(static::class);
+    }
+
+    /**
+     * Static entry points
+     * Load registered mapper and use the mapper method to access data
+     * 
+     * @param  int    $id Database primary key
+     * @return DomainObject|null
+     */
+    public static function findById(int $id): ?DomainObject
+    {
+        return static::getMapper()->findById($id);
+    }
+
+    public static function findAll(): Collection
+    {
+        return static::getMapper()->findAll();
     }
 
     public function getId(): int
@@ -30,8 +53,6 @@ abstract class DomainObject
     {
         return Collection::getCollection($type); 
     }
-
-    abstract public static function findById(int $id): ?DomainObject;
 
     public function __clone()
     {

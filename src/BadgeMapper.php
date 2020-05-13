@@ -4,8 +4,8 @@ namespace Vgsite;
 
 class BadgeMapper extends Mapper
 {
-    protected $id_field = 'badge_id';
-    protected $select_statement;
+    protected $db_table = 'badges';
+    protected $db_id_field = 'badge_id';
     protected $select_all_statement;
 
     public function __construct()
@@ -26,6 +26,33 @@ class BadgeMapper extends Mapper
         }
 
         return $this->createObject($row);
+    }
+
+    /**
+     * Check/Get earned data
+     * @param  int    $badge_id Badge ID
+     * @param  int    $user_id  User ID
+     * @return array|null           Array of table data or null if not found
+     */
+    public function findEarned(int $badge_id, int $user_id): ?array
+    {
+        $sql = "SELECT * FROM badges_earned WHERE badge_id=? AND user_id=? LIMIT 1";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute([$badge_id, $user_id]);
+        $row = $statement->fetch();
+
+        if (!is_array($row)) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    public function insertEarned(int $badge_id, int $user_id): bool
+    {
+        $sql = "INSERT INTO badges_earned (`badge_id`, `user_id`) VALUES (?, ?);";
+        $statement = $this->pdo->prepare($sql);
+        return $statement->execute([$badge_id, $user_id]);
     }
 
     protected function targetClass(): string
@@ -63,8 +90,10 @@ class BadgeMapper extends Mapper
     {
     }
 
-    public function selectStatement(): \PDOStatement
+    public function markShown(Badge $badge, User $user)
     {
-        return $this->select_statement;
+        $sql = "UPDATE badges_earned SET `new` = '0' WHERE badge_id=? AND user_id=? LIMIT 1";
+        $statement = $this->pdo->prepare($sql);
+        return $statement->execute($badge->getId(), $user->getId());
     }
 }

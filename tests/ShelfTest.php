@@ -5,7 +5,7 @@ require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 use PHPUnit\Framework\TestCase;
 use Vgsite\Shelf;
 
-class UserTest extends TestCase
+class ShelfTest extends TestCase
 {
     public function testShelf()
     {

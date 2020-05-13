@@ -9,9 +9,9 @@ class DBTest extends TestCase
 {
     public function testDBConnection()
     {
-        $pdo = Registry::instance()->get('pdo');
+        $pdo = Registry::get('pdo');
         $this->assertInstanceOf(PDO::class, $pdo);
-        $pdo2 = Registry::instance()->get('pdo');
+        $pdo2 = Registry::get('pdo');
         $this->assertEquals($pdo, $pdo2);
     }
 
@@ -49,7 +49,7 @@ class DBTest extends TestCase
 
     public function testDBUpdate()
     {
-        $pdo = Registry::instance()->get('pdo');
+        $pdo = Registry::get('pdo');
 
         $sql = sprintf("UPDATE `test` SET foo='fuuuuuuuuuu' WHERE bar='%s';", TEST_ID);
         $statement = $pdo->prepare($sql);

@@ -35,24 +35,82 @@ $img_normal_sizes_widths = array(
     'md' => 350,
     'op' => 620
 );
-function imgGetCategories(){
-    #
-    # image categories stored in database
-    # returns an array with img_category_id as the keys
-    # @array [ img_category_id, img_category, img_category_description, sort ]
-    #
-    $categories = array();
-    $query = "SELECT * FROM `images_categories` order by sort";
-    $res = mysqli_query($GLOBALS['db']['link'], $query);
-    while($row = mysqli_fetch_assoc($res)){
-        $categories[$row['img_category_id']] = $row;
-    }
-    return $categories;
-}
 
 class Image extends DomainObject
 {
-    
+    public const IMAGES_DIR = ROOT_DIR.'/public/images';
+    public const UPLOAD_TEMP_DIR = ROOT_DIR.'/var/uploads';
+    public const DELETED_FILES_DIR = ROOT_DIR.'/var/deleted_files';
+    public const PROPERTIES_KEYS = ['img_name','img_id','img_session_id','img_size',
+        'img_width','img_height','img_bits','img_minor_mime','img_category_id',
+        'img_title','img_description','sort','user_id'];
+
+    /**
+     * Image Categories
+     */
+
+    public const SCREENSHOT = 1;
+    public const SCREENSHOT_TITLE = 11;
+    public const SCREENSHOT_ENDING = 3;
+    public const SCREENSHOT_CREDITS = 12;
+    public const SCREENSHOT_GAMEOVER = 14;
+    public const BOXART = 4;
+    public const BOXART_DERIVATION = 16;
+    public const OFFICIALART = 3;
+    public const OFFICIALART_CONCEPT = 17;
+    public const FANART = 8;
+    public const SCAN = 2;
+    public const COMMERCIAL = 5;
+    public const PHOTO = 6;
+    public const MAP = 7;
+    public const WALLPAPER = 9;
+    public const SPRITES = 10;
+    public const LOGO = 15;
+
+    protected static $categories = [
+        self::SCREENSHOT => 'Screenshots, General',
+        self::SCREENSHOT_TITLE => 'Screenshots, Title screen',
+        self::SCREENSHOT_ENDING => 'Screenshots, Ending',
+        self::SCREENSHOT_CREDITS => 'Screenshots, Credits',
+        self::SCREENSHOT_GAMEOVER => 'Screenshots, Game over',
+        self::BOXART => 'Box art, Official',
+        self::BOXART_DERIVATION => 'Box art, Unofficial derivation or fan artwork',
+        self::OFFICIALART => 'Official artwork, Illustration',
+        self::OFFICIALART_CONCEPT => 'Official artwork, Concept art',
+        self::FANART => 'Fan art',
+        self::SCAN => 'Scans',
+        self::COMMERCIAL => 'Commercial',
+        self::PHOTO => 'Photos',
+        self::MAP => 'Maps',
+        self::WALLPAPER => 'Wallpaper',
+        self::SPRITES => 'Pixel Art or Sprites',
+        self::LOGO => 'Logos',
+    ];
+
+    protected static $categories_descriptions = [
+        self::SCREENSHOT => 'Captures of the game during play',
+        self::SCREENSHOT_TITLE => 'Capture of the introduction of the game',
+        self::SCREENSHOT_ENDING => 'Capture of the game ending',
+        self::SCREENSHOT_CREDITS => 'Capture of the game credits',
+        self::SCREENSHOT_GAMEOVER => 'Capture of game over screen',
+        self::BOXART => 'Scans of retail cover art and packaging',
+        self::BOXART_DERIVATION => 'Theoretical or fan-made box art; Box art that was never printed for retail release',
+        self::OFFICIALART => 'Official illustrations',
+        self::OFFICIALART_CONCEPT => 'Concept art or sketches by an artist officially commissioned by the game publisher',
+        self::FANART => 'Unofficial works rendered by a fan',
+        self::SCAN => 'Full-page scans from print media',
+        self::COMMERCIAL => 'Products, accessories, advertisements, etc.',
+        self::PHOTO => 'Photographs of a person, place, or thing',
+        self::MAP => 'Maps and visual guides of places',
+        self::WALLPAPER => 'Background images for computers and mobile phones',
+        self::SPRITES => 'Pixelated sprite graphics from a game',
+        self::LOGO => 'Logos, icons, or other graphic marks or emblems',
+    ];
+
+    /**
+     * Object properties
+     */
+
     public $notfound = true;
 
     /**
@@ -73,154 +131,153 @@ class Image extends DomainObject
     public $img_title;
     public $img_description;
     public $sort;
-
-    public const IMAGES_DIR = ROOT_DIR.'/assets/images/';
-    public const UPLOAD_TEMP_DIR = ROOT_DIR.'/var/uploads';
     
-    public function __construct($img_id, $img_name)
+    /**
+     * Image construction
+     * @param array $params Key-value pairs relevant to an image, e.g. DB row
+     * Image::PROPERTIES_KEYS holds list of keys
+     */
+    public function __construct(array $params)
     {
-        
         # var $img_params string Either the numeric img_id or the img_name (ie "DonkeyKong.jpg")
         # if not found, sets $notfound=true and grabs "unknown.png", a placeholder image
         
-        $this->notfound = false;
-        
-        $img_params = trim($img_params);
-        if($img_params == "") return $this->emptyImg();
-        
-        //if the given string is all numeric, find the image by img_id,
-        //otherwise find by img_name
-        if(ctype_digit($img_params)) $img_id = $img_params;
-        else $img_name = $img_params;
-        
-        $q = "SELECT * FROM images WHERE ".($img_name ? "img_name='".mysqli_real_escape_string($GLOBALS['db']['link'], $img_name)."'" : "img_id='$img_id'")." LIMIT 1";
-        if(!$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return $this->emptyImg();
-        
-        $this->img_name = $row['img_name'];
-        $this->img_id = $row['img_id'];
-        $this->img_session_id = $row['img_session_id'];
-        $this->img_session_id = $row['img_session_id'];
-        $this->img_size = $row['img_size'];
-        $this->img_width = $row['img_width'];
-        $this->img_height = $row['img_height'];
-        $this->img_bits = $row['img_bits']; 
-        $this->img_minor_mime = $row['img_minor_mime'];
-        $this->img_category_id = $row['img_category_id'];
-        $this->img_title = $row['img_title'];
-        $this->img_description = $row['img_description'];
-        $this->sort = $row['sort'];
-        $this->usrid = $row['usrid'];
-        $this->img_timestamp = $row['img_timestamp'];
-        $this->img_views = $row['img_views'];
-        
-        $this->src = $this->src();
-        
-    }
-    
-    function src()
-    {
-        
-        // @return array list of img files and URLs
-        
-        $src[0] = '';
-        $src['dir'] = "/images/".substr($this->img_session_id, 12, 7)."/";
-        $src[0] = $src['dir'].$this->img_name;
-        $src['or'] = $src[0];
-        $src['url'] = "/image/".$this->img_name;
-        $src['op'] = $src['dir']."op/".$this->img_name;
-        if(file_exists($_SERVER['DOCUMENT_ROOT'].$src['op'])) $this->optimized = true;
-        else{ $this->optimized = false; $src['op'] = $src[0]; }
-        $src['optimized'] = $src['op'];
-        $src['md'] = $src['dir']."md/".$this->img_name;
-        if(!file_exists($_SERVER['DOCUMENT_ROOT'].$src['md'])) $src['md'] = $src[0];
-        $src['box'] = $src['dir']."box/".$this->img_name.".png";
-        $src['sm'] = $src['dir']."sm/".$this->img_name;
-        $src['ss'] = $src['dir']."ss/".$this->img_name.".png";
-        $src['tn'] = $src['dir']."tn/".$this->img_name.".png";
-        return $src;
-        
-    }
-    
-    function output($size='op', $rel='', $figstyle=''){
-        //@attr $rel image group
-        $alt = $this->img_title ? htmlsc($this->img_title) : $this->img_name;
-        $src = $this->src[$size] ? $this->src[$size] : $this->src['op'];
-        return '<div class="imagefigure" style="'.$figstyle.'"><a href="'.$this->src['url'].'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$src.'" alt="'.$alt.'"/></a></div>';
-    }
-    
-    function remove(){
-        
-        // remove an image
-        // @return boolean
-        // any errors passed to $img_remove_error
-        
-        if(!$this->img_id){
-            if(!$this->img_name) return $this->removeError("No image data could be found with which to remove");
-            if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_id FROM images WHERE img_name = '".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_name)."' LIMIT 1"))) return $this->removeError("No image data could be found with which to remove");
-            $this->img_id = $dat->img_id;
+        if (empty($params) || !isset($params['img_id'])) {
+            throw new InvalidArgumentException("Image class requires at least an img_id parameter passed to the constructor");
         }
+
+        parent::__construct($params['img_id']);
         
-        $q = "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1";
-        if(!$img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) return $this->removeError("No image data found for image ID #".$this->img_id);
+        $this->img_name = $params['img_name'];
+        $this->img_id = $params['img_id'];
+        $this->img_session_id = $params['img_session_id'];
+        $this->img_size = $params['img_size'];
+        $this->img_width = $params['img_width'];
+        $this->img_height = $params['img_height'];
+        $this->img_bits = $params['img_bits']; 
+        $this->img_minor_mime = $params['img_minor_mime'];
+        $this->img_category_id = $params['img_category_id'];
+        $this->img_title = $params['img_title'];
+        $this->img_description = $params['img_description'];
+        $this->sort = $params['sort'];
+        $this->user_id = $params['user_id'];
+        $this->img_timestamp = $params['img_timestamp'];
+        $this->img_views = $params['img_views'];
         
-        $q = "DELETE FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1";
-        if(!mysqli_query($GLOBALS['db']['link'], $q)){
-            $img = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM images WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."' LIMIT 1"));
-            if(!$img) return $this->removeError("Unknown error removing image: img_id:".$this->img_id."; ".mysqli_error($GLOBALS['db']['link']));
-            else return $this->removeError("Couldn't remove image file <i>".$img->img_name."</i> from database; ".mysqli_error($GLOBALS['db']['link']));
+        $this->src = $this->getSrc();
+        
+        if ($this->img_name && $this->img_id) {
+            $this->notfound = false;
         }
-        
-        $q = "SELECT * FROM images WHERE img_session_id = '$img->img_session_id'";
-        if($num_sess_imgs = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
-            $q2 = "UPDATE images_sessions SET img_qty = '$num_sess_imgs' WHERE img_session_id = '$img->img_session_id' LIMIT 1";
-        } else {
-            $q2 = "DELETE FROM images_sessions WHERE img_session_id = '$img->img_session_id' LIMIT 1";
-        }
-        
-        $q = "DELETE FROM images_tags WHERE img_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $this->img_id)."'";
-        mysqli_query($GLOBALS['db']['link'], $q);
-        
-        if(!mysqli_query($GLOBALS['db']['link'], $q2)) return $this->removeError("Couldn't update session database table");
-        
-        return true;
-        
-    }
-    function removeError($error_message=''){
-        $this->img_remove_error = $error_message ? $error_message : "An unknown error occurred.";
-        return false;
     }
 
-    /**
-     * Create a unique (hopefully...) integer to identify upload sessions
-     * @return integer The ID
-     */
-    public static function makeSessionID() {
-        return date("ymdHis").sprintf("%07d",$GLOBALS['usrid']).mt_rand(0,9).mt_rand(0,9);
+    public function setId(int $id)
+    {
+        $this->img_id = $id;
+        parent::setId($id);
     }
-    
-    function getSessionData(){
-        
-        // get info about this image's session, including previous & next files
-        
-        $q = "SELECT * FROM images_sessions WHERE img_session_id = '".$this->img_session_id."' LIMIT 1";
-        if(!$this->session_row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) return;
-        
-        /*if($this->session_data['img_qty'] > 1){
-            $q = "SELECT * FROM images WHERE ";*/
-        
-    }
-    
-    function categoryName(){
-        if(!$this->img_category_id) return;
-        if($this->img_category) return $this->img_category;
-        $query = "SELECT img_category FROM `images_categories` WHERE img_category_id = '$this->img_category_id' LIMIT 1";
-        $res = mysqli_query($GLOBALS['db']['link'], $query);
-        while($row = mysqli_fetch_assoc($res)){
-            $this->img_category = $row['img_category'];
+
+    public function getProperties(): array
+    {
+        $props = array();
+        foreach (self::PROPERTIES_KEYS as $key) {
+            $props[$key] = $this->{$key};
         }
-        return $this->img_category;
+
+        return $props;
+    }
+
+    public function getDir()
+    {
+        self::IMAGES_DIR.'/'.substr($this->img_session_id, 12, 7);
+    }
+
+    public function getUrl()
+    {
+        return '/image/'.$this->img_name;
     }
     
+    /**
+     * Return a list of img files and URLs for local access
+     * @return [type] [description]
+     */
+    public function getSrc()
+    {
+        $src['original'] = '';
+        $src['dir'] = $this->getDir();
+        $src['original'] = $src['dir'].'/'.$this->img_name;
+        $src['or']  = $src['original'];
+        $src['url'] = $this->getUrl();
+        $src['op']  = $src['dir'].'/op/'.$this->img_name;
+        if (file_exists($src['op'])) {
+            $this->optimized = true;
+        } else {
+            $this->optimized = false;
+            $src['op'] = $src['original'];
+        }
+        $src['optimized'] = $src['op'];
+        $src['md']  = $src['dir']."/md/".$this->img_name;
+        if (!file_exists($src['md'])) {
+            $src['md'] = $src['original'];
+        }
+        $src['box'] = $src['dir']."/box/".$this->img_name.".png";
+        $src['sm']  = $src['dir']."/sm/".$this->img_name;
+        $src['ss']  = $src['dir']."/ss/".$this->img_name.".png";
+        $src['tn']  = $src['dir']."/tn/".$this->img_name.".png";
+
+        return $src;
+    }
+    
+        //@attr $rel image group
+    /**
+     * Render HTML tag
+     * @param  string $size     One of the sizes in getSrc() like 'op', 'tn', etc.
+     * @param  STRING $rel      iMAGE GROUP
+     * @return string           HTML
+     */
+    public function render($size='op', $rel=null, $figstyle=null)
+    {
+        $alt = $this->img_title ? htmlsc($this->img_title) : $this->img_name;
+        $src = $this->src[$size] ? $this->src[$size] : $this->src['op'];
+        return '<div class="imagefigure"><a href="'.$this->src['url'].'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$src.'" alt="'.$alt.'"/></a></div>';
+    }
+
+    public static function findByName(string $name): ?DomainObject
+    {
+        return self::getMapper()->findByName($name);
+    }
+    
+    /**
+     * Gget info about this image's session group, including previous & next files
+     * @return [type] [description]
+     */
+    public function getSessionData()
+    {
+        return $this->getMapper()->getSession($this->img_session_id);
+    }
+
+    public static function getCategories(): array
+    {
+        return static::$categories;
+    }
+
+    public static function getCategoryName(int $category_id): string
+    {
+        if (!isset(static::$categories[$category_id])) {
+            throw new \InvalidArgumentException('Category "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$categories)));
+        }
+
+        return static::$categories[$category_id];
+    }
+
+    public static function getCategoryDescription(int $category_id): string
+    {
+        if (!isset(static::$categories[$category_id])) {
+            throw new \InvalidArgumentException('Category "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$categories)));
+        }
+
+        return static::$categories_descriptions[$category_id];
+    }
 }
 
 class gallery {

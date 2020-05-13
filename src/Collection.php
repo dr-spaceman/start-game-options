@@ -16,7 +16,7 @@ abstract class Collection
      * Total number of items in collection
      * @var integer
      */
-    protected $total = 0;
+    public $count = 0;
     
     /**
      * Rows of raw data, non-yet-instantiated objects
@@ -41,7 +41,7 @@ abstract class Collection
     public function __construct(array $rows=[], Mapper $mapper=null)
     {
         $this->rows = $rows;
-        $this->total = count($rows);
+        $this->count = count($rows);
 
         if (count($rows) && is_null($mapper)) {
             throw new \InvalidArgumentException("Collection needs Mapper to generate objects");
@@ -58,13 +58,13 @@ abstract class Collection
             throw new InvalidArgumentException("This is a {$class} collection");
         }
 
-        $this->objects[$this->total] = $object;
-        $this->total++;
+        $this->objects[$this->count] = $object;
+        $this->count++;
     }
 
     public function getGenerator()
     {
-        for ($x = 0; $x < $this->total; $x++) {
+        for ($x = 0; $x < $this->count; $x++) {
             yield $this->getRow($x);
         }
     }
@@ -73,7 +73,7 @@ abstract class Collection
 
     private function getRow($num)
     {        
-        if ($num >= $this->total || $num < 0) {
+        if ($num >= $this->count || $num < 0) {
             return null;
         }
 
