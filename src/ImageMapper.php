@@ -133,17 +133,12 @@ class ImageMapper extends Mapper
             return false;
         }
 
-        if ($this->logger) $this->logger->info("Delete Image ", $image->getProperties());var_dump($image);
-        copy($image->src['original'], Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->img_name);
-        unlink($image->src['original']);
+        if ($this->logger) $this->logger->info("Delete Image ", $image->getProperties());
+        copy(PUBLIC_DIR.'/'.$image->getSrc(), Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->img_name);
+        unlink(PUBLIC_DIR.'/'.$image->getSrc());
         unset($image);
         
         return true;
-    }
-
-    public function selectStatement(): \PDOStatement
-    {
-        return $this->select_statement;
     }
 
     /**
@@ -174,7 +169,7 @@ class ImageMapper extends Mapper
     }
 
     /* Save collection in DB */
-    public function saveSession(ImageCollection $collection)
+    public function saveSession(ImageCollection $collection): bool
     {
         if ($collection->is_new) {
             if (empty($collection->getId())) {

@@ -2,60 +2,66 @@
 
 namespace Vgsite;
 
-$img_sizes = array(
-    'tn'         => 'tn',
-    'thumb'      => 'tn',
-    'thumbnail'  => 'tn',
-    'screen'     => 'ss',
-    'screenshot' => 'ss',
-    'ss'         => 'ss',
-    'small'      => 'sm',
-    'sm'         => 'sm',
-    'medium'     => 'md',
-    'med'        => 'md',
-    'md'         => 'md',
-    'large'      => 'op',
-    'lg'         => 'op',
-    'optimal'    => 'op',
-    'op'         => 'op',
-    'default'    => 'op',
-    'original'   => 'or',
-);
-$img_sizes_widths = array(
-    'tn' => 100,
-    'ss' => 200,
-    'sm' => 240,
-    'md' => 350,
-    'op' => 620
-);
-//This string includes resized image sizes that use the original aspect ratio
-$img_normal_sizes_widths = array(
-    'tn' => 100,
-    'sm' => 240,
-    'md' => 350,
-    'op' => 620
-);
+// $img_sizes = array(
+//     'tn'         => 'tn',
+//     'thumb'      => 'tn',
+//     'thumbnail'  => 'tn',
+//     'screen'     => 'ss',
+//     'screenshot' => 'ss',
+//     'ss'         => 'ss',
+//     'small'      => 'sm',
+//     'sm'         => 'sm',
+//     'medium'     => 'md',
+//     'med'        => 'md',
+//     'md'         => 'md',
+//     'large'      => 'op',
+//     'lg'         => 'op',
+//     'optimal'    => 'op',
+//     'op'         => 'op',
+//     'default'    => 'op',
+//     'original'   => 'or',
+// );
 
 class Image extends DomainObject
 {
-    public const IMAGES_DIR = ROOT_DIR.'/public/images';
-    public const UPLOAD_TEMP_DIR = ROOT_DIR.'/var/uploads';
+    public const IMAGES_DIR_REL    = 'images'; // Relative to public directory
+    public const IMAGES_DIR        = PUBLIC_DIR.'/'.self::IMAGES_DIR_REL; // Absolute path
+    public const UPLOAD_TEMP_DIR   = ROOT_DIR.'/var/uploads';
     public const DELETED_FILES_DIR = ROOT_DIR.'/var/deleted_files';
+
     public const PROPERTIES_KEYS = ['img_name','img_id','img_session_id','img_size',
         'img_width','img_height','img_bits','img_minor_mime','img_category_id',
         'img_title','img_description','sort','user_id'];
 
-    /**
-     * Image Categories
-     */
+    /** Image Sizes **/
+
+    public const OPTIMAL = 'op';
+    public const MEDIUM = 'md';
+    public const SMALL = 'sm';
+    public const THUMBNAIL = 'tn';
+    public const SCREEN = 'ss';
+    public const BOX = 'box';
+
+    protected static $sizes = [
+        self::OPTIMAL => [620, null],
+        self::MEDIUM => [350, null],
+        self::SMALL => [240, null],
+        self::THUMBNAIL => [100, 100],
+        self::SCREEN => [200, 130],
+        self::BOX => [140, null],
+    ];
+
+    /** Image Categories **/
 
     public const SCREENSHOT = 1;
     public const SCREENSHOT_TITLE = 11;
-    public const SCREENSHOT_ENDING = 3;
+    public const SCREENSHOT_ENDING = 13;
     public const SCREENSHOT_CREDITS = 12;
     public const SCREENSHOT_GAMEOVER = 14;
+    public const CATEGORY_GROUP_SCREENSHOT = [self::SCREENSHOT, self::SCREENSHOT_TITLE, self::SCREENSHOT_ENDING, self::SCREENSHOT_CREDITS, self::SCREENSHOT_GAMEOVER];
     public const BOXART = 4;
     public const BOXART_DERIVATION = 16;
+    public const CATEGORY_GROUP_BOXART = [self::BOXART, self::BOXART_DERIVATION];
     public const OFFICIALART = 3;
     public const OFFICIALART_CONCEPT = 17;
     public const FANART = 8;
@@ -107,9 +113,7 @@ class Image extends DomainObject
         self::LOGO => 'Logos, icons, or other graphic marks or emblems',
     ];
 
-    /**
-     * Object properties
-     */
+    /** Object properties **/
 
     public $notfound = true;
 
@@ -121,7 +125,7 @@ class Image extends DomainObject
     public $img_name = 'unknown.png';
     public $img_id;
     public $optimized; // t or f if optimized size exitst
-    public $src;
+    private $src;
     public $img_size = 3810;
     public $img_width = 601;
     public $img_height = 601;
@@ -142,7 +146,7 @@ class Image extends DomainObject
         # if not found, sets $notfound=true and grabs "unknown.png", a placeholder image
         
         if (empty($params) || !isset($params['img_id'])) {
-            throw new InvalidArgumentException("Image class requires at least an img_id parameter passed to the constructor");
+            throw new InvalidArgumentException("Image class requires at least an img_id parameter passed to the constructor. Try -1 for a prototype object.");
         }
 
         parent::__construct($params['img_id']);
@@ -162,8 +166,6 @@ class Image extends DomainObject
         $this->user_id = $params['user_id'];
         $this->img_timestamp = $params['img_timestamp'];
         $this->img_views = $params['img_views'];
-        
-        $this->src = $this->getSrc();
         
         if ($this->img_name && $this->img_id) {
             $this->notfound = false;
@@ -186,9 +188,15 @@ class Image extends DomainObject
         return $props;
     }
 
+    /**
+     * Get the directory within the main /images dir (self::IMAGES_DIR) where this image is stored
+     * Appropriate for HTML tags but not for file references (prepend self::IMAGES_DIR for file ref)
+     * 
+     * @return string Directory name
+     */
     public function getDir()
     {
-        return self::IMAGES_DIR.'/'.substr($this->img_session_id, 12, 7);
+        return substr($this->img_session_id, 12, 7);
     }
 
     public function getUrl()
@@ -197,48 +205,42 @@ class Image extends DomainObject
     }
     
     /**
-     * Return a list of img files and URLs for local access
-     * @return [type] [description]
+     * Return a file location for local access
+     * @param  string  $size           One of the size constants; NULL for original image
+     * @param  boolean $absolute_path  Return the location relative to the root directory
+     * @return string                  Path relative to PUBLIC_DIR __without__ leading forward slash
      */
-    public function getSrc()
+    public function getSrc($size=null, $absolute_path=false)
     {
-        $src['original'] = '';
-        $src['dir'] = $this->getDir();
-        $src['original'] = $src['dir'].'/'.$this->img_name;
-        $src['or']  = $src['original'];
-        $src['url'] = $this->getUrl();
-        $src['op']  = $src['dir'].'/op/'.$this->img_name;
-        if (file_exists($src['op'])) {
-            $this->optimized = true;
-        } else {
-            $this->optimized = false;
-            $src['op'] = $src['original'];
-        }
-        $src['optimized'] = $src['op'];
-        $src['md']  = $src['dir']."/md/".$this->img_name;
-        if (!file_exists($src['md'])) {
-            $src['md'] = $src['original'];
-        }
-        $src['box'] = $src['dir']."/box/".$this->img_name.".png";
-        $src['sm']  = $src['dir']."/sm/".$this->img_name;
-        $src['ss']  = $src['dir']."/ss/".$this->img_name.".png";
-        $src['tn']  = $src['dir']."/tn/".$this->img_name.".png";
+        $base = ($absolute_path ? PUBLIC_DIR.'/' : '') . self::IMAGES_DIR_REL.'/'.$this->getDir();
 
-        return $src;
+        if (is_null($size)) {
+            return $base.'/'.$this->img_name;
+        }
+
+        if (!isset(static::$sizes[$size])) {
+            throw new \InvalidArgumentException('Size "'.$size.'" is not defined, use one of: '.implode(', ', array_keys(static::$sizes)));
+        }
+
+        $location = $base.'/'.$size.'/'.$this->img_name;
+
+        if (in_array($size, [self::BOX, self::SCREEN, self::THUMBNAIL])) {
+            $location.= '.png';
+        }
+
+        return $location;
     }
     
-        //@attr $rel image group
     /**
      * Render HTML tag
      * @param  string $size     One of the sizes in getSrc() like 'op', 'tn', etc.
-     * @param  STRING $rel      iMAGE GROUP
+     * @param  STRING $rel      Image group
      * @return string           HTML
      */
-    public function render($size='op', $rel=null, $figstyle=null)
+    public function render($size=self::OPTIMAL, $rel=null, $figstyle=null)
     {
         $alt = $this->img_title ? htmlsc($this->img_title) : $this->img_name;
-        $src = $this->src[$size] ? $this->src[$size] : $this->src['op'];
-        return '<div class="imagefigure"><a href="'.$this->src['url'].'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$src.'" alt="'.$alt.'"/></a></div>';
+        return '<div class="imagefigure"><a href="'.$this->getUrl().'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$this->getSrc($size).'" alt="'.$alt.'"/></a></div>';
     }
 
     public static function findByName(string $name): ?DomainObject
@@ -276,6 +278,25 @@ class Image extends DomainObject
         }
 
         return static::$categories_descriptions[$category_id];
+    }
+
+    public static function getSizes(): array
+    {
+        return static::$sizes;
+    }
+
+    /**
+     * Return an [x, y] tuple
+     * @param  string $size One of the size constants
+     * @return array        An array with width and height [$x, $y]
+     */
+    public static function getSize($size): array
+    {
+        if (!isset(static::$sizes[$size])) {
+            throw new \InvalidArgumentException('Size "'.$size.'" is not defined, use one of: '.implode(', ', array_keys(static::$sizes)));
+        }
+
+        return static::$sizes[$size];
     }
 }
 

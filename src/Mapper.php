@@ -3,7 +3,7 @@
 namespace Vgsite;
 
 /**
- * Handle database queries and logging
+ * Handle database queries and logging, object storage into IdentityMap
  */
 
 abstract class Mapper
@@ -50,17 +50,8 @@ abstract class Mapper
         $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
     }
 
-    public function getPdo(): \PDO
-    {
-        return $this->pdo;
-    }
-
     public function findById(int $id): ?DomainObject
     {
-        // $cached = $this->getCached($id);
-        // if (!is_null($cached)) {
-        //     return $cached;
-        // }
         if (true === $this->identity_map->hasId($id)) {
             return $this->identity_map->getObject($id);
         }
@@ -87,23 +78,6 @@ abstract class Mapper
         return $this->getCollection($rows);
     }
 
-    // protected function getCached($id=null): ?DomainObject
-    // {
-    //     if (is_null($id) || $id < 1) {
-    //         return null;
-    //     }
-
-    //     return ObjectCache::get(
-    //         $this->targetClass(),
-    //         $id,
-    //     );
-    // }
-
-    // protected function addCache(DomainObject $obj)
-    // {
-    //     ObjectCache::set($obj);
-    // }
-
     /**
      * Create a DomainObject from an array
      * @param  array  $row A multidimentional array, or one ordered as the class constructor requires
@@ -111,14 +85,9 @@ abstract class Mapper
      */
     public function createObject(array $row): DomainObject
     {
-        // $cached = $this->getCached($row[$this->id_field]);
-        // if (!is_null($cached)) {
-        //     return $cached;
-        // }
-
         $obj = $this->doCreateObject($row);
-        // $this->addCache($obj);
-        $this->identity_map->set($id, $obj);
+        
+        $this->identity_map->set($obj);
 
         return $obj;
     }

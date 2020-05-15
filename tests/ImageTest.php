@@ -11,10 +11,40 @@ use Vgsite\ImageCollection;
 use Vgsite\Collection;
 use Vgsite\Exceptions\UploadException;
 
-define("TEST_IMAGE_SRC", "https://cdn.imgbin.com/2/17/15/imgbin-chrono-trigger-crimson-echoes-chrono-cross-chrono-trigger-for-nintendo-ds-playstation-chrono-trigger-qyAg5WhdsWLjPSe3DZnQWgkgB.jpg");
+define("TEST_IMAGE_SRC", "http://videogamin.squarehaven.com/magus.jpg");
+define("TEST_IMAGE_SRC_BOX", "http://videogamin.squarehaven.com/chrono_trigger-na_box.jpg");
 
 class ImageTest extends TestCase
 {
+    public function testImageSizeConstants()
+    {
+        $this->assertEquals('op', Image::OPTIMAL);
+        $sizes = Image::getSizes();
+        $this->assertIsArray($sizes);
+        $this->assertArrayHasKey(Image::MEDIUM, $sizes);
+        $this->assertEquals([100, 100], Image::getSize(Image::THUMBNAIL));
+    }
+
+    public function testImageSizesThrowExceptionWhenInvalidArgumentGiven()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Image::getSize('foo');
+    }
+
+    public function testImageCategoriesConstants()
+    {
+        $this->assertEquals(Image::SCREENSHOT, 1);
+        $this->assertEquals(Image::getCategories()[Image::BOXART], 'Box art, Official');
+        $this->assertEquals(Image::getCategoryName(Image::SCREENSHOT_TITLE), "Screenshots, Title screen");
+        $this->assertEquals(Image::getCategoryDescription(Image::OFFICIALART), "Official illustrations");
+    }
+
+    public function testImageCategoriesThrowExceptionWhenInvalidArgumentGiven()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Image::getCategoryName(99);
+    }
+
     public function testImageCollectionConstruction()
     {
         $collection = new ImageCollection();
@@ -33,7 +63,7 @@ class ImageTest extends TestCase
         $upload = new Upload(TEST_IMAGE_SRC);
         $upload->setFilename(TEST_ID);
         $upload->prepare($collection->getId(), Image::OFFICIALART, $GLOBALS['current_user']);
-        $this->assertEquals(TEST_ID.'.jpg', $upload->file_dst_name);
+        $this->assertFileExists(Image::IMAGES_DIR.'/'.$upload->image->getDir().'/'.TEST_ID.'.jpg');
 
         return $upload;
     }
@@ -45,6 +75,7 @@ class ImageTest extends TestCase
     {
         $image = $upload->insertImage();
         $this->assertInstanceOf(Image::class, $image);
+        $this->assertFileExists($image->getSrc(null, true));
 
         $image_check = Image::findByName(TEST_ID.'.jpg');
         $this->assertEquals($image->img_id, $image_check->img_id);
@@ -119,10 +150,12 @@ class ImageTest extends TestCase
         $collection->add($image);
         $this->assertEquals($collection->getId(), $image->img_session_id);
 
-        $upload = new Upload(TEST_IMAGE_SRC);
-        $upload->setFilename(TEST_ID.'_1');
-        $upload->prepare($collection->getId(), Image::OFFICIALART, $GLOBALS['current_user']);
+        $upload = new Upload(TEST_IMAGE_SRC_BOX);
+        $upload->setFilename(TEST_ID.'_box');
+        $upload->prepare($collection->getId(), Image::BOXART, $GLOBALS['current_user']);
         $image_2 = $upload->insertImage();
+        $this->assertFileExists($image_2->getSrc(Image::BOX, true));
+
         $collection->add($image_2);
         $this->assertEquals(2, $collection->count);
 
@@ -165,6 +198,19 @@ class ImageTest extends TestCase
         return $collection_check;
     }
 
+    public function testResizeImagesAndThumbnails()
+    {
+        $image = Image::findByName(TEST_ID.'_box.jpg');
+        $this->assertFileExists($image->getSrc(Image::OPTIMAL, true));
+        $this->assertFileExists($image->getSrc(Image::MEDIUM, true));
+        $this->assertFileExists($image->getSrc(Image::SMALL, true));
+        $thumbnail = $image->getSrc(Image::THUMBNAIL, true);
+        $this->assertFileExists($thumbnail);
+        list($width, $height, $type, $attr) = getimagesize($thumbnail);
+        $this->assertEquals(100, $width);
+        $this->assertEquals(100, $height);
+    }
+
     /**
      * @depends testImageCollectionFindAllBySessionId
      * @depends testLoadImageMapper
@@ -181,19 +227,5 @@ class ImageTest extends TestCase
         }
 
         $this->assertNull($mapper->findAllBySessionId($collection->getId()));
-    }
-
-    public function testImageCategoriesAreAccessible()
-    {
-        $this->assertEquals(Image::SCREENSHOT, 1);
-        $this->assertEquals(Image::getCategories()[Image::BOXART], 'Box art, Official');
-        $this->assertEquals(Image::getCategoryName(Image::SCREENSHOT_TITLE), "Screenshots, Title screen");
-        $this->assertEquals(Image::getCategoryDescription(Image::OFFICIALART), "Official illustrations");
-    }
-
-    public function testImageCategoriesThrowExceptionWhenInvalidArgumentGiven()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        Image::getCategoryName(99);
     }
 }

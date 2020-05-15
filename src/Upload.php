@@ -9,7 +9,7 @@ class Upload extends UploadHandler
     /**
      * @var Image object
      */
-    private $image;
+    public $image;
 
     private $copied_file;
 
@@ -29,10 +29,10 @@ class Upload extends UploadHandler
         } else {
             $file_remote = $file;
 
-            if ($_SERVER['HTTP_HOST'] == getenv('APP_DOMAIN')) {
-                $file_remote = str_replace('http://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
-                $file_remote = str_replace('https://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
-            }
+            // if ($_SERVER['HTTP_HOST'] == getenv('APP_DOMAIN')) {
+            //     $file_remote = str_replace('http://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
+            //     $file_remote = str_replace('https://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
+            // }
 
             if (substr($file_remote, 0, 4) == "http") {
                 if (!filter_var($file_remote, FILTER_VALIDATE_URL)) {
@@ -78,7 +78,7 @@ class Upload extends UploadHandler
      * @param  User|null $user        User who uploaded the image
      * @return Image                  Image object created by preparing and uploading the image
      */
-    public function prepare(int $session_id, int $category_id, User $user)
+    public function prepare(int $session_id, int $category_id, User $user): Upload
     {
         if (empty($session_id)) {
             throw new \InvalidArgumentException('Image Session ID is required for an upload session');
@@ -93,16 +93,6 @@ class Upload extends UploadHandler
             throw new \InvalidArgumentException('No User object given');
         }
 
-        $dir = Image::IMAGES_DIR.'/'.substr($session_id, 12, 7); // images/USRID
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777);
-            mkdir($dir."/op", 0777);
-            mkdir($dir."/md", 0777);
-            mkdir($dir."/sm", 0777);
-            mkdir($dir."/ss", 0777);
-            mkdir($dir."/tn", 0777);
-        }
-
         $mime = $this->file_src_mime;
         if (!in_array($mime, self::ALLOWED_FILE_TYPES)) {
             throw new UploadException('File is '.$mime.'; Only '.implode('/', $this->ALLOWED_FILE_TYPES).' images can be uploaded');
@@ -110,7 +100,7 @@ class Upload extends UploadHandler
 
         $file_ext = $this->file_src_name_ext;
         
-        //format safe name
+        // Format safe name
         // *** CHANGE HTACCESS IF ANY CHANGES MADE!! *** //
         $file_body = $this->file_new_name_body ?: $this->file_src_name_body;
         $file_body = str_replace(' ', '_', $file_body);
@@ -118,7 +108,8 @@ class Upload extends UploadHandler
         if ($file_body == "") $file_body = "image_".date("YmdHis");
         $file_name = $file_body.".".$this->file_src_name_ext;
      
-        //check filename in database and avoid duplicates
+        // Check filename in database and avoid duplicates
+        // Rename if necessary
         $i = 0;
         $t_file_body = $file_body;
         while (false === is_null(Image::findByName($file_name))) {
@@ -128,6 +119,29 @@ class Upload extends UploadHandler
         }
         $file_body = $t_file_body;
 
+        // Image construction
+        $image_params = array();
+        $image_params['img_id'] = -1;
+        $image_params['img_name'] = $file_body.'.'.$file_ext;
+        $image_params['img_session_id'] = $session_id;
+        $image_params['img_category_id'] = $category_id;
+        $image_params['user_id'] = $user->getId();
+
+        $this->image = new Image($image_params);
+
+        // Make directories
+        $dir = Image::IMAGES_DIR.'/'.$this->image->getDir();
+        $make_dir = [$dir];
+        foreach (Image::getSizes() as $size_name => $size) {
+            $make_dir[] = $dir.'/'.$size_name;
+        }
+        foreach ($make_dir as $dir_check) {
+            if (!is_dir($dir_check)) {
+                mkdir($dir_check, 0777);
+            }
+        }
+
+        // Upload settings
         $this->file_new_name_body = $file_body;
         $this->file_new_name_ext  = $file_ext;
         $this->file_safe_name     = false;
@@ -144,22 +158,57 @@ class Upload extends UploadHandler
             throw new UploadException(sprintf("Naming error: Processed filename '%s' not expected '%s'", $this->file_dst_name, $file_name));
         }
 
-        $image_params = array();
-        $image_params['img_id'] = -1;
-        $image_params['img_name'] = $file_name;
-        $image_params['img_session_id'] = $session_id;
-        $image_params['img_size'] = $this->file_src_size;
-        $image_params['img_width'] = $this->image_src_x;
-        $image_params['img_height'] = $this->image_src_y;
-        $image_params['img_bits'] = $this->image_src_bits;
-        $image_params['img_minor_mime'] = $this->image_src_type;
-        $image_params['img_category_id'] = $category_id;
-        $image_params['user_id'] = $user->getId();
+        $this->image->img_size = $this->file_src_size;
+        $this->image->img_width = $this->image_src_x;
+        $this->image->img_height = $this->image_src_y;
+        $this->image->img_bits = $this->image_src_bits;
+        $this->image->img_minor_mime = $this->image_src_type;
 
-        $this->image = new Image($image_params);
+        $this->resize(Image::getSize(Image::OPTIMAL), $dir.'/'.Image::OPTIMAL);
+        $this->resize(Image::getSize(Image::MEDIUM), $dir.'/'.Image::MEDIUM);
+        $this->resize(Image::getSize(Image::SMALL), $dir.'/'.Image::SMALL);
+        if (in_array($category_id, Image::CATEGORY_GROUP_BOXART)) {
+            $this->resize(Image::getSize(Image::BOX), $dir.'/'.Image::BOX, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->img_name]);
+        }
+        $this->resize(Image::getSize(Image::THUMBNAIL), $dir.'/'.Image::THUMBNAIL, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'image_ratio' => false, 'image_ratio_y' => false, 'file_new_name_body' => $this->image->img_name]);
+        if (in_array($category_id, Image::CATEGORY_GROUP_SCREENSHOT)) {
+            $this->resize(Image::getSize(Image::SCREEN), $dir.'/'.Image::SCREEN, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->img_name]);
+        }
 
         if ($this->copied_file) {
             unlink($this->copied_file);
+        }
+
+        return $this;
+    }
+
+    public function resize(array $x_y, string $dir, $props=[])
+    {
+        list($width, $height) = $x_y;
+
+        if ($this->image_src_x <= $width) return;
+
+        $resized = new UploadHandler($this->file_dst_pathname);
+
+        $resized->image_x = $width;
+        $resized->image_y = $height;
+        $resized->file_safe_name         = false;
+        $resized->file_auto_rename       = false;
+        $resized->file_overwrite         = true;
+        $resized->image_resize           = true;
+        $resized->image_ratio_y          = true;
+        $resized->image_no_enlarging     = true;
+        if ($resized->file_dst_name_ext == 'jpg' && !isset($resized->image_convert)) {
+            $resized->jpeg_quality = 95;
+        }
+
+        foreach ($props as $key => $val) {
+            $resized->{$key} = $val;
+        }
+
+        $resized->process($dir);
+        if (!$resized->processed) {
+            throw new UploadException('Upload resized image ('.$dir.') processing error: '.$resized->error);
         }
     }
 
@@ -169,7 +218,7 @@ class Upload extends UploadHandler
      */
     public function insertImage(): Image
     {
-        $image_mapper = new ImageMapper();
+        $image_mapper = Registry::getMapper(Image::class);
         $image_mapper->insert($this->image);
 
         return $this->image;
