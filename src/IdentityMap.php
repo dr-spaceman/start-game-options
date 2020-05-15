@@ -28,6 +28,8 @@ class IdentityMap
     public function set(DomainObject $object)
     {
         $id = $object->getId();
+        if ($id < 1) return;
+        
         $this->idToObject[$id]     = $object;
         $this->objectToId[$object] = $id;
         echo 'IdentityMap::set('.get_class($object).$id.')'.PHP_EOL;

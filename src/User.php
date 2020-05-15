@@ -108,7 +108,7 @@ class User extends DomainObject
         return $this->email;
     }
 
-    public function setEmail($email)
+    public function setEmail(string $email)
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             throw new \InvalidArgumentException("Email `{$email}` couldn't be validated");
@@ -138,20 +138,17 @@ class User extends DomainObject
 
     public static function findById(int $id): ?DomainObject
     {
-        $mapper = new UserMapper();
-        return $mapper->findById($id);
+        return self::getMapper()->findById($id);
     }
 
     public static function findByUsername(string $username): ?DomainObject
     {
-        $mapper = new UserMapper();
-        return $mapper->findByUsername($username);
+        return self::getMapper()->findByUsername($username);
     }
 
     public static function findByEmail(string $email): ?DomainObject
     {
-        $mapper = new UserMapper();
-        return $mapper->findByEmail($email);
+        return self::getMapper()->findByEmail($email);
     }
 
     public static function getRanks(): array

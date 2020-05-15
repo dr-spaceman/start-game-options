@@ -31,12 +31,12 @@ abstract class DomainObject
      */
     public static function findById(int $id): ?DomainObject
     {
-        return static::getMapper()->findById($id);
+        return self::getMapper()->findById($id);
     }
 
     public static function findAll(): Collection
     {
-        return static::getMapper()->findAll();
+        return self::getMapper()->findAll();
     }
 
     public function getId(): int

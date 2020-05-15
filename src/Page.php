@@ -30,11 +30,10 @@ class Page {
 
 	function header()
 	{
-		global $_SESSION['user_rank'];
+		global $current_user;
 
 		$user_id = (int) $_SESSION['user_id'] ?: null;
-		if (is_null($user_id) === false) {
-			$user = ObjectCache::get(User::class, $user_id);
+		$user = ObjectCache::get(User::class, $user_id);
 		}
 
 		if ($this->superminimalist) $this->minimalist = true;
@@ -191,13 +190,13 @@ class Page {
 				<dl style="width:120px; right:0; border-top:19px solid transparent; <?=(!$user_id ? 'background-color:transparent !important; border-color:transparent !important;' : '')?>" class="last-child hovact">
 					<?
 					if ($user_id) {
-						$new_pms = PrivateMessage::checkForNew($user);
+						$new_pms = PrivateMessage::checkForNew($current_user);
 						?>
-						<dd class="usr"><?=$user->output()?></dd>
+						<dd class="usr"><?=$current_user->render()?></dd>
 						<dd class="more">
 							<ul>
 								<li><a href="/account.php" rel="nofollow">Account</a></li>
-								<li><a href="/~<?=$user->username?>#/collection">Game Collection</a></li>
+								<li><a href="/~<?=$current_user->getUsername()?>#/collection">Game Collection</a></li>
 								<li><a href="/pages/watchlist.php" rel="nofollow">Watch List</a></li>
 								<li><a href="/uploads.php" rel="nofollow">Uploads</a></li>
 								<li><a href="/posts/manage.php" title="manage your Sblog posts" rel="nofollow">Sblog Manager</a></li>
@@ -267,251 +266,249 @@ class Page {
 
 	}
 
-function openSection($sec = array(), $contain=false){
-	
-	// create a new page body section
-	// @param $sec array [ id, class, style ] attributes to give the new section
-	// @param $contain if true, the section wrapper will not be centered, but the container will
-	
-	$this->num_open_sections++;
-	if($sec['contain']) $contain = true;
-	if($contain) $this->contained_sections++;
-	if(is_array($sec['data'])){
-		foreach($sec['data'] as $key => $val) $data.= ' data-'.$key.'="'.htmlsc($val).'"';
-	}
-	
-	echo '<section id="'.$sec['id'].'" class="'.$sec['class'].($contain?' contained':'').'" style="'.$sec['style'].'"'.$data.'>'.($contain ? '<div class="container">' : '');
-	
-}
-
-function closeSection($txt=''){
-	
-	if($this->num_open_sections < 1) return;
-	
-	$this->num_open_sections--;
-	
-	echo $txt;
-	
-	if($this->contained_sections){
-		$this->contained_sections--;
-		echo '</div><!--section .container-->';
-	}
-	
-	echo '</section>';
-	
-}
-
-function closeAllSections(){
-	while($this->num_open_sections > 0) {
-		$this->closeSection();
-	}
-}
-	
-
-function footer() {
-
-global $user_id, $usrname, $results, $errors, $warnings;
-
-$this->called_sections['footer'] = 1;
-
-$i = 0;
-while($this->num_open_sections > 0) {
-	$txt = (++$i == 1 ? '<div id="pgsecbuff"><div></div></div>' : ''); //give the current open section a padding-bottom
-	$this->closeSection($txt);
-}
-
-?>
-<footer>
-	<div class="container">
-					
-		<div class="feedback c1r">
-			<h5>Feedback</h5>
-			<form action="" method="" id="footfeedback">
-				<div class="inpfw">
-					<textarea name="message" rows="" cols="" tabindex="20" placeholder="Send a quick comment, suggestion, question, or report a bug" class="ff inp" onfocus="$(this).css('height','90px'); $('#footfeedback-email').show();"></textarea>
-				</div>
-				
-				<div style="height:5px"></div>
-				
-				<button type="submit" tabindex="23" id="footfeedbacksend" style="float:right;">Send Query</button>
-				
-				<div id="footfeedback-email" style="display:none; margin:0 110px 0 0;">
-					<input type="text" name="email" value="" tabindex="21" placeholder="E-mail (optional)" class="inp" style="width:100%;"/>
-				</div>
-				
-				<input type="hidden" name="frompage" value="<?=$_SERVER['REQUEST_URI']?>"/>
-				<textarea name="errors" style="display:none" id="feedback-errorlog"></textarea>
-				
-				<input name="name" value="" id="feedback-inp-name"/>
-				
-				<div style="display:none; margin:3px 0 0;">
-					<?
-					$rand1 = rand(0,4);
-					$rand2 = rand(1,5);
-					?>
-					<input type="hidden" name="math1" value="<?=$rand1?>"/>
-					<input type="hidden" name="math2" value="<?=$rand2?>"/>
-					<b><?=$rand1?></b> + <b><?=$rand2?></b> = 
-					<input type="text" name="math" size="1" maxlength="1" tabindex="22" class="inp"/>
-				</div>
-			</form>
-		</div>
+	function openSection($sec = array(), $contain=false){
 		
-		<div class="c2">
-			<h5 style="font-weight:normal;">
-				<b>&copy; <?=date("Y")?> Videogam.in</b> a website about videogames
-			</h5>
-			<ol class="about">
-				<li><a href="/terms.php">Terms of Use</a></li>
-				<li><a href="/about.php">About Videogam.in</a></li>
-				<li><a href="/jobs.php">Join Us</a></li>
-				<li><a href="/contact.php">Contact Us</a></li>
-				<li><a href="http://twitter.com/videogamin" title="Follow Videogam.in on Twitter" style="padding-left:20px; background:url(/bin/img/icons/twitter_sm.png) no-repeat left center;">Follow Us</a></li>
-				<li><a href="http://www.facebook.com/pages/Videogamin/113351978705186" title="Find us on Facebook" style="margin:-2px 0 0; padding:2px 3px 2px 20px; background:#eceef5 url(/bin/img/icons/fb_thumbsup.png) no-repeat left center; font-size:11px; color:#3B5998; border-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px; text-decoration:none;">Like</a></li>
-				<!--<li><a href="#" style="padding-left:20px; background-image:url(/bin/img/icons/rss.png);">Subscribe</a></li>-->
-			</ol>
-			<br style="clear:left;"/>
-			<br/>
-			
-			<!--<p><b>COLOPHON</b> &middot; Videogam.in is a website about videogames. 
-			It's a place where everyone can read and contribute information about <a href="/games/">games</a> and the <a href="/people/">people</a> who make them. 
-			It's also a place to follow, review, collect, and show off your favorite (and least favorite) games.</p>
-			
-			<p>Videogam.in is a site where serious gamers can <a href="/forums">discuss</a> and <a href="/posts/manage.php?action=newpost">write</a> about gaming topics in an unserious manner. 
-			Its edge lies in its unique ability to speak vapidly about otherwise serious issues, take videogames only as seriously as its own college drunkenness and inability to graduate within four years, and ultimately: the vapid community of vulgar buffoonery that lurk within its dank confines.</p>-->
-			
+		// create a new page body section
+		// @param $sec array [ id, class, style ] attributes to give the new section
+		// @param $contain if true, the section wrapper will not be centered, but the container will
+		
+		$this->num_open_sections++;
+		if($sec['contain']) $contain = true;
+		if($contain) $this->contained_sections++;
+		if(is_array($sec['data'])){
+			foreach($sec['data'] as $key => $val) $data.= ' data-'.$key.'="'.htmlsc($val).'"';
+		}
+		
+		echo '<section id="'.$sec['id'].'" class="'.$sec['class'].($contain?' contained':'').'" style="'.$sec['style'].'"'.$data.'>'.($contain ? '<div class="container">' : '');
+		
+	}
+
+	function closeSection($txt=''){
+		
+		if($this->num_open_sections < 1) return;
+		
+		$this->num_open_sections--;
+		
+		echo $txt;
+		
+		if($this->contained_sections){
+			$this->contained_sections--;
+			echo '</div><!--section .container-->';
+		}
+		
+		echo '</section>';
+		
+	}
+
+	function closeAllSections(){
+		while($this->num_open_sections > 0) {
+			$this->closeSection();
+		}
+	}
+		
+
+	function footer()
+	{
+		global $current_user, $results, $errors, $warnings;
+
+		$this->called_sections['footer'] = 1;
+
+		$i = 0;
+		while($this->num_open_sections > 0) {
+			$txt = (++$i == 1 ? '<div id="pgsecbuff"><div></div></div>' : ''); //give the current open section a padding-bottom
+			$this->closeSection($txt);
+		}
+
+		?>
+		<footer>
+			<div class="container">
+							
+				<div class="feedback c1r">
+					<h5>Feedback</h5>
+					<form action="" method="" id="footfeedback">
+						<div class="inpfw">
+							<textarea name="message" rows="" cols="" tabindex="20" placeholder="Send a quick comment, suggestion, question, or report a bug" class="ff inp" onfocus="$(this).css('height','90px'); $('#footfeedback-email').show();"></textarea>
+						</div>
+						
+						<div style="height:5px"></div>
+						
+						<button type="submit" tabindex="23" id="footfeedbacksend" style="float:right;">Send Query</button>
+						
+						<div id="footfeedback-email" style="display:none; margin:0 110px 0 0;">
+							<input type="text" name="email" value="" tabindex="21" placeholder="E-mail (optional)" class="inp" style="width:100%;"/>
+						</div>
+						
+						<input type="hidden" name="frompage" value="<?=$_SERVER['REQUEST_URI']?>"/>
+						<textarea name="errors" style="display:none" id="feedback-errorlog"></textarea>
+						
+						<input name="name" value="" id="feedback-inp-name"/>
+						
+						<div style="display:none; margin:3px 0 0;">
+							<?
+							$rand1 = rand(0,4);
+							$rand2 = rand(1,5);
+							?>
+							<input type="hidden" name="math1" value="<?=$rand1?>"/>
+							<input type="hidden" name="math2" value="<?=$rand2?>"/>
+							<b><?=$rand1?></b> + <b><?=$rand2?></b> = 
+							<input type="text" name="math" size="1" maxlength="1" tabindex="22" class="inp"/>
+						</div>
+					</form>
+				</div>
+				
+				<div class="c2">
+					<h5 style="font-weight:normal;">
+						<b>&copy; <?=date("Y")?> Videogam.in</b> a website about videogames
+					</h5>
+					<ol class="about">
+						<li><a href="/terms.php">Terms of Use</a></li>
+						<li><a href="/about.php">About Videogam.in</a></li>
+						<li><a href="/jobs.php">Join Us</a></li>
+						<li><a href="/contact.php">Contact Us</a></li>
+						<li><a href="http://twitter.com/videogamin" title="Follow Videogam.in on Twitter" style="padding-left:20px; background:url(/bin/img/icons/twitter_sm.png) no-repeat left center;">Follow Us</a></li>
+						<li><a href="http://www.facebook.com/pages/Videogamin/113351978705186" title="Find us on Facebook" style="margin:-2px 0 0; padding:2px 3px 2px 20px; background:#eceef5 url(/bin/img/icons/fb_thumbsup.png) no-repeat left center; font-size:11px; color:#3B5998; border-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px; text-decoration:none;">Like</a></li>
+						<!--<li><a href="#" style="padding-left:20px; background-image:url(/bin/img/icons/rss.png);">Subscribe</a></li>-->
+					</ol>
+					<br style="clear:left;"/>
+					<br/>
+					
+					<!--<p><b>COLOPHON</b> &middot; Videogam.in is a website about videogames. 
+					It's a place where everyone can read and contribute information about <a href="/games/">games</a> and the <a href="/people/">people</a> who make them. 
+					It's also a place to follow, review, collect, and show off your favorite (and least favorite) games.</p>
+					
+					<p>Videogam.in is a site where serious gamers can <a href="/forums">discuss</a> and <a href="/posts/manage.php?action=newpost">write</a> about gaming topics in an unserious manner. 
+					Its edge lies in its unique ability to speak vapidly about otherwise serious issues, take videogames only as seriously as its own college drunkenness and inability to graduate within four years, and ultimately: the vapid community of vulgar buffoonery that lurk within its dank confines.</p>-->
+					
+					<? if(!$this->minimalist){ ?>
+					<div class="featuredcont">
+					<h5>Featured Content</h5>
+						<ul>
+							<li><a href="/games/Vagrant_Story">Vagrant Story</a></li>
+							<li><a href="/games/Banjo-Kazooie">Banjo-Kazooie</a></li>
+							<li><a href="/topics/Cosplay">Cosplay</a></li>
+							<li><a href="/categories/Nintendo_3DS">Nintendo 3DS</a></li>
+							<li><a href="/topics/Videogame_violence">Videogame violence</a></li>
+							<li><a href="/categories/Square_Enix">Square Enix</a></li>
+							<li><a href="/people/Akira_Yamaoka">Akira Yamoka</a></li>
+							<li><a href="/people/Hironobu_Sakaguchi">Hironobu Sakaguchi</a></li>
+							<li><a href="/categories/Peppy_Hare">Peppy Hare</a></li>
+						</ul>
+						<div style="clear:left; height:0;"></div>
+					</div>
+					<? } ?>
+				</div>
+			</div>
 			<? if(!$this->minimalist){ ?>
-			<div class="featuredcont">
-			<h5>Featured Content</h5>
-				<ul>
-					<li><a href="/games/Vagrant_Story">Vagrant Story</a></li>
-					<li><a href="/games/Banjo-Kazooie">Banjo-Kazooie</a></li>
-					<li><a href="/topics/Cosplay">Cosplay</a></li>
-					<li><a href="/categories/Nintendo_3DS">Nintendo 3DS</a></li>
-					<li><a href="/topics/Videogame_violence">Videogame violence</a></li>
-					<li><a href="/categories/Square_Enix">Square Enix</a></li>
-					<li><a href="/people/Akira_Yamaoka">Akira Yamoka</a></li>
-					<li><a href="/people/Hironobu_Sakaguchi">Hironobu Sakaguchi</a></li>
-					<li><a href="/categories/Peppy_Hare">Peppy Hare</a></li>
-				</ul>
-				<div style="clear:left; height:0;"></div>
+			<div class="diorama">
+				<!--<div style="position:absolute; z-index:1; bottom:0; right:0; left:0; width:100; height:10px; background:url(/bin/img/footer_lava.png);"></div>-->
+				<div style="position:absolute; z-index:2; bottom:0; left:0; width:19px; height:10px; background:url(/bin/img/footer_stones.png);"></div>
+				<div style="position:absolute; z-index:2; bottom:0; right:0; width:19px; height:10px; background:url(/bin/img/footer_stones.png);"></div>
+				<div style="position:absolute; z-index:1; bottom:0; left:0; right:0; width:100%; height:10px; background:url(/bin/img/footer_bridge.png);"></div>
+				<div style="position:absolute; z-index:1; bottom:10px; right:0;"><img src="/bin/img/footer_switch.png"/></div>
+				<div style="position:absolute; z-index:1; bottom:10px; right:32%;"><img src="/bin/img/footer_scene.png"/></div>
+				<div style="position:absolute; z-index:0; bottom:0; right:0; left:0; width:100%; height:250px; background:url(/bin/img/gradient_black_250.png);"></div>
 			</div>
 			<? } ?>
+		</footer>
+		<?
+
+		if (!$_SESSION['logged_in']) {
+			?>
+			<div id="login">
+				<a href="#cancelLogin" id="login-close">Close</a>
+				<div class="fbconnect">
+					<a href="/login_fb.php" style="display:block;" onclick="$.cookie('lastpage', '<?=$_SERVER['REQUEST_URI']?>', {expires:1, path:'/'})"><img src="/bin/img/fbconnect_225.png" width="225" height="33" alt="Login with Facebook"/></a>
+					<a href="/login_steam.php" style="display:block; margin:12px 0 0 -31px;" onclick="$.cookie('lastpage', '<?=$_SERVER['REQUEST_URI']?>', {expires:1, path:'/'})"><img src="/bin/img/steam_connect_225.png" width="256" height="33" alt="Login with Steam"/></a>
+				</div>
+				<form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
+			    <input type="hidden" name="do" value="login"/>
+			    <div>
+			    	<input type="text" name="username" placeholder="Videogam.in username or e-mail" id="login-username" maxlength="25"/>
+			    </div>
+			    <div>
+			    	<input type="password" name="password" placeholder="Password" id="login-password" maxlength="25"/>
+			    </div>
+			    <div style="margin-right:0 !important;">
+			    	<label style="display:block; float:right; margin:5px 0 0;"><input type="checkbox" name="remember" value="1"/> Remember Me</label>
+			    	<button type="submit" name="login">Log in</button>
+			    </div>
+			    <div style="height:0;"></div>
+			  </form>
+				<ul>
+					<li><a href="/retrieve-pass.php">Reset password</a></li>
+					<li><a href="/register.php">Register a new account</a></li>
+				</ul>
+			</div>
+			<div id="login-overlay" class="bodyoverlay"><img src="/bin/img/promo/pit.png" style="position:fixed; bottom:0; left:50px;"/></div>
+			<?
+		}
+
+		$notifications = '';
+		if($errors) {
+			foreach($errors as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:true});";
+		}
+		if($warnings) {
+			foreach($warnings as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:true});";
+		}
+		if($results) {
+			foreach($results as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:false});";
+		}
+		if($notifications) echo '<script>'.$notifications.'</script>';
+		?>
+
+		<div id="alert" class="alert">
+			<a href="#close" class="closealert ximg" onclick="$(this).parent().fadeOut();">close</a>
+			<dl></dl>
 		</div>
-	</div>
-	<? if(!$this->minimalist){ ?>
-	<div class="diorama">
-		<!--<div style="position:absolute; z-index:1; bottom:0; right:0; left:0; width:100; height:10px; background:url(/bin/img/footer_lava.png);"></div>-->
-		<div style="position:absolute; z-index:2; bottom:0; left:0; width:19px; height:10px; background:url(/bin/img/footer_stones.png);"></div>
-		<div style="position:absolute; z-index:2; bottom:0; right:0; width:19px; height:10px; background:url(/bin/img/footer_stones.png);"></div>
-		<div style="position:absolute; z-index:1; bottom:0; left:0; right:0; width:100%; height:10px; background:url(/bin/img/footer_bridge.png);"></div>
-		<div style="position:absolute; z-index:1; bottom:10px; right:0;"><img src="/bin/img/footer_switch.png"/></div>
-		<div style="position:absolute; z-index:1; bottom:10px; right:32%;"><img src="/bin/img/footer_scene.png"/></div>
-		<div style="position:absolute; z-index:0; bottom:0; right:0; left:0; width:100%; height:250px; background:url(/bin/img/gradient_black_250.png);"></div>
-	</div>
-	<? } ?>
-</footer>
-<?
 
-if(!$usrid){
-	?>
-	<div id="login">
-		<a href="#cancelLogin" id="login-close">Close</a>
-		<div class="fbconnect">
-			<a href="/login_fb.php" style="display:block;" onclick="$.cookie('lastpage', '<?=$_SERVER['REQUEST_URI']?>', {expires:1, path:'/'})"><img src="/bin/img/fbconnect_225.png" width="225" height="33" alt="Login with Facebook"/></a>
-			<a href="/login_steam.php" style="display:block; margin:12px 0 0 -31px;" onclick="$.cookie('lastpage', '<?=$_SERVER['REQUEST_URI']?>', {expires:1, path:'/'})"><img src="/bin/img/steam_connect_225.png" width="256" height="33" alt="Login with Steam"/></a>
-		</div>
-		<form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
-	    <input type="hidden" name="do" value="login"/>
-	    <div>
-	    	<input type="text" name="username" placeholder="Videogam.in username or e-mail" id="login-username" maxlength="25"/>
-	    </div>
-	    <div>
-	    	<input type="password" name="password" placeholder="Password" id="login-password" maxlength="25"/>
-	    </div>
-	    <div style="margin-right:0 !important;">
-	    	<label style="display:block; float:right; margin:5px 0 0;"><input type="checkbox" name="remember" value="1"/> Remember Me</label>
-	    	<button type="submit" name="login">Log in</button>
-	    </div>
-	    <div style="height:0;"></div>
-	  </form>
-		<ul>
-			<li><a href="/retrieve-pass.php">Reset password</a></li>
-			<li><a href="/register.php">Register a new account</a></li>
-		</ul>
-	</div>
-	<div id="login-overlay" class="bodyoverlay"><img src="/bin/img/promo/pit.png" style="position:fixed; bottom:0; left:50px;"/></div>
-	<?
-}
+		<div class="bodyoverlay"></div>
 
-$notifications = '';
-if($errors) {
-	foreach($errors as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:true});";
-}
-if($warnings) {
-	foreach($warnings as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:true});";
-}
-if($results) {
-	foreach($results as $err) $notifications.= "$.jGrowl('".addslashes($err)."', {sticky:false});";
-}
-if($notifications) echo '<script>'.$notifications.'</script>';
-?>
+		<div id="loading2"></div>
 
-<div id="alert" class="alert">
-	<a href="#close" class="closealert ximg" onclick="$(this).parent().fadeOut();">close</a>
-	<dl></dl>
-</div>
+		<!--top hr/bg etc-->
+		<span id="headerbg"></span>
 
-<div class="bodyoverlay"></div>
+		<?
 
-<div id="loading2"></div>
+		// display new badges
 
-<!--top hr/bg etc-->
-<span id="headerbg"></span>
+		//Resetti badge
+		if ($_COOKIE['unsavedSess']) {
+			echo '<script type="text/javascript"> $.cookie("unsavedSess", null, {path:"/"}); </script>';
+			Badge::findById(54)->earn($current_user);
+		}
 
-<?
+		if ($_SESSION['newbadges'] || $this->badges) {
+			if($_SESSION['newbadges']){
+				foreach($_SESSION['newbadges'] as $badgeid) $this->badges[] = $badgeid;
+			}
+			foreach($this->badges as $badgeid) echo $_badges->showEarned($badgeid);
+			unset($_SESSION['newbadges']);
+		}
+		?>
 
-// display new badges
+		<input type="hidden" name="user_id" value="<?=$user_id?>" id="user_id"/>
 
-//Resetti badge
-if($_COOKIE['unsavedSess']){
-	echo '<script type="text/javascript"> $.cookie("unsavedSess", null, {path:"/"}); </script>';
-	Badge::findById(54)->earn($user);
-}
+		</body>
+		</html>
+		<?
 
-if($_SESSION['newbadges'] || $this->badges){
-	if($_SESSION['newbadges']){
-		foreach($_SESSION['newbadges'] as $badgeid) $this->badges[] = $badgeid;
+		//close db connection
+		exit;
 	}
-	foreach($this->badges as $badgeid) echo $_badges->showEarned($badgeid);
-	unset($_SESSION['newbadges']);
-}
-?>
 
-<input type="hidden" name="usrid" value="<?=$usrid?>" id="usrid"/>
-
-</body>
-</html>
-<?
-
-//close db connection
-exit;
-
-}
-
-function kill($txt=''){
-	if($txt == 404){
-		if(!$this->called_sections['header']){ require $_SERVER['DOCUMENT_ROOT']."/404.php"; exit; }
+	function kill($txt='')
+	{
+		if($txt == 404){
+			if(!$this->called_sections['header']){ require $_SERVER['DOCUMENT_ROOT']."/404.php"; exit; }
+		}
+		if(!$this->called_sections['header']) $this->header();
+		$this->closeAllSections();
+		$this->openSection();
+		if($txt == 404) echo 'Error: Page not found :(';
+		else echo $txt;
+		$this->closeSection();
+		$this->footer();
+		exit;
 	}
-	if(!$this->called_sections['header']) $this->header();
-	$this->closeAllSections();
-	$this->openSection();
-	if($txt == 404) echo 'Error: Page not found :(';
-	else echo $txt;
-	$this->closeSection();
-	$this->footer();
-	exit;
-	
 }
-
-} 

@@ -10,3 +10,4 @@ composer.phar
 /var/logs/*
 /var/sessions/*
 /var/uploads/*
+/public/images/*

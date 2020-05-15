@@ -83,12 +83,8 @@ class UserMapper extends Mapper
             $user->getRank(), 
         ];
         $this->insert_statement->execute($values);
-        // if (0 == $this->insert_statement->rowCount()) {
-        //     throw new UserException("Error inserting User data", 0, null, $user);
-        //     return false;
-        // }
         $id = $this->pdo->lastInsertId();
-        $user->setId((int) $id);
+        $user->setId((int)$id);
 
         if ($this->logger) $this->logger->info("Insert User data ", $values);
 
@@ -104,10 +100,6 @@ class UserMapper extends Mapper
             $user->getId(),
         ];
         $this->save_statement->execute($values);
-        // if (0 == $this->save_statement->rowCount()) {
-        //     throw new UserException("Error updating User data", 0, null, $user);
-        //     return false;
-        // }
 
         if ($this->logger) $this->logger->info("Update User data ", $values);
 
@@ -118,10 +110,6 @@ class UserMapper extends Mapper
     {
         $values = [$user->getId()];
         $this->delete_statement->execute($values);
-        // if (0 == $this->delete_statement->rowCount()) {
-        //     throw new UserException("Error deleting User data", 0, null, $user);
-        //     return false;
-        // }
 
         if ($this->logger) $this->logger->info("Delete User data ", $user->getProperties());
 
