@@ -1,7 +1,7 @@
 <? 
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
-$page = new page;
+$page = new Page();
 
 $page->title  = "Videogam.in / Contact User";
 
@@ -19,7 +19,7 @@ $reply_to_id = $_POST['reply_to_id'];
 $to = $_POST['to']; // a usrid
 
 //email isnt allowed any more (except by admins)
-if($usrrank < User::ADMIN) $method = "pm";
+if($_SESSION['user_rank'] < User::ADMIN) $method = "pm";
 
 if($user && $method == "pm" && !$usrid) {
 	$page->header();
@@ -154,7 +154,7 @@ if(!$user) {
 	
 	if($method == "email") {
 		//does user allow emails?
-		if(/*!$usr->mail_from_users &&*/ $usrrank <= User::ADMIN) {
+		if(/*!$usr->mail_from_users &&*/ $_SESSION['user_rank'] <= User::ADMIN) {
 			echo 'Sorry, '.$usr->username.' doesn\'t allow mail from other users. You may of course send them a <a href="?user='.$usr->username.'&method=pm">private message</a> though!';
 			$page->footer();
 			exit;

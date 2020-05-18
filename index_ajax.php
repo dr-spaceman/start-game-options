@@ -1,7 +1,7 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
+use Vgsite\Page;
+use Vgsite\Image;
+use Vgsite\Shelf;
 
 if($_GET['action'] == "load_shelf"){
 	

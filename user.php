@@ -1,9 +1,9 @@
 <? 
-require($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require($_SERVER['DOCUMENT_ROOT']."/bin/php/class.posts.php");
-require($_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
+use Vgsite\Image;
+use Vgsite\Badge;
 $_badges = new badges;
 
 $user = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['username']);
@@ -114,7 +114,7 @@ $stcolors = array("staff" => "#D12929", "vip" => "#1878E2");
 			</li>
 			<li class="buttons">
 				<a href="/~<?=$dat->username?>/blog" class="button" style="background-image:url(/bin/img/icons/emoticons/_star.png)"><?=$dat->username?>'s Blog</a> 
-				<?=($usrrank >= 8 ? '<a href="mailto:'.$dat->email.'" class="button" style="background-image:url(/bin/img/user-send_email.png)">Send E-mail</a> ' : '')?>
+				<?=($_SESSION['user_rank'] >= 8 ? '<a href="mailto:'.$dat->email.'" class="button" style="background-image:url(/bin/img/user-send_email.png)">Send E-mail</a> ' : '')?>
 				<a href="/contact-user.php?user=<?=$dat->username?>&method=pm" class="button" style="background-image:url(/bin/img/user-send_pm.png)">Send PM</a> 
 				<script src="http://connect.facebook.net/en_US/all.js#xfbml=1"></script><fb:like layout="button_count" show_faces="false" width="90" font="arial"></fb:like>
 			</li>

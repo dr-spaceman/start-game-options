@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 include_once $_SERVER['DOCUMENT_ROOT']."/pages/include.pages.php";
 
@@ -32,7 +32,7 @@ if ($op == "collection") {
 if($act == "add") $q = "INSERT INTO pages_fan (usrid, op, `title`) VALUES ('$usrid', '$op', '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."');";
 elseif($act == "rm") $q = "DELETE FROM pages_fan WHERE usrid='$usrid' AND op='$op' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."';";
 elseif($act == "edit") $q = "UPDATE pages_fan SET `remarks`='".mysqli_real_escape_string($GLOBALS['db']['link'], $remarks)."' WHERE usrid='$usrid' AND op='$op' AND `title`='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."';";
-if(!mysqli_query($GLOBALS['db']['link'], $q)) $ajax->ret['errors'][] = "There was a database error!".($usrrank > 6 ? " ".mysqli_error($GLOBALS['db']['link']) : '');
+if(!mysqli_query($GLOBALS['db']['link'], $q)) $ajax->ret['errors'][] = "There was a database error!".($_SESSION['user_rank'] > 6 ? " ".mysqli_error($GLOBALS['db']['link']) : '');
 else $ajax->ret['success'] = '1';
 
 if(($act == "edit" || $act == "add") && $_SESSION['fb_142628175764082_access_token']){
@@ -75,7 +75,7 @@ if(($act == "edit" || $act == "add") && $_SESSION['fb_142628175764082_access_tok
 	    if($res['id']){
 	    	$ajax->ret['fb_post_id'] = $res['id'];
 	    } else {
-	    	$ajax->ret['errors'][] = "There was an error posting to Facebook!".($usrrank > 5 ? stripslashes("[$handle_post]") : '');
+	    	$ajax->ret['errors'][] = "There was an error posting to Facebook!".($_SESSION['user_rank'] > 5 ? stripslashes("[$handle_post]") : '');
 	    }
 	  } catch (FacebookApiException $e) {
 	    if($e) $ajax->ret['errors'][] = $e;

@@ -1,6 +1,6 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
 
 if(!$nid = $_GET['nid']) $page->kill('No post ID given. <a href="manage.php">Sblog Manager</a>');

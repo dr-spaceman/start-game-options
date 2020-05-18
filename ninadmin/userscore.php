@@ -1,6 +1,6 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 
 if($_GET['init']){
 	

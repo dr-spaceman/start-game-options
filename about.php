@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 $page->title = "About Videogam.in";
 $page->width = "fixed";
 $page->minimalist = true;
@@ -34,7 +34,7 @@ $page->header();
 			<dd>A growing database of <a href="/games">Games</a>, <a href="/people">Game Creators</a>, and <a href="/categories/Game_console">Consoles</a>, <a href="/categories/Game_developer">Companies</a>, <a href="/categories/Game_character">Characters</a>, <a href="/categories/Game_concept">Concepts</a>, and other <a href="/categories">videogame categories</a>.</dd>
 			
 			<dt><a href="/posts/">The Sblog</a></dt>
-			<dd>A portmanteu of news and blog, the Sblog is a collection of videogame-related content, including news, reviews, quotes, pictures, videos, music, links to other websites, and much more. You can use it to create your own personal blog <?=($username ? '(located at <a href="/~'.$usrname.'/blog">Videogam.in/~'.$usrname.'/blog</a>)' : '')?> or post to the public news roll.</dd>
+			<dd>A portmanteu of news and blog, the Sblog is a collection of videogame-related content, including news, reviews, quotes, pictures, videos, music, links to other websites, and much more. You can use it to create your own personal blog <?=($_SESSION['logged_in'] ? '(located at <a href="/~'.$current_user->getUsername().'/blog">Videogam.in/~'.$current_user->getUsername().'/blog</a>)' : '')?> or post to the public news roll.</dd>
 			
 			<dt><a href="/music/">Videogame Music Database</a></dt>
 			<dd>450+ game music soundtracks.</li>

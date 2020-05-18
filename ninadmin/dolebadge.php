@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+use Vgsite\Badge;
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
+$page = new Page();
 $_badges = new badges;
 
 if($_GET['init']){
@@ -118,7 +118,7 @@ if($bid = $_POST['bid']){
 $page->title = "Dole out badges";
 $page->header();
 
-if($usrrank < 8) $page->die_("No access");
+if($_SESSION['user_rank'] < 8) $page->kill("No access");
 
 ?>
 <h1>Dole out badges</h1>

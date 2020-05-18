@@ -1,8 +1,8 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 
-$page = new page;
+$page = new Page();
 $page->title = "Nintendosite Admin / External Resources";
 $page->min_rank = 6;
 $page->admin = TRUE;
@@ -16,7 +16,7 @@ $in = $_POST['in'];
 if($del = $_GET['delete']) {
 	$q = "SELECT * FROM admin_resources WHERE id='$del' LIMIT 1";
 	$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
-	if($usrrank == 9 || ($usrrank == 8 && $dat->usrid != 9) || ($usrid == $dat->usrid)) {
+	if($_SESSION['user_rank'] == 9 || ($_SESSION['user_rank'] == 8 && $dat->usrid != 9) || ($usrid == $dat->usrid)) {
 		$q = "DELETE FROM admin_resources WHERE id='$del' LIMIT 1";
 		if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = "Deleted";
 		else $errors[] = "Couldn't delete from db";
@@ -46,7 +46,7 @@ $page->header();
 
 ?><h2>External Webmaster Resources</h2><?
 
-if($usrrank >= 7) {
+if($_SESSION['user_rank'] >= 7) {
 	?>
 	<input type="button" value="Add a Link" onclick="document.getElementById('add-form').style.display='block'; this.style.display='none';"/>
 	
@@ -104,7 +104,7 @@ while($row = mysqli_fetch_assoc($res)) {
 		$curr_cat = $row['category'];
 		echo '</dl><h3>'.$row['category']."</h3>\n<dl>\n";
 	}
-	if($usrrank == 9 || ($usrrank == 8 && $row['usrid'] != 9) || ($usrid == $row['usrid'])) {
+	if($_SESSION['user_rank'] == 9 || ($_SESSION['user_rank'] == 8 && $row['usrid'] != 9) || ($usrid == $row['usrid'])) {
 		$del_link = ' <a href="?delete='.$row['id'].'" class="x">X</a>';
 	} else {
 		$del_link = "";

@@ -1,6 +1,6 @@
 <?
-require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 
 if($_GET['mlist']){
 	
@@ -25,7 +25,7 @@ if($_GET['mlist']){
 	
 }
 
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
+use Vgsite\Badge;
 
 $page->title = "Videogam.in / Your Account";
 $page->css[] = "/bin/css/account.css";
@@ -60,101 +60,103 @@ if($edit == 'details') {
 	
 	// EDIT DETAILS //
 
-  if ($_POST) {
+	if ($_POST) {
   	
-    $fields = array('email');
+		$fields = array('email');
 		foreach ($fields as $field) {
 			if ($in[$field] == "") {
 				$errors[] = "The <em>$field</em> field is required.";
 			}
 		}
 		
-		if(!$in['password2']) unset($in['password1']);
+		if(!$in['password2']) {
+			unset($in['password1']);
+		}
+
 		if ($in['password1'] != $in['password2']) {
 			unset($in['password1']);
 			$warnings[] = "Passwords didn't match; Your password will remain unchanged";
 		}
 		
-		if($in['email'] != $user->email) {
+	if($in['email'] != $user->email) {
   		//Check if email address is already registered
-		  $q = "SELECT email from users where email = '".$in['email']."' and `usrid` != '$usrid'"; 
-		  if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
+		$q = "SELECT email from users where email = '".$in['email']."' and `usrid` != '$usrid'"; 
+		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) {
 		  	$warnings[] = "The e-mail address <i>".$in['email']."</i> is already registered; Your e-mail address will remain unchanged (".$user->email.")";
 		  	$in['email'] = $user->email;
-		  } else {
-			  //de-validate email
-			  $query = "UPDATE `users` SET `verified` = 0 WHERE `usrid` = '$usrid' LIMIT 1";
-				if(!$errors) {
-					if(!mysqli_query($GLOBALS['db']['link'], $query)) sendBug("Couldn't de-validate user $usrid who changed e-mail address (/account.php)");
-				}
+		} else {
+			//de-validate email
+			$query = "UPDATE `users` SET `verified` = 0 WHERE `usrid` = '$usrid' LIMIT 1";
+			if(!$errors) {
+				if(!mysqli_query($GLOBALS['db']['link'], $query)) sendBug("Couldn't de-validate user $usrid who changed e-mail address (/account.php)");
 			}
 		}
-		
-		if(!$errors) {
-			
-			//check new usaername
-			do if($new_username = $_POST['new_username']){
+	}
+	
+	if(!$errors) {
+		//check new usaername
+		if ($new_username = $_POST['new_username']) {
+			try {
 				$new_username = formatName($new_username);
-				if($new_username == ''){
-					unset($new_username);
-					break;
+				if ($new_username == ''){
+					throw new Exception("New username is blank");
 				}
-				$q = "SELECT * FROM users WHERE username = '".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."' LIMIT 1"; 
-			  if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))){
-					$errors[] = "The  username '$new_username' is already taken.";
-			  	unset($new_username);
-					break;
-			  }
-			  if(strlen($new_username) > 15){
-			  	$errors[] = "The new username given is too long (> 15 characters)";
-			  	unset($new_username);
-			  	break;
-			  }
 
-			  $sql = "INSERT INTO `users_change_username` (`user_id`, `username_old`, `username_new`) VALUES (?, ?, ?);";
-			  $statement = $pdo->prepare($sql);
-			  $statement->execute([$usrid, $usrname, $new_username]);
-			  
-			} while(false);
-			
-			$in['name'] = htmlSC($in['name']);
-			$in['location'] = htmlSC($in['location']);
-			if ($in['homepage'] == 'http://') $in['homepage'] = '';
-			$in['handle'] = htmlSC($in['handle']);
-			$in['dob'] = $in['year']."-".$in['month']."-".$in['day'];
-			
-			if(strlen($in['interests']) > 100){
-				$in['interests'] = substr($in['interests'], 0, 100).'&hellip;';
-			}
-			
-			if($in['im'][un][0] == "BillyBob64") {
-				unset($in['im']['cl'][0]);
-				unset($in['im']['un'][0]);
-			}
-			$ims = array();
-			for($i = 0; $i <= 6; $i++) {
-				if($in['im']['cl'][$i] != "" && $in['im']['un'][$i] != "") $ims[] = $in['im']['cl'][$i].":::".$in['im']['un'][$i];
-			}
-			if($ims) $im_str = implode("|||", $ims);
-			$im_str = htmlSC($im_str);
-			$in['im'] = $im_str;
-			
-			//users main
-			$Query = sprintf("UPDATE users SET "
-				.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."'," : "").
-		  	($in['password1'] ? "password = password('".$in['password1']."')," : "")."
-	   		email = '%s',
-			  region = '".$in['region']."',
-				`gender` = '".$in['gender']."' 
-	   		WHERE usrid = '$usrid' LIMIT 1",
-	   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['email']));
+				if (!is_null(User::findByUsername($new_username))) {
+					throw new Exception("The  username '$new_username' is already taken.");
+				}
 
-	   	
+				if (strlen($new_username) > 15){
+				  	throw new exception("The new username given is too long (> 15 characters)");
+				}
+
+				$sql = "INSERT INTO `users_change_username` (`user_id`, `username_old`, `username_new`) VALUES (?, ?, ?);";
+				$statement = $pdo->prepare($sql);
+				$statement->execute([$current_user->getId(), $current_user->getUsername(), $new_username]);
+			} catch (Exception $e) {
+				unset($new_username);
+				$errors[] = $e->getMessage();
+			} 
+		}
+			
+		$in['name'] = htmlSC($in['name']);
+		$in['location'] = htmlSC($in['location']);
+		if ($in['homepage'] == 'http://') $in['homepage'] = '';
+		$in['handle'] = htmlSC($in['handle']);
+		$in['dob'] = $in['year']."-".$in['month']."-".$in['day'];
+		
+		if(strlen($in['interests']) > 100){
+			$in['interests'] = substr($in['interests'], 0, 100).'&hellip;';
+		}
+		
+		if($in['im'][un][0] == "BillyBob64") {
+			unset($in['im']['cl'][0]);
+			unset($in['im']['un'][0]);
+		}
+		$ims = array();
+		for($i = 0; $i <= 6; $i++) {
+			if($in['im']['cl'][$i] != "" && $in['im']['un'][$i] != "") $ims[] = $in['im']['cl'][$i].":::".$in['im']['un'][$i];
+		}
+		if($ims) $im_str = implode("|||", $ims);
+		$im_str = htmlSC($im_str);
+		$in['im'] = $im_str;
+		
+		//users main
+		$Query = sprintf("UPDATE users SET "
+			.($new_username ? "username='".mysqli_real_escape_string($GLOBALS['db']['link'], $new_username)."'," : "").
+	  	($in['password1'] ? "password = password('".$in['password1']."')," : "")."
+   		email = '%s',
+		  region = '".$in['region']."',
+			`gender` = '".$in['gender']."' 
+   		WHERE usrid = '$usrid' LIMIT 1",
+   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['email']));
+
 	   	//users_details
 	   	if($Result = mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_details WHERE usrid='$usrid' LIMIT 1")) {
-				if(mysqli_num_rows($Result)) {
-					$Query2 = sprintf("UPDATE users_details SET 
-			      name = '%s',
+			if(mysqli_num_rows($Result)) {
+				$Query2 = sprintf(
+					"UPDATE users_details SET 
+					name = '%s',
 			   		location = '%s',
 			   		interests = '%s',
 			   		homepage = '%s',
@@ -169,12 +171,14 @@ if($edit == 'details') {
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['interests']),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['homepage']),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
-			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['handle']));
-					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
-						$errors[] = "Couldn't update details" . ($usrrank >= 8 ? " " . mysqli_error($GLOBALS['db']['link']) : "");
-					}
-				} else {
-					$Query2 = sprintf("INSERT INTO users_details 
+			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['handle'])
+			   	);
+
+				if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
+					$errors[] = "Couldn't update details" . ($_SESSION['user_rank'] >= 8 ? " " . mysqli_error($GLOBALS['db']['link']) : "");
+				}
+			} else {
+				$Query2 = sprintf("INSERT INTO users_details 
 						(`usrid`,  `name`, `location`, `time_zone`,      `interests`, `homepage`, `dob`,                           `im`, `handle`, `last_profile_update`) VALUES 
 			      ('$usrid', '%s',   '%s',       '".$in['time_zone']."', '%s',        '%s',       '".$in['year']."-".$in['month']."-".$in['day']."', '%s', '%s',     now())",
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['name']),
@@ -183,25 +187,24 @@ if($edit == 'details') {
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['homepage']),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $im_str),
 			   			mysqli_real_escape_string($GLOBALS['db']['link'], $in['handle']));
-					if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
-						$errors[] = "Couldn't update (insert) details";
-					}
+				if(!mysqli_query($GLOBALS['db']['link'], $Query2)) {
+					$errors[] = "Couldn't update (insert) details";
 				}
 			}
+		}
 			
-			if (!$errors) {
-				//$Query for `users`
+		if (!$errors) {
+			//$Query for `users`
 	  		if (!mysqli_query($GLOBALS['db']['link'], $Query)) {
-	  			$errors[] = "Couldn't update profile because of a database error " . ($usrrank >= 6 ? " [$Query] ".mysqli_error($GLOBALS['db']['link']) : '');
+	  			$errors[] = "Couldn't update profile because of a database error " . ($_SESSION['user_rank'] >= 6 ? " [$Query] ".mysqli_error($GLOBALS['db']['link']) : '');
 	  		} else {
 	  			
 	  			$results[] = "Successfully updated your details";
 	  			
-	  			if($new_username){
-	  				$results[] = "Your username was changed from '$usrname' to '$new_username'.";
-	  				$in['username_old'] = $usrname;
-	  				$usrname = $new_username;
-	  				$_SESSION['usrname'] = $new_username;
+	  			if ($new_username) {
+	  				$results[] = sprintf("Your username was changed from '%s' to '%s'", $current_user->getUsername(), $new_username);
+	  				$in['username_old'] = $current_user->getUsername();
+	  				
 	  			}
 	  			
 	  			//badge for profile info
@@ -210,11 +213,11 @@ if($edit == 'details') {
 				}
 					
 	  		}
-			}
-			
 		}
+			
+	}
 		
-	} else {
+} else {
 		
 	  $Query = "SELECT * FROM users LEFT JOIN users_details ON users_details.usrid=users.usrid WHERE users.usrid = '$usrid' LIMIT 1";
 	  $Result = mysqli_query($GLOBALS['db']['link'], $Query);

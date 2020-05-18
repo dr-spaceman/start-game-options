@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Image;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 
 $page->title = "Videogam.in Post Management";
@@ -17,8 +17,8 @@ if($del = $_GET['delete']){
 	else {
 		//user has access?
 		if($in['options']) $in['options'] = json_decode($in['options'], true);
-		if($usrrank <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
-		if($in['options']['access'] && $usrrank < $in['options']['access']) $page->kill("<h1>Error</h1>This item is locked and can't be edited. [$usrrank < ".$in['options']['access']."]");
+		if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
+		if($in['options']['access'] && $_SESSION['user_rank'] < $in['options']['access']) $page->kill("<h1>Error</h1>This item is locked and can't be edited. [$_SESSION['user_rank'] < ".$in['options']['access']."]");
 		
 		$q = "DELETE FROM posts_edits WHERE nid = '$in[nid]'";
 		mysqli_query($GLOBALS['db']['link'], $q);
@@ -54,8 +54,8 @@ if($edid = $_GET['edit']) {
 	$in['options'] = $in['options'] ? json_decode($in['options'], 1) : array();
 	unset($opts);
 	//user has access?
-	if($usrrank <= 7 && $in['usrid'] != $usrid) $page->kill("Access Error.");
-	if($in['options']['access'] && $usrrank < $in['options']['access']) $page->kill("Access Error: This item is locked and can't be edited.");
+	if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("Access Error.");
+	if($in['options']['access'] && $_SESSION['user_rank'] < $in['options']['access']) $page->kill("Access Error: This item is locked and can't be edited.");
 
 //newpost
 } elseif($_GET['action'] == "newpost") {
@@ -514,7 +514,7 @@ $user->getPreferences();
 						<?=($in['options']['tweet_id'] ? '<a href="https://twitter.com/'.$oauth['twitter']['oauth_username'].'/status/'.$in['options']['tweet_id'].'" target="_blank">You\'ve Tweeted this already</a>' : '<a onclick="nnInitOauth(\'twitter\')">Authorize Twitter access</a>')?>
 					</dd>
 					<? } ?>
-					<?=(!$in['options']['tweet_id_site'] && $usrrank >= 4 ? '<dd><label title="As a high level user, you have access to the Videogam.in site Twitter feed."><input type="checkbox" name="share[twitter_site]" value="twitter_site"/> Tweet <span class="a">@Videogamin</span></label></dd>' : '')?>
+					<?=(!$in['options']['tweet_id_site'] && $_SESSION['user_rank'] >= 4 ? '<dd><label title="As a high level user, you have access to the Videogam.in site Twitter feed."><input type="checkbox" name="share[twitter_site]" value="twitter_site"/> Tweet <span class="a">@Videogamin</span></label></dd>' : '')?>
 					<dd>
 						<div class="inpfw">
 							<textarea name="in[status_text]" id="status_text" class="trackchange" title="Status update" placeholder="Status update (generated automatically if blank)" style="display:none; height:46px;"></textarea>
@@ -569,7 +569,7 @@ $user->getPreferences();
 				<h4><a href="#adv_opts" class="arrow-toggle">Advanced Options</a></h4>
 				<dl style="display:none; margin:0 0 0 20px;">
 					
-					<? if(!$postdat || $usrrank == 9 || $posted > $hour){ ?>
+					<? if(!$postdat || $_SESSION['user_rank'] == 9 || $posted > $hour){ ?>
 					<dt>Permanent Link</dt>
 					<dd>
 						<span style="font:normal 12px monospace;">
@@ -631,7 +631,7 @@ $user->getPreferences();
 					</dd>
 					
 					<?
-					if($usrrank >= 8) {
+					if($_SESSION['user_rank'] >= 8) {
 						if($in['options']['access']) $opt_access[$in['options']['access']] = 'checked="checked"';
 						else $opt_access['default'] = 'checked="checked"';
 						?>
@@ -646,7 +646,7 @@ $user->getPreferences();
 				</dl>
 				
 				<?
-				if($usrrank >= 8){
+				if($_SESSION['user_rank'] >= 8){
 					?>
 					<h4><a href="#postdata" class="preventdefault arrow-toggle">Post Data</a></h4>
 					<dl style="display:none">

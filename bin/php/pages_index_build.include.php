@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER['DOCUMENT_ROOT']."/pages/class.pages.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/pages/class.pages.edit.php";
 
@@ -131,7 +131,7 @@ if(isset($_GET['_min'])){
 	
 }
 
-echo $html_tag;
+echo Page::HTML_TAG;
 ?>
 <head>
 	<script type="text/javascript" src="/bin/script/jquery.js"></script>

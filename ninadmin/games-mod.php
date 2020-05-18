@@ -12,8 +12,8 @@
 // GAME GUIDE //
 // PREVIEW //
 
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 
@@ -37,7 +37,7 @@ if($_GET['justadded']) {
 $platforms = getPlatforms();
 $dir = $platforms[$gdat['platform_id']]['platform_shorthand'];
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in Admin ".($gdat[title] ? " / $gdat[title] / $what" : "");
 $page->min_rank = 7;
 $page->admin = TRUE;
@@ -265,7 +265,7 @@ if($what == "main") {
 				<td><label><input type="checkbox" name="in[unpublished]" value="1" style="vertcal-align:middle"<?=($in[unpublished] ? ' checked="checked"' : '')?>/> Unpublish this gamepage, removing it from all indexes (it can still be found via search though)</label></td>
 			</tr>
 			<?/*
-			if($usrrank == 9) {
+			if($_SESSION['user_rank'] == 9) {
 				?>
 				<tr>
 					<th>Contributors</th>
@@ -954,7 +954,7 @@ if($what == "links") {
 		
 		// delete
 		
-		if($usrrank < 7) die("Can't do this with rank");
+		if($_SESSION['user_rank'] < 7) die("Can't do this with rank");
 		
 		$sql = "SELECT * FROM games_links WHERE id='$del' LIMIT 1";
 		if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Link id #$del not in db");
@@ -1044,7 +1044,7 @@ if($what == "files") {
 	
 	//Delete
 	if($del = urldecode($_GET['delete'])) {
-		if($usrrank <= 7) die("Invalid user rank");
+		if($_SESSION['user_rank'] <= 7) die("Invalid user rank");
 		$file = $_SERVER['DOCUMENT_ROOT']."/games/files/$id/$del";
 		if(!is_file($file)) {
 			$errors[] = "Can't delete $handle since it isn't a file";
@@ -1090,7 +1090,7 @@ if($what == "files") {
 		</select>
 		<p>
 			<input type="button" value="View" onclick="window.open('/games/files/<?=$id?>/'+document.getElementById('files').value);"/> 
-			<input type="button" value="Delete" onclick="if(confirm('Really delete ?')) document.location='games-mod.php?what=files&id=<?=$id?>&delete='+document.getElementById('files').value;"<?=($usrrank <= 7 ? ' style="display:none"' : '')?>/>
+			<input type="button" value="Delete" onclick="if(confirm('Really delete ?')) document.location='games-mod.php?what=files&id=<?=$id?>&delete='+document.getElementById('files').value;"<?=($_SESSION['user_rank'] <= 7 ? ' style="display:none"' : '')?>/>
 		</p>
 	</fieldset>
 	<br/>
@@ -1111,11 +1111,11 @@ if($what == "trivia") {
 		
 		if(!$factid = $_POST['factid']) die("No fact id given");
 		
-		if($usrrank < User::SUPERADMIN) {
+		if($_SESSION['user_rank'] < User::SUPERADMIN) {
 			$q = "SELECT usrid FROM games_trivia WHERE id='$factid' LIMIT 1";
 			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 			$user = User::getById($dat->usrid);
-			if($user->getRank() > $usrrank) $errors[] = "You don't have permission to edit this item since the item's author outranks you.";
+			if($user->getRank() > $_SESSION['user_rank']) $errors[] = "You don't have permission to edit this item since the item's author outranks you.";
 		}
 		
 		if(!$errors) {

@@ -2,7 +2,7 @@
 
 //Load one or more list elements and return one JSON element
 
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 
 $components = array();
 $components = explode(",", $_GET['components']);

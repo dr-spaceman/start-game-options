@@ -1,7 +1,5 @@
 <?
 
-require_once("../bin/php/page.php");
-
 $in = $_POST['in'];
 $step = $_POST['step'];
 $editid = $_POST['editid'];
@@ -221,7 +219,7 @@ if($step && !$_POST['submitform']) {
 			
 			if($_FILES['file']['name']) {
 				
-				require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+				use Verot\Upload;
 				
 				//upload
 				$handle = new Upload($_FILES['file']);

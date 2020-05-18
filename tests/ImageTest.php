@@ -218,12 +218,12 @@ class ImageTest extends TestCase
     public function testImageDelete(ImageCollection $collection, ImageMapper $mapper)
     {
         foreach($collection->getGenerator() as $image) {
-            $check_image_id[] = $image->getId();
+            $check_image_names[] = $image->img_name;
             $this->assertTrue($mapper->delete($image));
         }
 
-        foreach ($check_image_id as $id) {
-            $this->assertNull($mapper->findById($id));
+        foreach ($check_image_names as $img_name) {
+            $this->assertNull($mapper->findByName($img_name));
         }
 
         $this->assertNull($mapper->findAllBySessionId($collection->getId()));

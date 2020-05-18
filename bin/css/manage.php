@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Image;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 
 $page->title = "Videogam.in Post Management";
@@ -18,8 +18,8 @@ if($del = $_GET['delete']){
 	else {
 		//user has access?
 		if($in['options']) $in['options'] = json_decode($in['options'], true);
-		if($usrrank <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
-		if($in['options']['access'] && $usrrank < $in['options']['access']) $page->kill("<h1>Error</h1>This item is locked and can't be edited. [$usrrank < ".$in['options']['access']."]");
+		if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
+		if($in['options']['access'] && $_SESSION['user_rank'] < $in['options']['access']) $page->kill("<h1>Error</h1>This item is locked and can't be edited. [$_SESSION['user_rank'] < ".$in['options']['access']."]");
 		
 		$q = "DELETE FROM posts_edits WHERE nid = '$in[nid]'";
 		mysqli_query($GLOBALS['db']['link'], $q);
@@ -55,8 +55,8 @@ if($edid = $_GET['edit']) {
 	$in['options'] = $in['options'] ? json_decode($in['options'], 1) : array();
 	unset($opts);
 	//user has access?
-	if($usrrank <= 7 && $in['usrid'] != $usrid) $page->kill("Access Error.");
-	if($in['options']['access'] && $usrrank < $in['options']['access']) $page->kill("Access Error: This item is locked and can't be edited.");
+	if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("Access Error.");
+	if($in['options']['access'] && $_SESSION['user_rank'] < $in['options']['access']) $page->kill("Access Error: This item is locked and can't be edited.");
 
 //newpost
 } elseif($_GET['action'] == "newpost") {
@@ -487,7 +487,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 					<dt>Share</dt>
 					<dd><input type="checkbox" name="in[share][facebook]" value="facebook" id="share-facebook" <?=(!in_array("facebook", array_keys($oauth)) ? 'disabled="disabled"' : '')?>/> <label for="share-facebook">Post on my Facebook timeline</label> <a onclick="nnInitOauth('facebook')">Authorize Facebook access</a></dd>
 					<dd><input type="checkbox" name="in[share][twitter]" value="twitter" id="share-twitter" <?=(!in_array("twitter", array_keys($oauth)) ? 'disabled="disabled"' : '')?>/> <label for="share-twitter">Tweet<?=($oauth['twitter'] ? ' <span class="a">@'.$oauth['twitter']['oauth_username'].'</span>' : '')?></label> <a onclick="nnInitOauth('facebook')">Authorize Twitter access</a></dd>
-					<?=($usrrank >= 8 ? '<dd><label><input type="checkbox" name="in[share][twitter_site]" value="twitter_site"/> Tweet <span class="a">@Videogamin</span></label></dd>' : '')?>
+					<?=($_SESSION['user_rank'] >= 8 ? '<dd><label><input type="checkbox" name="in[share][twitter_site]" value="twitter_site"/> Tweet <span class="a">@Videogamin</span></label></dd>' : '')?>
 				</dl>
 			</div>
 			
@@ -570,7 +570,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 					
 					$posted = strtotime($postdat['datetime']);
 					$hour = strtotime("-1 hour");
-					if(!$postdat || $usrrank == 9 || $posted > $hour) {
+					if(!$postdat || $_SESSION['user_rank'] == 9 || $posted > $hour) {
 						?>
 						<dt>Permanent Link</dt>
 						<dd>
@@ -600,7 +600,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 					</dd>
 					
 					<?
-					if($usrrank >= 8) {
+					if($_SESSION['user_rank'] >= 8) {
 						if($in['options']['access']) $opt_access[$in['options']['access']] = 'checked="checked"';
 						else $opt_access['default'] = 'checked="checked"';
 						?>
@@ -615,7 +615,7 @@ if(!$usrid) $page->kill('<br style="clear:both"/><big style="font-size:22px;">Pl
 				</dl>
 				
 				<?
-				if($usrrank >= 8){
+				if($_SESSION['user_rank'] >= 8){
 					?>
 					<h4><a href="#postdata" class="preventdefault arrow-toggle">Post Data</a></h4>
 					<dl style="display:none">

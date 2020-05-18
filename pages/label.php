@@ -2,7 +2,7 @@
 
 /* Output a label for a given page */
 
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 
 if($pglabel['title']) $title = $pglabel['title'];
 elseif($_GET['title']) $title = $_GET['title'];

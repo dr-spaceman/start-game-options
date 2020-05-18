@@ -1,10 +1,10 @@
 <?
 //upload a new publication box image to replace an old one
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 
-echo $html_tag;
+echo Page::HTML_TAG;
 ?>
 <head>
 	<title>Upload a profile pic</title>
@@ -70,7 +70,7 @@ if($_FILES['file']['nameXXXXXXXXXXX']) {
 	if(!$_POST['img'] || !file_exists($_SERVER['DOCUMENT_ROOT']."/bin/uploads/person_pic/".$_POST['img'])) die("Error: image lost during submission");
 	if(!$_POST['tn'] || !file_exists($_SERVER['DOCUMENT_ROOT']."/bin/uploads/person_pic/".$_POST['tn'])) die("Error: thumbnail image lost during submission");
 	
-	if($usrrank >= 4) {
+	if($_SESSION['user_rank'] >= 4) {
 		if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/people/".$pid.".png")) {
 			@rename($_SERVER['DOCUMENT_ROOT']."/bin/img/people/".$pid.".png", $_SERVER['DOCUMENT_ROOT']."/bin/deleted-files/people--".$pid."_pic_".rand(0,99999).".png");
 			@unlink($_SERVER['DOCUMENT_ROOT']."/bin/img/people/".$pid."-tn.png");

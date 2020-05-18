@@ -12,16 +12,16 @@
 // FACTOIDS & RETAILERS
 // SAMPLES
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Verot\Upload;
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.tags.php");
 
 $rootpath = $_SERVER['DOCUMENT_ROOT'];
 $albumpath = "music";
 
-if($usrrank < 6) { include("../404.php"); exit; }
+if($_SESSION['user_rank'] < 6) { include("../404.php"); exit; }
 
 $page->javascripts[] = "/bin/script/albums-mgt.js";
 $page->freestyle.= '
@@ -424,7 +424,7 @@ if ($action == "new") {
 					<th>&nbsp;</th>
 					<td>
 						<input type="submit" name="pro" value="Save Changes" style="font-weight:bold;"/> &nbsp; 
-						<?=($usrrank >= 8 || $cr_user == $usrid ? '<span class="redborder"><input type="button" value="Delete this Album" onclick="if(confirm(\'Permanently delete this album?\')) document.location=\'albums.php?delete_album='.$editid.'\';"/></span>' : '')?>
+						<?=($_SESSION['user_rank'] >= 8 || $cr_user == $usrid ? '<span class="redborder"><input type="button" value="Delete this Album" onclick="if(confirm(\'Permanently delete this album?\')) document.location=\'albums.php?delete_album='.$editid.'\';"/></span>' : '')?>
 					</td>
 				</tr>
 			</table>
@@ -2069,7 +2069,7 @@ else {
 		
 		// DELETE //
 		
-		if($usrrank < 8) {
+		if($_SESSION['user_rank'] < 8) {
 			$q = "SELECT * FROM albums_changelog WHERE album='$aid' AND type='new' AND usrid='$usrid' LIMIT 1";
 			if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("Can't delete because you aren't the creator");
 		}

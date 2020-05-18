@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 
-if($usrrank < 8) { include("../404.php"); exit; }
+if($_SESSION['user_rank'] < 8) { include("../404.php"); exit; }
 
 $page->title = "User Mgt";
 
@@ -61,8 +61,8 @@ if(!$userrow = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) die
 do if($in = $_POST['in']){
 	
 	if($in['delete']){
-		if($usrrank < 8 || $userrow['rank'] > $usrrank){
-			$errors[] = "Access level is too low for that action [$usrrank, ".$userrow['rank']."]";
+		if($_SESSION['user_rank'] < 8 || $userrow['rank'] > $_SESSION['user_rank']){
+			$errors[] = "Access level is too low for that action [$_SESSION['user_rank'], ".$userrow['rank']."]";
 			break;
 		}
 		
@@ -91,7 +91,7 @@ do if($in = $_POST['in']){
 	}
 	
 	$pw = trim($in['password']);
-	if($in['rank'] > $usrrank) unset($in['rank']);
+	if($in['rank'] > $_SESSION['user_rank']) unset($in['rank']);
 	$q = "UPDATE users SET ".($pw ? "`password` = password('".mysqli_real_escape_string($GLOBALS['db']['link'], $pw)."'), " : "").($in['rank'] ? " `rank` = '".$in['rank']."'" : '')." WHERE usrid = '".$_GET['userid']."' LIMIT 1";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't update USERS table (password, rank)";
 	
@@ -132,7 +132,7 @@ $page->header();
 </div>
 
 <?
-if($in['rank'] > $usrrank){
+if($in['rank'] > $_SESSION['user_rank']){
 	echo "You don't have access to edit this user's profile.";
 	$page->footer();
 	exit;
@@ -151,7 +151,7 @@ if($in['rank'] > $usrrank){
 				$query = "SELECT * FROM `users_ranks` WHERE `rank` >= 1 ORDER BY `rank`";
 				$res   = mysqli_query($GLOBALS['db']['link'], $query);
 				while($row = mysqli_fetch_assoc($res)){
-					echo '<option value="'.$row['rank'].'"'.($row['rank'] == $in['rank'] ? ' selected="selected"' : '').($row['rank'] > $usrrank ? ' disabled="disabled"' : '').'>'.$row['description'].'</option>';
+					echo '<option value="'.$row['rank'].'"'.($row['rank'] == $in['rank'] ? ' selected="selected"' : '').($row['rank'] > $_SESSION['user_rank'] ? ' disabled="disabled"' : '').'>'.$row['description'].'</option>';
 				}
 				?>
 			</select>
@@ -182,7 +182,7 @@ if($in['rank'] > $usrrank){
 			<?
 		}
 		
-		if($usrrank >= 8){
+		if($_SESSION['user_rank'] >= 8){
 		?>
 		<dt>Delete</dt>
 		<dd><label><input type="checkbox" name="in[delete]" value="1" onclick="if(!confirm('Are you sure?')) return false"/> Delete this user account</label></dd>

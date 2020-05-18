@@ -1,10 +1,10 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 
-if($usrrank < 8) { include("../404.php"); exit; }
+if($_SESSION['user_rank'] < 8) { include("../404.php"); exit; }
 
 $page->title = "Page Management / Mass Rename Link";
 $page->header();

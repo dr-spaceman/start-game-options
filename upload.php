@@ -1,16 +1,17 @@
 <?
-require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
-$page = new page;
-require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php");
+use Vgsite\Page;
+use Vgsite\Image;
 
-if($sessid = $_GET['sessid']){
+$page = new Page();
+
+if ($sessid = $_GET['sessid']) {
 	$q = "SELECT * FROM images_sessions WHERE img_session_id='".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
 	if($img_sess = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
-		if($img_sess->usrid != $usrid && $usrrank < 8) die("<span style=\"color:white;\">You don't have access to modify this session.</span>");
+		if($img_sess->usrid != $usrid && $_SESSION['user_rank'] < 8) die("<span style=\"color:white;\">You don't have access to modify this session.</span>");
 	}
 	$editsession = true;
 } else {
-	$sessid = img::MakeSessionID();
+	$sessid = Image::MakeSessionID();
 }
 
 $page->title = "Videogam.in / Upload";
@@ -146,7 +147,7 @@ $page->header();
 
 <h1><?=($editsession ? $img_sess->img_session_description : 'New Upload Session')?></h1>
 
-<? if(!$usrid) $page->die_('Please <a href="/login.php">log in</a> to upload.'); ?>
+<? if(!$usrid) $page->kill('Please <a href="/login.php">log in</a> to upload.'); ?>
 
 <div id="topmsg">
 	<p><?=(!$editsession ? 'You\'re starting a brand new upload session. To upload additional pictures to a previous session, access the <a href="/uploads.php">Upload Manager</a>.' : 'Continue with the below form to upload more images to this session, which currently has <b>'.$img_sess->img_qty.' image'.($img_sess->img_qty != 1 ? 's' : '').'</b>. Otherwise, <a href="/upload.php" class="arrow-right">start a new session</a>')?></p>

@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
+use Vgsite\Badge;
 
 if($_POST['_action'] == "confirmdesc"){
 	
@@ -13,7 +13,7 @@ if($_POST['_action'] == "confirmdesc"){
 	
 	$q = "SELECT * FROM posts WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."' limit 1";
 	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't find post for nid $nid");
-	if($usrid != $dat->usrid && $usrrank < 7) die("permission denied");
+	if($usrid != $dat->usrid && $_SESSION['user_rank'] < 7) die("permission denied");
 	
 	$q = "UPDATE posts SET `description` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' WHERE nid='$nid' LIMIT 1";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error updating database");
@@ -177,7 +177,7 @@ if($_GET['delete_img']) {
 	if(!$imgid = $_GET['delete_img']) die("Error: No image id given");
 	$q = "SELECT usrid, session_id, file FROM media_files LEFT JOIN posts USING (nid) WHERE imgid='$imgid' LIMIT 1;";
 	$mdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
-	if($mdat->usrid != $usrid && $usrrank < 8) die("Error: You don't have access to delete that image.");
+	if($mdat->usrid != $usrid && $_SESSION['user_rank'] < 8) die("Error: You don't have access to delete that image.");
 	$dir = $_SERVER['DOCUMENT_ROOT']."/media/".substr($mdat->session_id, 0, 4)."/".substr($mdat->session_id, 4)."/";
 	unlink($dir."/".$mdat->file);
 	@unlink($dir."/".substr($mdat->file, 0, -4)."-561x.jpg");
@@ -187,7 +187,7 @@ if($_GET['delete_img']) {
 	unlink($dir."/".substr($mdat->file, 0, -4)."-20x20.png");
 	$q = "DELETE FROM media_files WHERE imgid='$imgid' LIMIT 1";
 	mysqli_query($GLOBALS['db']['link'], $q);
-	die($html_tag.'<body style="margin:0; padding:0; font-size:13px; font-family:Arial;"><i>'.$mdat->file.'</i> deleted.</body></html>');
+	die(Page::HTML_TAG.'<body style="margin:0; padding:0; font-size:13px; font-family:Arial;"><i>'.$mdat->file.'</i> deleted.</body></html>');
 }
 
 if($_POST['submit_form']) {

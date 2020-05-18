@@ -2,8 +2,8 @@
 
 // Upload and process a heading image
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 
 $error = '';
 
@@ -62,7 +62,7 @@ $error = "The file you are trying to upload is too large! Your file can be up to
 $flag = $flag + 1;
 }
 
-if($filesize < 1048600 && $usrrank < 4){
+if($filesize < 1048600 && $_SESSION['user_rank'] < 4){
 //File is too small
 $error = "The file you are trying to upload is too small. Your file has been marked as suspicious because our system has determined that it is too small to be a valid MP3 file.";
 break;
@@ -103,7 +103,7 @@ if(@move_uploaded_file($file['tmp_name'], $target_path)) {
 	$moved_file = $target_path;
 } else{
     $error = "There was an error uploading the file, please try again!";
-    if($usrrank >= 8) $error.= $file['tmp_name'] ." -- ". $target_path;
+    if($_SESSION['user_rank'] >= 8) $error.= $file['tmp_name'] ." -- ". $target_path;
     break;
 }
 
@@ -113,7 +113,7 @@ if(@move_uploaded_file($file['tmp_name'], $target_path)) {
 	if($_FILES['audiofile']['error']==1 || $_FILES['audiofile']['error']==1) $error = "The file is too large.";
 }
 
-?><?=$html_tag?>
+?><?=Page::HTML_TAG?>
 <head>
 	<title>Videogam.in Sblog upload audio file</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>

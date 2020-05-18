@@ -1,8 +1,8 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 
-?><?=$html_tag?>
+?><?=Page::HTML_TAG?>
 <head>
 	<title>Videogam.in Sblog upload image</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>

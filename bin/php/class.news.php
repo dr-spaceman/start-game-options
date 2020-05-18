@@ -1,6 +1,6 @@
 <?
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 $page->css[] = "/bin/css/news.css";
 $page->javascript.= '<script src="/bin/script/news.js" type="text/javascript"></script>'."\n";
 

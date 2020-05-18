@@ -1,6 +1,6 @@
 <?
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Verot\Upload;
 
 if($_POST['preview']) {
 	
@@ -13,8 +13,8 @@ if($_POST['preview']) {
 }
 
 if($_GET['action'] == "upload_img") {
-	require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-	echo $html_tag;
+	use Vgsite\Page;
+	echo Page::HTML_TAG;
 	?>
 	<body style="margin:0; padding:0; font-size:13px; font-family:Arial; background-color:#F5F5F5;">
 	<form action="new-process.php?action=upload_img&sessid=<?=$_GET['sessid']?>" method="post" enctype="multipart/form-data">

@@ -5,9 +5,9 @@
 	<dt>General Admin.</dt>
 	<dd><a href="/ninadmin/albums.php">Albums Database</a></dd>
 	<dd><a href="/ninadmin/people.php">People Database</a></dd>
-	<?=($usrrank >= 7 ? '<dd><a href="/ninadmin/avatars.php">Avatar Management</a></dd>' : '')?>
+	<?=($_SESSION['user_rank'] >= 7 ? '<dd><a href="/ninadmin/avatars.php">Avatar Management</a></dd>' : '')?>
 		<?
-	if($usrrank >= 8) {
+	if($_SESSION['user_rank'] >= 8) {
 		echo '<dd><a href="/ninadmin/user-contributions.php">User Contributions</a>';
 		$pend = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM pending"));
 		if($pend) echo ' ('.$pend.')';
@@ -18,7 +18,7 @@
 	<dt>Games</dt>
 	<dd><a href="/games/add.php">New Game</a></dd>
 	<dd><a href="/ninadmin/games-mod.php">Edit a Game</a></dd>
-	<?=($usrrank >= 8 ? '
+	<?=($_SESSION['user_rank'] >= 8 ? '
 	<dd><a href="/ninadmin/games-misc.php?what=platforms">Platform Management</a></dd>
 	<dd><a href="/ninadmin/games-prune.php">Prune Database</a></dd>
 	' : '')?>

@@ -56,7 +56,7 @@ include("nav.php");
 //////////
 
 //admin controls
-if($usrrank >= 6) {
+if($_SESSION['user_rank'] >= 6) {
 	?>
 	<table border="0" cellpadding="3" cellspacing="0" width="100%" class="plain" style="margin:0 0 15px 0;" id="pgadmin">
 		<tr>

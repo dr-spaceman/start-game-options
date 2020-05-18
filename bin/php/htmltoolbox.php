@@ -1,5 +1,5 @@
 <?
-require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 /*require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/page_functions.php");*/
 
 if($_POST['_action'] == "init"){

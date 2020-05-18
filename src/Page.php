@@ -2,25 +2,88 @@
 
 namespace Vgsite;
 
-class Page {
+class Page
+{
 	static const HTML_TAG = '<!DOCTYPE html><html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
 
-	private $called;
-	public $minimalist;      // if true, minimize page bells & whistles
-	public $superminimalist; // header fixed to bottom
-	public $fullwidth;
-	public $title;
-	public $dom = array();   // attributes to apply to parts of the page [body, header]
-	                      // ie $dom['body']['style'][]='font-size:120%;', $dom['body']['class'][]='className'
-	public $css = array(); 	// list of css filenames
-	public $freestyle; 			// freestyle css
-	public $javascript; 			// freestyle and js via html
-	public $javascripts = array(); //list of js filenames
+	private $called = false;
 	private $called_sections = array();
-	public $meta_data;				// [string] add'l meta tags
-	public $meta = array();  // meta data [$property => $content]
-	public $fb; 							// connect to facebook
-	public $first_section;   // attributes to give to the first page section
+
+	/**
+	 * minimize page bells & whistles
+	 * @var boolean
+	 */
+	public $minimalist = false;
+
+	/**
+	 * header fixed to bottom
+	 * @var boolean
+	 */
+	public $superminimalist = false;
+
+	public $fullwidth = false;
+
+	/**
+	 * Page title
+	 * @var string
+	 */
+	public $title;
+
+	/**
+	 * attributes to apply to parts of the page [body, header]
+	 * ie $dom['body']['style'][]='font-size:120%;', $dom['body']['class'][]='className'
+	 * @var array
+	 */
+	public $dom = array();
+
+	/**
+	 * list of css filenames
+	 * @var array
+	 */
+	public $css = array();
+
+	/**
+	 * CSS put directly into page <style> tag
+	 * @var string
+	 */
+	public $freestyle;
+
+	/**
+	 * Javascript code put into page <script> tag
+	 * @var [type]
+	 */
+	public $javascript;
+
+	/**
+	 * list of js filenames
+	 * @var array
+	 */
+	public $javascripts = array();
+
+	/**
+	 * Additional meta tags
+	 * @var string
+	 */
+	public $meta_data;
+
+	/**
+	 * meta data [$property => $content]
+	 * @var array
+	 */
+	public $meta = array();
+
+	/**
+	 * connect to facebook
+	 * @var bool
+	 */
+	public $fb;
+
+	/**
+	 * attributes to give to the first page section
+	 * @var [type]
+	 */
+	public $first_section;
+
 	public $badges;
 
 	function __construct()
@@ -263,7 +326,6 @@ class Page {
 		}
 
 		if(!$this->no_first_section) $this->openSection($this->first_section);
-
 	}
 
 	function openSection($sec = array(), $contain=false){

@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.php");
 $_pg = new pages;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/pages/edit_ajax.php");
@@ -22,7 +22,7 @@ if($sessid = $_GET['destroysession']){
 			die("Error: Couldn't get page data for id # ".$sessid);
 		}
 	}
-	if($usrid != $pe->usrid && $usrrank < 8) die("You don't have access to this edit session.");
+	if($usrid != $pe->usrid && $_SESSION['user_rank'] < 8) die("You don't have access to this edit session.");
 	if(!$_GET['sure']){
 		$page->header();
 		?>
@@ -114,7 +114,7 @@ $page->header();
 
 $_pg->editHeader();
 
-if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php">Log In</a> in order to edit this page.</big>');
+if(!$usrid) $page->kill('<big style="font-size:150%;">Please <a href="/login.php">Log In</a> in order to edit this page.</big>');
 
 //check for previous sessions
 	$query = "SELECT * FROM pages_edit WHERE title='".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND usrid='$usrid' AND published='0' AND session_id != '$sessid' ".($dbdat ? "AND `datetime` > DATE_ADD('".$dbdat->modified."', INTERVAL -1 DAY)" : "")." ORDER BY `datetime` DESC";
@@ -739,7 +739,7 @@ if(!$pgtype) {
 		?>
 		<label><input type="checkbox" name="minoredit" value="1"<?=($_POST['minoredit'] ? ' checked="checked"' : '')?>/> This is a minor edit <a href="#help" class="tooltip" title="Mark this edit as minor if it only corrects spelling or formatting, performs minor rearrangements of text, or tweaks only a few words or inconsequential attributes.">?</a></label>
 		<?
-		if($usrrank > 6){
+		if($_SESSION['user_rank'] > 6){
 			?><p style="margin:5px 0 0;"></p><label><input type="checkbox" name="withholdpts" value="1"<?=($_POST['withholdpts'] ? ' checked="checked"' : '')?>/> Withhold my points for this edit</label><?
 		}
 		?>

@@ -1,16 +1,16 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
 $_posts = new posts;
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Image;
 $_imgs = new imgs;
 
 $lm = trim($_GET['lm']);
 $lm = (integer)$lm;
 if(!$lm) $lm = 0;
 
-echo $html_tag.'<body>Init '.$lm.'... <a href="?lm='.($lm + 4).'">Next</a><dl>';
+echo Page::HTML_TAG.'<body>Init '.$lm.'... <a href="?lm='.($lm + 4).'">Next</a><dl>';
 
 $q = "SELECT * FROM images LIMIT $lm, 4";
 $r = mysqli_query($GLOBALS['db']['link'], $q);

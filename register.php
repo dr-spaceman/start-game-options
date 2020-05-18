@@ -1,7 +1,7 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in / Register";
 $page->css[] = "/bin/css/register.css";
 
@@ -141,9 +141,9 @@ if ($_POST['do'] == "Submit Registration") {
     	
     	//send welcome email
     	$message = file_get_contents($_SERVER['DOCUMENT_ROOT']."/bin/incl/welcome_message.htm");
-    	$message = str_replace("%s", $usrname, $message);
+    	$message = str_replace("%s", $current_user->getUsername(), $message);
     	$headers  = 'MIME-Version: 1.0' . "\r\n" . 'Content-type: text/html; charset=iso-8859-1' . "\r\n" .
-    	'To: '.$usrname.' <'.$user['email'].'>' . "\r\n" . 
+    	'To: '.$current_user->getUsername().' <'.$user['email'].'>' . "\r\n" . 
     	'From: Videogam.in <Luigi@videogam.in>' . "\r\n";
     	@mail($user['email'], "Welcome to Videogam.in", $message, $headers);
     	

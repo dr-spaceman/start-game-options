@@ -52,18 +52,15 @@ function addTag($arr){
 		if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $ret['error'] = "This forum thread is already tagged with '$tag'.";
 	}
 	
-	if(!$ret['error']) {
+	if (!$ret['error']) {
 		
 		// BADGES
 		
-		require_once("class.badges.php");
-		$_badges = new badges;
-		
-		if(stristr($tag, 'ninja')) $_badges->earn(36);
+		if(stristr($tag, 'ninja')) Badge::getById(36)->earn($user);
 		
 		$sodapop = array('soda','sodapop','beer','booze','alcohol');
 		foreach($sodapop as $needle) {
-			if(stristr($tag, $needle)) $_badges->earn(56);
+			if(stristr($tag, $needle)) Badge::getById(56)->earn($user);
 		}
 		
 		$q = sprintf("INSERT INTO `%s` (`%s`, `tag`, `usrid`) VALUES ('%s', '%s', '$usrid');", 
@@ -211,7 +208,7 @@ class tags {
 		// output a tag list based on $this->subj
 		// @var $limit int 0 = no limit
 		
-		global $usrid, $usrrank;
+		global $usrid, $_SESSION['user_rank'];
 		
 		$handle = explode(":", $this->subj);
 		$query = sprintf("SELECT * FROM `%s` WHERE `%s`='%s'".($limit ? " LIMIT $limit" : ""),

@@ -1,7 +1,7 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Page;
+$page = new Page();
+use Vgsite\Image;
 $_img = new img;
 
 

@@ -50,7 +50,7 @@ class forum {
 	}
 	
 	function showIndex() {
-		global $db, $usrid, $usrrank, $usrlastlogin, $admns, $datetime;
+		global $db, $usrid, $usrlastlogin, $admns, $datetime;
 		
 		///////////
 		// INDEX //
@@ -93,7 +93,7 @@ class forum {
 							<li><a href="top-rated/"><b>Top-rated discussion threads</b></a></li>
 							<li><a href="tags/">Tag cloud</a></li>
 							<?
-							if($usrrank >= 5) {
+							if($_SESSION['user_rank'] >= 5) {
 								?>
 								<li>
 									<select onchange="window.location=this.options[this.selectedIndex].value">
@@ -208,7 +208,7 @@ class forum {
 							</tr>
 							<?
 							
-								$query = "SELECT * FROM `forums` WHERE `cid` = '$c[cid]' AND `invisible` < '$usrrank'";
+								$query = "SELECT * FROM `forums` WHERE `cid` = '$c[cid]' AND `invisible` < '$_SESSION['user_rank']'";
 								$res = mysqli_query($GLOBALS['db']['link'], $query);
 								while($row = mysqli_fetch_assoc($res)) {
 									
@@ -314,13 +314,13 @@ class forum {
 	}
 	
 	function showNewPosts($since='') {
-		global $db, $usrid, $usrrank, $usrlastlogin, $admns, $usergroupd;
+		global $db, $usrid, $usrlastlogin, $admns, $usergroupd;
 		
 		///////////////
 		// NEW POSTS //
 		//////////////;
 			
-		$uval = $usrrank;
+		$uval = $_SESSION['user_rank'];
 		
 		if($usrid && !$since) $since = 'last-login';
 		elseif(!$usrid && !$since) $since = 1;
@@ -455,7 +455,7 @@ class forum {
 	}
 	
 	function showForum($fid='') {
-		global $db, $usrid, $usrrank, $admns, $depreciate_forum_heading;
+		global $db, $usrid, $admns, $depreciate_forum_heading;
 		
 		////////////////
 		// SHOW FORUM //
@@ -598,15 +598,15 @@ class forum {
 							<?=(!$this->special_forum ? '<td id="reply-cell"><a href="javascript:void(0)" onclick="$(\'#'.$post_access.'\').slideToggle(); $(this).parent().toggleClass(\'on\').prev().toggleClass(\'on\');">new topic</a></td>' : '')?>
 							<?=($p_pagenav ? '<td class="plaintext" style="padding:0">'.$p_pagenav.'</td>' : '')?>
 							<?
-							if($fid && $usrrank >= 5) {
+							if($fid && $_SESSION['user_rank'] >= 5) {
 								echo ('<td class="plaintext"><select onchange="window.location=this.options[this.selectedIndex].value">
 								<option value="">Admin...</option>
 								<option value="/forums/action.php?do=Edit+Forum+Details&fid='.$fid.'">forum details</option>
 								<option value="/forums/action.php?do=close&fid='.$fid.'">close forum</option>
-								'.($usrrank >= 8 ? '<option value="/forums/action.php?do=hide&fid='.$fid.'">hide forum</option><option value="/forums/action.php?do=delete&fid='.$fid.'">delete forum</option>' : '').
+								'.($_SESSION['user_rank'] >= 8 ? '<option value="/forums/action.php?do=hide&fid='.$fid.'">hide forum</option><option value="/forums/action.php?do=delete&fid='.$fid.'">delete forum</option>' : '').
 								'</select></td>');
 							}
-							if($this->associate_tag && $usrrank >= 5) {
+							if($this->associate_tag && $_SESSION['user_rank'] >= 5) {
 								echo '<td><a href="/forums/action.php?do=manage_tags&edit_tag='.$this->associate_tag.'"><span style="color:black">Admin:</span> <span style="text-decoration:underline">manage this tag</span></a></td>';
 							}
 							?>
@@ -642,7 +642,7 @@ class forum {
 					</label>
 					<p>
 						No HTML allowed; BB Code is currently in use (see <a class="arrow-link" href="javascript:void(0)" onclick="window.open('/bbcode.htm','markup_guide_window','width=620,height=510,scrollbars=yes');">BB Code syntax guide</a>).
-						<?=($usrrank >= 6 ? '<br/>Note: since you\'re an administrator, HTML will not be stripped from your post! However, BB Code is preferred over HTML.' : '')?>
+						<?=($_SESSION['user_rank'] >= 6 ? '<br/>Note: since you\'re an administrator, HTML will not be stripped from your post! However, BB Code is preferred over HTML.' : '')?>
 					</p>
 					<p><?=outputToolbox("fmessage", array("b","i","big","small","strikethrough","img","a","ul","li","spoiler","blockquote","autotag","emoticon"), "use bb code")?></p>
 					<div style="margin-right:12px"><p>
@@ -719,7 +719,7 @@ class forum {
 					
 					$res = mysqli_query($GLOBALS['db']['link'], $query);
 					while($row = mysqli_fetch_assoc($res)) {
-						if($uval <= $row[closed] || ($row[closed] && $usrrank >= 5))
+						if($uval <= $row[closed] || ($row[closed] && $_SESSION['user_rank'] >= 5))
 							$print_closed = ' class="locked"';
 						else $print_closed = '';
 						
@@ -797,7 +797,7 @@ class forum {
 	}
 	
 	function showTopic($tid='', $pg='') {
-		global $db, $usrid, $usrname, $usrrank, $udat, $admns, $forum_suggest, $depreciate_forum_heading;
+		global $db, $usrid, $usrname, $udat, $admns, $forum_suggest, $depreciate_forum_heading;
 		
 		////////////////
 		// SHOW TOPIC //
@@ -805,7 +805,7 @@ class forum {
 		
 		if($GLOBALS['closed']) die($GLOBALS['closed']);
 		
-		$uval = $usrrank;
+		$uval = $_SESSION['user_rank'];
 		$this_loc = $this->getThisLocation();
 		$last_login = $this->getLastLogin();
 		
@@ -936,7 +936,7 @@ class forum {
 									}
 								}
 								
-								if($usrrank >= 5) {
+								if($_SESSION['user_rank'] >= 5) {
 								if($topic->sticky) $uns = 'un';
 								else $uns = '';
 								echo ('<td class="plaintext"><select onchange="window.location=this.options[this.selectedIndex].value">
@@ -944,7 +944,7 @@ class forum {
 									<option value="/forums/action.php?do=edit_topic_details&tid='.$tid.'">edit topic details</option>
 									<option value="/forums/action.php?do='.$uns.'sticky&tid='.$tid.'">make '.$uns.'sticky</option>
 									<option value="/forums/action.php?do=close&tid='.$tid.'">close preferences</option>
-									'.($usrrank >= 8 ? '<option value="/forums/action.php?do=hide&tid='.$tid.'">access preferences</option><option value="/forums/action.php?do=delete&tid='.$tid.'">delete topic</option>' : '').
+									'.($_SESSION['user_rank'] >= 8 ? '<option value="/forums/action.php?do=hide&tid='.$tid.'">access preferences</option><option value="/forums/action.php?do=delete&tid='.$tid.'">delete topic</option>' : '').
 									'</select></td>');
 								}
 								
@@ -1197,7 +1197,7 @@ class forum {
 													</div>
 													<?
 													
-													if($uval < $topic->closed || ($topic->closed && $usrrank < 5)) {
+													if($uval < $topic->closed || ($topic->closed && $_SESSION['user_rank'] < 5)) {
 														?>
 														<div id="closed-notice">Sorry, this forum is locked; no new posts can be made.</div>
 														<?
@@ -1401,7 +1401,7 @@ class forum {
 	////////////////
 	
 	function showTopicList($limit='6') {
-		global $db, $forum_suggest, $usrrank;
+		global $db, $forum_suggest;
 		
 		if(!$this->associate_tag) {
 			echo "Error: Can't compile forum list; No tag given.";
@@ -1410,7 +1410,7 @@ class forum {
 			?><div id="forum"><?
 			
 			$query = "SELECT tid, title FROM forums_tags LEFT JOIN forums_topics USING (tid) 
-				WHERE tag='".$this->associate_tag."' AND invisible <= '$usrrank' 
+				WHERE tag='".$this->associate_tag."' AND invisible <= '$_SESSION['user_rank']' 
 				ORDER BY sticky DESC, last_post DESC LIMIT 0, $limit";
 			$res = mysqli_query($GLOBALS['db']['link'], $query);
 			if(!mysqli_num_rows($res)) {
@@ -1437,7 +1437,7 @@ class forum {
 	
 	function outputPost($row, $n) {
 		
-		global $usrid, $usrrank, $unread, $this_loc;
+		global $usrid, $unread, $this_loc;
 		
 		//disable emoticons?
 		$disemote = FALSE;
@@ -1514,7 +1514,7 @@ class forum {
 								<?=$row['message']?>
 							</div>
 							<?
-							if($usrrank >= 5 || $row['usrid'] == $usrid) {
+							if($_SESSION['user_rank'] >= 5 || $row['usrid'] == $usrid) {
 								?>
 								<div id="editpost-<?=$row['pid']?>" style="display:none">
 									<form action="" method="">
@@ -1527,7 +1527,7 @@ class forum {
 											<img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none"/> 
 											<input type="button" value="Submit Changes" class="submit-edited-post" onclick="submitEditedForumPost('<?=$row['pid']?>');"/> 
 											<input type="reset" class="cancel-edit-forum-post" value="Cancel" onclick="$('#editpost-<?=$row['pid']?>').hide(); $('#message-<?=$row['pid']?>').show();"/> 
-											<?=($usrrank >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label> &nbsp;&nbsp; ' : '')?>
+											<?=($_SESSION['user_rank'] >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label> &nbsp;&nbsp; ' : '')?>
 											<label><input type="checkbox" name="disable_emoticons" value="1"<?=($disemote ? ' checked="checked"' : '')?>/> disable emoticons</label>
 										</p>
 									</form>
@@ -1545,10 +1545,10 @@ class forum {
 								if($usrid) { //quote
 									?><li><a href="javascript:void(0)" onclick="postQuote('<?=$row['pid']?>','jump-response','<?=$user->username?> [url=?tid=<?=$row['tid'].($pg > 1 ? '&page='.$pg : '')?>#p<?=$row['pid']?>]said[/url]:'); return false;">Quote</a></li><?
 								}
-						   	if($usrrank >= 5 || $row['usrid'] == $usrid) { //edit
+						   	if($_SESSION['user_rank'] >= 5 || $row['usrid'] == $usrid) { //edit
 									?><li><a href="javascript:void(0)" class="edit" onclick="$('#editpost-<?=$row['pid']?>').toggle(); $('#message-<?=$row['pid']?>').toggle();">Edit</a></li><?
 								}
-								if($usrrank >= 5) { //del
+								if($_SESSION['user_rank'] >= 5) { //del
 									?><li><a href="javascript:void(0)" onclick="confirmDelete('<?=$row['pid']?>')">Delete</a></li>
 									<li><a href="javascript:void(0)" title="<?=$row['ip']?>" class="tooltip">IP</a></li><?
 								}
@@ -1681,7 +1681,7 @@ class forum {
 														?>
 														<div id="no-login"><div id="no-stuff" style="display:none;"></div>Please <a href="/login.php">log in</a> to participate in the discussion.</div>
 														<?
-													} elseif($uval < $topic->closed || ($topic->closed && $usrrank < 5)) {
+													} elseif($uval < $topic->closed || ($topic->closed && $_SESSION['user_rank'] < 5)) {
 														?>
 														<div id="closed-notice">Sorry, this forum is locked; no new topics can be made.</div>
 														<?
@@ -1764,13 +1764,13 @@ class forum {
 	}
 	
 	/*function showTopicList() {
-		global $usrrank;
+		global $_SESSION['user_rank'];
 		
 		if(!$this->associate_tag) {
 			echo "Error: Can't compile forum list; No tag given.";
 		} else {
 		
-			$uval = $usrrank;
+			$uval = $_SESSION['user_rank'];
 			$this_loc = $this->getThisLocation();
 				
 			?>
@@ -1801,8 +1801,8 @@ class forum {
 	}*/
 	
 	function getUserValue($user='') {
-		global $db, $usrid, $usrrank;
-		if($user == $usrid || !$user) return $usrrank; //given value is logged-in user
+		global $db, $usrid, $_SESSION['user_rank'];
+		if($user == $usrid || !$user) return $_SESSION['user_rank']; //given value is logged-in user
 		else {
 			$query = "SELECT rank FROM users WHERE usrid='$user' LIMIT 1";
 			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
@@ -1992,7 +1992,7 @@ class forum {
 	}
 	
 	function makeNavTree() {
-		global $db, $usrrank;
+		global $db, $_SESSION['user_rank'];
 		
 		$navtree = '<select onchange="window.location=\'/forums/\'+this.options[this.selectedIndex].value">
 			<optgroup label="">
@@ -2003,7 +2003,7 @@ class forum {
 		$res = mysqli_query($GLOBALS['db']['link'], $q);
 		while($row = mysqli_fetch_assoc($res)) {
 			$navtree.= '</optgroup><optgroup label="'.$row[category].'">';
-			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$usrrank;
+			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$_SESSION['user_rank'];
 			$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
 			while($row2 = mysqli_fetch_assoc($res2)) {
 				$navtree.= '<option value="?fid='.$row2[fid].'">'.$row2[title]."</option>\n";
@@ -2024,7 +2024,7 @@ class forum {
 	}
 	
 	function tagList($tid, $tags) {
-		global $usrrank, $tag_convert;
+		global $_SESSION['user_rank'], $tag_convert;
 		
 		$taglist = array();
 		while(list($i, $tag) = each($tags)) {
@@ -2043,15 +2043,15 @@ class forum {
 					$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 					$words = $dat->title;
 				} elseif(preg_match("/^preview:([0-9]+)/", $tag, $f)) { //preview
-					if($usrrank >= 5) {
+					if($_SESSION['user_rank'] >= 5) {
 						$words = '<abbr title="Hidden from site users"><del>'.$tag.'</del></abbr>';
 					}
 				} elseif(preg_match("/^news:([0-9]+)/", $tag, $f)) { //news
-					if($usrrank >= 5) {
+					if($_SESSION['user_rank'] >= 5) {
 						$words = '<abbr title="Hidden from site users"><del>News #'.$f[1].'</del></abbr>';
 					}
 				} elseif(preg_match("/^blurb:([0-9]+)/", $tag, $f)) { //blurb
-					if($usrrank >= 5) {
+					if($_SESSION['user_rank'] >= 5) {
 						$words = '<abbr title="Hidden from site users"><del>Blurb #'.$f[1].'</del></abbr>';
 					}
 				} elseif(preg_match("/^staff_review:([0-9]+)/", $tag, $f)) { //staff review
@@ -2067,7 +2067,7 @@ class forum {
 				}
 			}
 			if($words) {
-				if($usrrank >= 5) {
+				if($_SESSION['user_rank'] >= 5) {
 					$app[0] = ' onmouseover="$(this).children(\'.x\').show();" onmouseout="$(this).children(\'.x\').hide();"';
 					$app[1] = ' <a href="javascript:void(0)" onclick="deleteTag(\''.$i.'\'); $(this).parent().hide();" title="remove tag" class="x" style="display:none">X</a>';
 				} else unset($app);
@@ -2117,7 +2117,7 @@ class forum {
 	}
 	
 	function parseForForumPost($message, $tid) {
-		global $usrrank;
+		global $_SESSION['user_rank'];
 		/*
 		preg_match("/<code>(.|\n|\r)+\<\/code>/", $message, $html);
 		if($html[0]) {
@@ -2126,7 +2126,7 @@ class forum {
 		$message = strip_tags($message, '<b><i><a><strike><big><small><blockquote><del><img><code>');
 		if($html[0]) $message = str_replace("<code>", $html[0], $message);
 		*/
-		if($usrrank < 4) $message = preg_replace("@<([a-z0-9/]+.*?)>@is", "&lt;$1&gt;", $message);
+		if($_SESSION['user_rank'] < 4) $message = preg_replace("@<([a-z0-9/]+.*?)>@is", "&lt;$1&gt;", $message);
 		$message = trim($message);
 		
 		$message = str_replace("[AMP]", "&", $message);

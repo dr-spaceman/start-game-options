@@ -6,9 +6,9 @@
  * And asyncronously GET /user_handler.php?load=true&section=stream&min=50&usrid=1 HTTP/1.1
  */
 
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
+use Vgsite\Shelf;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.posts.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
 
 include_once $_SERVER['DOCUMENT_ROOT']."/pages/include.pages.php";
 
@@ -37,7 +37,7 @@ if($_GET['load']){
 	$ajax = new ajax();
 }
 
-$page = new page();
+$page = new Page();
 $page->title = "Videogam.in Users / " . $user->username;
 $page->superminimalist = true;
 $page->css[] = "/user_profile.css";
@@ -444,7 +444,7 @@ switch($section){
 		
 		$page->title.= " / Badges";
 		
-		require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
+		use Vgsite\Badge;
 		$badges = new badges();
 		
 		$bid = $path[1];
@@ -470,7 +470,7 @@ switch($section){
 		
 		$page->title.= " / Activity";
 		
-		require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+		use Vgsite\Image;
 		
 		$genderref = array("male" => "his", "female" => "her", "asexual" => "its", "" => "their");
 		$genderref2 = array("male" => "him", "female" => "her", "asexual" => "it", "" => "them");
@@ -508,7 +508,7 @@ switch($section){
 		}
 		
 		// Badges
-		require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
+		use Vgsite\Badge;
 		$_badges = new badges();
 		foreach($_badges->badgesEarnedList($user->id) as $row){
 			$s = array(

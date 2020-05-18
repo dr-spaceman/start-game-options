@@ -1,8 +1,8 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+use Vgsite\Image;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.posts.php";
 
-if(!$page->called) $page = new page();
+if(!$page->called) $page = new Page();
 
 $pglinks = new pglinks();
 
@@ -189,7 +189,7 @@ $page->openSection($sec);
 		
 		//Forum topics
 		$topicnum = 0;
-		$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
+		$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$_SESSION['user_rank']' ORDER BY last_post DESC LIMIT 6";
 		$topicres   = mysqli_query($GLOBALS['db']['link'], $query);
 		$num_topics = mysqli_num_rows($topicres);
 		if($num_topics){
@@ -270,7 +270,7 @@ $page->openSection($sec);
             <li><a href="#catpglist">Related Pages</a></li>
             <?
           }
-          if($has_forums = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' LIMIT 1"))) echo '<li id="pgcontnav-forumtopics"><a href="#forums" class="preventdefault" onclick="pgcont.toggle(\'forumtopics\')">Forum Discussions</a></li>';
+          if($has_forums = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$_SESSION['user_rank']' LIMIT 1"))) echo '<li id="pgcontnav-forumtopics"><a href="#forums" class="preventdefault" onclick="pgcont.toggle(\'forumtopics\')">Forum Discussions</a></li>';
           if($posts->num_posts) echo '<li><a href="#/posts/">News & Blogs</a></li>';
           if($num_albums) echo '<li><a href="#albums">Game Music</a></li>';
           if($num_imgs) echo '<li><a href="#imgs">Images</a></li>';
@@ -544,7 +544,7 @@ $page->openSection($sec);
 					<ul>
 						<?
 						$topicnum = 0;
-						$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC";
+						$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$_SESSION['user_rank']' ORDER BY last_post DESC";
 						$res = mysqli_query($GLOBALS['db']['link'], $query);
 						while($frow = mysqli_fetch_assoc($res)){
 							if(++$topicnum < 20){
@@ -777,7 +777,7 @@ if($this->type == "person" && $row->credits_list->credit[0]){
 
 if($this->type == "game" && $row->publications->publication[0]){
 	
-	require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
+	use Vgsite\Shelf;
 
 	$shelf = new Shelf();
 	
@@ -884,7 +884,7 @@ if($num_albums){
 	
 	//Forum topics
 	$topicnum = 0;
-	$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$usrrank' ORDER BY last_post DESC LIMIT 6";
+	$query = "SELECT tid, title, last_post FROM forums_tags LEFT JOIN forums_topics USING (tid) WHERE tag = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' AND invisible <= '$_SESSION['user_rank']' ORDER BY last_post DESC LIMIT 6";
 	$topicres   = mysqli_query($GLOBALS['db']['link'], $query);
 	$num_topics = mysqli_num_rows($topicres);
 	if($num_topics){
@@ -949,7 +949,7 @@ if($num_imgs){
 					<div>
 						<?
 						$img = new img($imgs[0]['img_name']);
-						$img->output('op');
+						$img->render('op');
 						?>
 					</div>
 				</td>
@@ -959,10 +959,10 @@ if($num_imgs){
 						<div>
 							<?
 							$img = new img($imgs[1]['img_name']);
-							$img->output("sm");
+							$img->render("sm");
 							if(!empty($imgs[2])){
 								$img = new img($imgs[2]['img_name']);
-								$img->output("sm");
+								$img->render("sm");
 							}
 							?>
 						</div>
@@ -974,10 +974,10 @@ if($num_imgs){
 						<div>
 							<?
 							$img = new img($imgs[3]['img_name']);
-							$img->output("sm");
+							$img->render("sm");
 							if(!empty($imgs[4])){
 								$img = new img($imgs[4]['img_name']);
-								$img->output("sm");
+								$img->render("sm");
 							}
 							?>
 						</div>

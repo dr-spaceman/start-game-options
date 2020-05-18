@@ -1,10 +1,10 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php";
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";
+use Vgsite\Image;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php";
 
-$page = new page();
+$page = new Page();
 
 $page->fb = true;
 $page->title = "Videogam.in, a site about videogames";

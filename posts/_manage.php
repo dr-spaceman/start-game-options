@@ -1,6 +1,6 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
 $posts = new posts;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.tags.php");
@@ -20,9 +20,9 @@ if($del = $_GET['delete']) {
 	if(!$in) $errors[] = "That post doesn't exist in the database; Either we couldn't find it or it hasn't been saved yet.";
 	else {
 		//user has access?
-		if($usrrank <= 7 && $in['usrid'] != $usrid) $page->die_("<h1>Error</h1>You don't have access to edit this item.");
-		if(strstr($in['options'], "access_8") && $usrrank < 8) $page->die_("<h1>Error</h1>This item is locked and can't be edited.");
-		if(strstr($in['options'], "access_9") && $usrrank < 9) $page->die_("<h1>Error</h1>This item is locked and can't be edited.");
+		if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
+		if(strstr($in['options'], "access_8") && $_SESSION['user_rank'] < 8) $page->kill("<h1>Error</h1>This item is locked and can't be edited.");
+		if(strstr($in['options'], "access_9") && $_SESSION['user_rank'] < 9) $page->kill("<h1>Error</h1>This item is locked and can't be edited.");
 		
 		$q = "DELETE FROM posts_edits WHERE nid = '$in[nid]'";
 		mysqli_query($GLOBALS['db']['link'], $q);
@@ -59,7 +59,7 @@ if(!$in && $edid) {
 	$page->title.= " / Edit Post";
 	$q = "SELECT * FROM posts WHERE nid = '".$edid."' LIMIT 1";
 	$in = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
-	if(!$in) $page->die_("<h2>Error</h2>Couldn't get data for given news ID (".$edid.").");
+	if(!$in) $page->kill("<h2>Error</h2>Couldn't get data for given news ID (".$edid.").");
 	$in['sessid'] = $in['session_id'];
 	$in = array_merge($in, $posts->splitData($in['type'], $in['content'])); //get the actual post content
 	$opts = array();
@@ -67,9 +67,9 @@ if(!$in && $edid) {
 	$in['options'] = $opts;
 	unset($opts);
 	//user has access?
-	if($usrrank <= 7 && $in['usrid'] != $usrid) $page->die_("<h1>Error</h1>You don't have access to edit this item.");
-	if(strstr($in['options'], "access_8") && $usrrank < 8) $page->die_("<h1>Error</h1>This item is locked and can't be edited.");
-	if(strstr($in['options'], "access_9") && $usrrank < 9) $page->die_("<h1>Error</h1>This item is locked and can't be edited.");
+	if($_SESSION['user_rank'] <= 7 && $in['usrid'] != $usrid) $page->kill("<h1>Error</h1>You don't have access to edit this item.");
+	if(strstr($in['options'], "access_8") && $_SESSION['user_rank'] < 8) $page->kill("<h1>Error</h1>This item is locked and can't be edited.");
+	if(strstr($in['options'], "access_9") && $_SESSION['user_rank'] < 9) $page->kill("<h1>Error</h1>This item is locked and can't be edited.");
 } elseif($_GET['action'] == "newpost") {
 	$page->title.= " / New Post";
 } elseif(!$in && !$edid) {
@@ -185,7 +185,7 @@ $page->openSection(array("id"=>"new-news"));
 <h1><span style="padding-left:36px; background:url(/bin/img/icons/add.png) no-repeat left center;"><?=($edid ? 'Edit a Post' : 'New Post')?></span></h1>
 
 <?
-if(!$usrid) $page->die_('<big style="font-size:22px;">Please <b><a href="/login.php">Log in</a></b> to continue.</big><p style="font-size:14px;">Don\'t have an account? <b><a href="/register.php">Register</a></b> in about one minute.</p>');
+if(!$usrid) $page->kill('<big style="font-size:22px;">Please <b><a href="/login.php">Log in</a></b> to continue.</big><p style="font-size:14px;">Don\'t have an account? <b><a href="/register.php">Register</a></b> in about one minute.</p>');
 ?>
 
 <form action="manage.php<?=($edid ? '?edit='.$edid : '?action=newpost')?>" method="post" enctype="multipart/form-data" id="NNform" class="new" name="NNmg">
@@ -583,7 +583,7 @@ if(!$usrid) $page->die_('<big style="font-size:22px;">Please <b><a href="/login.
 					<fieldset style="display:inline;">
 						<legend>Forum Category</legend>
 						<?
-						$query = "SELECT * FROM forums WHERE no_index != '1' AND invisible <= '$usrrank' ORDER BY cid, title";
+						$query = "SELECT * FROM forums WHERE no_index != '1' AND invisible <= '$_SESSION['user_rank']' ORDER BY cid, title";
 						$res   = mysqli_query($GLOBALS['db']['link'], $query);
 						$i = 0;
 						$ch = ($in['fid'] ? $in['fid'] : 1);
@@ -723,7 +723,7 @@ if(!$usrid) $page->die_('<big style="font-size:22px;">Please <b><a href="/login.
 					
 					$posted = strtotime($postdat->datetime);
 					$hour = strtotime("-1 hour");
-					if(!$postdat || $usrrank == 9 || $posted > $hour) {
+					if(!$postdat || $_SESSION['user_rank'] == 9 || $posted > $hour) {
 						?>
 						<dt>Permanent Link</dt>
 						<dd>
@@ -757,7 +757,7 @@ if(!$usrid) $page->die_('<big style="font-size:22px;">Please <b><a href="/login.
 					</dd>
 					
 					<?
-					if($usrrank >= 8) {
+					if($_SESSION['user_rank'] >= 8) {
 						if(in_array("access_8", $in['options'])) $acc8 = 'checked="checked"';
 						elseif(in_array("access_9", $in['options'])) $acc9 = 'checked="checked"';
 						else $accdef = 'checked="checked"';

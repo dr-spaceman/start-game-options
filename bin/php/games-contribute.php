@@ -7,7 +7,7 @@
 // QUOTE
 die("This function has been depreciated. The new editing system will be online soon!");
 
-require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/contribute.php");
 require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/htmltoolbox.php");
 
@@ -30,7 +30,7 @@ if($_POST && $gid) {
 
 if($do == "load") {
 	
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<title>Page loading</title>
@@ -94,7 +94,7 @@ if($action == "submit_trivia") {
 	$contr->desc = 'Trivia for [gid='.$gdat->gid.'/]';
 	$contr->ssubj = "gid:".$gid;
 	$contr->data = "{fact:}".$fact;
-	if($usrrank >= 4 || $gdat->unpublished) {
+	if($_SESSION['user_rank'] >= 4 || $gdat->unpublished) {
 		$contr->status = "publish";
 		$contr->subj = "games_trivia:id:".mysqlNextAutoIncrement("games_trivia").":";
 		$q = "INSERT INTO games_trivia (gid, fact, datetime, usrid) VALUES 
@@ -159,7 +159,7 @@ if($action == "preview_link") {
 				<td><div style="margin-right:6px"><textarea name="in[description]" maxlength="255" style="width:100%; height:4em;"><?=$desc?></textarea></div></td>
 			</tr>
 			<?
-			if($usrrank >= 6) {
+			if($_SESSION['user_rank'] >= 6) {
 				?>
 				<tr>
 					<th>Request link exchange</th>
@@ -374,7 +374,7 @@ if($action == "pub_form") {
 
 if($action == "submit pub") {
 	
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<title>New publication</title>
@@ -410,7 +410,7 @@ if($action == "submit pub") {
 		$contr->ssubj = "gid:".$gid;
 		$contr->data = "{title:}".$in['title']."|--|{release_date:}".$rd."|--|{platform_id:}".$in['platform_id']."|--|{region:}".$in['region']."|--|{placeholder_img:}".$in['placeholder_img']."|--|{primary:}".$primary.'|--|{*upload:}<img src="/bin/uploads/contributions/[CID].png"/>';
 		
-		if($usrrank >= 4 || $gdat->unpublished) {
+		if($_SESSION['user_rank'] >= 4 || $gdat->unpublished) {
 			$contr->status = "publish";
 			$nextid = mysqlNextAutoIncrement("games_publications");
 			$contr->subj = "games_publications:id:".$nextid.":";
@@ -464,7 +464,7 @@ if($action == "screens_form") {
 	<div id="gc-ss-forms">
 		
 		<?
-		if($usrrank >= 7) {
+		if($_SESSION['user_rank'] >= 7) {
 			echo '<div style="margin-bottom:5px; padding:5px; border:1px solid #DDD;">This is a simple form designed for regular users to upload a few screens. Since you\'re an admin, you have access to the much more powerful <a href="/ninadmin/media.php">media uploader</a>.</div>';
 		}
 		
@@ -534,7 +534,7 @@ if($action == "screens_form") {
 	</div>
 	
 	<div id="gc-ss-results" class="smiley" style="display:none">
-		<?=($usrrank >= 4 ? 'Your screenshots have been successfully posted! They should show up on this page if you refresh your browser. You can see this and your other contributions at your <a href="/user-contributions.php?usrid='.$usrid.'">user contributions page</a>.' : 'Your screenshots have been posted and are waiting for editor review before being published. Thanks for your contribution! You can see this and your other contributions at your <a href="/user-contributions.php?usrid='.$usrid.'">user contributions page</a>.')?>
+		<?=($_SESSION['user_rank'] >= 4 ? 'Your screenshots have been successfully posted! They should show up on this page if you refresh your browser. You can see this and your other contributions at your <a href="/user-contributions.php?usrid='.$usrid.'">user contributions page</a>.' : 'Your screenshots have been posted and are waiting for editor review before being published. Thanks for your contribution! You can see this and your other contributions at your <a href="/user-contributions.php?usrid='.$usrid.'">user contributions page</a>.')?>
 	</div>
 	<?
 	
@@ -542,9 +542,9 @@ if($action == "screens_form") {
 
 if($action == "upload screen") {
 	
-	require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+	use Verot\Upload;
 	
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<title>Upload game screenshots</title>
@@ -564,7 +564,7 @@ if($action == "upload screen") {
 			
 			$contr = new contribution;
     	$contr->upload = $_FILES['screen'];
-    	$contr->status = ($usrrank >= 4 || $gdat->unpublished ? "publish" : "pend");
+    	$contr->status = ($_SESSION['user_rank'] >= 4 || $gdat->unpublished ? "publish" : "pend");
 			
 			//check file type
 			$ext = substr($_FILES['screen']['name'], -3);
@@ -885,7 +885,7 @@ if($action == "submit_person") {
 		if(!$pdat = mysqli_fetch_object($res)) die("Couldn't get data for person ID # $pid;".mysqli_error($GLOBALS['db']['link']));
 		
 		//post automatically?
-		if($usrrank >= 4) {
+		if($_SESSION['user_rank'] >= 4) {
 			
 			$contr->status = "publish";
 			$contr->subj = "people_work:id:".mysqlNextAutoIncrement("people_work").":";
@@ -928,7 +928,7 @@ if($action == "submit_person") {
 		$contr->process_data = FALSE;
 		
 		//pend it or post automatically?
-		if($usrrank >= 4) {
+		if($_SESSION['user_rank'] >= 4) {
 			
 			$pid = mysqlNextAutoIncrement("people");
 			
@@ -1115,7 +1115,7 @@ if($action == "submit_quote") {
 	$description = 'Quote about <a href="/games/link.php?id='.$gid.'">'.htmlSC($gdat->title).'</a> by '.$quoter;
 	
 	//pend it or post automatically?
-	if($usrrank >= 4 || $gdat->unpublished) {
+	if($_SESSION['user_rank'] >= 4 || $gdat->unpublished) {
 		
 		$subj = "games_quotes:".mysqlNextAutoIncrement("games_quotes");
 		$q = sprintf("INSERT INTO games_quotes (gid, quote, cut_off, quoter, usrid, datetime) VALUES 
@@ -1130,7 +1130,7 @@ if($action == "submit_quote") {
 		
 	}
 	
-	addUserContribution(5, $description, '<blockquote>'.$_POST['quote'].'</blockquote>-'.$quoter, ($usrrank <= 8 ? TRUE : FALSE), $pend_subm, $subj, "gid:".$gid);
+	addUserContribution(5, $description, '<blockquote>'.$_POST['quote'].'</blockquote>-'.$quoter, ($_SESSION['user_rank'] <= 8 ? TRUE : FALSE), $pend_subm, $subj, "gid:".$gid);
 	
 	?>
 	<div class="smiley">

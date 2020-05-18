@@ -1,7 +1,9 @@
 <?
-/* Old Method
-error_reporting(0);
-function userErrorHandler($errno, $errmsg, $filename, $linenum, $vars){*/
+use Vgsite\Page;
+require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.edit.php";
+require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pglinks.php";
+use Vgsite\Image;
+
 function userErrorHandler($errno, $errstr, $errfile, $errline){
 	$errortype = array (E_ERROR=>'Error',E_WARNING=>'Warning',E_PARSE=>'Parsing Error',E_NOTICE=>"Notice",E_CORE_ERROR=>'Core Error',E_CORE_WARNING=>'Core Warning',E_COMPILE_ERROR=>'Compile Error',E_COMPILE_WARNING=>'Compile Warning',E_USER_ERROR=>'User Error',E_USER_WARNING=>'User Warning',E_USER_NOTICE=>'User Notice',E_STRICT=>'Runtime Notice',E_RECOVERABLE_ERROR=>'Catchable Fatal Error');
 	if($errortype[$errno] == "Notice") return true; //Don't show notices
@@ -10,10 +12,6 @@ function userErrorHandler($errno, $errstr, $errfile, $errline){
 }
 $old_error_handler = set_error_handler("userErrorHandler");
 
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.edit.php";
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pglinks.php";
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";
 
 $user = new user($usrid);
 
@@ -640,16 +638,13 @@ if($field == "publish"){
 	
 	// BADGES //
 	
-	require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
-	$_badges = new badges();
-	
-	foreach($ulinks as $i => $link){
-		if($ulinks_ns[$i] == "Category" && $link == "Mega Man series") $_badges->earn(35);
+	foreach($ulinks as $i => $link) {
+		if($ulinks_ns[$i] == "Category" && $link == "Mega Man series") Badge::getById(35)->earn($user);
 		if($ulinks_ns[$i] == "Category" && $link == "Final Fantasy series"){
-			$_badges->earn(42);
-			if($ps == $usrid) $_badges->earn(43);
+			Badge::getById(42)->earn($user);
+			if($ps == $usrid) Badge::getById(43)->earn($user);
 		}
-		if($ulinks_ns[$i] == "Category" && $link == "Puzzle") $_badges->earn(44);
+		if($ulinks_ns[$i] == "Category" && $link == "Puzzle") Badge::getById(44)->earn($user);
 		if($ulinks_ns[$i] == "Category" && $link == "Game Boy"){
 			$query = "SELECT `title` FROM pages_links LEFT JOIN pages ON (pgid = from_pgid) WHERE `to` = 'Game Boy' AND is_redirect != '1'";
 			$res   = mysqli_query($GLOBALS['db']['link'], $query);
@@ -657,7 +652,7 @@ if($field == "publish"){
 				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['title'])."' AND published = '1' LIMIT 1";
 				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $numGB++;
 				if($numGB >= 5){
-					$_badges->earn(45);
+					Badge::getById(45)->earn($user);
 					break;
 				}
 			}
@@ -669,15 +664,15 @@ if($field == "publish"){
 				$q = "SELECT * FROM pages_edit WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $row['title'])."' AND published = '1' LIMIT 1";
 				if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $numPS++;
 				if($numPS >= 3){
-					$_badges->earn(58);
+					Badge::getById(58)->earn($user);
 					break;
 				}
 			}
 		}
-		if($ulinks_ns[$i] == "Category" && ($link == "Namco" || $link == "Namco Bandai") && $ps == $usrid) $_badges->earn(59); //Sexy Yellow Circle
+		if($ulinks_ns[$i] == "Category" && ($link == "Namco" || $link == "Namco Bandai") && $ps == $usrid) Badge::getById(59)->earn($user); //Sexy Yellow Circle
 		if($ed->type == "person"){
 			$q = "SELECT DISTINCT(pgid) FROM pages_edit LEFT JOIN pages USING(pgid) WHERE `type` = 'person' AND usrid = '$usrid'";
-			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q)) >= 75) $_badges->earn(52);
+			if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q)) >= 75) Badge::getById(52)->earn($user);
 		}
 	}
 	
@@ -687,8 +682,9 @@ if($field == "publish"){
 		$q = "UPDATE pages_edit SET new_ps = '1' WHERE session_id='$ed->sessid' LIMIT 1";
 		mysqli_query($GLOBALS['db']['link'], $q);
 		
-		$num_ps_stolen = (int)$user->calculateScore('', 'num_ps_stolen');
-		if($num_ps_stolen >= 5) $_badges->earn(55);
+		$userscore = new UserScore($user)->calculateScore();
+		$num_ps_stolen = (int) $userscore['num_ps_stolen'];
+		if($num_ps_stolen >= 5) Badge::getById(55)->earn($user);
 		
 	}
 	

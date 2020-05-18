@@ -1,10 +1,10 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Verot\Upload;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/htmltoolbox.php");
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in Admin / People Administration";
 $page->min_rank = 6;
 $page->admin = TRUE;
@@ -51,7 +51,7 @@ if($_POST['addperson'] || $_GET['addperson']) {
 
 //delete person
 if($_GET['action'] == "deleteperson") {
-	if($usrrank < 8) die("Not ranked to do this");
+	if($_SESSION['user_rank'] < 8) die("Not ranked to do this");
 	if(!$pid = $_GET['pid']) die("no id given");
 	
 	$query = "SELECT `name` FROM `people` WHERE `pid` = '$pid' LIMIT 1";
@@ -436,7 +436,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		</script>';
 	
 	//admin
-	if($usrrank == 9) {
+	if($_SESSION['user_rank'] == 9) {
 		$print_admin_fieldset = ('
 	<fieldset style="margin:10px -10px; border-width:1px 0 0 0;">
 		<legend>Administration</legend>
@@ -459,7 +459,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	
 	
 	//check if page is locked
-	if($adminobj->lock_all == 1 && $usrrank < 9) {
+	if($adminobj->lock_all == 1 && $_SESSION['user_rank'] < 9) {
 		$errors[] = "$name is locked -- no changes can be made to this person's entry.";
 		$page->header();
 		$page->footer();
@@ -618,7 +618,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 		<legend>General Details</legend>
 		<?
 	
-		if($adminobj->lock_details == 1 && $usrrank < 9)
+		if($adminobj->lock_details == 1 && $_SESSION['user_rank'] < 9)
 			echo '<span style="display:block; margin-bottom:.5em; text-align:center; padding:.5em; background-color:#FFFFAE; color:#FF0000; font-weight:bold; font-size:14px;">This section is locked</span>';
 	
 		?>
@@ -733,7 +733,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			
 			<div style="margin:0 -10px; border-top:1px solid #808080;">&nbsp;</div>
 			
-			<input type="submit" name="submitdetails" value="Submit Details" style="font:bold 13px verdana;"<?=($adminobj->lock_details == 1 && $usrrank < 9 ? ' disabled="disabled"' : '')?>/> 
+			<input type="submit" name="submitdetails" value="Submit Details" style="font:bold 13px verdana;"<?=($adminobj->lock_details == 1 && $_SESSION['user_rank'] < 9 ? ' disabled="disabled"' : '')?>/> 
 			<label><input type="checkbox" name="in[noappend]" value="1"/> Don't append my name to the contribution list for this edit</label>
 		</form>
 	</fieldset>
@@ -743,7 +743,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 	<fieldset id="picture-content"<?=(!$here['picture'] ? ' style="display:none"' : '')?>>
 		<legend>Pictures</legend>
 		<?
-		if($adminobj->lock_picture == 1 && !$usrrank < 9)
+		if($adminobj->lock_picture == 1 && !$_SESSION['user_rank'] < 9)
 		echo '<span style="display:block; margin-bottom:.5em; text-align:center; padding:.5em; background-color:#FFFFAE; color:#FF0000; font-weight:bold; font-size:14px;">This section is locked</span>';
 
 		?>
@@ -762,7 +762,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 							$dat->picture = '<img src="/bin/img/people/nopicture.png" alt="no picture"/>';
 							$nopic = 1;
 						}
-						if($usrrank >= 7 && !$nopic) {
+						if($_SESSION['user_rank'] >= 7 && !$nopic) {
 							echo '<p><input type="button" value="Delete this picture" onclick="if(confirm(\'Permanently delete profile picture?\')) document.location=\'people.php?pid='.$dat->pid.'&name='.$name.'&action=edit+person&do=deleteprofilepic\';"/></p>';
 						}
 						?>
@@ -777,7 +777,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 				</tr>
 				<tr>
 					<th>&nbsp;</th>
-					<td><input type="submit" name="submitupload" value="Submit"<?=($adminobj->lock_picture == 1 && $usrrank < 9 ? ' disabled="disabled"' : '')?>/></td>
+					<td><input type="submit" name="submitupload" value="Submit"<?=($adminobj->lock_picture == 1 && $_SESSION['user_rank'] < 9 ? ' disabled="disabled"' : '')?>/></td>
 				</tr>
 			</table>
 		</form>
@@ -907,7 +907,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 								</td>
 							</tr>
 							<?
-							if($usrrank >= 8 || ($usrrank <= 7 && $row['usrid'] == $usrid)) {
+							if($_SESSION['user_rank'] >= 8 || ($_SESSION['user_rank'] <= 7 && $row['usrid'] == $usrid)) {
 							?>
 							<tr>
 								<th>Delete?</th>
@@ -990,7 +990,7 @@ if($_POST['action'] == "edit person" || $_GET['action'] == "edit person" || $act
 			echo '<ul>';
 			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li><a href="'.$row['url'].'">'.stripslashes($row['site']).'</a>';
-				if($usrrank >= 8 || ($usrid <= 7 && $row['usrid'] == $usrid)) echo ' <a href="people.php?name='.$name.'&action=edit+person&deletelink='.$row['id'].'" class="x">X</a>';
+				if($_SESSION['user_rank'] >= 8 || ($usrid <= 7 && $row['usrid'] == $usrid)) echo ' <a href="people.php?name='.$name.'&action=edit+person&deletelink='.$row['id'].'" class="x">X</a>';
 				if($row['usrid'] && $row['datetime']) echo'<br/><small>Posted by '.outputUser($row['usrid'], FALSE).' on '.formatDate($row['datetime']).'</small>';
 				echo "</li>\n";
 			}

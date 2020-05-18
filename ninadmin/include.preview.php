@@ -44,7 +44,7 @@ if($_POST[draft] || $_POST[submit]) {
 }
 
 if($_GET['delete']) {
-	if($usrrank < 8) die("User rank not high enough to perform this");
+	if($_SESSION['user_rank'] < 8) die("User rank not high enough to perform this");
 	$query = "DELETE FROM games_previews WHERE `id`='$_GET[delete]' LIMIT 1";
 	if(!mysqli_query($GLOBALS['db']['link'], $query)) $errors[] = "Couldn't delete version";
 	else $results[] = "Version deleted";
@@ -87,7 +87,7 @@ echo '
 				<th>user</th>
 				<th>view</th>
 				<th>build</th>
-				'.($usrrank >= 8 ? '<th style="display:none">delete</th>' : '').'
+				'.($_SESSION['user_rank'] >= 8 ? '<th style="display:none">delete</th>' : '').'
 			</tr>';
 		$i = 0;
 		while($row = mysqli_fetch_assoc($res)) {
@@ -101,7 +101,7 @@ echo '
 				<td>'.outputUser($row[usrid], FALSE).'</td>
 				<td><a href="view-preview.php?id='.$row[id].'" target="_blank">view</a></td>
 				<td>'.($i == 1 && $row[datetime] != '0000-00-00 00:00:00' ? 'current build' : '<a href="?what=preview&id='.$id.'&build='.$row[id].'&on=update">build upon</a>').'</td>
-				'.($usrrank >= 8 ? '<td style="display:none"><a href="#" onclick="if(confirm(\'Delete this version?\')) window.location=\'?what=preview&id='.$id.'&delete='.$row[id].'\';">delete</a></td>' : '').'
+				'.($_SESSION['user_rank'] >= 8 ? '<td style="display:none"><a href="#" onclick="if(confirm(\'Delete this version?\')) window.location=\'?what=preview&id='.$id.'&delete='.$row[id].'\';">delete</a></td>' : '').'
 			</tr>';
 		}
 		echo '

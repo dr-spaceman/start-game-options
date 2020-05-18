@@ -3,7 +3,7 @@
 // Autocomplete a wide variety of data
 // return categorized arrays with only titles and tags (if applicable [ie Album])
 
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 
 $q = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['q']);

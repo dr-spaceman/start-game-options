@@ -1,5 +1,5 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 
@@ -12,7 +12,7 @@ if($_POST['_action'] == "confirmdesc"){
 	
 	$q = "SELECT * FROM posts WHERE nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."' limit 1";
 	if(!$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Couldn't find post for nid $nid");
-	if($usrid != $dat->usrid && $usrrank < 7) die("permission denied");
+	if($usrid != $dat->usrid && $_SESSION['user_rank'] < 7) die("permission denied");
 	
 	$q = "UPDATE posts SET `description` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $desc)."' WHERE nid='$nid' LIMIT 1";
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error updating database");
@@ -115,7 +115,7 @@ if(isset($_POST['set_rating'])){
 	catch(Exception $e){ $a->kill($e->getMessage()); }
 	
 	//Can't rate own
-	//if($usrid == $post->dat['usrid'] && $usrrank < 9) $ret['error'] = "Nice try, but you can't rate your own post";
+	//if($usrid == $post->dat['usrid'] && $_SESSION['user_rank'] < 9) $ret['error'] = "Nice try, but you can't rate your own post";
 	
 	//rm previous rating (if there is one)
 	mysqli_query($GLOBALS['db']['link'], "DELETE FROM posts_ratings WHERE usrid='$usrid' AND nid='".mysqli_real_escape_string($GLOBALS['db']['link'], $nid)."';");

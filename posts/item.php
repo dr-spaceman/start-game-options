@@ -1,12 +1,12 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+use Vgsite\Image;
 
 if(!$nid){
 	$date = "$y-$m-$d";
 	if(!preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/", $date)) {
 		$page->title.= "[INVALID DATE]";
 		$page->error_404 = TRUE;
-		$page->die_('<h1>Input Error</h1>The date given ('.$date.') is invalid.');
+		$page->kill('<h1>Input Error</h1>The date given ('.$date.') is invalid.');
 	}
 	$q = "SELECT nid FROM posts WHERE permalink='".mysqli_real_escape_string($GLOBALS['db']['link'], $desc_url)."' AND datetime LIKE '$date%' LIMIT 1";
 	if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))){ $nid = $row['nid']; }
@@ -48,7 +48,7 @@ if($post->archive){
 	$postedto = "Content Archives";
 }
 
-if($usrid == $post->usrid || $usrrank >= 7) {
+if($usrid == $post->usrid || $_SESSION['user_rank'] >= 7) {
 	
 	if($post->pending) $warnings[] = "This post has yet to be approved or vouched for and, as such, has yet to be published. In order for a ".$post->category." item to be published, it must be approved by an administrator or vouched for by several V.I.P. users.";
 	
@@ -98,13 +98,13 @@ $page->meta_data = '
 
 //tags
 if($post->options["no_tagging"]) $allow_tag = FALSE;
-elseif($usrrank >= 3) $allow_tag = TRUE;
-if($usrrank >= 7) $allow_tag = TRUE;
+elseif($_SESSION['user_rank'] >= 3) $allow_tag = TRUE;
+if($_SESSION['user_rank'] >= 7) $allow_tag = TRUE;
 if($usrid == $post->usrid) $allow_tag = TRUE;
 
 $allowrm = FALSE;
-if($usrrank > 4) $allowrm = TRUE; //Mods & above
-if($usrrank < $postuser->rank) $allowrm = FALSE;
+if($_SESSION['user_rank'] > 4) $allowrm = TRUE; //Mods & above
+if($_SESSION['user_rank'] < $postuser->rank) $allowrm = FALSE;
 if($usrid == $postuser->id) $allowrm = TRUE;
 
 $_tags = new tags("posts_tags:nid:".$post->nid);
@@ -223,7 +223,7 @@ if($post->privacy == "public"){
 			<li><span class="tooltip preventdefault" title="Use this URL for Tweets and sharing" style="color:#666;"><?=$tinyurl?></span></li>
 			<?=($post->attachment == "audio" ? '<li>Embed Audio: <code class="tooltip preventdefault" title="Use this code to embed this audio file into Videogam.in forums and content pages" style="color:black;">{audio:'.str_replace("http://videogam.in/s", "", $tinyurl).'} <span class="helpinfo"></span></code></li>' : '')?>
 		</ul>
-		<?=($usrrank >= 8 || $post->usrid == $usrid ? '<div class="controls"><a href="/posts/manage.php?edit='.$post->nid.'" style="padding-right:14px; background:url(/bin/img/icons/edit.gif) no-repeat right top;">Edit this article</a> &nbsp;&nbsp;&nbsp; <a href="/posts/history.php?nid='.$post->nid.'">Article History</a></div>' : '')?>
+		<?=($_SESSION['user_rank'] >= 8 || $post->usrid == $usrid ? '<div class="controls"><a href="/posts/manage.php?edit='.$post->nid.'" style="padding-right:14px; background:url(/bin/img/icons/edit.gif) no-repeat right top;">Edit this article</a> &nbsp;&nbsp;&nbsp; <a href="/posts/history.php?nid='.$post->nid.'">Article History</a></div>' : '')?>
 	</div>
 	
 	<header>

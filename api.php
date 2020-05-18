@@ -1,5 +1,5 @@
 <?
-require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require $_SERVER["DOCUMENT_ROOT"]."/pages/class.pages.php";
 
 $method = $_SERVER['REQUEST_METHOD'];

@@ -1,11 +1,11 @@
 <?
 define("STEAM_CONDENSER_PATH", $_SERVER['DOCUMENT_ROOT']."/bin/php/steam-condenser/lib/");
 
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/openid.php";
 require_once STEAM_CONDENSER_PATH."steam/community/SteamId.php";
 
-$page = new page();
+$page = new Page();
 $page->title = "Register with Steam -- Videogam.in";
 $page->superminimalist = true;
 
@@ -122,7 +122,7 @@ try {
 exit;
 
 
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 require_once STEAM_CONDENSER_PATH."steam/community/SteamId.php";
 
 $apikey = "84B61DCEDFBA6909C33D0DC93D4E51D2";

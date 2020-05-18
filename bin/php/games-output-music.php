@@ -51,7 +51,7 @@ $page->header();
 				while($row = mysqli_fetch_assoc($res)) {
 					$nopic = TRUE;
 					$src = "/bin/img/people/nopicture-tn.png";
-					if(file_exists($root."/bin/img/people/".$row['pid']."-tn.png")) {
+					if(file_exists(ROOT_DIR."/bin/img/people/".$row['pid']."-tn.png")) {
 						$src = "/bin/img/people/".$row['pid']."-tn.png";
 						$nopic = FALSE;
 					}

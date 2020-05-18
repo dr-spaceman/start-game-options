@@ -334,8 +334,8 @@ class bbcode {
 						$params['size'] = "op";
 						//if width is specified as px, iterate over the standard sizes to find the best
 						if($params['width_int']){
-							foreach($GLOBALS['img_normal_sizes_widths'] as $size => $width){
-								if($params['width_int'] <= $width){
+							foreach(Image::getSizes() as $size => $width) {
+								if ($params['width_int'] <= $width){
 									$params['size'] = $size;
 									break;
 								}

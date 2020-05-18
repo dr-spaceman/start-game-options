@@ -1,6 +1,6 @@
 <?
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 
 $page->title = "Videogam.in / Reset Password";
 $page->width = "fixed";

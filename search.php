@@ -1,12 +1,12 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
+use Vgsite\Page;
+use Vgsite\Image;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php");
 $posts = new posts();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forums.php");
 $forum = new forum();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
 
 $query_raw = trim($_GET['q']);
 $query_url = urlencode($query_raw);
@@ -164,7 +164,7 @@ while($what=="all" || $what=="forums"){
 	
 	//first, search topic titles
 	$query = "SELECT tid, MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AS `score` 
-		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AND `invisible` <= '$usrrank';";
+		FROM forums_topics WHERE MATCH (`title`) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $query_raw)."') AND `invisible` <= '$_SESSION['user_rank']';";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) {
 		$tids[$row['tid']] = $row['score'];

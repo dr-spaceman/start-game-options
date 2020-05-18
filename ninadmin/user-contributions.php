@@ -1,7 +1,7 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+$page = new Page();
+use Verot\Upload;
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");

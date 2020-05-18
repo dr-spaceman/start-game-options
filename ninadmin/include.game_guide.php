@@ -9,7 +9,7 @@ if($guidedat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 	} else {
 		$authors[0] = $guidedat->authors;
 	}
-	if(!in_array($usrid, $authors) && $usrrank < 9) {
+	if(!in_array($usrid, $authors) && $_SESSION['user_rank'] < 9) {
 		die("No access to edit this guide since you aren't an author.");
 	}
 }

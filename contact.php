@@ -1,8 +1,8 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.authenticate.php");
 
-$page = new page();
+$page = new Page();
 $page->title = "Videogam.in / Contact Us";
 
 do if($_POST){
@@ -78,7 +78,7 @@ do if($_POST){
 		Your message has been sent!
 		<?
 	
-		if($usrrank >= User::SUPERADMIN) echo "<p>[" . htmlentities($mail_headers) . "]</p>";
+		if($_SESSION['user_rank'] >= User::SUPERADMIN) echo "<p>[" . htmlentities($mail_headers) . "]</p>";
 		
 		$page->footer(); exit;
 		

@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 print_r($_POST);
 if($_POST['q']){
 	$q=$_POST['q'];

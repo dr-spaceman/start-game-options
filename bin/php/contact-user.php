@@ -1,7 +1,7 @@
 <? 
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
-$page = new page;
+$page = new Page();
 
 $page->title  = "Videogam.in / Contact User";
 
@@ -134,7 +134,7 @@ if(!$user) {
 	
 	if($method == "email") {
 		//does user allow emails?
-		if(!$usr_prefs['mail_from_users'] && $usrrank <= 8) {
+		if(!$usr_prefs['mail_from_users'] && $_SESSION['user_rank'] <= 8) {
 			echo 'Sorry, '.$usr->getUsername().' doesn\'t allow mail from other users. You may of course send them a <a href="?user='.$usr->getUsername().'&method=pm">private message</a> though!';
 			$page->footer();
 			exit;

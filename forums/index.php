@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forums.php");
 
 $do = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['do']);
@@ -37,7 +37,7 @@ if($tag) {
 	
 	$cid = trim($_GET['category']);
 	$query = "SELECT * FROM forums_categories WHERE cid='".mysqli_real_escape_string($GLOBALS['db']['link'], $cid)."' LIMIT 1";
-	if(!$cat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) $page->die_("Couldn't get category info for category '$cid'");
+	if(!$cat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query))) $page->kill("Couldn't get category info for category '$cid'");
 	
 	$page->title = "Videogam.in forums / ".$cat->category;
 	$page->header();
@@ -52,7 +52,7 @@ if($tag) {
 				
 			<table border="0" cellpadding="-" cellspacing="0" width="100%" class="forum-index-list plain">
 				<?
-					$query = "SELECT * FROM `forums` WHERE `cid` = '$cid' AND `invisible` <= '$usrrank' AND no_index != '1'";
+					$query = "SELECT * FROM `forums` WHERE `cid` = '$cid' AND `invisible` <= '$_SESSION['user_rank']' AND no_index != '1'";
 					$res = mysqli_query($GLOBALS['db']['link'], $query);
 					while($row = mysqli_fetch_assoc($res)) {
 						
@@ -229,7 +229,7 @@ if($tag) {
 					</tr>
 					<?
 					
-						$query = "SELECT * FROM `forums` WHERE `cid` = '$c[cid]' AND `invisible` <= '$usrrank' AND no_index != '1'";
+						$query = "SELECT * FROM `forums` WHERE `cid` = '$c[cid]' AND `invisible` <= '$_SESSION['user_rank']' AND no_index != '1'";
 						$res = mysqli_query($GLOBALS['db']['link'], $query);
 						while($row = mysqli_fetch_assoc($res)) {
 							

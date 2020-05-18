@@ -1,7 +1,7 @@
 <? 
-require $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 
-$page = new page();
+$page = new Page();
 
 $page->title  = "Videogam.in / Private Messaging";
 $page->css[]  = "/bin/css/messages.css";

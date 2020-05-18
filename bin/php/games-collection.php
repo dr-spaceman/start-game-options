@@ -1,5 +1,5 @@
 <?
-require_once ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
 $do = $_GET['do'];
 $action = $_POST['action'];
@@ -335,7 +335,7 @@ if($action == "submit_add_game") {
 			$description = '<a href="/games/link.php?id='.$gid.'">'.htmlentities($gdat->title, ENT_QUOTES).'</a> box art';
 			
 			//pend it or post automatically?
-			if($usrrank >= 4) {
+			if($_SESSION['user_rank'] >= 4) {
 				
 				$nextid = mysqlNextAutoIncrement("games_publications");
 				$subj = "games_publications:".$nextid;
@@ -384,13 +384,13 @@ if($action == "submit_add_game") {
 				
 			}
 			
-			addUserContribution(3, $description, '', ($usrrank <= 7 ? TRUE : FALSE), $pendid, $subj);
+			addUserContribution(3, $description, '', ($_SESSION['user_rank'] <= 7 ? TRUE : FALSE), $pendid, $subj);
 			
 		}
 		
 		$q = "INSERT INTO my_games (usrid, gid, publication_id, play, play_start, play_online, play_online_start, online_id, own, rating, added, title, platform_id, region) VALUES
 			('$usrid', '$gid', '$pid', '$play', $play_start, '$play_online', $play_online_start, '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['online_id'])."', '".$_POST['action-own']."', '".$_POST['game-rating']."', '$now', '".htmlentities($_POST['title'], ENT_QUOTES)."', '".$_POST['platform_id']."', '".$_POST['region']."');";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($_SESSION['user_rank'] > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
 		else die($next_id);
 		
 	} else {
@@ -419,7 +419,7 @@ if($action == "submit_add_game") {
 			own = '".$_POST['action-own']."', 
 			rating = '".$_POST['game-rating']."' 
 			WHERE id='$id' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($usrrank > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error: couldn't save to database ".($_SESSION['user_rank'] > 5 ? mysqli_error($GLOBALS['db']['link']) : ''));
 		else die($q);die($id);
 		
 	}
@@ -447,7 +447,7 @@ if($do == "user_upload") {
 	  @unlink($_SERVER['DOCUMENT_ROOT']."/bin/temp/".substr($file, 0, -4)."_tn.png");
 	}
 	
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<link rel="stylesheet" type="text/css" href="/bin/css/screen.css" media="screen"/>

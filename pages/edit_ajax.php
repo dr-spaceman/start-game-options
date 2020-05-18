@@ -1,5 +1,5 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 
@@ -332,7 +332,7 @@ switch($do){
 	case "fetch img":
 		
 		require_once $_SERVER["DOCUMENT_ROOT"]."/pages/class.pages.edit.php";
-		require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";
+		use Vgsite\Image;
 		
 		$a = new ajax();
 		

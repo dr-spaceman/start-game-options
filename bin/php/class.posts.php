@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php";
 
 $image_default_layouts = array("1"=>"1", "2"=>"1x1", "3"=>"1x2", "4"=>"2x2", "5"=>"1x2x2", "6"=>"3x3", "7"=>"1x3x3", "8"=>"2x3x3", "9"=>"3x3x3", "10"=>"1x3x3x3");
@@ -548,7 +548,7 @@ class post {
 						if($img->img_minor_mime == "gif") $img_size = "0";
 						//offset image if it's taller than the row height
 						$y_offset = ($row_minheight - $img->prop_height) / 2;
-						$row.= $img->output($img_size, $this->nid, "margin-top:".$y_offset."px;");
+						$row.= '<div style="margin-top:'.$y_offset.'px;>'.$img->render($img_size, $this->nid).'</div>';
 					}
 						
 					$ret_attachment.= '<div class="row width-'.$cell.'" style="height:'.$row_minheight.'px;">'.$row.'</div>';

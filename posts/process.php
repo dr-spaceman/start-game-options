@@ -8,9 +8,9 @@ function userErrorHandler($errno, $errmsg, $filename, $linenum, $vars){
 }
 $old_error_handler = set_error_handler("userErrorHandler");
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
+use Vgsite\Page;
+use Verot\Upload;
+use Vgsite\Badge;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.posts.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php";
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.tags.php");
@@ -48,8 +48,8 @@ if($_POST['submit_post_action'] && $_POST['ajaxforminput']){
 		$postdat = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 		$postdat['options'] = $postdat['options'] ? json_decode($postdat['options'], 1) : array();
 		//user has access?
-		if($usrrank <= 7 && $postdat['usrid'] != $usrid) $a->kill("You don't have access to edit this item.");
-		if($postdat['options']['access'] && $usrrank < $postdat['options']['access']) $a->kill("This item is locked and can't be edited.");
+		if($_SESSION['user_rank'] <= 7 && $postdat['usrid'] != $usrid) $a->kill("You don't have access to edit this item.");
+		if($postdat['options']['access'] && $_SESSION['user_rank'] < $postdat['options']['access']) $a->kill("This item is locked and can't be edited.");
 	} else {
 		$postdat = array();
 	}
@@ -359,7 +359,7 @@ if($_POST['submit_post_action'] && $_POST['ajaxforminput']){
 			`archive` = '".(int)$in['archive']."',
 			`options` = '".mysqli_real_escape_string($GLOBALS['db']['link'], opts_str($in['options']))."'
 			WHERE session_id='$session_id' LIMIT 1";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't update entry on posts database.".($usrrank == 9 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : "");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't update entry on posts database.".($_SESSION['user_rank'] == 9 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : "");
 	} else {
 		$q = sprintf("INSERT INTO posts 
 			(`session_id`, `description`, `permalink`, `content`, `usrid`, `post_type`, `subject`, `attachment`, `category`, `privacy`, `archive`, `options`, `datetime`) VALUES 
@@ -369,7 +369,7 @@ if($_POST['submit_post_action'] && $_POST['ajaxforminput']){
 			mysqli_real_escape_string($GLOBALS['db']['link'], $cont_str),
 			mysqli_real_escape_string($GLOBALS['db']['link'], $in['subject']),
 			mysqli_real_escape_string($GLOBALS['db']['link'], opts_str($in['options'])));
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't add entry to posts database.".($usrrank == 9 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : "");
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Critical error: Couldn't add entry to posts database.".($_SESSION['user_rank'] == 9 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : "");
 	}
 	
 	$q = "SELECT * FROM posts WHERE session_id = '$session_id' LIMIT 1";

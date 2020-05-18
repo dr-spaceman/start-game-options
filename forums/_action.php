@@ -1,5 +1,5 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forum.php");
 
 $do = $_GET['do'];
@@ -167,7 +167,7 @@ if($_POST['do'] == "Post Topic") {
 						<img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none"/> 
 						<input type="button" value="Submit Changes" class="submit-edited-post" onclick="submitEditedForumPost('<?=$pid?>');"/> 
 						<input type="reset" class="cancel-edit-forum-post" value="Cancel" onclick="$(this).closest('.toggle-edit').hide().prev().show();"/> 
-						<?=($usrrank >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label>' : '')?>
+						<?=($_SESSION['user_rank'] >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label>' : '')?>
 					</p>
 				</form>
 			</div>
@@ -176,7 +176,7 @@ if($_POST['do'] == "Post Topic") {
 				<ul class="message-opts">
 					<li><a href="?focus_post='.$pid.'" title="permalink to your post" class="tooltip postnum postnum-new">NEW</a></li>
 					<li><a href="javascript:void(0)" class="edit" onclick="$(this).closest(\'ul\').siblings(\'.toggle-edit\').toggle();">Edit</a></li>'.
-					($usrrank >= 5 ? '<li><a href="javascript:void(0)" onclick="confirmDelete(\''.$pid.'\')">Delete</a></li>' : '').'
+					($_SESSION['user_rank'] >= 5 ? '<li><a href="javascript:void(0)" onclick="confirmDelete(\''.$pid.'\')">Delete</a></li>' : '').'
 				</ul>
 			';
 			exit;
@@ -259,7 +259,7 @@ if($_POST['do'] == "Post Topic") {
 		die("Error: no id given");
 	}
 	
-	if($usrrank < 8) die("You can't do that since you aren't an admin.");
+	if($_SESSION['user_rank'] < 8) die("You can't do that since you aren't an admin.");
 	
 	if($tid) {
 	
@@ -383,14 +383,14 @@ if($_POST['do'] == "Post Topic") {
 					<img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none"/> 
 					<input type="button" value="Submit Changes" class="submit-edited-post" onclick="submitEditedForumPost('<?=$this_post->pid?>');"/> 
 					<input type="reset" class="cancel-edit-forum-post" value="Cancel" onclick="$(this).closest('.toggle-edit').hide().prev().show();"/> 
-					<?=($usrrank >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label>' : '')?>
+					<?=($_SESSION['user_rank'] >= 8 ? '<label><input type="checkbox" name="no_track" value="1"/> leave no trace of this edit</label>' : '')?>
 				</p>
 			</form>
 		</div>
 		<ul class="message-opts">
 			<li><a href="?tid=<?=$tid?>&focus_post=<?=$this_post->pid?>" title="permalink to your post" class="tooltip postnum postnum-new">NEW</a></li>
 			<li><a href="javascript:void(0)" class="edit" onclick="$(this).closest('ul').siblings('.toggle-edit').toggle();">Edit</a></li><?
-			if($usrrank >= 5) { //del
+			if($_SESSION['user_rank'] >= 5) { //del
 				?>
 				<li><a href="javascript:void(0)" onclick="confirmDelete('<?=$this_post->pid?>')">Delete</a></li><?
 			}
@@ -463,7 +463,7 @@ if($_POST['do'] == "Post Topic") {
 	$q = "SELECT * FROM forums_posts WHERE pid='$pid' LIMIT 1";
 	if(!$pdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: Couldn't get post data for pid # $pid");
 	
-	if($usrrank < 5 && $pdat->usrid != $usrid) die("You don't have permission to edit this post.");
+	if($_SESSION['user_rank'] < 5 && $pdat->usrid != $usrid) die("You don't have permission to edit this post.");
 	
 	$datetime = date('Y-m-d H:i:s');
 	
@@ -500,7 +500,7 @@ if($_POST['do'] == "Post Topic") {
 	
 	if(!$pid = $_GET['pid']) die("Error: no post id given");
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	//get titles in order to redirect
 	$query2 = "SELECT tid FROM forums_posts WHERE pid='$pid' LIMIT 1";
@@ -525,7 +525,7 @@ if($_POST['do'] == "Post Topic") {
 	
 	if(!$tid = $_GET[tid]) die("Error: no topic id given");
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	$query = "UPDATE `forums_topics` SET `sticky` = 1 WHERE `tid` = '$tid' LIMIT 1";
 	$res = mysqli_query($GLOBALS['db']['link'], $query);
@@ -544,7 +544,7 @@ if($_POST['do'] == "Post Topic") {
 	
 	if(!$tid = $_GET[tid]) die("Error: no topic id given");
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	$query = "UPDATE `forums_topics` SET `sticky` = 0 WHERE `tid` = '$tid' LIMIT 1";
 	$res = mysqli_query($GLOBALS['db']['link'], $query);
@@ -568,7 +568,7 @@ if($_POST['do'] == "Post Topic") {
 		die("Error: no id given");
 	}
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	echo $html_head;
 	?>
@@ -644,7 +644,7 @@ if($_POST['do'] == "Post Topic") {
 		die("Error: no id given");
 	}
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	echo $html_head;
 	?>
@@ -715,7 +715,7 @@ if($_POST['do'] == "Post Topic") {
 	// EDIT FORUM DETAILS //
 	////////////////////////
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	if($_GET['do']) {
 	
@@ -787,7 +787,7 @@ if($_POST['do'] == "Post Topic") {
 	// NEW FORUM //
 	///////////////
 	
-	//if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	//if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	echo $html_head;
 	?>
@@ -882,7 +882,7 @@ $forum->showForum(<?=$row->fid?>);</pre>
 	// MANAGE CATEGORIES //
 	///////////////////////
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	$also = $_GET['also'];
 	
@@ -980,7 +980,7 @@ $forum->showForum(<?=$row->fid?>);</pre>
 	// MANAGE TAGS //
 	/////////////////
 	
-	if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	
 	echo $html_head;
 	?>
@@ -1303,7 +1303,7 @@ if($_POST['outputSuggestTag']) {
 			if($groupnum = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q_groups))) echo '<a href="javascript:void(0)" onclick="showTagField(\'group\')">group</a> &middot; ';
 			?>
 			<a href="javascript:void(0)" onclick="showTagField('other')">other</a>
-			<?=($usrrank >= 5 ? ' &middot; <a href="javascript:void(0)" onclick="showTagField(\'forum\')">new forum</a>' : '')?>
+			<?=($_SESSION['user_rank'] >= 5 ? ' &middot; <a href="javascript:void(0)" onclick="showTagField(\'forum\')">new forum</a>' : '')?>
 			
 			<ul id="suggest-tag-fields" style="display:none">
 				<li id="tag-field-game">
@@ -1360,7 +1360,7 @@ if($_POST['outputSuggestTag']) {
 					<input type="button" value="Suggest" class="suggest-tag-button" onclick="submitTag($(this).prev().val(), '<?=$_POST['tid']?>');"/>
 				</li>
 				<?
-				if($usrrank >= 5) {
+				if($_SESSION['user_rank'] >= 5) {
 					?>
 				<li id="tag-field-forum">
 					<div style="margin:0 0 3px; color:black;"><b>Note:</b> Tagging a new forum will change this topic's forum association, removing the topic from the current forum.</div>
@@ -1402,7 +1402,7 @@ if($_POST['submit_tag_suggestion']) {
 	if(mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) die("Error: This topic already has that tag");
 	
 	if(substr($tag, 0, 6) == "forum:") {
-		if($usrrank <= 4) exit;
+		if($_SESSION['user_rank'] <= 4) exit;
 		//change forum assoc
 		$q = "DELETE FROM forums_tags WHERE tid='$tid' AND tag LIKE 'forum:%'";
 		mysqli_query($GLOBALS['db']['link'], $q);
@@ -1432,7 +1432,7 @@ if($_POST['delete_tag']) {
 	
 	// DELETE TAG //
 	
-	//if($usrrank < 5) die("You can't do that since you aren't a moderator.");
+	//if($_SESSION['user_rank'] < 5) die("You can't do that since you aren't a moderator.");
 	$del = $_POST['delete_tag'];
 	
 	$q = "DELETE FROM forums_tags WHERE id='$del' LIMIT 1";
@@ -1444,8 +1444,8 @@ if($_POST['delete_tag']) {
 }
 
 if($do == "upload") {
-	require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
-	echo $html_tag;
+	use Verot\Upload;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<title>Upload a profile pic</title>
@@ -1502,7 +1502,7 @@ if($tid = $_POST['output_posts']) {
 
 if($txt = $_POST['previewtxt']) {
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
-	if($usrrank < 4) $txt = preg_replace("@<([a-z0-9/]+.*?)>@is", "&lt;$1&gt;", $txt);
+	if($_SESSION['user_rank'] < 4) $txt = preg_replace("@<([a-z0-9/]+.*?)>@is", "&lt;$1&gt;", $txt);
 	if(!$_POST['disable_emoticons']) $txt = emote($txt);
 	$txt = bb2html($txt);
 	$txt = nl2br($txt);

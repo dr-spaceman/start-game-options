@@ -1,5 +1,5 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 
 if($pf_id = $_POST['setPrimary']) {
@@ -11,7 +11,7 @@ if($pf_id = $_POST['setPrimary']) {
 $what = $_GET['what'];
 $in = $_POST['in'];
 
-$page = new page;
+$page = new Page();
 $page->title = "Nintendosite Admin".($what ? " / $what" : "");
 $page->min_rank = 7;
 $page->admin = TRUE;

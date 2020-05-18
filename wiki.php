@@ -1,6 +1,6 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/htmltoolbox.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forum.php");
@@ -11,7 +11,7 @@ if($aact = $_POST['aact']) { //AJAX ACTION
 		$x = $_POST['text'];
 		$x = str_replace("[AMP]", "&", $x);
 		$x = reformatLinks($x);
-		if($usrrank <= 6) $x = strip_tags($x);
+		if($_SESSION['user_rank'] <= 6) $x = strip_tags($x);
 		$x = bb2html($x);
 		$x = nl2br($x);
 		die($x);
@@ -45,7 +45,7 @@ if($_GET['view_version']) {
 		die("Error: Couldn't get wiki data.");
 	} else {
 		?>
-		<?=$html_tag?>
+		<?=Page::HTML_TAG?>
 		<head>
 			<title>Videogam.in Wiki</title>
 			<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
@@ -74,7 +74,7 @@ if($_GET['compare']) {
 	//compare two versions
 	$v = explode(",", $_GET['compare']);
 	?>
-	<?=$html_tag?>
+	<?=Page::HTML_TAG?>
 	<head>
 		<title>Videogam.in Wiki</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
@@ -177,7 +177,7 @@ if($_POST['submit']) {
 		$in['text'] = codedBB($in['text']);
 		
 		//stip tags for non-staff
-		if($usrrank <= 5) $in['text'] = strip_tags($in['text']);
+		if($_SESSION['user_rank'] <= 5) $in['text'] = strip_tags($in['text']);
 		
 		$contr = new contribution;
 		$contr->type = $type_id;
@@ -185,7 +185,7 @@ if($_POST['submit']) {
 		$contr->ssubj = $subj_field.":".$subj_id;
 		$contr->data = '{field:}'.$field.'|--|{subject_field:}'.$subj_field.'|--|{subject_id:}'.$subj_id.'|--|{text:}'.$in['text'].'|--|{notes:}'.$in['notes'];
 		
-		if(!$auto_pub && $usrrank <= 3) {
+		if(!$auto_pub && $_SESSION['user_rank'] <= 3) {
 			
 			$contr->status = "pend";
 			$results[] = 'Your new text has been submitted to the editors for review. <a href="'.$link.'">Go back to the text page</a> or begin a new version below.';
@@ -260,7 +260,7 @@ case "edit":
 		<ul>
 			<li><b>Writing perspective:</b> Write in third-person and with a neutral, unbiased point-of view.</li>
 			<li><b>Copyright:</b> Don't plagiarize or copy anyone else's words unless they are in the public realm (such as Wikipedia or other <a href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License" target="_blank">GNUFDL</a> source; If you copy from a source like this, you still have to cite it). Your submitted work is copyrighted to you; You are free to use it elsewhere.</li>
-			<?=($use_bbcode ? '<li><b>Citing sources:</b> In addition to copied words, any facts taken from another source that are not generally known should be cited. More details on citing are instructed in the <a class="arrow-link" href="javascript:void(0)" onclick="window.open(\'/bbcode.htm\',\'markup_guide_window\',\'width=620,height=510,scrollbars=yes\');">BB Code Guide</a>.</li><li>This form will only accept BB Code; All HTML will be stripped after the form is submitted. See the <a class="arrow-link" href="javascript:void(0)" onclick="window.open(\'/bbcode.htm\',\'markup_guide_window\',\'width=620,height=510,scrollbars=yes\');">BB Code Guide</a> for syntax.'.($usrrank >=6 ? '<ul><li>Since you\'re an admin, your text won\'t be stripped of HTML; Use it freely, though BB code is preferred above HTML.</li></ul>' : '').'</li>' : '')?>
+			<?=($use_bbcode ? '<li><b>Citing sources:</b> In addition to copied words, any facts taken from another source that are not generally known should be cited. More details on citing are instructed in the <a class="arrow-link" href="javascript:void(0)" onclick="window.open(\'/bbcode.htm\',\'markup_guide_window\',\'width=620,height=510,scrollbars=yes\');">BB Code Guide</a>.</li><li>This form will only accept BB Code; All HTML will be stripped after the form is submitted. See the <a class="arrow-link" href="javascript:void(0)" onclick="window.open(\'/bbcode.htm\',\'markup_guide_window\',\'width=620,height=510,scrollbars=yes\');">BB Code Guide</a> for syntax.'.($_SESSION['user_rank'] >=6 ? '<ul><li>Since you\'re an admin, your text won\'t be stripped of HTML; Use it freely, though BB code is preferred above HTML.</li></ul>' : '').'</li>' : '')?>
 		</ul>
 		<?
 		if($about) {

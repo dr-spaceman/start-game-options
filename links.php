@@ -1,7 +1,7 @@
 <? 
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in / External Links";
 $page->style[] = "/bin/css/links.css";
 $page->meta_description = "Videogame links and resources";
@@ -25,7 +25,7 @@ if($_POST['submit']) {
 }
 
 if($del_link = $_GET['del_link']) {
-	if($usrrank <= 7) die("Not an admin");
+	if($_SESSION['user_rank'] <= 7) die("Not an admin");
 	$q = "DELETE FROM external_links WHERE `id` = '$del_link' LIMIT 1";
 	if(mysqli_query($GLOBALS['db']['link'], $q)) $results[] = "Link deleted";
 	else $errors[] = "ERROR: link couldn't be deleted for some reason";
@@ -48,7 +48,7 @@ $page->header();
 <h3 id="ext">External Links</h3>
 <?
 
-if($usrrank >= 7) {
+if($_SESSION['user_rank'] >= 7) {
 	?>
 	<div style="float:right; width:200px;">
 		<form action="links.php" method="post">
@@ -86,7 +86,7 @@ foreach($link_categories as $cg) {
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) {
 		$row = stripslashesDeep($row);
-		echo '<li><a href="'.$row['url'].'" target="_blank">'.$row['title'].'</a>'.($row['description'] ? " $row[description]" : "").($usrrank >= 8 ? '&nbsp;<a href="?del_link='.$row[id].'" title="delete this link" class="x">X</a>' : '')."</li>\n";
+		echo '<li><a href="'.$row['url'].'" target="_blank">'.$row['title'].'</a>'.($row['description'] ? " $row[description]" : "").($_SESSION['user_rank'] >= 8 ? '&nbsp;<a href="?del_link='.$row[id].'" title="delete this link" class="x">X</a>' : '')."</li>\n";
 	}
 	?></ul>
 	<?

@@ -76,7 +76,7 @@ class pg {
 	function header(){
 		global $page, $pgtypes, $usrid;
 		
-		if(!$page->called) $page = new page();
+		if(!$page->called) $page = new Page();
 		
 		$titleurl = formatNameURL($this->title);
 		$ptitle = str_replace('"', "'", $this->title);
@@ -92,7 +92,7 @@ class pg {
 		if($this->row['rep_image']){
 			$repimg = (string)$this->row['rep_image'];
 			if(substr($repimg, 0, 4) == "img:"){
-				require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+				use Vgsite\Image;
 				$img_name = substr($repimg, 4);
 				$img = new img($img_name);
 				$repimg = $img->src['url'];
@@ -157,7 +157,7 @@ class pg {
 		
 		// @param $outp_params str options
 		
-		global $usrid, $usrname, $page, $usrrank;
+		global $usrid, $usrname, $page, $_SESSION['user_rank'];
 		
 		require $_SERVER['DOCUMENT_ROOT']."/pages/handle.page.php";
 		

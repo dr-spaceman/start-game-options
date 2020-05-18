@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forums.php");
 $forum = new forum();
 
@@ -10,7 +10,7 @@ if($q = $_GET['query']) {
 	$query = "
 		SELECT tid, MATCH (title) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS score 
 		FROM forums_topics 
-		WHERE MATCH (title) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$usrrank';
+		WHERE MATCH (title) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$_SESSION['user_rank']';
 	";
 	$res   = mysqli_query($GLOBALS['db']['link'], $query);
 	while($row = mysqli_fetch_assoc($res)) {
@@ -21,7 +21,7 @@ if($q = $_GET['query']) {
 		$query = "
 			SELECT tid, MATCH (message) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AS score 
 			FROM forums_posts 
-			WHERE MATCH (message) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$usrrank';
+			WHERE MATCH (message) AGAINST ('".mysqli_real_escape_string($GLOBALS['db']['link'], $q)."') AND `invisible` <= '$_SESSION['user_rank']';
 		";
 		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)) {

@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.posts.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode2markdown2.php";
 
@@ -95,7 +95,7 @@ if(isset($min)){
 	
 }
 
-$page = new page();
+$page = new Page();
 $page->title = "Reformat Sblog Texts";
 $page->javascript.='
 <script type="text/javascript">

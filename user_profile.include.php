@@ -1,5 +1,6 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+use Vgsite\Image;
+use Vgsite\Badge;
 
 $genderref = array("male" => "his", "female" => "her", "asexual" => "its", "" => "their");
 $genderref2 = array("male" => "him", "female" => "her", "asexual" => "it", "" => "them");
@@ -25,7 +26,6 @@ function streamItem($s){
 }
 
 // Badges
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
 $_badges = new badges();
 foreach($_badges->badgesEarnedList($u->id) as $row){
 	$s = array(
@@ -196,7 +196,7 @@ elseif($unlen > 11) $h1class = "condensed";
 </div>
 <?
 
-$page->die_();
+$page->kill();
 
 ?>
 	
@@ -326,7 +326,7 @@ $page->die_();
     if(!mysqli_num_rows($res)){
       echo $dat->username." doesn't love or hate anything -- ".(!$dat->gender || $dat->gender == "asexual" ? "it" : ($dat->gender == "male" ? "he" : "she"))." is 100% neutral about everything.";
     } else {
-      require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
+      use Vgsite\Shelf;
       echo '<div class="shelf" style="height:245px; overflow:auto;"><div class="container">';
       while($row = mysqli_fetch_assoc($res)){
         $shelf = new shelfItem();

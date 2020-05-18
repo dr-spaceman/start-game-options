@@ -1,7 +1,7 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Page;
+$page = new Page();
+use Vgsite\Image;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.tags.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 
@@ -33,7 +33,7 @@ if($img->notfound){
 
 if(isset($_GET['showimage'])){
 	header("Content-Type: image/".$img->img_minor_mime);
-	$src = $img->src[0];
+	$src = $img->src['original'];
 	if($_GET['size'] && in_array($_GET['size'], array_keys($img->src))) $src = $img->src[$_GET['size']];
 	readfile($_SERVER['DOCUMENT_ROOT'].$src);
 	exit;
@@ -59,12 +59,12 @@ if(isset($_GET['download'])){
   header("Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
   header("Cache-Control: private",false); // required for certain browsers 
   header("Content-Type: image/".$img->img_minor_mime);
-  header("Content-Disposition: attachment; filename=\"".basename($img->src[0])."\";" ); 
+  header("Content-Disposition: attachment; filename=\"".basename($img->src['original'])."\";" ); 
   header("Content-Transfer-Encoding: binary"); 
   header("Content-Length: ".$img->img_size); 
   ob_clean(); 
   flush(); 
-  readfile($_SERVER['DOCUMENT_ROOT'].$img->src[0]);
+  readfile($_SERVER['DOCUMENT_ROOT'].$img->src['original']);
   
   exit;
 
@@ -102,11 +102,11 @@ $page->header();
 	<?
 	if($img->optimized){
 		?>
-		<a href="<?=$img->src[0]?>" title="<?=htmlsc($img_title)?>" rel="shadowbox"><img src="<?=$img->src['op']?>" alt="<?=htmlsc($img_title)?>" border="0"/></a>
+		<a href="<?=$img->src['original']?>" title="<?=htmlsc($img_title)?>" rel="shadowbox"><img src="<?=$img->src['op']?>" alt="<?=htmlsc($img_title)?>" border="0"/></a>
 		<?
 	} else {
 		?>
-		<img src="<?=$img->src[0]?>" alt="<?=htmlsc($img_title)?>"/>
+		<img src="<?=$img->src['original']?>" alt="<?=htmlsc($img_title)?>"/>
 		<?
 	}
 	?>
@@ -204,7 +204,7 @@ $page->header();
 		<dd class="dispcode"><textarea onclick="$(this).select()">http://videogam.in<?=$img->src['url']?></textarea></dd>
 		<dt>HTML</dt>
 		<dd class="dispcode"><textarea onclick="$(this).select()"><a href="http://videogam.in<?=$img->src['url']?>"><img src="http://videogam.in<?=$img->src['optimized']?>" alt="<?=htmlSC($img->img_title)?>" border="0"/></a></textarea></dd>
-		<?=($img->usrid == $usrid || $usrrank >= 4 ? '<dt>Edit</dt><dd><a href="javascript:img.edit(\''.$img->img_name.'\')">Edit this image</a></dd><dd><a href="/uploads.php?sessid='.$img->sessid.'#img-'.$img->img_id.'">Edit this image session</a></dd>' : '')?>
+		<?=($img->usrid == $usrid || $_SESSION['user_rank'] >= 4 ? '<dt>Edit</dt><dd><a href="javascript:img.edit(\''.$img->img_name.'\')">Edit this image</a></dd><dd><a href="/uploads.php?sessid='.$img->sessid.'#img-'.$img->img_id.'">Edit this image session</a></dd>' : '')?>
 	</dl>
 </div>
 

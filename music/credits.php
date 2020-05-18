@@ -1,7 +1,7 @@
 <?
-require($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 	
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in / Music / Database Project Credits";
 $page->style[] = "/music/style.css";
 $page->freestyle.= 'H3 { border-width:0; padding:0; }';

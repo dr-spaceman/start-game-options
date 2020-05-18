@@ -124,7 +124,7 @@ function getVars() {
 }
 
 function header() {
-	global $usrrank, $gdat;
+	global $_SESSION['user_rank'], $gdat;
 	
 	if(!$this->varsGotten) echo "Error: gamepage vars not gotten!";
 	
@@ -155,7 +155,7 @@ function header() {
 		<div style="position:absolute; right:30px; margin-top:15px; border:1px solid #DDD; background-color:white; padding:3px 6px; font-size:12px;">
 			<span style="background:url(/bin/img/icons/edit.gif) no-repeat left center; padding-left:12px; color:#999; font-weight:bold;">OTHER</span>
 			 &middot; <span id="ILedit-keywords" class="editable">Keywords</span>
-			<?=($usrrank >= 8 ? '
+			<?=($_SESSION['user_rank'] >= 8 ? '
 			 &middot; <span id="ILedit-bgimg" class="editable">Background Image</span>
 			 &middot; <span id="ILedit-status" class="editable">Status</span>
 			' : '')?>
@@ -288,7 +288,7 @@ function header() {
 						<?=($here['fans'] ? '</h3>' : '')?>
 					</li>
 					<li><a href="/forums/?tag=gid:<?=$this->gid?>" title="<?=htmlSC($gdat->title)?> forums">Forums</a></li>
-					<?=($usrrank > 6 ? '<li><a href="/ninadmin/games-mod.php?id='.$this->gid.'" title="Admin: edit this game" rel="nofollow"><span style="padding-left:14px; background:url(/bin/img/icons/edit.gif) no-repeat left center;">Administer</span></a></li>' : '')?>
+					<?=($_SESSION['user_rank'] > 6 ? '<li><a href="/ninadmin/games-mod.php?id='.$this->gid.'" title="Admin: edit this game" rel="nofollow"><span style="padding-left:14px; background:url(/bin/img/icons/edit.gif) no-repeat left center;">Administer</span></a></li>' : '')?>
 				</ol>
 				
 				<dl id="contributors">

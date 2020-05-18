@@ -98,7 +98,7 @@ while($row = mysqli_fetch_assoc($res)) {
 		<td nowrap="nowrap"><abbr title="'.$row['datetime'].'">'.timeSince($row['datetime'], TRUE).'</abbr></td>
 		<td>
 			[['.$row['title'].']] &nbsp; 
-			<abbr title="'.number_format($row['new_len']).' bytes'.($usrrank >= 6 ? ' ['.$row['score'].']' : '').'" style="font-weight:'.$bytech_fw.'; color:'.$bytech_color.';">'.($bytech > 0 ? "+" : '').$bytech.'</abbr> &nbsp; 
+			<abbr title="'.number_format($row['new_len']).' bytes'.($_SESSION['user_rank'] >= 6 ? ' ['.$row['score'].']' : '').'" style="font-weight:'.$bytech_fw.'; color:'.$bytech_color.';">'.($bytech > 0 ? "+" : '').$bytech.'</abbr> &nbsp; 
 			'.($row['minor_edit'] ? '<abbr title="The editor has flagged this as a minor edit" style="font-weight:bold;font-style:italic;">m</abbr> &nbsp; ' : '').'
 			<span class="gray">
 				(<a href="/pages/history.php?view_version='.$row['session_id'].'" title="permanent link to this edit version">view</a> 

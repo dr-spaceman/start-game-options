@@ -1,5 +1,5 @@
 <?
-require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/contribute.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 
@@ -133,7 +133,7 @@ if($_POST) {
 		
 		// SUBMIT CHANGES //
 		
-		$page = new page;
+		$page = new Page();
 		$page->title = "Videogam.in / Submit edits";
 		
 		$contr = new contribution;
@@ -166,7 +166,7 @@ if($_POST) {
 				$contr->upload = $_FILES['personpic'];
 				$contr->data = "{*uploaded_file:}true";
 				
-				if($usrrank >= 4) {
+				if($_SESSION['user_rank'] >= 4) {
 					$contr->status = "publish";
 					$pic_fname = $pid;
 					$pic_dir = "/bin/img/people/";
@@ -227,7 +227,7 @@ if($_POST) {
 				$contr->data = "{dob:}$date";
 				$contr->status = "pend";
 				
-				if($usrrank >= 4) {
+				if($_SESSION['user_rank'] >= 4) {
 					$contr->status = "publish";
 					$contr->process_data = TRUE;
 				}
@@ -247,7 +247,7 @@ if($_POST) {
 				$contr->data = '{'.$field.':}'.$str;
 				$contr->status = "pend";
 				
-				if($usrrank >= 4) {
+				if($_SESSION['user_rank'] >= 4) {
 					$contr->status = "publish";
 					$contr->process_data = TRUE;
 				}
@@ -277,7 +277,7 @@ if($_POST) {
 					$row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q));
 					$contr->data.= "Role:".$row['role']."; Notes:".$row['notes'];
 					$contr->no_points = TRUE;
-					if($usrrank <= 7) $contr->status = "pend";
+					if($_SESSION['user_rank'] <= 7) $contr->status = "pend";
 				}
 				
 				$success[] = $contr->submitNew();
@@ -346,7 +346,7 @@ if($_POST) {
 				//delete
 				if($thisf['delete']) {
 					
-					if($usrrank == 9) {
+					if($_SESSION['user_rank'] == 9) {
 						$q = "DELETE FROM games_publications WHERE id='$pubid' LIMIT 1";
 						if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't delete from db; ".mysqli_error($GLOBALS['db']['link']);
 						else $results[] = "Publication #$pubid deleted";
@@ -383,7 +383,7 @@ if($_POST) {
 						$contr->upload = $_FILES[$field];
 					}
 					
-					if($usrrank >= 4) {
+					if($_SESSION['user_rank'] >= 4) {
 						
 						if($thisf['primary']) {
 							$q = "UPDATE games_publications SET `primary`='' WHERE gid='$gid'";
@@ -444,7 +444,7 @@ if($_POST) {
 			
 			case "game status":
 				
-				if($usrrank < 8) break;
+				if($_SESSION['user_rank'] < 8) break;
 				if(!$thisf['gid']) {
 					$errors[] = "[status] No game id given";
 					break;
@@ -483,7 +483,7 @@ if($_POST) {
 								$contr->data.= $row[$_field];
 							}
 							$contr->no_points = TRUE;
-							if($usrrank <= 7) $contr->status = "pend";
+							if($_SESSION['user_rank'] <= 7) $contr->status = "pend";
 						}
 						$contr->process_data = TRUE;
 						$success[] = $contr->submitNew();
@@ -590,7 +590,7 @@ if($_POST) {
 		</td></tr></table>
 		
 		<?
-		if($usrrank == 9) {
+		if($_SESSION['user_rank'] == 9) {
 			echo '<br/><a href="javascript:void(0);" class="arrow-toggle" onclick="$(this).toggleClass(\'arrow-toggle-on\').next().toggle();">Data Received</a><div style="display:none">';
 			foreach($fields as $field) {
 				?><pre><? print_r($_POST['contr'][$field]); ?></pre><?

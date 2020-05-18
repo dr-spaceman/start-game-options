@@ -1,7 +1,7 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+use Vgsite\Page;
+use Verot\Upload;
+use Vgsite\Image;
 
 // accept and process an image upload
 // form for accepting img upload
@@ -31,7 +31,7 @@ if($_FILES['upl']['name'] || $imgurl){
 		$x = explode("/", $imgurl);
 		$br = count($x) - 1;
 		
-		$file = $_SERVER['DOCUMENT_ROOT'] . Img::UPLOAD_TEMP_DIR . $x[$br];
+		$file = $_SERVER['DOCUMENT_ROOT'] . Image::UPLOAD_TEMP_DIR . $x[$br];
 		if(!@copy($imgurl, $file)) {
 			$errors= error_get_last();
 			$jscript = 'alert("'.$x[$br].' COPY ERROR: '.$errors['type'].'; '.$errors['message'].' (Couldn\'t copy the remote file to the local server) ['.$imgurl.']['.$file.']");';
@@ -223,7 +223,7 @@ if($_GET['component'] == "form"){
 	
 	$form_action = $_GET['imgtype'] == "boxart" ? "/uploadhandle.php" : "upload_handle.php?component=form";
 	
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	?>
 	<head>
 		<script type="text/javascript" src="/bin/script/jquery-1.4.4.min.js"></script>
@@ -242,7 +242,7 @@ if($_GET['component'] == "form"){
 	  	<input type="hidden" name="actionhandle" value="boxartuploader_static"/>
 	  	<input type="hidden" name="img_tag[]" value="'.$_GET['fdir'].'"/>
 	  	<input type="hidden" name="img_category_id" value="4"/>
-	  	<input type="hidden" name="handler" value="'.base64_encode("sessid=".$_GET['sessid']).'"/>
+	  	<input type="hidden" name="handler" value="'.base64_encode("session_id=".$_GET['session_id']).'"/>
 	  	' : '')?>
 			<input type="hidden" name="imgtype" value="<?=($_GET['imgtype'] ? $_GET['imgtype'] : $_POST['imgtype'])?>"/>
 			<input type="hidden" name="retelid" value="<?=($_GET['retelid'] ? $_GET['retelid'] : $_POST['retelid'])?>" id="retelid"/>
@@ -319,7 +319,7 @@ while($row = mysqli_fetch_assoc($res)){
 				formdata.append("action", "submimg");
 				formdata.append("actionhandle", "json");
 				formdata.append("img_category_id", "<?=$_GET['img_category_id']?>");
-				formdata.append("handler", "<?=base64_encode('sessid='.$_GET['sessid'])?>");
+				formdata.append("handler", "<?=base64_encode('session_id='.$_GET['session_id'])?>");
 				<?
 				if(isset($_GET['img_tag'])){
 					foreach($_GET['img_tag'] as $tag){

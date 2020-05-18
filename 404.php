@@ -1,5 +1,5 @@
 <?
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 ?><!DOCTYPE html>
 <html dir="ltr" lang="en-US">
 <head>
@@ -13,7 +13,7 @@ require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
 
 <a href="/">Videogam.in Home Page</a>
 
-<? if($usrrank == User::SUPERADMIN) print_r($_SERVER); ?>
+<? if($_SESSION['user_rank'] == User::SUPERADMIN) print_r($_SERVER); ?>
 
 </body>
 </html>

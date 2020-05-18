@@ -1,9 +1,9 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 $page->title = "Nintendo Site Admin Index";
 
-if($usrrank < 6) { include("../404.php"); exit; }
+if($_SESSION['user_rank'] < 6) { include("../404.php"); exit; }
 
 $page->header();
 
@@ -15,14 +15,14 @@ $page->openSection();
 <ul>
 	<li><a href="/ninadmin/albums.php">Albums Database</a></li>
 	<li><a href="/ninadmin/avatars.php">Avatar Management</a></li>
-	<?=($usrrank >= 8 ? '<li><a href="user_mgt.php">User Management</a></li>' : '')?>
-	<?=($usrrank >= 8 ? '<li><a href="dolebadge.php">Dole out Badges</a></li>' : '')?>
+	<?=($_SESSION['user_rank'] >= 8 ? '<li><a href="user_mgt.php">User Management</a></li>' : '')?>
+	<?=($_SESSION['user_rank'] >= 8 ? '<li><a href="dolebadge.php">Dole out Badges</a></li>' : '')?>
 	<li><a href="/ninadmin/userscore.php">Recalculate User Scores</a></li>
 </ul>
 
 <h5>.Incyclopedia</h5>
 <ul>
-	<?=($usrrank >= 8 ? '<li><a href="mass_rename.php">Mass Rename Link</a></li>' : '')?>
+	<?=($_SESSION['user_rank'] >= 8 ? '<li><a href="mass_rename.php">Mass Rename Link</a></li>' : '')?>
 	<li><a href="build_index.php">Rebuild Index</a></li>
 	<li><a href="build_cattrees.php">Rebuild A Category Tree</a></li>
 </ul>

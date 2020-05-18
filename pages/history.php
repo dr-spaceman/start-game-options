@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.edit.php");
 
 $keydown_jscript = '
@@ -41,7 +41,7 @@ if($sessid = $_GET['view_version']) {
 	
 	$message = 'This is a version or draft of the <i>'.$title.'</i> page, as created by '.outputUser($pe->usrid).' on '.$pe->datetime.'. It may differ from the <b><a href="'.pageURL($title, $row['type']).'">current version</a></b>.';
 	$message = addslashes($message);
-	if($usrrank >= 8) $message2 = 'Admin: <a href="/pages/edit.php?destroysession='.$sessid.'&returnonfail='.$titleurl.'" class="red">Destroy this revision</a>';
+	if($_SESSION['user_rank'] >= 8) $message2 = 'Admin: <a href="/pages/edit.php?destroysession='.$sessid.'&returnonfail='.$titleurl.'" class="red">Destroy this revision</a>';
 	
 	?>
 	<script>
@@ -63,7 +63,7 @@ if($comp = trim($_GET['compare'])) {
 	
 	$v = explode(",", $comp);
 	?>
-	<?=$html_tag?>
+	<?=Page::HTML_TAG?>
 	<head>
 		<title>Videogam.in Wiki</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>

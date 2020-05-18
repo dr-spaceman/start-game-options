@@ -73,7 +73,7 @@ if($_POST['_action'] == "load_freetags") {
 		$q = "SELECT usrid, rank FROM posts_tags LEFT JOIN users USING (usrid) WHERE posts_tags.id='$tid' LIMIT 1";
 		$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q));
 		if($usrid != $dat->usrid) {
-			if($usrrank < $dat->rank) die("You can't remove that tag since the person who tagged it is ranked higher than you.");
+			if($_SESSION['user_rank'] < $dat->rank) die("You can't remove that tag since the person who tagged it is ranked higher than you.");
 		}
 		$q = "DELETE FROM posts_tags WHERE id='$tid' LIMIT 1";
 		if(!mysqli_query($GLOBALS['db']['link'], $q)) die("Error removing tag from database; ".mysqli_error($GLOBALS['db']['link']));

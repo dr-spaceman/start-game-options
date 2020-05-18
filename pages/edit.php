@@ -1,8 +1,8 @@
 <?
-require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require_once $_SERVER["DOCUMENT_ROOT"]."/pages/class.pages.edit.php";
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php";
+use Vgsite\Image;
 
 $img_sessid = img::makeSessionID();
 
@@ -19,7 +19,7 @@ if($sessid = $_GET['destroysession']){
 			die("Error: Couldn't get page data for id # ".$sessid);
 		}
 	}
-	if($usrid != $pe->usrid && $usrrank < 8) die("You don't have access to this edit session.");
+	if($usrid != $pe->usrid && $_SESSION['user_rank'] < 8) die("You don't have access to this edit session.");
 	if(!$_GET['sure']){
 		
 		$page->header();
@@ -79,7 +79,7 @@ try {
 	
 	$ed->juststarted = false;
 
-	if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php" class="prompt">Log In</a> to continue.</big><br/><br/>Don\'t have an account? <a href="/register.php">Register</a> in about a minute.');
+	if(!$usrid) $page->kill('<big style="font-size:150%;">Please <a href="/login.php" class="prompt">Log In</a> to continue.</big><br/><br/>Don\'t have an account? <a href="/register.php">Register</a> in about a minute.');
 	
 	// Check for unpublished edit session in past few days
 	if($_POST['_action'] != "start" && !$_GET['editsource']){
@@ -108,12 +108,12 @@ try {
 		$ed->juststarted = true;
 		
 		$ed->type = $_POST['pgtype'];
-		if(!in_array($ed->type, array_keys($pgtypes))) $page->die_("Error: Unknown page type given '$ed->type'");
+		if(!in_array($ed->type, array_keys($pgtypes))) $page->kill("Error: Unknown page type given '$ed->type'");
 		
 		if($_POST[$ed->type]['subcategory']) $ed->subcategory = $_POST[$ed->type]['subcategory'];
 		
 		try{ $ed->data = $ed->template(); }
-		catch(Exception $e){ $page->die_('Error creating base template data: <code>'.$e->getMessage().'</code>'); }
+		catch(Exception $e){ $page->kill('Error creating base template data: <code>'.$e->getMessage().'</code>'); }
 		
 		if($_POST['redirect_to']){
 			$reto = formatName($_POST['redirect_to']);
@@ -132,10 +132,10 @@ try {
 		$ed->sessid = $ed->editsource;
 		
 		try{ $ed->checkSession(); }
-		catch(Exception $e){ $page->die_('There was an error loading session data from the session ID #'.$ed->sessid.': <code>' . $e->getMessage() . '</code> Try starting a fresh edit instead.'); }
+		catch(Exception $e){ $page->kill('There was an error loading session data from the session ID #'.$ed->sessid.': <code>' . $e->getMessage() . '</code> Try starting a fresh edit instead.'); }
 		
 		try{ $ed->loadData("sessid"); } // populates $ed->data
-		catch(Exception $e){ $page->die_('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
+		catch(Exception $e){ $page->kill('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
 		
 		$warnings[] = "You have loaded an <b>old revision file</b> into the form on this page. If you choose to submit & publish this form, the current version of this page willbe overwritten with your changes.";
 		
@@ -237,7 +237,7 @@ try {
 		// Use current version as the basis
 		
 		try{ $ed->loadData(); } // populates $ed->data
-		catch(Exception $e){ $page->die_('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
+		catch(Exception $e){ $page->kill('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
 		
 	}
 	
@@ -1067,7 +1067,7 @@ try {
 		<? } ?>
 		
 		<?
-		if($usrrank >= 8){
+		if($_SESSION['user_rank'] >= 8){
 			?>
 			<fieldset class="off" style="margin:20px 0 0;">
 			<legend><a href="#data" class="arrow-toggle" onclick="$(this).toggleClass('arrow-toggle-on').closest('fieldset').toggleClass('off').children('.cont').toggle();">Raw data</a></legend>

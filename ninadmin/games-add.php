@@ -1,8 +1,8 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in Admin / Add a Game";
 $page->min_rank = 7;
 $page->admin = TRUE;

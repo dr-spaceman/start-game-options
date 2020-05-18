@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.edit.php");
 
 do if($_POST){
@@ -99,7 +99,7 @@ do if($_POST){
 	if(!mysqli_query($GLOBALS['db']['link'], $q)) $errors[] = "Couldn't record edit (Your changes were probably saved though) [ERROR SETP01]";
 	
 	//rebuild index and then go to the page overview
-	echo $html_tag;
+	echo Page::HTML_TAG;
 	$pgurl = pageURL($title, $ed->type, true);
 	?>
 	<script type="text/javascript">
@@ -131,13 +131,13 @@ try {
 	$ed = new pgedit($title);
 	$ed->header();
 
-	if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php" class="prompt">Log In</a> to continue.</big><br/><br/>Don\'t have an account? <a href="/register.php">Register</a> in about a minute.');
+	if(!$usrid) $page->kill('<big style="font-size:150%;">Please <a href="/login.php" class="prompt">Log In</a> to continue.</big><br/><br/>Don\'t have an account? <a href="/register.php">Register</a> in about a minute.');
 	
-	if($usrrank < 4) $page->die("Access denied");
+	if($_SESSION['user_rank'] < 4) $page->die("Access denied");
 	
 	if(!$ed->row){
 		
-		$page->die_('This page hasn\'t been started yet.');
+		$page->kill('This page hasn\'t been started yet.');
 	
 	} else {
 		
@@ -145,7 +145,7 @@ try {
 		// Use current version as the basis
 		
 		try{ $ed->loadData(); } // populates $ed->data
-		catch(Exception $e){ $page->die_('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
+		catch(Exception $e){ $page->kill('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
 		
 	}
 	

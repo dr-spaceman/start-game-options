@@ -17,7 +17,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/fb/src/config.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/fb/src/facebook.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 
 // Create our Application instance
 $fb = array(
@@ -198,13 +198,11 @@ if(!$fbuser){
 		}
 	}*/
 	
-	$usrrank = 2;
+	$_SESSION['user_rank'] = 2;
 	$usrlastlogin = $tod;
-	login(array("username" => $usrname, "usrid" => $usrid, "rank" => $usrrank, "previous_activity" => $usrlastlogin));
+	login(array("username" => $usrname, "usrid" => $usrid, "rank" => $_SESSION['user_rank'], "previous_activity" => $usrlastlogin));
 	
-	require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php";
-	$_badges = new badges();
-	$_badges->earn(1);
+	Badge::getById(1)->earn($user);
 	
 	header("Location:".($_COOKIE['lastpage'] ? $_COOKIE['lastpage'] : "http://videogam.in"));
 	exit;

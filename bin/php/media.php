@@ -4,7 +4,7 @@
 // Created 13 Jan 2008 //
 // by Matt Berti       //
 
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
 $mid = $_GET['mid']; //show gallery via database (media.media_id)
 $dir = $_GET['dir']; //show gallery via directory
@@ -16,7 +16,7 @@ if($mid) {
 	$q = "SELECT * FROM media LEFT JOIN media_categories USING (category_id) WHERE media_id='$mid' LIMIT 1";
 }
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in";
 $page->style[] = "";
 $page->style[] = "";

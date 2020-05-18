@@ -1,10 +1,10 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
 
 $assoc = ($_GET['association'] ? $_GET['association'] : "Square Enix");
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in / Association / $assoc";
 $page->freestyle = <<<EOF
 #association-index .col {
@@ -84,7 +84,7 @@ if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) {
 		LEFT JOIN games_publications ON (games.gid=games_publications.gid AND games_publications.`primary`=1) 
 		LEFT JOIN games_platforms ON (games_platforms.platform_id=games_publications.platform_id) 
 		WHERE games_developers.developer LIKE '%$assoc%' 
-		".($usrrank <= 6 ? "AND unpublished != '1'" : "")."
+		".($_SESSION['user_rank'] <= 6 ? "AND unpublished != '1'" : "")."
 		ORDER BY games.title";
 	$res = mysqli_query($GLOBALS['db']['link'], $query);
 	if(mysqli_num_rows($res)) {

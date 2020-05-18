@@ -21,8 +21,8 @@ if(isset($_GET['sub'])) {
 	}
 }
 
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/games.php");
 $gamepg = new gamepg;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forum.php");
@@ -208,7 +208,7 @@ $page->header();
 						</p>
 						';
 					if($gdat->creator == $usrid) {
-						if($usrrank < 4 && $gdat->unpublished) echo '<p>You are the creator of this game page! It hasn\'t been published yet, however, as the editors will have to review your contribution before it can become published and visible to other Videogam.in users.</p><p>In order for this game to be published, you must contribute <b>a short (one-paragraph) description or synopsis</b> and <b>at least one selection of box art</b>. We also recommend contributing as much other information as you can.</p><p>Should you navigate away, you can always access this page again by looking through your contributions page, accessible by clicking "you" on the top right.</p>';
+						if($_SESSION['user_rank'] < 4 && $gdat->unpublished) echo '<p>You are the creator of this game page! It hasn\'t been published yet, however, as the editors will have to review your contribution before it can become published and visible to other Videogam.in users.</p><p>In order for this game to be published, you must contribute <b>a short (one-paragraph) description or synopsis</b> and <b>at least one selection of box art</b>. We also recommend contributing as much other information as you can.</p><p>Should you navigate away, you can always access this page again by looking through your contributions page, accessible by clicking "you" on the top right.</p>';
 						else echo '<p>You are the creator of this game page! Please improve it by adding some more stuff.</p><p>Note that you need to contribute <b>a short (one-paragraph) description or synopsis</b> and <b>at least one selection of box art</b> or your creation may be removed by the editors.</p>' . $def_message;
 					} else echo $def_message;
 					?>
@@ -889,7 +889,7 @@ if($gamepg->num_links) {
 			while($row = mysqli_fetch_assoc($res)) {
 				echo '<li>';
 				echo '<a href="'.$row['url'].'" target="_blank" class="link">'.$row['site_name'].'</a>';
-				if($usrrank > 7 || ($usrrank == 7 && $row['usrid'] == $usrid)) echo ' <a href="javascript:void(0)" onclick="if(confirm(\'Delete this link?\')) window.location=\'/ninadmin/games-mod.php?id='.$gdat->gid.'&what=links&delete='.$row['id'].'\';" class="x">X</a>';
+				if($_SESSION['user_rank'] > 7 || ($_SESSION['user_rank'] == 7 && $row['usrid'] == $usrid)) echo ' <a href="javascript:void(0)" onclick="if(confirm(\'Delete this link?\')) window.location=\'/ninadmin/games-mod.php?id='.$gdat->gid.'&what=links&delete='.$row['id'].'\';" class="x">X</a>';
 				if($row['description']) echo '<p>'.$row['description'].'</p>';
 				echo "</li>\n";
 			}
@@ -1051,7 +1051,7 @@ if($gamepg->edit_mode) {
 		</div>
 	</div>
 	
-	<? if($usrrank >= 8) { ?>
+	<? if($_SESSION['user_rank'] >= 8) { ?>
 		<div id="IL-bgimg" class="ILform" style="left:auto; right:30px;">
 			<input type="hidden" name="contr[bgimg][manual_input]" value="game bgimg"/>
 			<input type="hidden" name="contr[bgimg][gid]" value="<?=$gdat->gid?>"/>

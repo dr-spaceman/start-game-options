@@ -1,6 +1,6 @@
 <?
-require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
-$page = new page();
+use Vgsite\Page;
+$page = new Page();
 require $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.php";
 
 $pieces = array("history", "links", "discuss", "edit");
@@ -164,7 +164,7 @@ do if($index && !$title){
 	}
 	
 	$pgtypesF = array_flip($pgtypes);
-	if(!$pgtypesF[$index]) $page->die_("<h1>Error</h1>'$index' is not a valid index type.");
+	if(!$pgtypesF[$index]) $page->kill("<h1>Error</h1>'$index' is not a valid index type.");
 	$index = $pgtypesF[$index];
 	
 	$page->title = "$p_index index &ndash; Videogam.in";
@@ -247,7 +247,7 @@ if($title) {
 	}
 	
 	try{ $pg->loadData(); }
-	catch(Exception $e){ $page->die_('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
+	catch(Exception $e){ $page->kill('There was an error loading data from the current version of this page: <code>' . $e->getMessage() . '</code>'); }
 	
 	//check the URL and redirect if necessary
 	if($viascript && $pgindex && !$pg->redirected_from && strtolower($givenfpath) != strtolower("/$pgindex/$titleurl")){
@@ -261,11 +261,8 @@ if($title) {
 	//badges for pageviews
 	if($pg->trackView()){
 		
-		require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.badges.php");
-		$_badges = new badges;
-		
 		//Uber Trick - visit every page in the SSX series
-		if(strstr($pg->title, "SSX")){
+		if (strstr($pg->title, "SSX")) {
 			$query = "SELECT from_pgid AS pgid FROM pages_links WHERE `to` = 'SSX series' AND namespace = 'Category'";
 			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			while($pl_row = mysqli_fetch_assoc($res)){
@@ -275,7 +272,7 @@ if($title) {
 					break;
 				}
 			}
-			if(!$unvisited) $_badges->earn(60);
+			if(!$unvisited) Badge::getById(60)->earn($user);
 		}
 	}
 	

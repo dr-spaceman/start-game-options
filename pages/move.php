@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.edit.php");
 
 $title = formatName($_GET['title']);
@@ -64,7 +64,7 @@ do if($_POST){
 		
 	}
 	
-	if($usrrank <= 4 && $move) {
+	if($_SESSION['user_rank'] <= 4 && $move) {
 		
 		//send an email request since user is less than trusted VIP (lv 5)
 		
@@ -257,7 +257,7 @@ if(!$pg->row){
 		<textarea name="in[title]" cols="50" rows="2"><?=($_GET['to'] ? urldecode($_GET['to']) : $pg->title)?></textarea>
 		
 		<?
-		if($usrrank > 4) {
+		if($_SESSION['user_rank'] > 4) {
 		//adv opts for admins
 		?>
 		
@@ -294,7 +294,7 @@ if(!$pg->row){
 		<p></p>
 		
 		<?
-		if($usrrank <= 4){
+		if($_SESSION['user_rank'] <= 4){
 			?>
 			Upon submitting this form, a move request will be submitted to the administrators for review. The request then may or may not be carried out, but will be carefully considered based on your reason given.
 			<p></p>

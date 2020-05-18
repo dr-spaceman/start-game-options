@@ -1,6 +1,6 @@
 <?
 
-require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
+use Vgsite\Page;
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pages.php";
 require_once $_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php";
 

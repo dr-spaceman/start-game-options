@@ -16,7 +16,7 @@
  */
 
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/fb/src/facebook.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 
 // Create our Application instance
 $fb = array(

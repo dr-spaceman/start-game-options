@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+{% block head %}
+    {{ parent() }}
+    <style type="text/css">
+            #loginform { font-size:14px; }
+            #loginform big input { padding:7px 0; font-size:14px; text-indent:10px; }
+            #loginform input[type=submit] { font-weight:bold; font-size:15px; padding:5px 15px; }
+            #loginform label { display:block; margin:10px 0 3px; }
+    </style>
+{% endblock %}
+{% block content %}
+    <h2>Log In</h2>
+
+    <p>{{ login_error }}</p>
+
+    <p><a href="/login_fb.php" style="display:block;" onclick="$.cookie('lastpage', '<?=$_SERVER['HTTP_REFERER']?>', {expires:1, path:'/'})"><img src="/bin/img/fbconnect_225.png" width="225" height="33" alt="Login with Facebook"/></a></p>
+    
+    <form method="post" action="login.php" id="loginform">
+        <input type="hidden" name="do" value="login"/>
+        <input type="text" name="username" placeholder="Videogam.in username or e-mail" id="login-username" maxlength="25">
+        <input type="password" name="password" placeholder="Password" id="login-password" maxlength="25">
+        <label><input type="submit" name="login" value="Log in"/></label>
+        <label><input type="checkbox" name="remember" value="1"/> Remember me</label>
+    </form>
+    
+    <ul>
+        <li><a href="/retrieve-pass.php">Reset password</a></li>
+        <li><a href="/register.php">Register a new account</a></li>
+    </ul>
+{% endblock %}

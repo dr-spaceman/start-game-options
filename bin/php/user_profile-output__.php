@@ -1,7 +1,7 @@
 <? 
-require($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
-$page = new page;
+$page = new Page();
 
 $user = mysqli_real_escape_string($GLOBALS['db']['link'], $_GET['username']);
 

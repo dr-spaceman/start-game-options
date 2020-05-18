@@ -1,9 +1,9 @@
 <?
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
 $in = $_POST['in'];
 
-$page = new page;
+$page = new Page();
 $page->title = "Nintendosite Admin / Your Drafts & Documents";
 $page->admin = TRUE;
 

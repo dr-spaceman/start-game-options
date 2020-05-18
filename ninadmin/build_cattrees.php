@@ -1,7 +1,7 @@
 <?
-require $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 
-$page = new page();
+$page = new Page();
 $page->title = "Page Management / Rebuild Category Trees";
 
 $page->header();

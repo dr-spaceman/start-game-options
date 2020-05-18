@@ -634,7 +634,7 @@ function evalImgUploadTag($img_src, $str=''){
 		"caption" => $caption,
 		"src" => $img->src[$size],
 		"width" => $width,
-		"imguplfile" => $img->src[0]
+		"imguplfile" => $img->src['original']
 	);
 	
 	return outputThumbnail($ret);

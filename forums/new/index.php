@@ -1,6 +1,6 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forums.php");
 $forum = new forum();
 
@@ -23,7 +23,7 @@ if($since == 'last-login') {
 	$page->footer();
 	exit;
 }
-$query = "SELECT * FROM forums_topics as t WHERE `last_post` > $time_interval AND `invisible` <= '$usrrank' ORDER BY `last_post` DESC";	
+$query = "SELECT * FROM forums_topics as t WHERE `last_post` > $time_interval AND `invisible` <= '$_SESSION['user_rank']' ORDER BY `last_post` DESC";	
 $new_topic_num = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 
 //page navigation
@@ -96,7 +96,7 @@ if($new_topic_num > $forum->topics_per_page) {
 			}
 			
 			$print_closed = '';
-			if($usrrank < $row['closed'] || ($row['closed'] && $usrrank >= 5)) $print_closed = ' class="locked"';
+			if($_SESSION['user_rank'] < $row['closed'] || ($row['closed'] && $_SESSION['user_rank'] >= 5)) $print_closed = ' class="locked"';
 			
 			$num_replies = $row['posts'] - 1;
 			

@@ -1,8 +1,8 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.forum.php");
 
-$page = new page;
+$page = new Page();
 $page->title = "Videogam.in forums / top rated topics";
 $page->style[] = "/bin/css/forums.css";
 $page->header();

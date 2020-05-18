@@ -1,6 +1,6 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.news.php");
 $news = new news;$page->javascript="";
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/htmltoolbox.php");
@@ -15,7 +15,7 @@ if(!$nid = $_GET['nid']) dieFullpage("No news id given", "incl header");
 $q = "SELECT * FROM news WHERE nid='$nid' LIMIT 1";
 if(!$n = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $q))) dieFullpage("Couldn't get data for news id # $nid", "head");
 
-if($usrrank <= 7 && $n['usrid'] != $usrid) dieFullpage("You don't have access to edit this item.");
+if($_SESSION['user_rank'] <= 7 && $n['usrid'] != $usrid) dieFullpage("You don't have access to edit this item.");
 
 $page->title = "Videogam.in / News / Edit Item / ".htmlSC($n['description']);
 $page->style[] = "/bin/css/news.css";
@@ -70,7 +70,7 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 	<input type="hidden" name="in[type]" value="<?=$n['type']?>" id="inp-type"/>
 	<input type="hidden" name="in[nid]" value="<?=$nid?>"/>
 	
-	<?=($usrrank >= 6 ? 
+	<?=($_SESSION['user_rank'] >= 6 ? 
 	"You can use XHTML since you're an admin, but BB Code is preferred." : 
 	"All HTML will be depreciated; Please use BB Code for special formatting.")?> 
 	<a class="arrow-link" href="#_bbcode" onclick="window.open('/bbcode.htm','markup_guide_window','width=620,height=510,scrollbars=yes');">BB Code Guide</a>
@@ -316,7 +316,7 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 					<div style="margin:5px 0 0;">
 						<label style="font-size:16px"><input type="radio" name="in[audio][source]" value="upload"<?=($in['audio']['source'] == "upload" ? ' checked="checked"' : '')?>"/> Upload an MP3</label>
 						<div class="sub"<?=($in['audio']['source'] != "upload" ? ' style="display:none"' : '')?>>
-							<?=($usrrank >= 6 ? '<div class="warn" style="margin:0 0 2px;">Consider an addition to the <a href="/ninadmin/albums.php?action=new">album databse</a> first, then uploading this track as a sample, then selecting it above.</div>' : '')?>
+							<?=($_SESSION['user_rank'] >= 6 ? '<div class="warn" style="margin:0 0 2px;">Consider an addition to the <a href="/ninadmin/albums.php?action=new">album databse</a> first, then uploading this track as a sample, then selecting it above.</div>' : '')?>
 							<input type="hidden" name="MAX_FILE_SIZE" value="7340032"/>
 							<input type="file" name="audio_upload"/>&nbsp;&nbsp;<span style="color:#666">MP3 files only; Size limit is 7MB</span>
 						</div>
@@ -356,7 +356,7 @@ if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/news/headingimg_$nid.png")) $
 			<label><input type="checkbox" name="in[post_to][forums]" value="1"<?=($in['post_to']['forums'] ? ' checked="checked"' : '')?> onclick="if($(this).is(':checked')) { $(this).parent().next().show(); $('#new-post-options table input').attr('disabled','disabled'); } else { $(this).parent().next().hide(); $('#new-post-options table input').removeAttr('disabled'); }"/> Post as a new forum topic</label>
 			<div style="margin:0 0 0 10px;<?=(!$in['post_to']['forums'] ? 'display:none;' : '')?>">
 				<?
-				$query = "SELECT * FROM forums WHERE closed <= '$usrrank' AND invisible <= '$usrrank' ORDER BY cid, title";
+				$query = "SELECT * FROM forums WHERE closed <= '$_SESSION['user_rank']' AND invisible <= '$_SESSION['user_rank']' ORDER BY cid, title";
 				$res   = mysqli_query($GLOBALS['db']['link'], $query);
 				$i = 0;
 				while($row = mysqli_fetch_assoc($res)) {

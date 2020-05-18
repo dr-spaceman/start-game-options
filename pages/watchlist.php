@@ -1,6 +1,6 @@
 <?
-require $_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php";
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 require $_SERVER['DOCUMENT_ROOT']."/bin/php/class.pages.php";
 unset($page->css);
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php";
@@ -21,7 +21,7 @@ $page->title = "Your Watch List -- Videogam.in";
 
 $page->header();
 
-if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php">Log In</a> to view your watch list.</big>');
+if(!$usrid) $page->kill('<big style="font-size:150%;">Please <a href="/login.php">Log In</a> to view your watch list.</big>');
 
 ?>
 <h1>Your Watch List</h1>
@@ -33,7 +33,7 @@ if(!$usrid) $page->die_('<big style="font-size:150%;">Please <a href="/login.php
 </div>
 
 <?
-if(!$numwatching) $page->die_("You aren't watching any pages yet. To watch a page, navigate to that page and click the checkbox at the bottom of the page.");
+if(!$numwatching) $page->kill("You aren't watching any pages yet. To watch a page, navigate to that page and click the checkbox at the bottom of the page.");
 ?>
 
 <div style="float:right; width:35%;">

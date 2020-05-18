@@ -1,7 +1,7 @@
 <?
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-$page = new page();
-require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.img.php");
+use Vgsite\Page;
+$page = new Page();
+use Vgsite\Image;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.pglinks.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.tags.php");
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bin/php/bbcode.php");
@@ -21,26 +21,26 @@ $page->openSection(array("css"=>"position:relative;"));
 <header class="uploads-header">
 	<h1>Upload Manager</h1>
 	<div class="uploads-header-controls">
-		<?=($_GET['sessid'] ? '<a href="/uploads.php" class="link-alluploads">Your Uploads</a>&nbsp;&nbsp;&nbsp;' : '')?>
+		<?=($_GET['session_id'] ? '<a href="/uploads.php" class="link-alluploads">Your Uploads</a>&nbsp;&nbsp;&nbsp;' : '')?>
 		<a href="/upload.php" class="bluebutton link-newupload"><b>+</b> New Upload</a>
 	</div>
 </header>
 <div class="clear"></div>
 <?
 
-if(!$usrid) $page->die_('Please <a href="/login.php">log in</a> to access your uploads.');
+if(!$usrid) $page->kill('Please <a href="/login.php">log in</a> to access your uploads.');
 
-do if($_GET['sessid'] || $_GET['img_id']){
+do if($_GET['session_id'] || $_GET['img_id']){
 	
 	// view/edit image or upload session
 	
-	$sessid = trim($_GET['sessid']);
+	$session_id = trim($_GET['session_id']);
 	
-	$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+	$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $session_id)."' LIMIT 1";
 	$sess_res = mysqli_query($GLOBALS['db']['link'], $query);
-	if(!mysqli_num_rows($sess_res)) $page->die_("Couldn't find session data fro ID # $sessid");
+	if(!mysqli_num_rows($sess_res)) $page->kill("Couldn't find session data fro ID # $session_id");
 	$sess = mysqli_fetch_object($sess_res);
-	if($sess->usrid != $usrid && $usrrank < 8) $page->die_("Sorry, but you don't have access to this upload session");
+	if($sess->usrid != $usrid && $_SESSION['user_rank'] < 8) $page->kill("Sorry, but you don't have access to this upload session");
 	
 	if($_POST){
 		
@@ -113,7 +113,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 		if($num_rm) $results[] = $num_rm." image".($num_rm != 1 ? "s" : "")." removed";
 		
 		//re-fetch session data
-		$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' LIMIT 1";
+		$query = "SELECT * FROM images_sessions WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $session_id)."' LIMIT 1";
 		$sess_res = mysqli_query($GLOBALS['db']['link'], $query);
 		if(!mysqli_num_rows($sess_res)) break;
 		$sess = mysqli_fetch_object($sess_res);
@@ -126,18 +126,18 @@ do if($_GET['sessid'] || $_GET['img_id']){
 	}
 	
 	?>
-	<input type="hidden" name="img_session_id" value="<?=$sessid?>" id="img_session_id"/>
+	<input type="hidden" name="img_session_id" value="<?=$session_id?>" id="img_session_id"/>
 	
 	<div style="width:500px; height:36px; overflow:hidden;">
 		<form class="iledit nobuttons form-imgsessiondescription">
-			<input type="hidden" name="img_session_id" value="<?=$sessid?>"/>
+			<input type="hidden" name="img_session_id" value="<?=$session_id?>"/>
 			This image set is called <input type="text" name="img_session_description" value="<?=htmlSC($sess->img_session_description)?>" id="img_session_description" class="ileditinp input-imgsessiondescription" onblur="iledit.submit($(this).closest('form'))"/>
 		</form>
 		<div id="iledit-imgsessdesc" class="ileditme" title="click to change" style="font-size:22px; padding:4px 3px 5px; white-space:nowrap;"><?=$sess->img_session_description?></div>
 	</div>
 	<div style="margin:10px 0 0; font-size:15px; color:#CCC;">
 		<b style="color:black;"><?=$sess->img_qty?> Image<?=($sess->img_qty != 1 ? 's' : '')?></b> &nbsp; 
-		<a href="/upload.php?sessid=<?=$sessid?>" title="Upload more images to this set" style="text-decoration:none"><b style="font-size:14px;">+</b> <u>Upload More</u></a>
+		<a href="/upload.php?session_id=<?=$session_id?>" title="Upload more images to this set" style="text-decoration:none"><b style="font-size:14px;">+</b> <u>Upload More</u></a>
 	</div>
 	<?
 	if(substr($sess->img_session_description, 0, 4) == date("Y")){
@@ -182,7 +182,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 		</div>
 	</div>
 	
-	<!--<form action="uploads.php?sessid=<?=$sessid?>" method="post" name="edimgform" id="edimgform" onsubmit="return ($('#clicksubmit').val() ? true : false);" style="display:block;position:relative;">-->
+	<!--<form action="uploads.php?session_id=<?=$session_id?>" method="post" name="edimgform" id="edimgform" onsubmit="return ($('#clicksubmit').val() ? true : false);" style="display:block;position:relative;">-->
 	<div id="edimgform">
 		
 		<?
@@ -223,7 +223,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 		
 		<div id="imgsetedit" class="sm<?=($sess->img_qty > 1 ? ' selectable' : '')?>">
 			<?
-			$query = "SELECT img_name FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $sessid)."' ORDER BY `sort`, img_id";
+			$query = "SELECT img_name FROM images WHERE img_session_id = '".mysqli_real_escape_string($GLOBALS['db']['link'], $session_id)."' ORDER BY `sort`, img_id";
 			$res   = mysqli_query($GLOBALS['db']['link'], $query);
 			while($row = mysqli_fetch_assoc($res)){
 				
@@ -258,7 +258,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 							<?
 						} else {
 							?>
-							<a href="/image/<?=$img->img_name?>/session/<?=$sessid?>" title="Permanent link for this image" class="tooltip"><img src="<?=$img->src['sm']?>" alt="<?=$img->img_name?>" title="<?=$title?>" class="tooltip"/></a>
+							<a href="/image/<?=$img->img_name?>/session/<?=$session_id?>" title="Permanent link for this image" class="tooltip"><img src="<?=$img->src['sm']?>" alt="<?=$img->img_name?>" title="<?=$title?>" class="tooltip"/></a>
 							<?
 						}
 						?>
@@ -268,7 +268,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 							<dt>
 								<input type="hidden" name="img_name" value="<?=$img->img_name?>"/>
 								<form class="iledit">
-									<input type="hidden" name="img_session_id" value="<?=$sessid?>"/>
+									<input type="hidden" name="img_session_id" value="<?=$session_id?>"/>
 									<input type="hidden" name="img_id" value="<?=$img->img_id?>"/>
 									<input type="text" name="img_title" value="<?=htmlSC($img_title)?>" class="ileditinp" style="width:300px;"/>
 								</form>
@@ -285,7 +285,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 								}
 								?>
 								<form class="iledit">
-									<input type="hidden" name="img_session_id" value="<?=$sessid?>"/>
+									<input type="hidden" name="img_session_id" value="<?=$session_id?>"/>
 									<input type="hidden" name="img_id" value="<?=$img->img_id?>"/>
 									<textarea name="img_description" class="ileditinp tagging autosize" style="width:480px; height:28px;"><?=$img_desc?></textarea>
 								</form>
@@ -303,7 +303,7 @@ do if($_GET['sessid'] || $_GET['img_id']){
 							</dd>
 							<dd class="catg">
 								<form class="iledit">
-									<input type="hidden" name="img_session_id" value="<?=$sessid?>"/>
+									<input type="hidden" name="img_session_id" value="<?=$session_id?>"/>
 									<input type="hidden" name="img_id" value="<?=$img->img_id?>"/>
 									<select name="img_category_id" class="ileditinp" style="width:auto;">
 										<?=$img_category_options?>
@@ -314,12 +314,12 @@ do if($_GET['sessid'] || $_GET['img_id']){
 							<dd class="info">
 								<time datetime="<?=$img->img_timestamp?>" title="Uploaded <?=$img->img_timestamp?>"><?=formatDate($img->img_timestamp, 7)?></time> &middot; 
 								<?=($img->img_views ? '<strong>'.$img->img_views.'</strong>' : 'No')?> views &middot; 
-								<?=($num_comments ? '<a href="/image/'.$img->img_name.'/session/'.$sessid.'">'.$num_comments.' comments</a>' : 'No comments')?>
+								<?=($num_comments ? '<a href="/image/'.$img->img_name.'/session/'.$session_id.'">'.$num_comments.' comments</a>' : 'No comments')?>
 							</dd>
 							<dd class="controls">
 								<ul>
 									<li class="permalink">
-										<a href="/image/<?=$img->img_name?>/session/<?=$sessid?>" title="Permanent link for this image"><span style="background-position:-89px 1px;">permalink</span></a>
+										<a href="/image/<?=$img->img_name?>/session/<?=$session_id?>" title="Permanent link for this image"><span style="background-position:-89px 1px;">permalink</span></a>
 									</li>
 									<li class="code">
 										<a href="#generateImgCode" title="Generate display code" onclick="genImgCode('<?=$img->img_name?>')"><span style="background-position:-60px 3px;">display code</span></a>
@@ -380,14 +380,14 @@ if($q = trim($_GET['q'])){
 	else {
 		?><div class="uploadslist"><?
 		arsort($sessions);
-		foreach($sessions as $sessid){
-			$query = "SELECT * FROM images_sessions WHERE img_session_id = '$sessid' LIMIT 1";
+		foreach($sessions as $session_id){
+			$query = "SELECT * FROM images_sessions WHERE img_session_id = '$session_id' LIMIT 1";
 			if($row = mysqli_fetch_assoc(mysqli_query($GLOBALS['db']['link'], $query))){
 				$file = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], "SELECT img_name FROM images WHERE img_session_id = '".$row['img_session_id']."' ORDER BY `sort` ASC LIMIT 1"));
 				$img = new img($file->img_name);
 				?>
 				<figure>
-					<a href="?sessid=<?=$row['img_session_id']?>">
+					<a href="?session_id=<?=$row['img_session_id']?>">
 						<img src="<?=$img->src['ss']?>" border="0"/>
 						<figcaption>
 							<h6><?=$row['img_session_description']?></h6>
@@ -414,7 +414,7 @@ if($q = trim($_GET['q'])){
 				$img = new img($file->img_name);
 				?>
 				<figure>
-					<a href="?sessid=<?=$row['img_session_id']?>">
+					<a href="?session_id=<?=$row['img_session_id']?>">
 						<img src="<?=$img->src['ss']?>" border="0"/>
 						<figcaption>
 							<h6><?=$row['img_session_description']?></h6>

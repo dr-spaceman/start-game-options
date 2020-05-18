@@ -25,7 +25,7 @@ function setSessId() {
 	
 
 function submitNew() {
-	global $usrid, $usrname, $usrrank;
+	global $usrid, $usrname, $_SESSION['user_rank'];
 	
 	if(!$this->type) return array("errors" => array("type_id required for contribution"));
 	if(!$this->desc) return array("errors" => array("description required for contribution"));
@@ -106,7 +106,7 @@ function submitNew() {
 	
 	//upload img?
 	if($this->upload) {
-		require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+		use Verot\Upload;
 		$handle = new Upload($this->upload);
 	  if ($handle->uploaded) {
 	  	
@@ -241,14 +241,14 @@ function recalculateContributions($uid) {
 }
 
 function isPending() {
-	global $usrrank;
+	global $_SESSION['user_rank'];
 	
 	$pend = 1;
 	if($this->status == "publish") $pend = 0;
 	elseif($this->status == "pend") $pend = 1;
 	else {
 		//decide to publish or pend it
-		if($usrrank >= 4) $pend = 0;
+		if($_SESSION['user_rank'] >= 4) $pend = 0;
 		else {
 			if(substr($this->ssubj, 0, 4) == "gid:") {
 				//unpublished game -> publish
@@ -296,7 +296,7 @@ function makeContrDataArr($str) {
 
 function processBoxes($uploaded_file, $gid) {
 	
-	require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+	use Verot\Upload;
 	
 	if(!is_dir($_SERVER['DOCUMENT_ROOT'].'/games/files/'.$gid.'/')) @mkdir($_SERVER['DOCUMENT_ROOT'].'/games/files/'.$gid.'/', 0777);
 	

@@ -1,6 +1,6 @@
 <?
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.img.php";
+use Vgsite\Page;
+use Vgsite\Image;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php";
 
 if($_GET['load_img_data']){
@@ -56,9 +56,9 @@ if($_GET['load_img_data']){
 		
 		$ret['img_width'] = $img->img_width;
 		$ret['img_height'] = $img->img_height;
-		$ret['img'] = '<img src="'.$img->src[0].'" alt="'.htmlSC($img->img_title).'" width="'.$x.'" height="'.$y.'" border="0" class="'.($scale ? 'scaled' : '').'" onclick="'.($scale ? 'lightbox.toggleScaled({scaled_x:'.$x.',scaled_y:'.$y.',full_x:'.$img->img_width.',full_y:'.$img->img_height.'});' : '').'"/>';
-		//if($scale) $ret['img_full'] = '<img src="'.$img->src[0].'" alt="'.htmlSC($img->img_title).'" width="'.$img->img_width.'" height="'.$img->img_height.'" border="0" class="lightbox-fullimg togglescaled"  onclick="lightbox.toggleScaled(\'scaled\')"/>';
-		//if($scale) $ret['img'] = '<a href="'.$img->src[0].'" target="_blank" class="scaled">'.$ret['img'].'</a>';
+		$ret['img'] = '<img src="'.$img->src['original'].'" alt="'.htmlSC($img->img_title).'" width="'.$x.'" height="'.$y.'" border="0" class="'.($scale ? 'scaled' : '').'" onclick="'.($scale ? 'lightbox.toggleScaled({scaled_x:'.$x.',scaled_y:'.$y.',full_x:'.$img->img_width.',full_y:'.$img->img_height.'});' : '').'"/>';
+		//if($scale) $ret['img_full'] = '<img src="'.$img->src['original'].'" alt="'.htmlSC($img->img_title).'" width="'.$img->img_width.'" height="'.$img->img_height.'" border="0" class="lightbox-fullimg togglescaled"  onclick="lightbox.toggleScaled(\'scaled\')"/>';
+		//if($scale) $ret['img'] = '<a href="'.$img->src['original'].'" target="_blank" class="scaled">'.$ret['img'].'</a>';
 		$ret['label'] =
 			'<ul>'.
 				'<li class="h">'.
@@ -71,7 +71,7 @@ if($_GET['load_img_data']){
 				'</li>'.
 				'<li class="tags taglist"><h6>Tags</h6>'.$tags->taglist().($allow_add ? '<ul class="taglist"><li class="sugg"><a class="suggtaglink" onclick="lightbox.close(); img.edit(\''.$imgfile.'\');"><b>+</b><u>Add a Tag</u></a></li></ul>' : '').'</li>'.
 				'<li class="permalink"><a href="'.$img->src['url'].'" style="text-decoration:none;">&infin; <u>Permalink</u></a></li>'.
-				($usrrank >= 4 || $img->usrid == $usrid ? '<li><a onclick="lightbox.close(); img.edit(\''.$imgfile.'\');" class="red">Edit image</a></li>' : '').
+				($_SESSION['user_rank'] >= 4 || $img->usrid == $usrid ? '<li><a onclick="lightbox.close(); img.edit(\''.$imgfile.'\');" class="red">Edit image</a></li>' : '').
 			'</ul>';
 		
 		//+1 view 

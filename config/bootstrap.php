@@ -20,9 +20,6 @@ $dotenv = Dotenv\Dotenv::createImmutable(ROOT_DIR);
 $dotenv->load();
 $dotenv->required(['ENVIRONMENT', 'DB_HOST', 'DB_USERNAME', 'DB_PASSWORD', 'DB_NAME_MAIN']);
 
-// Registry
-$registry = Registry::instance();
-
 // Register db handler
 $db_options = array(
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -37,7 +34,7 @@ $dsn = sprintf(
 );
 try {
 	$pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options);
-	$registry->set('pdo', $pdo);
+	Registry::set('pdo', $pdo);
 } catch (PDOException $e) {
     echo "Database connection failed";
     exit;
@@ -49,7 +46,7 @@ $logger = new Logger('app');
 $logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
 // Inject details of error source
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
-$registry->set('logger', $logger);
+Registry::set('logger', $logger);
 
 // Templates
 $loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);

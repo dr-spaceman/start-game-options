@@ -1,7 +1,8 @@
-<?
-require "page.php";
+<?php
 
-?><?=$html_tag?>
+use Vgsite\Page;
+
+?><?=Page::HTML_TAG?>
 <head>
 	<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
 	<script src="http://platform.twitter.com/widgets.js" type="text/javascript"></script>

@@ -1,10 +1,10 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
+use Vgsite\Page;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/admin.php");
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Verot\Upload;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.unzip.php");
 
-$page = new page;
+$page = new Page();
 $page->title = "Nintendosite Admin / Media Manager";
 $page->min_rank = 6;
 $page->admin = TRUE;
@@ -90,7 +90,7 @@ if($operatedir = $_GET['operatedir']) {
 	}
 	
 	//user has acccess to dir?
-	if($dat->usrid != $usrid && $usrrank <= 7) {
+	if($dat->usrid != $usrid && $_SESSION['user_rank'] <= 7) {
 		die("No access to $operatedir");
 	}
 	
@@ -194,7 +194,7 @@ if($operatedir) {
 		
 		} elseif($_POST['operation'] == "rename") {
 			//rename dir
-			if($usrrank <= 7) die("Can't rename with your rank");
+			if($_SESSION['user_rank'] <= 7) die("Can't rename with your rank");
 			if(!$newname = $_POST['newname']) $errors[] = ("no new name given");
 			if(!eregi("^([a-zA-Z0-9_-])+$", $newname) || !eregi("[a-zA-Z]+", $newname))
 				$errors[] = ("Error: illegal directory name! Shame on you!");
@@ -274,7 +274,7 @@ if($operatedir) {
 			<input type="submit" name="submitoperation" value="Submit" onClick="javascript:return confirmSubmit('Are you sure?')" />
 		</form>
 		
-		<? if($usrrank >= 8) { ?>
+		<? if($_SESSION['user_rank'] >= 8) { ?>
 		<br />
 		<form action="media.php?operatedir=<?=$operatedir?>" method="post">
 			<input type="hidden" name="operation" value="rename" />
@@ -643,7 +643,7 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 				<p><textarea name="det[source]" id="source-field" rows="2" cols="50"><?=$dat->source?></textarea></p>
 			</td>
 		</tr>
-		<tr<?=($usrrank <= 7 ? ' style="display:none"' : '')?>>
+		<tr<?=($_SESSION['user_rank'] <= 7 ? ' style="display:none"' : '')?>>
 			<th>Date Time</th>
 			<td>
 				<small>YYYY-MM-DD HH:MM:SS</small>
@@ -672,7 +672,7 @@ if(($_POST['submitupload'] && $uploaddirectory = $_POST['uploaddirectory']) || $
 				echo '<li>Nothing tagged yet</li>';
 			} else {
 				while($row = mysqli_fetch_assoc($res)) {
-					if($usrrank >= 7) $tag_admin = ' <a href="#x" onclick="deleteTag(\''.$row['id'].'\');" class="x" id="x-'.$row['id'].'">X</a><img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none" id="loading-'.$row['id'].'"/>';
+					if($_SESSION['user_rank'] >= 7) $tag_admin = ' <a href="#x" onclick="deleteTag(\''.$row['id'].'\');" class="x" id="x-'.$row['id'].'">X</a><img src="/bin/img/loading-arrows-small.gif" alt="loading" style="display:none" id="loading-'.$row['id'].'"/>';
 					echo '<li id="li-'.$row['id'].'">'.outputTag($row['tag'], '', true).$tag_admin."</li>\n";
 				}
 			}
@@ -791,7 +791,7 @@ echo $media_page_head;
 		$res   = mysqli_query($GLOBALS['db']['link'], $query);
 		while($row = mysqli_fetch_assoc($res)) {
 			//user access?
-			if($row['usrid'] != $usrid && $usrrank <= 7) {
+			if($row['usrid'] != $usrid && $_SESSION['user_rank'] <= 7) {
 				continue;
 			} 
 			$dir = str_replace("/media/", "", $row['directory']);

@@ -51,7 +51,7 @@ class forum {
 		// TOPIC LIST //
 		////////////////
 		
-		global $db, $usrid, $usrrank, $usrlastlogin;
+		global $db, $usrid, $_SESSION['user_rank'], $usrlastlogin;
 			
 		?>
 		<div id="forum">
@@ -103,7 +103,7 @@ class forum {
 		
 		//one of the following is required: $this->fid, $this->location, $this->tag
 		
-		global $db, $usrid, $usrrank, $usrlastlogin, $page;
+		global $db, $usrid, $_SESSION['user_rank'], $usrlastlogin, $page;
 		
 		$bb = new bbcode();
 		
@@ -131,12 +131,12 @@ class forum {
 				$fid = 15;
 				$group_id = substr($this->location, 6);
 				$q = "SELECT * FROM groups WHERE `group_id` = '$group_id' LIMIT 1";
-				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
+				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill("There was an error fetching group details [group ID # $group_id]");
 				$forum->title = $groupdat->name;
 				$forum->description = $groupdat->about;
 				//user is a member?
 				$q = "SELECT * FROM groups_members WHERE group_id='$group_id' AND usrid='$usrid' LIMIT 1";
-				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_('<h1>Access Denied</h1>You must be a group member to access this group\'s forums. <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill('<h1>Access Denied</h1>You must be a group member to access this group\'s forums. <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
 			}
 			
 		} elseif($this->tag) {
@@ -172,7 +172,7 @@ class forum {
 		}
 		
 		//user has access?
-		if($usrrank < $forum->invisible) return;
+		if($_SESSION['user_rank'] < $forum->invisible) return;
 		
 		?>
 		<div id="forum">
@@ -197,7 +197,7 @@ class forum {
 				$navtree = $this->makeNavTree();
 				
 				if(!$usrid) $post_access = 'no-login';
-				elseif($usrrank < $forum->closed) $post_access = 'closed-notice';
+				elseif($_SESSION['user_rank'] < $forum->closed) $post_access = 'closed-notice';
 				else $post_access = 'forum-form';
 				
 				//page navigation
@@ -252,7 +252,7 @@ class forum {
 								<li><span><input type="checkbox" <?=($subscribed ? 'checked' : '')?> class="fauxcheckbox" id="subscribe-topic" onclick="forumSubscription('fid', '<?=$fid?>', $(this))"/><label for="subscribe-topic" class="tooltip" title="E-mail me whenever a new topic is created in this forum">Subscribe</label></span></li>
 								<?
 							}
-							if($fid && $usrrank >= 5) {
+							if($fid && $_SESSION['user_rank'] >= 5) {
 								?>
 								<li>
 									<span>
@@ -260,13 +260,13 @@ class forum {
 											<option value="">Administer&hellip;</option>
 											<option value="/forums/action.php?do=Edit+Forum+Details&fid=<?=$fid?>">forum details</option>
 											<option value="/forums/action.php?do=close&fid=<?=$fid?>">close forum</option>
-											<?=($usrrank >= 8 ? '<option value="/forums/action.php?do=hide&fid='.$fid.'">hide forum</option><option value="/forums/action.php?do=delete&fid='.$fid.'">delete forum</option>' : '')?>
+											<?=($_SESSION['user_rank'] >= 8 ? '<option value="/forums/action.php?do=hide&fid='.$fid.'">hide forum</option><option value="/forums/action.php?do=delete&fid='.$fid.'">delete forum</option>' : '')?>
 										</select>
 									</span>
 								</li>
 								<?
 							}
-								if($this->associate_tag && $usrrank >= 5) {
+								if($this->associate_tag && $_SESSION['user_rank'] >= 5) {
 									echo '<li><a href="/forums/action.php?do=manage_tags&edit_tag='.$this->associate_tag.'"><span style="color:black">Admin:</span> <span style="text-decoration:underline">manage this tag</span></a></li>';
 								}
 								?>
@@ -278,7 +278,7 @@ class forum {
 				<fieldset id="new-topic-form">
 					<?
 					if(!$usrid) echo '<big>Please <a href="/login.php">log in</a> to post a topic.</big>';
-					elseif($usrrank < $forum->closed) echo 'Sorry, this forum is locked; no new topics can be made.';
+					elseif($_SESSION['user_rank'] < $forum->closed) echo 'Sorry, this forum is locked; no new topics can be made.';
 					else {
 						?>
 						<form action="/forums/action.php" method="post" onsubmit="return requiredA();">
@@ -292,7 +292,7 @@ class forum {
 								<label for="NT-forum">Forum</label>
 								<select name="fid">
 									<?
-									$query2 = "SELECT * FROM forums WHERE no_index != '1' AND invisible <= '$usrrank' ORDER BY cid, title";
+									$query2 = "SELECT * FROM forums WHERE no_index != '1' AND invisible <= '$_SESSION['user_rank']' ORDER BY cid, title";
 									$res2   = mysqli_query($GLOBALS['db']['link'], $query2);
 									while($row2 = mysqli_fetch_assoc($res2)) {
 										echo '<option value="'.$row2['fid'].'">'.$row2['title'].'</option>';
@@ -391,7 +391,7 @@ class forum {
 						while($row = mysqli_fetch_assoc($res)) {
 							
 							$print_closed = '';
-							if($usrrank < $row['closed'] || ($row['closed'] && $usrrank >= 5)) $print_closed = ' class="locked"';
+							if($_SESSION['user_rank'] < $row['closed'] || ($row['closed'] && $_SESSION['user_rank'] >= 5)) $print_closed = ' class="locked"';
 							
 							if($row[ratings]) {
 								$total = $row[rating] / $row[ratings];
@@ -462,7 +462,7 @@ class forum {
 	
 	function showTopic($tid='', $pg='') {
 		
-		global $db, $usrid, $usrname, $usrrank, $userprefs, $usrlastlogin, $page;
+		global $db, $usrid, $usrname, $_SESSION['user_rank'], $userprefs, $usrlastlogin, $page;
 		
 		////////////////
 		// SHOW TOPIC //
@@ -491,7 +491,7 @@ class forum {
 		$cmmnt = ($topic->type == "comments" ? TRUE : FALSE);
 		$this->topic_url = $this->topicURL($tid);
 		
-		if($usrrank < $topic->invisible) return;
+		if($_SESSION['user_rank'] < $topic->invisible) return;
 		
 		$posts_unread = array();
 		$d_posts = array();
@@ -522,11 +522,11 @@ class forum {
 				//group
 				$group_id = substr($topic->location, 6);
 				$q = "SELECT * FROM groups WHERE `group_id` = '$group_id' LIMIT 1";
-				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_("There was an error fetching group details [group ID # $group_id]");
+				if(!$groupdat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill("There was an error fetching group details [group ID # $group_id]");
 				$addltitle = ' / <a href="/forums/?location=group:'.$group_id.'">'.$groupdat->name.'</a>';
 				//user is a member?
 				$q = "SELECT * FROM groups_members WHERE group_id='$group_id' AND usrid='$usrid' LIMIT 1";
-				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->die_('<h1>Access Denied</h1>Sorry, you have to be a group member to access this group\'s forums.  <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
+				if(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q))) $page->kill('<h1>Access Denied</h1>Sorry, you have to be a group member to access this group\'s forums.  <a href="/groups/'.$group_id.'/" class="arrow-right">Join this group</a>');
 			} elseif(substr($topic->location, 0, 5) == "post:"){
 				//sblog post
 				$nid = substr($topic->location, 5);
@@ -561,7 +561,7 @@ class forum {
 						?>
 						<li><span><input type="checkbox" <?=($subscribed ? 'checked' : '')?> class="fauxcheckbox" id="subscribe-topic" onclick="forumSubscription('tid', '<?=$tid?>', $(this))"/><label for="subscribe-topic" class="tooltip" title="E-mail me whenever a new topic is created in this forum">Subscribe</label></span></li>
 						<?
-						if($usrrank >= 5) {
+						if($_SESSION['user_rank'] >= 5) {
 							if($topic->sticky) $uns = 'un';
 							else $uns = '';
 							?>
@@ -572,7 +572,7 @@ class forum {
 										<option value="/forums/action.php?do=edit_topic_details&tid=<?=$tid?>">edit topic details</option>
 										<option value="/forums/action.php?do=<?=$uns?>sticky&tid=<?=$tid?>">make <?=$uns?>sticky</option>
 										<option value="/forums/action.php?do=close&tid=<?=$tid?>">close preferences</option>
-										<?=($usrrank >= 8 ? '<option value="/forums/action.php?do=hide&tid='.$tid.'">access preferences</option><option value="/forums/action.php?do=delete&tid='.$tid.'">delete topic</option>' : '')?>
+										<?=($_SESSION['user_rank'] >= 8 ? '<option value="/forums/action.php?do=hide&tid='.$tid.'">access preferences</option><option value="/forums/action.php?do=delete&tid='.$tid.'">delete topic</option>' : '')?>
 										<option value="/forums/action.php?move_topic=<?=$tid?>">move topic</option>
 									</select>
 								</span>
@@ -589,8 +589,8 @@ class forum {
 					<div id="tags" class="tags taglist">
 						<?
 						$_tags = new tags("forums_tags:tid:".$tid);
-						$_tags->allow_add = ($usrrank >= 5 || $topic->usrid == $usrid ? true : false); //allow moderators and the topic creator to add tags
-						$_tags->allow_rm = ($usrrank >= 5 ? true : "creator"); //allow moderators to rm all tags, users to remove their own
+						$_tags->allow_add = ($_SESSION['user_rank'] >= 5 || $topic->usrid == $usrid ? true : false); //allow moderators and the topic creator to add tags
+						$_tags->allow_rm = ($_SESSION['user_rank'] >= 5 ? true : "creator"); //allow moderators to rm all tags, users to remove their own
 						if($topic->usrid == $usrid && $num_posts == 1){
 							//suggest tags if this topic just started (1 post) and the user is the creator
 							$_tags->suggest($d_posts[$first_pid]['message']);
@@ -808,7 +808,7 @@ class forum {
 						</td>
 						<td width="100%" style="text-align:center; color:#BBB;">
 							<?
-							$query = "SELECT * FROM forums_topics WHERE last_post < '$topic->last_post' AND invisible <= '$usrrank' ORDER BY last_post DESC";
+							$query = "SELECT * FROM forums_topics WHERE last_post < '$topic->last_post' AND invisible <= '$_SESSION['user_rank']' ORDER BY last_post DESC";
 							$res = mysqli_query($GLOBALS['db']['link'], $query);
 							if(!mysqli_num_rows($res)) echo '<span id="polder" class="arrow-left">older</span>';
 							while($row = mysqli_fetch_assoc($res)) {
@@ -823,7 +823,7 @@ class forum {
 							}
 							echo " &middot; ";
 							
-							$query = "SELECT * FROM forums_topics WHERE last_post > '$topic->last_post' AND invisible <= '$usrrank' ORDER BY last_post ASC";
+							$query = "SELECT * FROM forums_topics WHERE last_post > '$topic->last_post' AND invisible <= '$_SESSION['user_rank']' ORDER BY last_post ASC";
 							$res = mysqli_query($GLOBALS['db']['link'], $query);
 							if(!mysqli_num_rows($res)) echo '<span class="arrow-right">newer</span>';
 							while($row = mysqli_fetch_assoc($res)) {
@@ -858,7 +858,7 @@ class forum {
 		// @var $ret if true, return false when max $posts_per_page is reached
 		// @var $justposted just posted via ajax or something
 		
-		global $usrid, $usrrank, $unread, $this_loc;
+		global $usrid, $_SESSION['user_rank'], $unread, $this_loc;
 		
 		if($row['usrid'] != $usrid) $justposted = FALSE;
 		
@@ -967,8 +967,8 @@ class forum {
 	   		</div>
 				<ul>
 					<li class="reply message-reply message-op" title="Reply to this thread" data-op="reply" data-user="<?=$this->users[$row['usrid']]['username']?>" data-pid="<?=$row['pid']?>">Reply</li>
-			   	<?=($usrrank >= 5 || $row['usrid'] == $usrid ? '<li class="edit message-op" data-op="edit" data-pid="'.$row['pid'].'">Edit</a></li>' : '')?>
-					<?=($usrrank >= 5 ? '<li class="delete message-op" data-op="delete" data-pid="'.$row['pid'].'">Delete</a></li>' : '')?>
+			   	<?=($_SESSION['user_rank'] >= 5 || $row['usrid'] == $usrid ? '<li class="edit message-op" data-op="edit" data-pid="'.$row['pid'].'">Edit</a></li>' : '')?>
+					<?=($_SESSION['user_rank'] >= 5 ? '<li class="delete message-op" data-op="delete" data-pid="'.$row['pid'].'">Delete</a></li>' : '')?>
 			  </ul>
 			</div>
 			
@@ -1127,8 +1127,8 @@ class forum {
 	}
 	
 	function getUserValue($user='') {
-		global $db, $usrid, $usrrank;
-		if($user == $usrid || !$user) return $usrrank; //given value is logged-in user
+		global $db, $usrid, $_SESSION['user_rank'];
+		if($user == $usrid || !$user) return $_SESSION['user_rank']; //given value is logged-in user
 		else {
 			$query = "SELECT rank FROM users WHERE usrid='$user' LIMIT 1";
 			$dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $query));
@@ -1163,8 +1163,8 @@ class forum {
 	}
 	
 	function numberOfTopics($fid='') {
-		global $usrrank;
-		if($fid) $query = "SELECT * FROM forums_topics WHERE fid='".$fid."' AND invisible <= '$usrrank'";
+		global $_SESSION['user_rank'];
+		if($fid) $query = "SELECT * FROM forums_topics WHERE fid='".$fid."' AND invisible <= '$_SESSION['user_rank']'";
 		else $query = "SELECT * FROM `forums_topics` WHERE `location`='".$this->getThisLocation()."' AND `invisible` < '$uval'";
 		return mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $query));
 	}
@@ -1239,7 +1239,7 @@ class forum {
 	}
 	
 	function makeNavTree() {
-		global $db, $usrrank;
+		global $db, $_SESSION['user_rank'];
 		
 		$navtree = '<select onchange="window.location=\'/forums/\'+this.options[this.selectedIndex].value">
 			<optgroup label="">
@@ -1250,7 +1250,7 @@ class forum {
 		$res = mysqli_query($GLOBALS['db']['link'], $q);
 		while($row = mysqli_fetch_assoc($res)) {
 			$navtree.= '</optgroup><optgroup label="'.$row[category].'">';
-			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$usrrank;
+			$q2 = "SELECT * FROM forums WHERE cid='$row[cid]' AND `invisible` <= ".$_SESSION['user_rank'];
 			$res2 = mysqli_query($GLOBALS['db']['link'], $q2);
 			while($row2 = mysqli_fetch_assoc($res2)) {
 				$navtree.= '<option value="?fid='.$row2[fid].'">'.$row2[title]."</option>\n";

@@ -1,12 +1,12 @@
 <?
-require $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
+use Vgsite\Page;
 require $_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php";
 require $_SERVER['DOCUMENT_ROOT']."/bin/php/swiftmailer/lib/swift_required.php";
 
-$page =  new page();
+$page =  new Page();
 $page->title = "Videogam.in Admin / Mass E-mail Users";
 
-if($usrrank < 8){ include("../404.php"); exit; }
+if($_SESSION['user_rank'] < 8){ include("../404.php"); exit; }
 
 $limit = 30; //send # emails at once
 
@@ -33,7 +33,7 @@ if(isset($_POST['min'])){
 	}
 	
 	if(!$_POST['testmail']){
-		echo $html_tag;
+		echo Page::HTML_TAG;
 		?>
 		<head>
 			<script type="text/javascript" src="/bin/script/jquery.js"></script>

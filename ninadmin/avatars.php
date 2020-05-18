@@ -1,10 +1,10 @@
 <?
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/page.php");
-require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.upload.php");
+use Vgsite\Page;
+use Verot\Upload;
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/class.ajax.php");
 require ($_SERVER["DOCUMENT_ROOT"]."/bin/php/upload_avatar.php");
 
-if($usrrank < 6) die("Access denied");
+if($_SESSION['user_rank'] < 6) die("Access denied");
 
 $root = $_SERVER['DOCUMENT_ROOT']."/bin/img/avatars";
 
@@ -21,7 +21,7 @@ if($del = $_GET['delete']) {
 	exit;
 }
 
-$page = new page();
+$page = new Page();
 
 if($process = $_POST['process']) {
 	foreach($process as $x){

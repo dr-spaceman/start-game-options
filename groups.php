@@ -1,16 +1,13 @@
 <?
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
-$page = new page;
+use Vgsite\Page;
+$page = new Page();
 
 require ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.groups.php");
 $groups = new groups;
 
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/class.badges.php");
-$_badges = new badges;
-
 require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/bbcode.php");
 require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/htmltoolbox.php");
-require_once($_SERVER['DOCUMENT_ROOT']."/bin/php/class.upload.php");
+use Verot\Upload;
 
 $path = $_GET['path'];
 if($path != "") {
@@ -159,7 +156,7 @@ if($path != "") {
 							}
 						}
 						
-						$_badges->earn(41);
+						Badge::getById(41)->earn($user);
 						
 						header("Location:/groups/".$group_id."/".formatNameURL($in['name']));
 						exit;
@@ -176,7 +173,7 @@ if($path != "") {
 		
 		$groups->header();
 		
-		if(!$usrid) $page->die_('Please <a href="/login.php">log in</a> to create a group.');
+		if(!$usrid) $page->kill('Please <a href="/login.php">log in</a> to create a group.');
 		
 		?>
 		<form action="/groups.php?path=create" method="post" enctype="multipart/form-data">
@@ -469,7 +466,7 @@ if($path != "") {
 					$members[] = $usrid;
 					$my_details = array("joined" => $dt, "subscribe" => "1", "status" => "1");
 					
-					$_badges->earn(40);
+					Badge::getById(40)->earn($user);
 					
 				}
 			}
@@ -483,7 +480,7 @@ if($path != "") {
 		
 		$groups->header();
 		
-		if($gdat->status == "invite" && !in_array($usrid, $members)) $page->die_("Access to this group is for members only.");
+		if($gdat->status == "invite" && !in_array($usrid, $members)) $page->kill("Access to this group is for members only.");
 				
 		if(file_exists($_SERVER['DOCUMENT_ROOT']."/bin/img/groups/".$gdat->img)) $img = $gdat->img;
 		
@@ -500,7 +497,7 @@ if($path != "") {
 				
 				// MANAGER //
 				
-				if(!in_array($usrid, $managers) && $usrrank < 9) $page->die_("You can't manage this group since you aren't a manager.");
+				if(!in_array($usrid, $managers) && $_SESSION['user_rank'] < 9) $page->kill("You can't manage this group since you aren't a manager.");
 				
 				?>
 				<h4>Group Manager <span style="color:#888;">&middot;</span> <a href="/groups/<?=$gdat->group_id?>/<?=formatNameURL($gdat->name)?>" class="arrow-right">Back to group hub</a></h4>
@@ -675,7 +672,7 @@ if($path != "") {
 						?>
 						<li>
 							<?
-							if(in_array($usrid, $managers) || $usrrank == 9) {
+							if(in_array($usrid, $managers) || $_SESSION['user_rank'] == 9) {
 								?>
 								<div id="manage-link"><a href="/groups/<?=$gdat->group_id?>/_/manage" style="padding-left:14px; background:url(/bin/img/icons/edit.gif) no-repeat 0 50%;">Manage Group</a></div>
 								<?

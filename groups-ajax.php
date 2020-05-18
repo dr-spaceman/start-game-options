@@ -1,5 +1,5 @@
 <?
-require ($_SERVER['DOCUMENT_ROOT']."/bin/php/page.php");
+use Vgsite\Page;
 
 $do = $_POST['do'];
 

@@ -10,7 +10,7 @@ $sessid    = $_POST['sessid'] ? $_POST['sessid'] : date("YmdHis").sprintf("%07d"
 
 $filedir   = "/pages/files/".preg_replace("/[^a-z0-9_-]/i", "", $titleurl)."/";
 $pgtype    = $row['pgtype'];
-if(!$pgtype) $page->die_("No page type detected");
+if(!$pgtype) $page->kill("No page type detected");
 
 $_pg->ile  = true;
 $dbdat     = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $masterq));
@@ -86,7 +86,7 @@ if(!$_COOKIE['iledit'] || !$usrid){
 									<br/>
 									<?
 								}
-								if($usrrank > 6){
+								if($_SESSION['user_rank'] > 6){
 									?><label><input type="checkbox" name="withholdpts" value="1"<?=($_POST['withholdpts'] ? ' checked="checked"' : '')?>/> Withhold my points for this edit</label><br/><?
 								}
 								?><label><input type="checkbox" name="minoredit" value="1"<?=($_POST['minoredit'] ? ' checked="checked"' : '')?>/> This is a minor edit</label> <a href="#help" class="tooltip" title="Mark this edit as minor if it only corrects spelling or formatting, performs minor rearrangements of text, or tweaks only a few words or inconsequential attributes.">?</a><?
@@ -545,7 +545,7 @@ if(!$_COOKIE['iledit'] || !$usrid){
 		<dd>
 			<label><input type="checkbox" name="rmpg" value="1" <?=($_POST['rmpg'] ? 'checked="checked"' : '')?> onclick="if(!confirm('Are you sure?')) $(this).attr('checked', false);"/>Remove this page</label>
 		</dd>
-		<?=($usrrank >= 8 ? '<dd><label><input type="checkbox" name="rmpgscores" value="1" '.($_POST['rmpgscores'] ? 'checked="checked"' : '').'/>Also nullify all scores given to previous editors of this page</label></dd>' : '')?>
+		<?=($_SESSION['user_rank'] >= 8 ? '<dd><label><input type="checkbox" name="rmpgscores" value="1" '.($_POST['rmpgscores'] ? 'checked="checked"' : '').'/>Also nullify all scores given to previous editors of this page</label></dd>' : '')?>
 	</dl>
 	
 </form>

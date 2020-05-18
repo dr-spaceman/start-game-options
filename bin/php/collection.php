@@ -5,8 +5,8 @@
  * Accessed asyncronously through HTTP POST
  */
 
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/page.php";
-require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.shelf.php";
+use Vgsite\Page;
+use Vgsite\Shelf;
 require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/class.ajax.php";
 require_once $_SERVER['DOCUMENT_ROOT']."/pages/class.pages.php";
 
@@ -93,7 +93,7 @@ function manageCollectionItem() {
 		// New item; Add a shell item into the db 
 		$id = mysqlNextAutoIncrement("collection");
 		$q = "INSERT INTO `collection` (`usrid`, `title`, `sort`) VALUES ('$usrid', '".mysqli_real_escape_string($GLOBALS['db']['link'], $in['title'])."', '$sort')";
-		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($usrrank >= User::ADMIN ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
+		if(!mysqli_query($GLOBALS['db']['link'], $q)) $a->kill("There was a database error and this game couldn't be added to your collection :(" . ($_SESSION['user_rank'] >= User::ADMIN ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 		$in['id'] = $id;
 		$a->ret['added'] = 1;
 	}
@@ -136,7 +136,7 @@ function manageCollectionItem() {
 			$a->ret['shelf_id'] = $shelf->id;*/
 		}
 	} else {
-		$a->error("There was a database error and this game couldn't be added to your collection :(" . ($usrrank > 8 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
+		$a->error("There was a database error and this game couldn't be added to your collection :(" . ($_SESSION['user_rank'] > 8 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 	}
 	
 	exit;
@@ -153,7 +153,7 @@ function removeCollectionItem() {
 	
 	$q = "DELETE FROM collection WHERE `id` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $_POST['remove'])."' AND usrid = '$usrid' LIMIT 1";
 	if(mysqli_query($GLOBALS['db']['link'], $q)) $a->ret['success'] = 1;
-	else $a->kill("Couldn't remove item..." . ($usrrank >= 7 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
+	else $a->kill("Couldn't remove item..." . ($_SESSION['user_rank'] >= 7 ? " [$q] ".mysqli_error($GLOBALS['db']['link']) : ""));
 	
 	exit;
 	
