@@ -20,6 +20,14 @@ $dotenv = Dotenv\Dotenv::createImmutable(ROOT_DIR);
 $dotenv->load();
 $dotenv->required(['ENVIRONMENT', 'DB_HOST', 'DB_USERNAME', 'DB_PASSWORD', 'DB_NAME_MAIN']);
 
+// Register logger
+$logger = new Logger('app');
+// Register a handler -- file loc and minimum error level to record
+$logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
+// Inject details of error source
+$logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
+Registry::set('logger', $logger);
+
 // Register db handler
 $db_options = array(
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -33,20 +41,13 @@ $dsn = sprintf(
     getenv('DB_PORT'),
 );
 try {
-	$pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options);
-	Registry::set('pdo', $pdo);
+    $pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options);
+    Registry::set('pdo', $pdo);
 } catch (PDOException $e) {
+    $logger->error($e);
     echo "Database connection failed";
     exit;
 }
-
-// Register logger
-$logger = new Logger('app');
-// Register a handler -- file loc and minimum error level to record
-$logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
-// Inject details of error source
-$logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
-Registry::set('logger', $logger);
 
 // Templates
 $loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);
@@ -57,7 +58,7 @@ $template = new \Twig\Environment($loader, [
 
 // Catch uncaught exceptions
 set_exception_handler(function (\Throwable $e) {
-    $GLOBALS['logger']->warning($e);
+    Registry::get('logger')->warning($e);
     if (getenv('ENVIRONMENT') == "development") echo $e;
     else echo $e->getMessage();
 });
@@ -70,39 +71,22 @@ $errors   = array();
 $warnings = array();
 $results  = array();
 
-$usrid   = null;
+$current_user = null;
 $usrname = null;
-$_SESSION['user_rank'] = 0;
+$usrid = -1;
+$_SESSION['user_rank'] = User::GUEST;
 
-//set login vars
 if ($_SESSION['logged_in'] && $_SESSION['user_id']) {
     $current_user = User::findById($_SESSION['user_id']);
     // Dicouraged old variable references
-	$usrname = $current_user->getUsername();
-	$usrid = $_SESSION['user_id'];
-	$usrlastlogin = $current_user->getLastLogin();
-} else {
-	
-	if(isset($_COOKIE['usrsession'])) {
-		
-		//login user from remembered cookie
-		
-		$usrsession = base64_decode($_COOKIE['usrsession']);
-		list($usrid_, $password_) = explode("```", $usrsession);
-		$q = sprintf(
-			"SELECT * FROM users WHERE usrid='%s' AND password=PASSWORD('%s') LIMIT 1",
-			mysqli_real_escape_string($GLOBALS['db']['link'], $usrid_),
-			mysqli_real_escape_string($GLOBALS['db']['link'], $password_)
-		);
-		if($res = mysqli_query($GLOBALS['db']['link'], $q)) {
-			$userdat = mysqli_fetch_assoc($res);
-			login($userdat);
-		}
-	
-	}
+    $usrname = $current_user->getUsername();
+    $usrid = $_SESSION['user_id'];
+    $usrlastlogin = $current_user->getLastLogin();
 }
 
-if($_SESSION['user_rank'] == User::RESTRICTED) die("*");
+if ($_SESSION['user_rank'] == User::RESTRICTED) {
+    die("*");
+}
 
 require ROOT_DIR.'/src/required_functions.php';
-require "../bin/php/bbcode.php";
+// require "../bin/php/bbcode.php";

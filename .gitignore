@@ -11,3 +11,15 @@ composer.phar
 /var/sessions/*
 /var/uploads/*
 /public/images/*
+
+/* Old files awaiting refactoring *
+/*.php
+/*.htm
+/*.css
+/*.js
+/bin
+/forums
+/music
+/ninadmin
+/pages
+/posts
