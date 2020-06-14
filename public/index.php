@@ -2,6 +2,10 @@
 
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 
+echo $template->render('index.html');
+
+exit;
+
 $page = new Page();
 
 $page->fb = true;

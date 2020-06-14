@@ -8,10 +8,22 @@
     </head>
     <body>
         <div id="content">{% block content %}{% endblock %}</div>
+        
         <div id="footer">
-            {% block footer %}
-                &copy; Copyright 2011 by <a href="http://domain.invalid/">you</a>.
-            {% endblock %}
+            {% block footer %}{% endblock %}
         </div>
+
+        {% block scripts %}
+        <!-- Load React. -->
+        <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        
+        <!-- Don't use this in production: -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <!-- Load our React component. -->
+        <script type="text/babel" src="/javascript/reactapp.js"></script>
+        {% endblock %}
     </body>
 </html>
