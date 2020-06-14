@@ -4,7 +4,7 @@ namespace Vgsite;
 
 class Page
 {
-	static const HTML_TAG = '<!DOCTYPE html><html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
+	const HTML_TAG = '<!DOCTYPE html><html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
 
 	private $called = false;
 	private $called_sections = array();
@@ -97,16 +97,17 @@ class Page
 
 		$user_id = (int) $_SESSION['user_id'] ?: null;
 		$user = ObjectCache::get(User::class, $user_id);
-		}
 
-		if ($this->superminimalist) $this->minimalist = true;
+		if ($this->superminimalist) {
+			$this->minimalist = true;
+		}
 
 		$this->called_sections['header'] = 1;
 
 		if (!is_array($this->css)) {
 			$this->css = array();
 		}
-		if ($this->css){
+		if ($this->css) {
 			foreach ($this->css as $src) {
 				if ($less = substr($src, -5) == ".less") {
 					$this->javascripts[] = "/bin/script/less.js";

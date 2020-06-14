@@ -18,7 +18,6 @@ class IdentityMap
     {
         $this->objectToId = new \SplObjectStorage();
         $this->idToObject = new \ArrayObject();
-        echo 'new IdentityMap*******************'.PHP_EOL;
     }
 
     /**
@@ -32,7 +31,6 @@ class IdentityMap
         
         $this->idToObject[$id]     = $object;
         $this->objectToId[$object] = $id;
-        echo 'IdentityMap::set('.get_class($object).$id.')'.PHP_EOL;
     }
 
     /**
@@ -74,7 +72,6 @@ class IdentityMap
     */
     public function getObject(int $id): DomainObject
     {
-        echo 'IdentityMap::get('.get_class($this->idToObject[$id]).$id.')'.PHP_EOL;
         if (false === $this->hasId($id)) {
             throw new \OutOfBoundsException();
         }

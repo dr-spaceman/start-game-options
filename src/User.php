@@ -182,7 +182,7 @@ class User extends DomainObject
     {
         $ret = '';
         if ($link_profile) $ret.= '<a href="/~'.$this->username.'" title="'.$this->username.'\'s profile">';
-        if ($show_avatar) $ret.= $this->avatar("thumbnail");
+        if ($show_avatar) $ret.= $this->getAvatar()->avatar_tn_src;
         $ret.= '<span class="username">'.$this->username.'</span>';
         if ($link_profile) $ret.= '</a>';
         $ret = '<span class="user">'.$ret.'</span>';

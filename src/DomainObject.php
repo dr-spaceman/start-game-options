@@ -11,7 +11,6 @@ abstract class DomainObject
 
     public function __construct(int $id)
     {
-        echo 'new DomainObject['.static::class.':'.$id.']'.PHP_EOL;
         if (!is_null($id)) {
             $this->id = $id;
         }

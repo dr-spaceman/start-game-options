@@ -17,7 +17,7 @@ class Registry
      */
     private $mappers = array();
 
-    private function __construct() {echo 'new Registry***************'.PHP_EOL;}
+    private function __construct() {}
 
     private static function instance(): self
     {
@@ -30,13 +30,10 @@ class Registry
 
     public static function get($key) 
     {
-        echo 'Registry::get('.$key.'):';
         $inst = self::instance();
         if (isset($inst->registry[$key])) {
-            echo 'found'.PHP_EOL;
             return $inst->registry[$key];
         }
-        echo 'notfound'.PHP_EOL;
 
         return null;
     }
@@ -45,19 +42,15 @@ class Registry
     {
         $inst = self::instance();
         $inst->registry[$key] = $value;
-        echo 'Registry::set('.$key.')'.PHP_EOL;
     }
 
     public static function getMapper($class)
     {
-        echo 'Registry::getMapper('.$class.'):';
         $inst = self::instance();
         if (isset($inst->mappers[$class])) {
-            echo 'found'.PHP_EOL;
             return $inst->mappers[$class];
         }
 
-        echo 'notfound;instantiating'.PHP_EOL;
         $mapper_class = $class.'Mapper';
         $inst->mappers[$class] = new $mapper_class;
 
