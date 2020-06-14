@@ -71,7 +71,9 @@ function formatNameURL($name, $enc='') {
 	
 }
 
-function pageURL($title, $pgtype='', $encode=1){
+function pageURL($title, $pgtype='', $encode=1)
+{
+	global $pdo;
 	
 	$pgtypes = array(
 		"game"     => "games",
@@ -87,20 +89,24 @@ function pageURL($title, $pgtype='', $encode=1){
 		"Game concept"   => "concepts"
 	);
 	
-	if($pgtype) $index = $pgtypes[$pgtype];
-	if(!$pgtype || $pgtype == "category"){
+	if ($pgtype) $index = $pgtypes[$pgtype];
+	if (!$pgtype || $pgtype == "category") {
 		$title = formatName($title);
-		$q = "SELECT `type`, `subcategory` FROM pages WHERE `title` = '".mysqli_real_escape_string($GLOBALS['db']['link'], $title)."' LIMIT 1";
-		if($dat = mysqli_fetch_object(mysqli_query($GLOBALS['db']['link'], $q))){
-			if($dat->subcategory) $index = $pgsubcategories[$dat->subcategory];
-			$index = $index ? strtolower($index) : $pgtypes[$dat->type];
+		$sql = "SELECT `type`, `subcategory` FROM pages WHERE `title`=? LIMIT 1";
+		$statement = $pdo->prepare($sql);
+		$statement->execute([$title]);
+		if ($row = $statement->fetch()) {
+			if ($row['subcategory']) $index = $pgsubcategories[$row['subcategory']];
+			$index = $index ? strtolower($index) : $pgtypes[$row['type']];
 		}
 	}
-	if(!$index) $index = "content";
+	$index = $index ?: "content";
 	
-	if($_SERVER['HTTP_HOST'] == "localhost") return "/pages/handle.php?index=".$index."&title=".formatNameURL($title, $encode);
-	else return "/".$index."/".formatNameURL($title, $encode);
-	
+	if ($_SERVER['HTTP_HOST'] == "localhost") {
+		return "/pages/handle.php?index=".$index."&title=".formatNameURL($title, $encode);
+	} else {
+		return "/".$index."/".formatNameURL($title, $encode);
+	}
 }
 
 function sendBug($desc) { $desc = wordwrap($desc, 70); @mail(getenv('NOTIFICATION_EMAIL'), "Videogam.in Auto-Bug Report", $desc); }
