@@ -5,11 +5,6 @@ const Search = () => {
 
     const [searchTerm, setSearchTerm] = React.useState('');
     console.log('State:searchTerm', searchTerm)
-
-    const handleSearch = event => {
-        console.log('onInputChange event triggered', event)
-        setSearchTerm(event.target.value)
-    }
     
     const resultsInitialState = {
         hits: [], 
@@ -20,24 +15,31 @@ const Search = () => {
         console.log('Results Reducer', state, action)
 
         switch (action.type) {
-            case 'GAMES_FETCH_INIT':
+            case 'SEARCH_FETCH_INIT':
                 return {
                     ...state,
                     isLoading: true,
                     isError: false,
                 }
-            case 'GAMES_FETCH_SUCCESS':
+            case 'SEARCH_FETCH_SUCCESS':
                 return {
                     ...state,
                     isLoading: false,
                     isError: false,
                     hits: action.payload,
                 }
-            case 'GAMES_FETCH_FAIL':
+            case 'SEARCH_FETCH_FAIL':
                 return {
                     ...state,
                     isLoading: false,
                     isError: true,
+                }
+            case 'RESET':
+                return {
+                    ...state,
+                    isLoading: false,
+                    isError: false,
+                    hits: []
                 }
             default:
                 throw new Error()
@@ -46,88 +48,63 @@ const Search = () => {
     // call `dispatchResults` to change `results` object
     const [results, dispatchResults] = React.useReducer(resultsReducer, resultsInitialState);
     console.log('State:results', results);
+    
+    const handleSearch = event => {
+        console.log('onInputChange event triggered', event)
+        
+        setSearchTerm(event.target.value);
+    }
 
-    // Actions to take on (re-)render if searchTerm changes
     React.useEffect(() => {
-        console.log('Side effect init: Dependency:searchTerm')
+        console.log('Effect:searchTerm');
+
+        if (!searchTerm) {
+            dispatchResults({ type: 'RESET' });
+            return;
+        }
 
         // Mark search form as initializing/loading
-        dispatchResults({ type: 'GAMES_FETCH_INIT' });
-
+        dispatchResults({ type: 'SEARCH_FETCH_INIT' });
+        
         // Fetch from API
-        fetch(API_ENDPOINT + searchTerm)
-            .then(response => response.json())
-            .then(result => {
-                dispatchResults({
-                    type: 'GAMES_FETCH_SUCCESS',
-                    payload: result,
-                })
+        let url = API_ENDPOINT + searchTerm;
+        console.log('fetch', url);
+
+        fetch(url)
+        .then(response => response.json())
+        .then(result => {
+            console.log('fetch result', result);
+            dispatchResults({
+                type: 'SEARCH_FETCH_SUCCESS',
+                payload: result.hits,
             })
-            .catch(() => dispatchResults({ type: 'GAMES_FETCH_FAIL' }))
-    }, [searchTerm])
-
-    const searchResults = results.hits
-
+        })
+        .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }))
+    }, [searchTerm]);
+    
     return (
-        <>
-            <InputWithLabel id="searchform" value={searchTerm} placeholder="Search all the things" onInputChange={handleSearch} isFocused>
-                Search:
-            </InputWithLabel>
+        <fieldset className="inputwithlabel">
+            <label htmlFor="searchform">Search:</label>
+            <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" onChange={handleSearch} /> 
+            <button type="reset" onClick={() => setSearchTerm('')}>Reset</button>
 
-            <SearchResults results={searchResults} />
-        </>
+            {results.isError && <p>Something went wrong</p>}
+
+            {results.isLoading ? (<p>Loading...</p>) : (<SearchResults results={results} />)}
+        </fieldset>
     );
-}
-
-/**
- * InputWithLabel component
- * @param {String} id 
- * @param {String} type Input type form field
- * @param {String} value The search term
- * @param {Event} onInputChange
- * @param {Boolean} isFocused Reference to the input field's focus
- * @param {String} children Inner HTML of the component
- * @param {String} placeholder
- */
-function InputWithLabel(props) {
-    console.log('InputWithLabel component', props)
-
-    const { id, type = 'text', children, value, onInputChange, numResults, isFocused, placeholder } = props
-
-    // Create a reference to an element
-    // This will later be assigned to the text input element so we can reference it elsewhere in the component
-    // Reference is persistent value for lifetime of component
-    const inputRef = React.useRef()
-
-    React.useEffect(() => {
-        console.log('useEffect:isFocused', isFocused, inputRef)
-        // Access the ref.current property, a mounted text input element
-        if (isFocused && inputRef.current) {
-            inputRef.current.focus()
-        }
-    }, [isFocused])
-
-    return (
-        <>
-            <fieldset>
-                <label htmlFor={id}>{children}</label>
-                <input ref={inputRef} id={id} type={type} value={value} onChange={onInputChange} placeholder={placeholder} />
-            </fieldset>
-        </>
-    )
-
 }
 
 function SearchResults(props) {
     console.log('SearchResults component', props)
 
-    const {results} = props;
+    let {results} = props;console.log('results', results);
 
-    if (!results) return '';
+    if (results.hits.length === 0) return null;
 
     return (
         <ul>
-            {results.map(item => <RearchResult key={item=title_sort} item={item} />)}
+            {results.hits.map(item => <SearchResult key={item.title_sort} item={item} />)}
         </ul>
     )
 }
@@ -137,21 +114,17 @@ function SearchResults(props) {
  * @param {Object} props.item Item object
  * @param {} onRemoveItem
  */
-function RearchResult(props) {
-    console.log('RearchResult component', props)
+function SearchResult(props) {
+    // console.log('SearchResult component', props)
 
     const { item } = props
 
     return (
         <li>
-            <dt>Title</dt>
-            <dd>{item.title}</dd>
-            <dt>Genre</dt>
-            <dd>{item.genre}</dd>
-            <dt>Platform</dt>
-            <dd>{item.platform}</dd>
-            <dt>Release</dt>
-            <dd>{item.release}</dd>
+            <a href={item.url}>
+                <dfn>{item.title}</dfn> 
+                <span>({item.type})</span>
+            </a>
         </li>
     )
 }
