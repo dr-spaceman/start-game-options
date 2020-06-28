@@ -1,26 +1,54 @@
 <?php
 
-use Psr\Http\Message\ResponseInterface as Response;
+// Slim
+
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Factory\AppFactory;
+use Nyholm\Psr7\Response;
 
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 // require __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
 
-$app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("Hello world!");
+// $app->add(function (Request $request, RequestHandler $handler) {
+//     $response = $handler->handle($request);
+//     $existingContent = (string) $response->getBody();
+
+//     $response = new Response();
+//     $response->getBody()->write('BEFORE ' . $existingContent);
+
+//     return $response;
+// });
+
+// $app->add(function (Request $request, RequestHandler $handler) {
+//     $response = $handler->handle($request);
+//     $response->getBody()->write(' AFTER');
+//     return $response;
+// });
+
+$app->get('/api/v1', function (Request $request, Response $response, $args) {
+    $response->getBody()->write('Hello World');
     return $response;
+});
+
+$app->get('/hello/{name}', function (Request $request, Response $response, $args) {
+    $name = $args['name'];
+    echo sprintf("Hello, %s!", $name);
+});
+
+$app->get('/', function (Request $request, Response $response) {
+    $response->getBody()->write($template->render('index.html'));
 });
 
 $app->run();
 
 exit;
 
-// Minimally load template
+// load template
 
-
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 echo $template->render('index.html');
 
 exit;
