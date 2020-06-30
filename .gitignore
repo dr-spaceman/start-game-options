@@ -3,6 +3,7 @@
 log
 .env
 .ht*
+/node_modules/
 composer.phar
 /vendor/
 /var/cache/*
