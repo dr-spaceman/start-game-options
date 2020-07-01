@@ -2,11 +2,14 @@
 
 namespace Vgsite\API;
 
+use Respect\Validation\Rules\IntVal;
+use Respect\Validation\Validator as v;
+
 class GameController extends Controller
 {
     private $pdo;
 
-    public function __construct(string $request_method, array $queries = [])
+    public function __construct(string $request_method, array $queries=[])
     {
         $this->pdo = \Vgsite\Registry::get('pdo');
         parent::__construct($request_method, $queries);
@@ -14,6 +17,10 @@ class GameController extends Controller
 
     protected function getOne($id): array
     {
+        if (! v::IntVal()->validate($id)) {
+            return parent::unprocessableEntityResponse();
+        }
+
         $sql = "SELECT * FROM pages_games WHERE `id`=:id LIMIT 1";
         $sql = sprintf("SELECT * FROM pages_games WHERE `id`=%d LIMIT 1", $id);
         $statement = $this->pdo->prepare($sql);

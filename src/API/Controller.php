@@ -18,10 +18,10 @@ abstract class Controller
     {
         switch ($this->request_method) {
             case 'GET':
-                if ($this->queries[0]) {
-                    $response = $this->getOne($this->queries[0]);
-                } else {
+                if (! $this->queries[0]) {
                     $response = $this->getAll();
+                } else {
+                    $response = $this->getOne($this->queries[0]);
                 };
                 break;
             case 'POST':
@@ -47,6 +47,7 @@ abstract class Controller
     abstract protected function getOne($id): array;
     abstract protected function getAll(): array;
 
+    // Model response method
     private function getUser($id)
     {
         $result = $this->personGateway->find($id);
