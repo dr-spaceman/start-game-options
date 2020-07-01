@@ -6,6 +6,9 @@
  * @return JSONobject
  */
 
+use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\API\Exceptions\APIException;
+
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 
 header("Access-Control-Allow-Origin: *");
@@ -60,22 +63,38 @@ $schema = [
 
 // $show = Array('uri' => $uri, 'req' => $req, '_ENV' => $_ENV, '_SERVER' => $_SERVER);die(json_encode($show));
 
-switch ($base) {
-	case 'game':
-		$controller = new Vgsite\API\GameController($req_method, $req);
-		$controller->processRequest();
-		exit;
+try {
+	switch ($base) {
+		case 'game':
+			$controller = new Vgsite\API\GameController($req_method, $req);
+			$controller->processRequest();
 
-		break;
+			break;
+			
+		case 'search':
+			$controller = new Vgsite\API\SearchController($req_method, $req);
+			$controller->processRequest();
+
+			break;
 		
-	case 'search':
-		$controller = new Vgsite\API\SearchController($req_method, $req);
-		$controller->processRequest();
-		exit;
+		default:
+			header('HTTP/1.1 200 OK');
+			echo json_encode($schema);
+	}
+} catch (APIException | APIInvalidArgumentException $e) {
+	$code = $e->getCode();
+	if ($code == 422) {
+		$response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
+		$response['body'] = json_encode([
+			'error' => $e->getMessage(),
+		]);
+	} else {
+		$response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
+		$response['body'] = json_encode([
+			'error' => $e->getMessage() || 'Your request could not be processed.',
+		]);
+	}
 
-		break;
-	
-	default:
-		header('HTTP/1.1 200 OK');
-		echo json_encode($schema);
+	header($response['status_code_header']);
+	echo json_encode($response['body']);
 }

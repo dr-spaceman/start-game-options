@@ -2,8 +2,13 @@
 
 namespace Vgsite\API;
 
+use InvalidArgumentException;
 use Respect\Validation\Rules\IntVal;
 use Respect\Validation\Validator as v;
+use Vgsite\Registry;
+use Vgsite\API\Exceptions\APIException;
+use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\API\Exceptions\APINotFoundException;
 
 class GameController extends Controller
 {
@@ -11,14 +16,14 @@ class GameController extends Controller
 
     public function __construct(string $request_method, array $queries=[])
     {
-        $this->pdo = \Vgsite\Registry::get('pdo');
+        $this->pdo = Registry::get('pdo');
         parent::__construct($request_method, $queries);
     }
 
     protected function getOne($id): array
     {
         if (! v::IntVal()->validate($id)) {
-            return parent::unprocessableEntityResponse();
+            throw new InvalidArgumentException('Game ID must be numeric');
         }
 
         $sql = "SELECT * FROM pages_games WHERE `id`=:id LIMIT 1";
@@ -31,7 +36,7 @@ class GameController extends Controller
         }
 
         if (empty($results)) {
-            return parent::notFoundResponse();
+            throw new APINotFoundException();
         }
 
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
@@ -53,7 +58,7 @@ class GameController extends Controller
         }
 
         if (empty($results)) {
-            return parent::notFoundResponse();
+            throw new APINotFoundException();
         }
 
         $response['status_code_header'] = 'HTTP/1.1 200 OK';

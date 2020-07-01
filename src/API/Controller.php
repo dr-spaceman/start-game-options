@@ -2,6 +2,9 @@
 
 namespace Vgsite\API;
 
+use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\API\Exceptions\APINotFoundException;
+
 abstract class Controller
 {
 
@@ -34,8 +37,12 @@ abstract class Controller
                 $response = $this->delete();
                 break;
             default:
-                $response = $this->notFoundResponse();
-                break;
+                throw new APIInvalidArgumentException(
+                    sprintf(
+                        'Request Method not valid (%s received). Try one of: GET, POST, PUT, DELETE.', 
+                        $this->request_method
+                    ), 400
+                );
         }
 
         header($response['status_code_header']);
@@ -108,21 +115,5 @@ abstract class Controller
             return false;
         }
         return true;
-    }
-
-    protected function unprocessableEntityResponse()
-    {
-        $response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
-        $response['body'] = json_encode([
-            'error' => 'Invalid input'
-        ]);
-        return $response;
-    }
-
-    protected function notFoundResponse()
-    {
-        $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
-        $response['body'] = null;
-        return $response;
     }
 }

@@ -2,13 +2,22 @@
 
 namespace Vgsite\API;
 
+use Vgsite\Registry;
+use Vgsite\API\Exceptions\APIException;
+use Vgsite\API\Exceptions\APIInvalidArgumentException;
+
 class SearchController extends Controller
 {
     private $pdo;
 
-    public function __construct(string $request_method, array $queries = [])
+    public function __construct(string $request_method, array $queries=[])
     {
-        $this->pdo = \Vgsite\Registry::get('pdo');
+        $this->pdo = Registry::get('pdo');
+
+        if (empty($queries)) {
+            throw new APIInvalidArgumentException('No search term given');
+        }
+
         parent::__construct($request_method, $queries);
     }
 
@@ -19,6 +28,8 @@ class SearchController extends Controller
     
     protected function getAll(): array
     {
+        $query = $this->queries[0];
+
         // This might be implemented in future
         $filter = '';
 
@@ -42,7 +53,7 @@ class SearchController extends Controller
                     $queries[] = $query;
                 }
             }
-        }
+        }print_r($queries);
 
         foreach ($queries as $sql) {
             $statement = $this->pdo->prepare($sql);

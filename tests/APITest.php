@@ -42,7 +42,7 @@ class APITest extends TestCase
         $response = self::$client->get('search/donkey');
         $this->assertEquals(200, $response->getStatusCode());
         $body = (string) $response->getBody();
-        $response_obj = json_decode($body, true);
+        $response_obj = json_decode($body, true);var_dump('response', $response_obj);
         $this->assertEquals('hits', array_keys((array) $response_obj)[0]);
         $found_Donkey_Kong = array_filter ($response_obj['hits'], function($item) {
             if ($item['title'] == "Donkey Kong") return true;
@@ -50,9 +50,15 @@ class APITest extends TestCase
         $this->assertNotEmpty($found_Donkey_Kong);
     }
 
+    public function testInvalidRequestMethod()
+    {
+        $response = self::$client->request('INVALID_REQ_METHOD', 'search/foo', ['http_errors' => false]);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
     public function testSearchMethodCannotFindSomething()
     {
-        $response = self::$client->get('search/marypoppins69burt_foobar_loremipsum');
+        $response = self::$client->get('search/marypoppins69burt_foobar_loremipsum', ['http_errors' => false]);
         $this->assertEquals(404, $response->getStatusCode());
     }
 
