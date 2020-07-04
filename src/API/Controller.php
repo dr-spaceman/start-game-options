@@ -2,6 +2,7 @@
 
 namespace Vgsite\API;
 
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 
@@ -44,6 +45,26 @@ abstract class Controller
                     ), 400
                 );
         }
+
+        header($response['status_code_header']);
+        if ($response['payload']) {
+            echo json_encode($response['payload']);
+        }
+    }
+
+    public function processSearchRequest()
+    {
+        if ($this->request_method != 'GET') {
+            throw new APIInvalidArgumentException(
+                sprintf(
+                    'Request Method not valid (%s received). Try: GET.',
+                    $this->request_method
+                ),
+                405
+            );
+        }
+
+        $response = $this->getSearchResults($this->queries[0]);
 
         header($response['status_code_header']);
         if ($response['payload']) {

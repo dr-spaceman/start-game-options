@@ -1,0 +1,128 @@
+openapi: '3.0.0'
+info:
+  title: Vigeogamesite API
+  version: '1.0'
+components:
+  schemas:
+    game:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        genre:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        release:
+          type: string
+          format: date
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+paths:
+  /search/{query}:
+    description: Search everything
+    get:
+      summary: Search all the things
+      parameters:
+        - name: query
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Things matching {query}
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of search results
+                items:
+                  type: string
+  /games:
+    description: Games list
+    get:
+      summary: Complete list of games
+      responses:
+        "200":
+          description: Success getting games list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/game'
+  /games/{id}:
+    description: A game
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success getting item
+        '404':
+          description: Not found
+  /users:
+    description: Users list
+  /users/{id}:
+    description: A user
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success getting item
+        '404':
+          description: Not found
+  /posts:
+    description: Posts list
+    post:
+      description: Add post
+      requestBody:
+        description: New post information
+        content:
+          application/json:
+            schema:
+              required:
+                - user_id
+                - post_type
+                - heading
+                - text
+              properties:
+                userId:
+                  type: integer
+                post_type:
+                  type: string
+                heading:
+                  type: string
+                text:
+                  type: string
+                description:
+                  type: string
+                permalink:
+                  type: string
+      responses:
+        "200":
+          description: Post added
+  /posts/{id}:
+    delete:
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Success adding item

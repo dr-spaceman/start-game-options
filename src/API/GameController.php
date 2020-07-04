@@ -23,7 +23,7 @@ class GameController extends Controller
     protected function getOne($id): array
     {
         if (! v::IntVal()->validate($id)) {
-            throw new InvalidArgumentException('Game ID must be numeric');
+            throw new APIInvalidArgumentException('Game ID must be numeric');
         }
 
         $sql = "SELECT * FROM pages_games WHERE `id`=:id LIMIT 1";

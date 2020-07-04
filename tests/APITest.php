@@ -16,7 +16,7 @@ class APITest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $client = new GuzzleHttp\Client(['base_uri' => 'http://vgsite/api/v1/']);
+        $client = new GuzzleHttp\Client(['base_uri' => 'http://vgsite/api/']);
         self::$client = $client;
     }
 
@@ -28,13 +28,25 @@ class APITest extends TestCase
     public function testClientCanConnectToApi()
     {
         $this->assertInstanceOf(GuzzleHttp\Client::class, self::$client);
-        $response = self::$client->get('/api/v1');
+        $response = self::$client->get('/api');
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('application/json; charset=UTF-8', $response->getHeaderLine('content-type'));
         $body = (string) $response->getBody();
         $response_obj = json_decode($body);
         $this->assertEquals('resources', array_keys((array) $response_obj)[0]);
+    }
+
+    public function testInvalidRequestMethod()
+    {
+        $response = self::$client->request('INVALID_REQ_METHOD', 'search/foo', ['http_errors' => false]);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testSearchMethodReturns422WhenNoQueryGiven()
+    {
+        $response = self::$client->get('search/');
+        $this->assertEquals(422, $response->getStatusCode());
     }
 
     public function testSearchMethodCanFindDonkeyKong()
@@ -50,12 +62,6 @@ class APITest extends TestCase
         $this->assertNotEmpty($found_Donkey_Kong);
     }
 
-    public function testInvalidRequestMethod()
-    {
-        $response = self::$client->request('INVALID_REQ_METHOD', 'search/foo', ['http_errors' => false]);
-        $this->assertEquals(400, $response->getStatusCode());
-    }
-
     public function testSearchMethodCannotFindSomething()
     {
         $response = self::$client->get('search/marypoppins69burt_foobar_loremipsum', ['http_errors' => false]);
@@ -64,7 +70,7 @@ class APITest extends TestCase
 
     public function testGameMethodFailsWhenNotGivenIntegerId()
     {
-        $response = self::$client->get('game/notaninteger');
+        $response = self::$client->get('games/notaninteger');
         $this->assertEquals(422, $response->getStatusCode());
     }
 }
