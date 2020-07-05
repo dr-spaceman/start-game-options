@@ -5,50 +5,67 @@ namespace Vgsite\API;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
+use Vgsite\HTTP\Request;
+use Vgsite\HTTP\Response;
 
 abstract class Controller
 {
 
-    private $request_method;
     protected $queries = Array();
+    protected $response;
 
-    public function __construct(string $request_method, array $queries=[])
+    public function __construct(Request $request)
     {
-        $this->request_method = $request_method;
-        $this->queries = $queries;
+        $this->request = $request;
+
+        $res = new Response();
+        $res->withHeader('Access-Control-Allow-Origin', '*');
+        $res->withHeader('Content-Type', 'application/json; charset=UTF-8');
+        $res->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
+        $res->withHeader('Access-Control-Max-Age', '3600');
+        $res->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+        $this->response = $res;
     }
 
-    public function processRequest()
+    public function processRequest(): Controller
     {
-        switch ($this->request_method) {
-            case 'GET':
-                if (! $this->queries[0]) {
-                    $response = $this->getAll();
-                } else {
-                    $response = $this->getOne($this->queries[0]);
-                };
+        try {
+            switch ($this->request->getMethod()) {
+                case 'GET':
+                    if (true) {
+                        return $this->getAll();
+                    } else {
+                        return $this->getOne($this->queries[0]);
+                    };
                 break;
-            case 'POST':
-                $response = $this->createFromRequest();
+                case 'POST':
+                    return $this->createFromRequest();
                 break;
-            case 'PUT':
-                $response = $this->updateFromRequest();
+                case 'PUT':
+                    return $this->updateFromRequest();
                 break;
-            case 'DELETE':
-                $response = $this->delete();
+                case 'DELETE':
+                    return $this->delete();
                 break;
-            default:
-                throw new APIInvalidArgumentException(
-                    sprintf(
+                default:
+                    $message = sprintf(
                         'Request Method not valid (%s received). Try one of: GET, POST, PUT, DELETE.', 
                         $this->request_method
-                    ), 400
-                );
-        }
+                    );
+                    throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 400);
+            }
+        } catch (APIException $e) {
+            $code = $e->getCode();
+            $this->response->withStatus($code);
+            $this->response->getBody()->write($e);
 
-        header($response['status_code_header']);
-        if ($response['payload']) {
-            echo json_encode($response['payload']);
+            return $this;
+        } catch (\Exception $e) {
+            $this->response->withStatus(500);
+            $message = ['message' => 'Server error', 'errors' => ['message' => (string) $e]];
+            $this->response->getBody()->write(json_encode($message));
+
+            return $this;
         }
     }
 
@@ -72,8 +89,8 @@ abstract class Controller
         }
     }
 
-    abstract protected function getOne($id): array;
-    abstract protected function getAll(): array;
+    abstract protected function getOne($id): Controller;
+    abstract protected function getAll(): Controller;
 
     // Model response method
     private function getUser($id)
@@ -127,14 +144,20 @@ abstract class Controller
         return $response;
     }
 
-    private function validatePerson($input)
+    public function render(): void
     {
-        if (!isset($input['firstname'])) {
-            return false;
-        }
-        if (!isset($input['lastname'])) {
-            return false;
-        }
-        return true;
+        header(
+            sprintf(
+                'HTTP/%s %d %s', 
+                $this->response->getProtocolVersion(), 
+                $this->response->getStatusCode(), 
+                $this->response->getReasonPhrase()
+            )
+        );
+        foreach ($this->response->getHeaders() as $header_name => $headers) {
+            header(sprintf("%s: %s", $header_name, $this->response->getHeaderLine($header_name)));
+        };
+
+        echo $this->response->getBody();
     }
 }

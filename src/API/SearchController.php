@@ -12,13 +12,15 @@ class SearchController extends Controller
 
     public function __construct(string $request_method, array $queries=[])
     {
+        parent::__construct($request_method, $queries);
+
         $this->pdo = Registry::get('pdo');
 
         if (empty($queries)) {
             throw new APIInvalidArgumentException('No search term given');
         }
 
-        parent::__construct($request_method, $queries);
+        $this->response->withHeader('Access-Control-Allow-Methods', 'GET');
     }
 
     protected function getOne($id): array

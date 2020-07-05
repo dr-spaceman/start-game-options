@@ -1,103 +1,78 @@
 <?php
 
-/**
- * Search the whole database
- * @param query Search query
- * @return JSONobject
- */
-
-use Vgsite\API\Exceptions\APIInvalidArgumentException;
-use Vgsite\API\Exceptions\APINotFoundException;
-use Vgsite\API\Exceptions\APIException;
+use Vgsite\HTTP\Request;
 
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+// header("Access-Control-Allow-Origin: *");
+// header("Content-Type: application/json; charset=UTF-8");
+// header("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
+// header("Access-Control-Max-Age: 3600");
+// header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$req_method = $_SERVER["REQUEST_METHOD"];
+$method = $_SERVER["REQUEST_METHOD"];
+$uri = $_SERVER['REQUEST_URI'];
+$body = file_get_contents('php://input');
+$request = new Request($method, $uri, getallheaders(), $body);
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$req = explode('/', $uri);
-array_shift($req); //_blank_
-array_shift($req); //api
-
-// $api_version = array_shift($req);
-$base = array_shift($req);
-$query = $req[0];
-$filter = '';
-
-// populate with hits
-$results = [];
+$base = 'games';
 
 // Schema
-/*	GET search/{query}
-	GET games/ 
-	GET game/{id}
-	GET users/
-	GET user/{id} */
-$schema = [
-	"resources" => [
-		"/search" => [
-			"href-template" => "/search/{query}",
-			"allow" => ["GET"],
-		],
-		"/games" => [
-			"href" => "/games/",
-			"allow" => ["GET"],
-		],
-		"/game" => [
-			"href-template" => "/game/{id}",
-			"allow" => ["GET"],
-		],
-		"/users" => [
-			"href" => "/users/",
-		],
-		"/user" => [
-			"href-template" => "/user/{id}",
-		],
-	]
-];
+$schema = <<<EOF
+search/{query}
+	GET
+games/
+	GET
+game/{id}
+	GET
+users/
+	GET
+users/{id}
+	GET
+EOF;
 
-// $show = Array('uri' => $uri, 'req' => $req, '_ENV' => $_ENV, '_SERVER' => $_SERVER);die(json_encode($show));
+// $schema = [
+// 	"resources" => [
+// 		"/search" => [
+// 			"href-template" => "/search/{query}",
+// 			"allow" => ["GET"],
+// 		],
+// 		"/games" => [
+// 			"href" => "/games/",
+// 			"allow" => ["GET"],
+// 		],
+// 		"/game" => [
+// 			"href-template" => "/game/{id}",
+// 			"allow" => ["GET"],
+// 		],
+// 		"/users" => [
+// 			"href" => "/users/",
+// 		],
+// 		"/user" => [
+// 			"href-template" => "/user/{id}",
+// 		],
+// 	]
+// ];
 
-try {
-	switch ($base) {
-		case 'search':
-			$controller = new Vgsite\API\SearchController($req_method, $req);
-			$controller->processRequest();
+// foreach ($request->getHeaders() as $header_name => $headers) {
+// 	echo(sprintf("%s: %s", $header_name, $request->getHeaderLine($header_name))).PHP_EOL;
+// };
 
-			break;
+// $show = Array('uri' => $uri, 'req' => $req, '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
+
+switch ($base) {
+	case 'search':
+		$controller = new Vgsite\API\SearchController($request);
+		$controller->processRequest()->render();
+		break;
+	
+	case 'games':
+		$controller = new Vgsite\API\GameController($request);
+		$controller->processRequest()->render();
+		break;
 		
-		case 'games':
-			$controller = new Vgsite\API\GameController($req_method, $req);
-			$controller->processRequest();
-
-			break;
-			
-		default:
-			header('HTTP/1.1 200 OK');
-			echo json_encode($schema);
-	}
-} catch (APIException | APIInvalidArgumentException | APINotFoundException $e) {
-	$code = $e->getCode();
-	if ($code == 422) {
-		$response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
-		$response['body'] = json_encode([
-			'error' => $e->getMessage(),
-		]);
-	} else {
-		$message = $e->getMessage() ?: 'Your request could not be processed.';
-
-		$response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
-		$response['body'] = json_encode([
-			'error' => $message
-		]);
-	}
-
-	header($response['status_code_header']);
-	echo $response['body'];
+	default:
+		header('HTTP/1.1 200 OK');
+		header("Content-Type: text/plain; charset=UTF-8");
+		echo $schema;
 }
