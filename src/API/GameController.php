@@ -14,6 +14,8 @@ class GameController extends Controller
 {
     private $pdo;
 
+    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platform', 'release'];
+
     public function __construct(Request $request)
     {
         parent::__construct($request);
@@ -49,15 +51,24 @@ class GameController extends Controller
 
     protected function getAll(): Controller
     {
-        $limit = 'row_count';
+        $limit = '0, 100';
         if ($this->request->hasHeader('range')) {
             $ranges = $this->request->parseRange($this->request->getHeaderLine('range'));
             $limit = sprintf('%d, %d', $ranges[0], ($ranges[1] - $ranges[0]));
         }
 
+        $sort = '`release`';
+        $sort_dir = 'ASC';
+        if ($sort_query = $this->request->getQuery()['sort']) {
+            $parse_results = $this->request->parseSortQuery($sort_query, self::SORTABLE_FIELDS);
+            $sort = sprintf('`%s`', $parse_results[0]);
+            $sort_dir = $parse_results[1] ?: $sort_dir;
+            $sort_dir = strtoupper($sort_dir);
+        }
+
         $sql = sprintf(
-            "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY `release` LIMIT %s",
-            ($this->queries[0] ? "AND `title` LIKE CONCAT('%', :query, '%')" : ""), $limit
+            "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY %s %s LIMIT %s",
+            ($this->queries[0] ? "AND `title` LIKE CONCAT('%', :query, '%')" : ""), $sort, $sort_dir, $limit
         );
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['query' => $this->queries[0]]);

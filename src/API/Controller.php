@@ -32,10 +32,10 @@ abstract class Controller
         try {
             switch ($this->request->getMethod()) {
                 case 'GET':
-                    if (true) {
+                    if (! $this->request->getPath()[1]) {
                         return $this->getAll();
                     } else {
-                        return $this->getOne($this->queries[0]);
+                        return $this->getOne($this->request->getPath()[1]);
                     };
                 break;
                 case 'POST':

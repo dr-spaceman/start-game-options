@@ -15,7 +15,7 @@ $uri = $_SERVER['REQUEST_URI'];
 $body = file_get_contents('php://input');
 $request = new Request($method, $uri, getallheaders(), $body);
 
-$base = 'games';
+$base = $request->getPath()[0];
 
 // Schema
 $schema = <<<EOF
