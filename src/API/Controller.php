@@ -10,9 +10,17 @@ use Vgsite\HTTP\Response;
 
 abstract class Controller
 {
+    /** @var int Number of items per page */
+    const PER_PAGE = 100;
 
-    protected $queries = Array();
+    /** @var array For`sort` parameter; List of keys to whitelist */
+    const SORTABLE_FIELDS = Array();
+
+    /** @var Response */
     protected $response;
+
+    /** @var Request */
+    protected $request;
 
     public function __construct(Request $request)
     {
@@ -159,5 +167,58 @@ abstract class Controller
         };
 
         echo $this->response->getBody();
+    }
+
+    /**
+     * Parse a variable in the query string. Returned value is appropriate to
+     * use to fetch data or some other operation.
+     *
+     * @param string $key Key in querystring
+     * @param int|string $default Default value to return if the 
+     * @param callable $test Additional test to perform; Throw exception on failure
+     *
+     * @return string
+     */
+    public function parseQuery(string $key, $default, callable $test=null): string
+    {
+        $query = $this->request->getQuery();
+        $value = $query[$key];
+
+        if (empty($value)) {
+            return $default;
+        }
+
+        // Run default tests
+        switch ($key) {
+            case 'page':
+                if (false === is_int($value)) {
+                    throw new APIInvalidArgumentException('Property `page` must be an integer.', 'page');
+                }
+                if ($value < 1) {
+                    throw new APIInvalidArgumentException('Property `page` must be an integer greater than zero.', 'page');
+                }
+            break;
+
+            case 'per_page':
+                // static invocation allows extending classes to modify the constant PER_PAGE
+                if ($value > static::PER_PAGE) {
+                    throw new APIInvalidArgumentException(
+                        sprintf('Number of items per page requested (%s) exceeds the maximum of %d', $value, static::PER_PAGE)
+                    );
+                }
+            break;
+
+            case 'sort':
+                $ranges = $this->request->parseRange($this->request->getHeaderLine('range'));
+                $limit = sprintf('%d, %d', $ranges[0], ($ranges[1] - $ranges[0]));
+        }
+
+        $sort_dir = 'ASC';
+        if ($sort_query = $query['sort']) {
+            $parse_results = $this->request->parseSortQuery($sort_query, self::SORTABLE_FIELDS);
+            $sort = sprintf('`%s`', $parse_results[0]);
+            $sort_dir = $parse_results[1] ?: $sort_dir;
+            $sort_dir = strtoupper($sort_dir);
+        }
     }
 }

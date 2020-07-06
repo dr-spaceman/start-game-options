@@ -5,18 +5,19 @@ namespace Vgsite\API;
 use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\HTTP\Request;
 
 class SearchController extends Controller
 {
     private $pdo;
 
-    public function __construct(string $request_method, array $queries=[])
+    public function __construct(Request $request)
     {
-        parent::__construct($request_method, $queries);
+        parent::__construct($request);
 
         $this->pdo = Registry::get('pdo');
 
-        if (empty($queries)) {
+        if (empty($request->getQuery())) {
             throw new APIInvalidArgumentException('No search term given');
         }
 

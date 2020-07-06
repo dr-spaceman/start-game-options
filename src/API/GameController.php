@@ -51,24 +51,17 @@ class GameController extends Controller
 
     protected function getAll(): Controller
     {
-        $limit = '0, 100';
-        if ($this->request->hasHeader('range')) {
-            $ranges = $this->request->parseRange($this->request->getHeaderLine('range'));
-            $limit = sprintf('%d, %d', $ranges[0], ($ranges[1] - $ranges[0]));
-        }
-
-        $sort = '`release`';
-        $sort_dir = 'ASC';
-        if ($sort_query = $this->request->getQuery()['sort']) {
-            $parse_results = $this->request->parseSortQuery($sort_query, self::SORTABLE_FIELDS);
-            $sort = sprintf('`%s`', $parse_results[0]);
-            $sort_dir = $parse_results[1] ?: $sort_dir;
-            $sort_dir = strtoupper($sort_dir);
-        }
+        $page = $this->parseQuery('page', 1);
+        $per_page = $this->parseQuery('per_page', static::PER_PAGE);
+        [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
+        $sort = $this->parseQuery('sort', 'release', function ($var) {
+            return in_array($var, static::SORTABLE_FIELDS);
+        });
+        $sort_dir = $this->parseQuery('sort_dir', 'ASC');
 
         $sql = sprintf(
-            "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY %s %s LIMIT %s",
-            ($this->queries[0] ? "AND `title` LIKE CONCAT('%', :query, '%')" : ""), $sort, $sort_dir, $limit
+            "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY `%s` %s LIMIT %d, %d",
+            ($this->queries[0] ? "AND `title` LIKE CONCAT('%', :query, '%')" : ""), $sort, $sort_dir, $limit_min, $limit_max
         );
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['query' => $this->queries[0]]);

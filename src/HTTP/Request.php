@@ -2,6 +2,7 @@
 
 namespace Vgsite\HTTP;
 
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 
 class Request
@@ -12,11 +13,20 @@ class Request
 
     private $uri;
 
-    /** URI path split into an array @var array */
+    /** @var array URI path split into an array */
     private $path = Array();
     
-    /** URI query string parsed into an array @var array */
+    /** @var array URI query string parsed into an array */
     private $query = Array();
+
+    /** @var array Parameters set in the query string */
+    private $parameters = [
+        'sort' => null, // format: ?sort=fieldname[:asc|des]
+        'sort_by' => 'asc',
+        'page' => 1,
+        'per_page' => 100,
+        'fields' => null,
+    ];
 
     /**
      * @param string        $method  HTTP method
@@ -34,9 +44,18 @@ class Request
     ) {
         $this->method = strtoupper($method);
         $this->uri = $uri;
-        [$this->path, $this->query] = $this->parseUri($uri);
         $this->setHeaders($headers);
         $this->protocol = $version;
+
+        $path = parse_url($uri, PHP_URL_PATH);
+        $path = explode('/', $path);
+        array_shift($path); //_blank_
+        array_shift($path); //api
+        $this->path = $path;
+
+        $querystring = parse_url($uri, PHP_URL_QUERY);
+        parse_str($querystring, $query);
+        $this->query = $query;
 
         if ($body !== '' && $body !== null) {
             $stream = fopen('php://temp', 'r+');
@@ -47,24 +66,12 @@ class Request
         }
     }
 
-    public function parseUri($uri): array
-    {
-        $path = parse_url($uri, PHP_URL_PATH);
-        $path = explode('/', $path);
-        array_shift($path); //_blank_
-        array_shift($path); //api
-
-        $querystring = parse_url($uri, PHP_URL_QUERY);
-        parse_str($querystring, $query);
-
-        return [$path, $query];
-    }
-
     /**
      * Parse sort query string value
      * Format: [?sort=]fieldname[:asc|desc]
      *
      * @param string $sort_query The query string
+     * 
      * @return array [fieldname, sort_direction(asc|desc)]
      */
     public function parseSortQuery(string $sort_query, array $allowed_fields=[]): array
