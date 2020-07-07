@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__FILE__) . '/../config/bootstrap.php';
+require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
 
 use Monolog\Logger;
 use Vgsite\Exceptions\LoginException;

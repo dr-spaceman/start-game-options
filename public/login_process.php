@@ -9,7 +9,7 @@ use Vgsite\Exceptions\LoginException;
  * Can be called independently via AJAX or included in a PHP file
  */
 
-require_once dirname(__FILE__) . '/../config/bootstrap.php';
+require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
 
     if (!isset($_POST['login'])) {
         throw new LoginException('No login credentials found', 400);

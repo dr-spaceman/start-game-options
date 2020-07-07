@@ -1,10 +1,10 @@
 <?php
 
-require_once dirname(__FILE__) . '/../config/bootstrap.php';
+require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
 
 // load template
 
-require_once dirname(__FILE__) . '/../config/bootstrap.php';
+require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
 echo $template->render('index.html');
 
 exit;

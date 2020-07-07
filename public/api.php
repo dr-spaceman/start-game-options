@@ -1,8 +1,9 @@
 <?php
 
-use Vgsite\HTTP\Request;
+require_once dirname(__FILE__) . '/../config/bootstrap_api.php';
 
-require_once dirname(__FILE__) . '/../config/bootstrap.php';
+use Vgsite\API\CollectionJson;
+use Vgsite\HTTP\Request;
 
 // header("Access-Control-Allow-Origin: *");
 // header("Content-Type: application/json; charset=UTF-8");
@@ -10,49 +11,23 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 // header("Access-Control-Max-Age: 3600");
 // header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$method = $_SERVER["REQUEST_METHOD"];
+$method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
 $body = file_get_contents('php://input');
 $request = new Request($method, $uri, getallheaders(), $body);
 
 $base = $request->getPath()[0];
 
-// Schema
-$schema = <<<EOF
-search/{query}
-	GET
-games/
-	GET
-game/{id}
-	GET
-users/
-	GET
-users/{id}
-	GET
-EOF;
-
-// $schema = [
-// 	"resources" => [
-// 		"/search" => [
-// 			"href-template" => "/search/{query}",
-// 			"allow" => ["GET"],
-// 		],
-// 		"/games" => [
-// 			"href" => "/games/",
-// 			"allow" => ["GET"],
-// 		],
-// 		"/game" => [
-// 			"href-template" => "/game/{id}",
-// 			"allow" => ["GET"],
-// 		],
-// 		"/users" => [
-// 			"href" => "/users/",
-// 		],
-// 		"/user" => [
-// 			"href-template" => "/user/{id}",
-// 		],
-// 	]
-// ];
+$schema = [
+	'search/'		=> ['GET'],
+	'games' 		=> ['GET'],
+	'games/{id}'	=> ['GET'],
+	'users' 		=> ['GET'],
+	'users/{id}'	=> ['GET'],
+	'posts/'		=> ['GET', 'POST', 'PUT'],
+	'posts/{id}'	=> ['GET', 'PUT', 'DELETE'],
+	'_PARAMETERS_'	=> ['q', 'page', 'per_page', 'sort', 'sort_dir', 'fields'],
+];
 
 // foreach ($request->getHeaders() as $header_name => $headers) {
 // 	echo(sprintf("%s: %s", $header_name, $request->getHeaderLine($header_name))).PHP_EOL;
@@ -63,16 +38,18 @@ EOF;
 switch ($base) {
 	case 'search':
 		$controller = new Vgsite\API\SearchController($request);
-		$controller->processRequest()->render();
+		$controller->processRequest();
 		break;
 	
 	case 'games':
 		$controller = new Vgsite\API\GameController($request);
-		$controller->processRequest()->render();
+		$controller->processRequest();
 		break;
 		
 	default:
 		header('HTTP/1.1 200 OK');
-		header("Content-Type: text/plain; charset=UTF-8");
-		echo $schema;
+		header("Content-Type: application/json; charset=UTF-8");
+		$cj = new CollectionJson();
+		$cj->setLinks($schema);
+		echo $cj;
 }
