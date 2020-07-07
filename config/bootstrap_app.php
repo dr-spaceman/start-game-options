@@ -1,53 +1,25 @@
 <?php
 
-define('ROOT_DIR', realpath(__DIR__.'/..'));
-define('PUBLIC_DIR', ROOT_DIR.'/public');
-define('TEMPLATE_DIR', ROOT_DIR.'/templates');
-define('CACHE_DIR', ROOT_DIR.'/var/cache');
-define('LOGS_DIR', ROOT_DIR.'/var/logs');
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/constants.php';
 
-require_once ROOT_DIR.'/vendor/autoload.php';
+define('TEMPLATE_DIR', ROOT_DIR.'/templates');
 
 use Vgsite\Registry;
 use Vgsite\User;
 use Monolog\Logger;
 
-ini_set("error_reporting", 6135);
-ini_set("session.save_path", ROOT_DIR.'/var/sessions');
-
-// Load environmental variables
-$dotenv = Dotenv\Dotenv::createImmutable(ROOT_DIR);
-$dotenv->load();
-$dotenv->required(['ENVIRONMENT', 'DB_HOST', 'DB_USERNAME', 'DB_PASSWORD', 'DB_NAME_MAIN']);
-
 // Register logger
 $logger = new Logger('app');
 // Register a handler -- file loc and minimum error level to record
-$logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', (getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO)));
+$log_level = getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO;
+$logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', $log_level));
 // Inject details of error source
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
 Registry::set('logger', $logger);
 
 // Register db handler
-$db_options = array(
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_STRINGIFY_FETCHES => false,
-);
-$dsn = sprintf(
-    'mysql:host=%s;dbname=%s;port=%d;charset=utf8',
-    getenv('DB_HOST'),
-    getenv('DB_NAME_MAIN'),
-    getenv('DB_PORT'),
-);
-try {
-    $pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options);
-    Registry::set('pdo', $pdo);
-} catch (PDOException $e) {
-    $logger->error($e);
-    echo "Database connection failed";
-    exit;
-}
+$db_options = array();
 
 // Templates
 $loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);
@@ -63,7 +35,9 @@ set_exception_handler(function (\Throwable $e) {
     else echo $e->getMessage();
 });
 
-session_start();
+require_once __DIR__ . '/bootstrap_common.php';
+
+/** END CONFIG **/
 
 //$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
 
@@ -88,5 +62,5 @@ if ($_SESSION['user_rank'] == User::RESTRICTED) {
     die("*");
 }
 
-require ROOT_DIR.'/src/required_functions.php';
+require_once ROOT_DIR.'/src/required_functions.php';
 // require "../bin/php/bbcode.php";
