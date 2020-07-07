@@ -3,8 +3,16 @@
 namespace Vgsite\HTTP;
 
 use Psr\Http\Message\ResponseInterface;
+use Vgsite\API\CollectionJson;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
+
+/**
+ * Handles HTTP response
+ * 
+ * Adopted from Guzzle PSR-7 Response
+ * @link https://github.com/guzzle/psr7
+ */
 
 class Response implements ResponseInterface
 {
@@ -50,7 +58,7 @@ class Response implements ResponseInterface
         415 => 'Unsupported Media Type',
         416 => 'Requested range not satisfiable',
         417 => 'Expectation Failed',
-        418 => 'I\'m a teapot',
+        418 => 'I\'m a teapot', //Thanks, Guzzle!
         422 => 'Unprocessable Entity',
         423 => 'Locked',
         424 => 'Failed Dependency',
@@ -104,17 +112,17 @@ class Response implements ResponseInterface
         $this->protocol = $version;
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    public function getReasonPhrase()
+    public function getReasonPhrase(): string
     {
         return $this->reasonPhrase;
     }
 
-    public function withStatus($code, $reasonPhrase = '')
+    public function withStatus($code, $reasonPhrase = ''): self
     {
         $this->assertStatusCodeIsInteger($code);
         $code = (int) $code;
@@ -125,10 +133,11 @@ class Response implements ResponseInterface
             $reasonPhrase = self::$phrases[$this->statusCode];
         }
         $this->reasonPhrase = $reasonPhrase;
+
         return $this;
     }
 
-    private function assertStatusCodeIsInteger($statusCode)
+    private function assertStatusCodeIsInteger($statusCode): bool
     {
         if (filter_var($statusCode, FILTER_VALIDATE_INT) === false) {
             throw new APIException(
@@ -138,9 +147,11 @@ class Response implements ResponseInterface
                 500
             );
         }
+
+        return true;
     }
 
-    private function assertStatusCodeRange($statusCode)
+    private function assertStatusCodeRange($statusCode): bool
     {
         if ($statusCode < 100 || $statusCode >= 600) {
             throw new APIException(
@@ -150,10 +161,12 @@ class Response implements ResponseInterface
                 500
             );
         }
-    }
 
-    public function setPayload(array $payload): void
+        return true;
+    }
+    
+    public function render(): void
     {
-        $this->getBody()->write(json_encode($payload));
+        $this->getBody()->write($this->stream);
     }
 }

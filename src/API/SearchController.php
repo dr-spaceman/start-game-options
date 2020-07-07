@@ -11,14 +11,16 @@ class SearchController extends Controller
 {
     private $pdo;
 
+    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platform', 'release'];
+
     public function __construct(Request $request)
     {
         parent::__construct($request);
 
         $this->pdo = Registry::get('pdo');
 
-        if (empty($request->getQuery())) {
-            throw new APIInvalidArgumentException('No search term given');
+        if (! $request->getQuery()['q']) {
+            throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
         }
 
         $this->response->withHeader('Access-Control-Allow-Methods', 'GET');

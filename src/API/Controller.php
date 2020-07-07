@@ -2,58 +2,56 @@
 
 namespace Vgsite\API;
 
+use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
 use Vgsite\HTTP\Response;
+use Respect\Validation\Validator as v;
 
+/**
+ * Request input, Response output
+ */
 abstract class Controller
 {
     /** @var int Number of items per page */
     const PER_PAGE = 100;
 
-    /** @var array For`sort` parameter; List of keys to whitelist */
+    /** @var array For `?sort` parameter; List of keys to whitelist */
     const SORTABLE_FIELDS = Array();
-
-    /** @var Response */
-    protected $response;
 
     /** @var Request */
     protected $request;
 
+    /** @var CollectionJson Collection+JSON object */
+    private $collection;
+
     public function __construct(Request $request)
     {
         $this->request = $request;
-
-        $res = new Response();
-        $res->withHeader('Access-Control-Allow-Origin', '*');
-        $res->withHeader('Content-Type', 'application/json; charset=UTF-8');
-        $res->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
-        $res->withHeader('Access-Control-Max-Age', '3600');
-        $res->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
-        $this->response = $res;
+        $this->collection = new CollectionJson();
     }
 
-    public function processRequest(): Controller
+    public function processRequest(): void
     {
         try {
             switch ($this->request->getMethod()) {
                 case 'GET':
                     if (! $this->request->getPath()[1]) {
-                        return $this->getAll();
+                        $this->getAll();
                     } else {
-                        return $this->getOne($this->request->getPath()[1]);
+                        $this->getOne($this->request->getPath()[1]);
                     };
                 break;
                 case 'POST':
-                    return $this->createFromRequest();
+                    $this->createFromRequest();
                 break;
                 case 'PUT':
-                    return $this->updateFromRequest();
+                    $this->updateFromRequest();
                 break;
                 case 'DELETE':
-                    return $this->delete();
+                    $this->delete();
                 break;
                 default:
                     $message = sprintf(
@@ -63,17 +61,18 @@ abstract class Controller
                     throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 400);
             }
         } catch (APIException $e) {
-            $code = $e->getCode();
-            $this->response->withStatus($code);
-            $this->response->getBody()->write($e);
+            Registry::get('logger')->warning($e);
 
-            return $this;
-        } catch (\Exception $e) {
-            $this->response->withStatus(500);
-            $message = ['message' => 'Server error', 'errors' => ['message' => (string) $e]];
-            $this->response->getBody()->write(json_encode($message));
+            $this->collection->setError($e->getErrorMessage());
 
-            return $this;
+            $this->render($e->getCode());
+        } catch (\Exception | \Error $e) {
+            Registry::get('logger')->warning($e);
+
+            $error = ['title' => 'Server error', 'message' => $e->getMessage()];
+            $this->collection->setError($error);
+
+            $this->render(500);
         }
     }
 
@@ -97,8 +96,8 @@ abstract class Controller
         }
     }
 
-    abstract protected function getOne($id): Controller;
-    abstract protected function getAll(): Controller;
+    abstract protected function getOne($id): void;
+    abstract protected function getAll(): void;
 
     // Model response method
     private function getUser($id)
@@ -152,21 +151,65 @@ abstract class Controller
         return $response;
     }
 
-    public function render(): void
+    public function setPayload(array $items): self
     {
+        $this->collection->setItems($items);
+        // var_dump('Response::setPayload', $items, $this->collection);
+        return $this;
+    }
+
+    public function render(int $code, array $headers=[], $body=null): void
+    {
+        // echo 'hi';
+        // var_dump('Controller::render');
+        $response = new Response($code, $headers);
+        $response->withHeader('Access-Control-Allow-Origin', '*');
+        $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
+        $response->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
+        $response->withHeader('Access-Control-Max-Age', '3600');
+        $response->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+
         header(
             sprintf(
                 'HTTP/%s %d %s', 
-                $this->response->getProtocolVersion(), 
-                $this->response->getStatusCode(), 
-                $this->response->getReasonPhrase()
+                $response->getProtocolVersion(), 
+                $code,
+                $response->getReasonPhrase()
             )
         );
-        foreach ($this->response->getHeaders() as $header_name => $headers) {
-            header(sprintf("%s: %s", $header_name, $this->response->getHeaderLine($header_name)));
+        foreach ($response->getHeaders() as $header_name => $headers) {
+            header(sprintf("%s: %s", $header_name, $response->getHeaderLine($header_name)));
         };
 
-        echo $this->response->getBody();
+        if (isset($body)) {
+            echo (string) $body;
+        } else {
+            echo $this->collection;
+        }
+
+        // $response = new Response($code, $headers);
+        // var_dump($response);
+        // $headers_default = [
+        //     'Access-Control-Allow-Origin' => '*',
+        //     'Content-Type' => 'application/json; charset=UTF-8',
+        //     'Access-Control-Allow-Methods' => 'OPTIONS,GET,POST,PUT,DELETE',
+        //     'Access-Control-Max-Age' => '3600',
+        //     'Access-Control-Allow-Headers' => 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With',
+        // ];
+
+        // header(
+        //     sprintf(
+        //         'HTTP/%s %d %s',
+        //         $response->getProtocolVersion(),
+        //         $code,
+        //         $response->getReasonPhrase()
+        //     )
+        // );
+        // foreach ($headers_default as $key => $value) {
+        //     header(sprintf("%s: %s", $key, $value));
+        // };
+
+        // echo 'fuu';
     }
 
     /**
@@ -191,11 +234,11 @@ abstract class Controller
         // Run default tests
         switch ($key) {
             case 'page':
-                if (false === is_int($value)) {
-                    throw new APIInvalidArgumentException('Property `page` must be an integer.', 'page');
+                if (! v::IntVal()->validate($value)) {
+                    throw new APIInvalidArgumentException('Property `page` must be an integer.', '?page');
                 }
                 if ($value < 1) {
-                    throw new APIInvalidArgumentException('Property `page` must be an integer greater than zero.', 'page');
+                    throw new APIInvalidArgumentException('Property `page` must be an integer greater than zero.', '?page');
                 }
             break;
 
@@ -203,22 +246,45 @@ abstract class Controller
                 // static invocation allows extending classes to modify the constant PER_PAGE
                 if ($value > static::PER_PAGE) {
                     throw new APIInvalidArgumentException(
-                        sprintf('Number of items per page requested (%s) exceeds the maximum of %d', $value, static::PER_PAGE)
+                        sprintf('Requested number of items per page `%s` exceeds the maximum of %d', $value, static::PER_PAGE), '?per_page'
                     );
                 }
             break;
 
             case 'sort':
-                $ranges = $this->request->parseRange($this->request->getHeaderLine('range'));
-                $limit = sprintf('%d, %d', $ranges[0], ($ranges[1] - $ranges[0]));
+                if(! in_array($value, static::SORTABLE_FIELDS)) {
+                    throw new APIInvalidArgumentException(
+                        sprintf(
+                            'Requested sort key `%s` is out of the range of options available. Try one of: %s.',
+                            $value,
+                            implode(', ', static::SORTABLE_FIELDS)
+                        ), '?sort'
+                    );
+                }
+            break;
+
+            case 'sort_dir':
+                if (! in_array(strtolower($value), ['asc', 'desc'])) {
+                    throw new APIInvalidArgumentException('Parameter `sort_dir` must be one of: asc, desc.', '?sort_dir');
+                }
+            break;
         }
 
-        $sort_dir = 'ASC';
-        if ($sort_query = $query['sort']) {
-            $parse_results = $this->request->parseSortQuery($sort_query, self::SORTABLE_FIELDS);
-            $sort = sprintf('`%s`', $parse_results[0]);
-            $sort_dir = $parse_results[1] ?: $sort_dir;
-            $sort_dir = strtoupper($sort_dir);
+        if (isset($test)) {
+            if (false === call_user_func($test, $value)) {
+                throw new APIInvalidArgumentException(
+                    sprintf('Invalid parameter given for key `%s`. Suggested value: %s.', $key, $default),
+                    sprintf('?%s', $key)
+                );
+            }
         }
+
+        return $value;
+    }
+
+    public function convertPageToLimit(int $page, int $per_page): array
+    {
+        $min = ($page - 1) * $per_page;
+        return [$min, $per_page];
     }
 }

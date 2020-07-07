@@ -8,7 +8,6 @@ use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
-use Vgsite\HTTP\Response;
 
 class GameController extends Controller
 {
@@ -21,10 +20,9 @@ class GameController extends Controller
         parent::__construct($request);
 
         $this->pdo = Registry::get('pdo');
-        $this->response->withHeader('Access-Control-Allow-Methods', 'GET');
     }
 
-    protected function getOne($id): Controller
+    protected function getOne($id): void
     {
         if (! v::IntVal()->validate($id)) {
             throw new APIInvalidArgumentException('Game ID must be numeric', 'id');
@@ -43,21 +41,19 @@ class GameController extends Controller
             throw new APINotFoundException();
         }
 
-        $this->response->withStatus(200);
-        $this->response->setPayload($results);
-
-        return $this;
+        $this->setPayload($results)->render(200);
     }
 
-    protected function getAll(): Controller
+    protected function getAll(): void
     {
         $page = $this->parseQuery('page', 1);
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
         [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
         $sort = $this->parseQuery('sort', 'release', function ($var) {
-            return in_array($var, static::SORTABLE_FIELDS);
+            return in_array($var, ['title']);
         });
-        $sort_dir = $this->parseQuery('sort_dir', 'ASC');
+        $sort_dir = $this->parseQuery('sort_dir', 'asc');
+        $sort_dir = strtoupper($sort_dir);
 
         $sql = sprintf(
             "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY `%s` %s LIMIT %d, %d",
@@ -74,9 +70,6 @@ class GameController extends Controller
             throw new APINotFoundException();
         }
 
-        $this->response->withStatus(200);
-        $this->response->setPayload($results);
-
-        return $this;
+        $this->setPayload($results)->render(200);
     }
 }

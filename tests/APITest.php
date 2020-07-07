@@ -20,9 +20,10 @@ class APITest extends TestCase
         self::$client = $client;
     }
 
-    public function testApiClient()
+    public function testHttpClient()
     {
         $this->assertInstanceOf(GuzzleHttp\Client::class, self::$client);
+        $this->assertTrue(method_exists(self::$client, 'get'));
     }
 
     public function testClientCanConnectToApi()

@@ -6,9 +6,9 @@ use Vgsite\HTTP\Response;
 
 class APIException extends \Exception
 {
-    public static $types = Array(
+    public static $types = [
         'UNDEFINED', 'MISSING_REQUIRED_PARAMETER', 'INVALID_PARAMETER', 'INVALID_REQUEST_METHOD', 'INVALID_RANGE_FORMAT'
-    );
+    ];
 
     private $error_message = Array();
     
@@ -29,32 +29,31 @@ class APIException extends \Exception
         \Throwable $previous = null
     )
     {
+        $this->error_message['title'] = Response::$phrases[$code];
         if (! empty($source)) {
             $this->error_message['source'] = $source;
         }
         if (! empty($type)) {
-            $this->error_message['type'] = $type;
+            $this->error_message['code'] = $type;
         }
         if (! empty($message)) {
             $this->error_message['message'] = $message;
         }
 
-        $exception_message = Response::$phrases[$code];
+        parent::__construct($this->error_message['title'], $code, $previous);
+    }
 
-        parent::__construct($exception_message, $code, $previous);
+    public function getErrorMessage(): array
+    {
+        return $this->error_message;
     }
 
     public function __toString(): string
     {
-        $response_json = [
-            'message' => $this->getMessage(),
-            'errors' => $this->error_message,
-        ];
-
         if (getenv('ENVIRONMENT') == "development") {
-            $response_json['trace'] = $this->getTraceAsString();
+            $this->error_message['trace'] = sprintf('%s Line %s %s', $this->getFile(), $this->getLine(), $this->getTraceAsString());
         }
 
-        return json_encode($response_json);
+        return json_encode($this->error_message);
     }
 }

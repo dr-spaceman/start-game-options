@@ -5,6 +5,13 @@ namespace Vgsite\HTTP;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 
+/**
+ * Handles HTTP request
+ * 
+ * Adopted from Guzzle PSR-7 Request 
+ * @link https://github.com/guzzle/psr7
+ */
+
 class Request
 {
     use MessageTrait;
@@ -21,6 +28,7 @@ class Request
 
     /** @var array Parameters set in the query string */
     private $parameters = [
+        'q' => null,
         'sort' => null, // format: ?sort=fieldname[:asc|des]
         'sort_by' => 'asc',
         'page' => 1,
