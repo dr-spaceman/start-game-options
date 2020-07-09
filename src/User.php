@@ -90,7 +90,7 @@ class User extends DomainObject
         if ($hash === true) {
             $password = password_hash($password, PASSWORD_DEFAULT);
             if ($password === false) {
-                throw new Exception("Password couldn't be secured because of an error");
+                throw new \Exception("Password couldn't be secured because of an error");
             }
         }
 
@@ -100,7 +100,7 @@ class User extends DomainObject
     public function hashPassword(string $password)
     {
 
-        $this->setPassword($password_hash);
+        $this->setPassword($password, true);
     }
 
     public function getEmail(): string
@@ -138,17 +138,17 @@ class User extends DomainObject
 
     public static function findById(int $id): ?DomainObject
     {
-        return self::getMapper()->findById($id);
+        return static::getMapper()->findById($id);
     }
 
     public static function findByUsername(string $username): ?DomainObject
     {
-        return self::getMapper()->findByUsername($username);
+        return static::getMapper()->findByUsername($username);
     }
 
     public static function findByEmail(string $email): ?DomainObject
     {
-        return self::getMapper()->findByEmail($email);
+        return static::getMapper()->findByEmail($email);
     }
 
     public static function getRanks(): array

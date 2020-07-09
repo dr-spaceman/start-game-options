@@ -16,7 +16,7 @@ abstract class DomainObject
         }
     }
 
-    protected function getMapper()
+    protected static function getMapper()
     {
         return Registry::getMapper(static::class);
     }

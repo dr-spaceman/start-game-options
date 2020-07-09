@@ -2,6 +2,8 @@
 
 namespace Vgsite;
 
+use Exception;
+
 /**
  * Handle database queries and logging, object storage into IdentityMap
  */
@@ -14,23 +16,17 @@ abstract class Mapper
     protected $db_table;
     protected $db_id_field = 'id';
 
-    /**
-     * Registry object
-     * @var PDO object
-     */
+    /** @var PDO Registry object */
     protected $pdo;
 
-    /**
-     * Registry object
-     * @var Monolog object
-     */
+    /** @var Monolog Registry object */
     protected $logger;
 
     protected $identity_map;
     
     /**
      * PDO statements
-     * @var PDOStatement object
+     * @var PDOStatement|string object
      */
     protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
     protected $select_statement;
@@ -97,6 +93,42 @@ abstract class Mapper
         $insert_result = $this->doInsert($obj);
 
         return $insert_result;
+    }
+
+    /**
+     * Prepare a list of MySQL database fields for a MySQL query
+     *
+     * @param array $fields List of fields to filter
+     * @param array $whitelist List of fields to allow
+     * 
+     * @return string Prepared safe string
+     */
+    public function prepareFields(array $fields=[], array $whitelist=[]): string
+    {
+        if (empty($fields)) {
+            return '*';
+        }
+
+        $fields_pass = array_map(function ($value) {
+            $value = trim($value);
+            if (empty($value)) return null;
+            // Nullify any fields with anything except alphanumerics, -, _
+            if (preg_match('/[^a-z0-9\-_]/i', $value)) return null;
+            return $value;
+        }, $fields);
+        $fields_pass = array_filter($fields_pass);
+
+        if (! empty($whitelist)) {
+            $fields_pass = array_intersect($fields, $whitelist);
+        }
+
+        if (empty($fields)) {
+            return '*';
+        }
+
+        return implode(', ', array_map(function ($value) {
+            return '`'.$value.'`';
+        }, $fields_pass));
     }
 
     public function __destruct()

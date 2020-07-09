@@ -2,26 +2,20 @@
 
 namespace Vgsite;
 
+use Generator;
+
 /**
  * A collection of objects (rows of data/arrays OR instantiated objects) made iterable through a generator
  */
 abstract class Collection
 {
-    /**
-     * @var Mapper object
-     */
+    /** @var Mapper object */
     protected $mapper;
 
-    /**
-     * Total number of items in collection
-     * @var integer
-     */
+    /** @var integer Total number of items in collection */
     public $count = 0;
     
-    /**
-     * Rows of raw data, non-yet-instantiated objects
-     * @var array
-     */
+    /** @var array Rows of raw data, non-yet-instantiated objects */
     protected $rows = [];
 
     /**
@@ -53,16 +47,15 @@ abstract class Collection
     public function add(DomainObject $object)
     {
         $target_class = $this->targetClass();
-        $instanceof = ($object instanceof $target_class);
-        if (false === $instanceof) {
-            throw new InvalidArgumentException("This is a {$class} collection");
+        if (false === ($object instanceof $target_class)) {
+            throw new \InvalidArgumentException("This is a {$target_class} collection");
         }
 
         $this->objects[$this->count] = $object;
         $this->count++;
     }
 
-    public function getGenerator()
+    public function getGenerator(): Generator
     {
         for ($x = 0; $x < $this->count; $x++) {
             yield $this->getRow($x);
@@ -71,7 +64,7 @@ abstract class Collection
 
     abstract protected function targetClass();
 
-    private function getRow($num)
+    public function getRow($num): DomainObject
     {        
         if ($num >= $this->count || $num < 0) {
             return null;
