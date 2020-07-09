@@ -37,7 +37,7 @@ set_exception_handler(function (\Throwable $e) {
 
 require_once __DIR__ . '/bootstrap_common.php';
 
-/** END CONFIG **/
+/** END APP CONFIG **/
 
 //$betatesters = array("Matt", "Matt2", "Andrew", "Alex", "Nels", "Kanji");
 
@@ -62,5 +62,4 @@ if ($_SESSION['user_rank'] == User::RESTRICTED) {
     die("*");
 }
 
-require_once ROOT_DIR.'/src/required_functions.php';
 // require "../bin/php/bbcode.php";

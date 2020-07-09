@@ -29,10 +29,6 @@ $logger->pushHandler($logger_stream);
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::DEBUG));
 Registry::set('logger', $logger);
 
-$_SESSION['logged_in'] = 'true';
-$_SESSION['user_id'] = TEST_USER_ID;
-$current_user = User::findById($_SESSION['user_id']);
-
 // Catch uncaught exceptions
 set_exception_handler(function (\Throwable $e) {
     Registry::get('logger')->warning($e);
@@ -41,4 +37,9 @@ set_exception_handler(function (\Throwable $e) {
 });
 
 require_once __DIR__ . '/bootstrap_common.php';
-require ROOT_DIR.'/src/required_functions.php';
+
+/** END TEST CONFIG */
+
+$_SESSION['logged_in'] = 'true';
+$_SESSION['user_id'] = TEST_USER_ID;
+$current_user = User::findById($_SESSION['user_id']);

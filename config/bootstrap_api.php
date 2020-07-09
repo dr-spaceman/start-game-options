@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/constants.php';
 
-define('API_BASE_URI', sprintf('/api', $_SERVER['HTTP_HOST']));
+define('API_BASE_URI', '/api');
 define('API_BASE_URL', sprintf('http://%s%s', $_SERVER['HTTP_HOST'], API_BASE_URI));
 
 use Vgsite\Registry;
