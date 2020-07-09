@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
 use Respect\Validation\Validator as v;
@@ -34,8 +34,9 @@ class APITest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('application/json; charset=UTF-8', $response->getHeaderLine('content-type'));
         $body = (string) $response->getBody();
-        $response_obj = json_decode($body);
-        $this->assertEquals('resources', array_keys((array) $response_obj)[0]);
+        $response_obj = json_decode($body, true);
+        $this->assertEquals('collection', array_keys((array) $response_obj)[0]);
+        $this->assertArrayHasKey('items', $response_obj['collection']);
     }
 
     public function testInvalidRequestMethod()
@@ -46,26 +47,25 @@ class APITest extends TestCase
 
     public function testSearchMethodReturns422WhenNoQueryGiven()
     {
-        $response = self::$client->get('search/');
+        $response = self::$client->get('search');
         $this->assertEquals(422, $response->getStatusCode());
     }
 
     public function testSearchMethodCanFindDonkeyKong()
     {
-        $response = self::$client->get('search/donkey');
+        $response = self::$client->get('search?q=donkey');
         $this->assertEquals(200, $response->getStatusCode());
         $body = (string) $response->getBody();
-        $response_obj = json_decode($body, true);var_dump('response', $response_obj);
-        $this->assertEquals('hits', array_keys((array) $response_obj)[0]);
-        $found_Donkey_Kong = array_filter ($response_obj['hits'], function($item) {
-            if ($item['title'] == "Donkey Kong") return true;
-        });
-        $this->assertNotEmpty($found_Donkey_Kong);
+        $response_obj = json_decode($body, true);
+        $items = $response_obj['collection']['items'];
+        $this->assertTrue(count($items) > 0);
+        $found_Donkey_Kong = array_search('Donkey Kong', array_column($items, 'title'));
+        $this->assertNotFalse($found_Donkey_Kong);
     }
 
     public function testSearchMethodCannotFindSomething()
     {
-        $response = self::$client->get('search/marypoppins69burt_foobar_loremipsum', ['http_errors' => false]);
+        $response = self::$client->get('search?q=marypoppins69burt_foobar_loremipsum', ['http_errors' => false]);
         $this->assertEquals(404, $response->getStatusCode());
     }
 

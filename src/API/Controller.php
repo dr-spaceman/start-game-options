@@ -2,6 +2,7 @@
 
 namespace Vgsite\API;
 
+use Exception;
 use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
@@ -20,6 +21,9 @@ abstract class Controller
 
     /** @var array For `?sort` parameter; List of keys to whitelist */
     const SORTABLE_FIELDS = Array();
+
+    /** @var string The base URI for this constroller; Used to make links */
+    const BASE_URI = API_BASE_URI . '/_';
 
     /** @var Request */
     protected $request;
@@ -54,45 +58,18 @@ abstract class Controller
                     $this->delete();
                 break;
                 default:
-                    $message = sprintf(
-                        'Request Method not valid (%s received). Try one of: GET, POST, PUT, DELETE.', 
-                        $this->request_method
-                    );
-                    throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 400);
+                    $message = "Request Method not valid ({$this->request->getMethod()} received). Try one of: GET, POST, PUT, DELETE.";
+                    throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 405);
             }
         } catch (APIException $e) {
-            Registry::get('logger')->warning($e);
-
             $this->collection->setError($e->getErrorMessage());
-
             $this->render($e->getCode());
+            throw new Exception($e);
         } catch (\Exception | \Error $e) {
-            Registry::get('logger')->warning($e);
-
             $error = ['title' => 'Server error', 'message' => $e->getMessage()];
             $this->collection->setError($error);
-
             $this->render(500);
-        }
-    }
-
-    public function processSearchRequest()
-    {
-        if ($this->request_method != 'GET') {
-            throw new APIInvalidArgumentException(
-                sprintf(
-                    'Request Method not valid (%s received). Try: GET.',
-                    $this->request_method
-                ),
-                405
-            );
-        }
-
-        $response = $this->getSearchResults($this->queries[0]);
-
-        header($response['status_code_header']);
-        if ($response['payload']) {
-            echo json_encode($response['payload']);
+            throw new Exception($e);
         }
     }
 
@@ -163,11 +140,6 @@ abstract class Controller
         // echo 'hi';
         // var_dump('Controller::render');
         $response = new Response($code, $headers);
-        $response->withHeader('Access-Control-Allow-Origin', '*');
-        $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
-        $response->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
-        $response->withHeader('Access-Control-Max-Age', '3600');
-        $response->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
 
         header(
             sprintf(
@@ -268,6 +240,31 @@ abstract class Controller
                     throw new APIInvalidArgumentException('Parameter `sort_dir` must be one of: asc, desc.', '?sort_dir');
                 }
             break;
+
+            case 'q':
+                if (mb_strlen($value) < 3) {
+                    throw new APIInvalidArgumentException('Search query must be at least 3 characters long', '?q');
+                }
+            break;
+
+            case 'fields':
+                $fields_pass = explode(',', $value);
+                $fields_pass = array_map(function ($field) {
+                    $field = trim($field);
+                    if (empty($field)) return null;
+                    // Nullify any fields with anything except alphanumerics, -, _
+                    if (preg_match('/[^a-z0-9\-_]/i', $field)) return null;
+                    return $field;
+                }, $fields_pass);
+                $fields_pass = array_filter($fields_pass);
+
+                if (empty($fields_pass)) {
+                    return '*';
+                }
+
+                $value = implode(', ', array_map(function ($field) {
+                    return '`' . $field . '`';
+                }, $fields_pass));
         }
 
         if (isset($test)) {
@@ -286,5 +283,10 @@ abstract class Controller
     {
         $min = ($page - 1) * $per_page;
         return [$min, $per_page];
+    }
+
+    public function parseLink(string $id): string
+    {
+        return static::BASE_URI . '/' . $id;
     }
 }

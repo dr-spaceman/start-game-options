@@ -2,16 +2,20 @@
 
 namespace Vgsite\API;
 
+use Vgsite\AlbumMapper;
 use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
 
 class SearchController extends Controller
 {
     private $pdo;
 
-    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platform', 'release'];
+    const SORTABLE_FIELDS = ['title_sort'];
+
+    const BASE_URI = API_BASE_URI . '/search';
 
     public function __construct(Request $request)
     {
@@ -22,28 +26,34 @@ class SearchController extends Controller
         if (! $request->getQuery()['q']) {
             throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
         }
-
-        $this->response->withHeader('Access-Control-Allow-Methods', 'GET');
     }
 
-    protected function getOne($id): array
+    protected function getOne($id): void
     {
-        return Array("hits" => []);
+        throw new APINotFoundException();
     }
     
-    protected function getAll(): array
+    protected function getAll(): void
     {
-        $query = $this->queries[0];
+        $query = $this->parseQuery('q', '');
+        $page = $this->parseQuery('page', 1);
+        $per_page = $this->parseQuery('per_page', static::PER_PAGE);
+        [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
+        $sort = $this->parseQuery('sort', 'title_sort', function ($var) {
+            return in_array($var, static::SORTABLE_FIELDS);
+        });
+        $sort_dir = $this->parseQuery('sort_dir', 'asc');
+        $sort_dir = strtoupper($sort_dir);
 
         // This might be implemented in future
-        $filter = '';
+        $filter = null;
 
-        // Populate with SQL queries
-        $queries = Array();
-        if (!$filter) {
-            $queries[] = "SELECT `title`, `title_sort`, `subcategory`, `type`, `index_data` 
+        // Populate with SQL sql queries
+        $sql = Array();
+        if (! $filter) {
+            $sql[] = "SELECT `title`, `title_sort`, `subcategory`, `type`, `index_data` 
 				FROM `pages` WHERE `redirect_to`='' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) 
-				ORDER BY `title_sort` LIMIT 30";
+				ORDER BY `title_sort` LIMIT 100";
         } else {
             $tables = array(
                 "categories" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title` LIMIT 100",
@@ -55,34 +65,34 @@ class SearchController extends Controller
             );
             foreach ($tables as $table => $query) {
                 if (stristr($filter, $table)) {
-                    $queries[] = $query;
+                    $sql[] = $query;
                 }
             }
-        }print_r($queries);
+        }
 
-        foreach ($queries as $sql) {
+        foreach ($sql as $sql) {
             $statement = $this->pdo->prepare($sql);
             $statement->execute(['query' => $query]);
 
             while ($row = $statement->fetch()) {
-                $exact_match = strtolower($row['title']) == strtolower($q);
+                $exact_match = strtolower($row['title']) == strtolower($query);
                 $title_sort = strtolower($row['title_sort']);
-                $o_title = $row['title'];
+                $title = $row['title'];
 
                 if ($row['subcategory']) {
                     $category = str_replace('Game ', '', $row['subcategory']);
-                    $o_title = str_replace(' (' . $category . ')', '', $row['title']);
+                    $title = str_replace(' (' . $category . ')', '', $row['title']);
                 } else {
                     $category = $row['type'];
                 }
 
                 $arr = array(
-                        "title" => $o_title,
-                        "title_sort" => $row['title_sort'],
-                        "type" => $row['type'],
-                        "category" => $category,
-                        "url" => pageURL($row['title'], $row['type'])
-                    );
+                    "title" => $title,
+                    "title_sort" => $row['title_sort'],
+                    "type" => $row['type'],
+                    "category" => $category,
+                    "url" => pageURL($row['title'], $row['type'])
+                );
 
                 // if(strstr($_GET['return_vars'], "data")) $arr["data"] = json_decode($row['index_data']);
                 // if(strstr($_GET['return_vars'], "platform_shorthand")){
@@ -113,24 +123,24 @@ class SearchController extends Controller
             }
         }
 
-        if (!$filter || stristr($filter, "albums")) {
-            $sql = "SELECT title, subtitle, albumid, datesort FROM albums WHERE (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%') OR cid=:query) AND `view`='1' ORDER BY `title` LIMIT 30";
-            $statement = $this->pdo->prepare($sql);
-            $statement->execute(['query' => $query]);
-
-            while ($row = $statement->fetch()) {
-                $title_sort = formatName($row['title'] . ($row['subtitle'] ? " " . $row['subtitle'] : ''), "sortable");
+        if (! $filter || stristr($filter, "albums")) {
+            $mapper = new AlbumMapper();
+            $album_results = $mapper->searchBy('title', $query);
+            
+            foreach ($album_results->getGenerator() as $album) {
+                $title_sort = formatName($album->parseTitle(), "sortable");
                 $title_sort = strtolower($title_sort);
-                $arr = array(
-                        "title" => $row['title'] . ' ' . $row['subtitle'],
-                        "title_sort" => $title_sort,
-                        "type" => "album",
-                        "category" => "music",
-                        "url" => '/music/?id=' . $row['albumid'],
-                        "tag" => 'AlbumID:' . $row['albumid']
-                    );
-                if (strstr($_GET['return_vars'], "data")) $arr["data"] = array("release_date" => $row['datesort']);
-                $results[] = $arr;
+                $params = array(
+                    "title" => $album->parseTitle(),
+                    "title_sort" => $title_sort,
+                    "type" => "album",
+                    "category" => "music",
+                    "url" => $album->parseUrl(),
+                    "tag" => 'AlbumID:' . $album->getProp('albumid'),
+                    "release_date" => $album->getProp('datesort'),
+                );
+
+                $results[] = $params;
             }
         }
 
@@ -146,8 +156,7 @@ class SearchController extends Controller
         usort($results, function ($a, $b) {
             return strcmp($a['title_sort'], $b['title_sort']);
         });
-        $results = array('hits' => $results);
 
-        return $results;
+        $this->setPayload($results)->render(200);
     }
 }

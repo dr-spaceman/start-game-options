@@ -109,6 +109,12 @@ class Response implements ResponseInterface
 
         $this->setHeaders($headers);
 
+        $this->withHeader('Access-Control-Allow-Origin', '*');
+        $this->withHeader('Content-Type', 'application/json; charset=UTF-8');
+        $this->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
+        $this->withHeader('Access-Control-Max-Age', '3600');
+        $this->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+
         $this->protocol = $version;
     }
 

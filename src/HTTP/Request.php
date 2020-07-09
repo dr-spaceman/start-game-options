@@ -59,7 +59,7 @@ class Request
         $path = explode('/', $path);
         array_shift($path); //_blank_
         array_shift($path); //api
-        $this->path = $path;
+        $this->path = array_filter($path);
 
         $querystring = parse_url($uri, PHP_URL_QUERY);
         parse_str($querystring, $query);

@@ -3,7 +3,10 @@
 require_once dirname(__FILE__) . '/../config/bootstrap_api.php';
 
 use Vgsite\API\CollectionJson;
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\HTTP\Request;
+use Vgsite\HTTP\Response;
+use Vgsite\Registry;
 
 // header("Access-Control-Allow-Origin: *");
 // header("Content-Type: application/json; charset=UTF-8");
@@ -35,21 +38,21 @@ $schema = [
 
 // $show = Array('uri' => $uri, 'req' => $req, '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 
-switch ($base) {
-	case 'search':
-		$controller = new Vgsite\API\SearchController($request);
-		$controller->processRequest();
-		break;
-	
-	case 'games':
-		$controller = new Vgsite\API\GameController($request);
-		$controller->processRequest();
-		break;
+	switch ($base) {
+		case 'search':
+			$controller = new Vgsite\API\SearchController($request);
+			$controller->processRequest();
+			break;
 		
-	default:
-		header('HTTP/1.1 200 OK');
-		header("Content-Type: application/json; charset=UTF-8");
-		$cj = new CollectionJson();
-		$cj->setLinks($schema);
-		echo $cj;
-}
+		case 'games':
+			$controller = new Vgsite\API\GameController($request);
+			$controller->processRequest();
+			break;
+			
+		default:
+			header('HTTP/1.1 200 OK');
+			header("Content-Type: application/json; charset=UTF-8");
+			$cj = new CollectionJson();
+			$cj->setLinks($schema);
+			echo $cj;
+	}

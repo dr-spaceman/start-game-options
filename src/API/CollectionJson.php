@@ -40,7 +40,7 @@ class CollectionJson
     }
     
     /**
-     * Appends the given array to the `error` property in the JSON collection
+     * Appends the given array to the `errors` property in the JSON collection
      *
      * @param array $error Array of error details
      * 
@@ -48,7 +48,7 @@ class CollectionJson
      */
     public function setError(array $error): self
     {
-        $this->collection['collection']['error'] = $error;
+        $this->collection['collection']['errors'][] = $error;
 
         return $this;
     }

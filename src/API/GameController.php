@@ -15,6 +15,8 @@ class GameController extends Controller
 
     const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platform', 'release'];
 
+    const BASE_URI = API_BASE_URI . '/games';
+
     public function __construct(Request $request)
     {
         parent::__construct($request);
@@ -34,6 +36,7 @@ class GameController extends Controller
         $statement->execute(['id' => $id]);
         $results = [];
         while ($row = $statement->fetch()) {
+            $row['href'] = $this->parseLink($row['id']);
             $results[] = $row;
         }
 
@@ -50,19 +53,21 @@ class GameController extends Controller
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
         [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
         $sort = $this->parseQuery('sort', 'release', function ($var) {
-            return in_array($var, ['title']);
+            return in_array($var, static::SORTABLE_FIELDS);
         });
         $sort_dir = $this->parseQuery('sort_dir', 'asc');
         $sort_dir = strtoupper($sort_dir);
+        $query = $this->parseQuery('q', '');
+        $fields = $this->parseQuery('fields', '*');
+        $search = $query ? "AND `title` LIKE CONCAT('%', :query, '%')" : '';
 
-        $sql = sprintf(
-            "SELECT * FROM pages_games WHERE `release` IS NOT NULL %s ORDER BY `%s` %s LIMIT %d, %d",
-            ($this->queries[0] ? "AND `title` LIKE CONCAT('%', :query, '%')" : ""), $sort, $sort_dir, $limit_min, $limit_max
-        );
+        $sql = "SELECT {$fields} FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY `{$sort}` {$sort_dir} LIMIT {$limit_min}, {$limit_max}";
         $statement = $this->pdo->prepare($sql);
-        $statement->execute(['query' => $this->queries[0]]);
+        $statement->execute(['query' => $query]);
         $results = [];
         while ($row = $statement->fetch()) {
+            echo $row;
+            $row['href'] = $this->parseLink($row['id']);
             $results[] = $row;
         }
 

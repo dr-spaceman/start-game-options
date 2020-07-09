@@ -51,7 +51,12 @@ class APIException extends \Exception
     public function __toString(): string
     {
         if (getenv('ENVIRONMENT') == "development") {
-            $this->error_message['trace'] = sprintf('%s Line %s %s', $this->getFile(), $this->getLine(), $this->getTraceAsString());
+            $this->error_message['trace'] = sprintf(
+                '%s Line %s %s', 
+                $this->getFile(), 
+                $this->getLine(), 
+                $this->getTraceAsString()
+            );
         }
 
         return json_encode($this->error_message);

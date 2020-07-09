@@ -9,6 +9,8 @@ define('API_BASE_URL', sprintf('http://%s%s', $_SERVER['HTTP_HOST'], API_BASE_UR
 use Vgsite\Registry;
 use Monolog\Logger;
 use Vgsite\API\CollectionJson;
+use Vgsite\API\Exceptions\APIException;
+use Vgsite\HTTP\Response;
 
 // Register logger
 $logger = new Logger('api');
@@ -30,14 +32,35 @@ Registry::set('logger', $logger);
 set_exception_handler(function (\Throwable $e) {
     Registry::get('logger')->warning($e);
 
-    header('HTTP/1.1 500 Internal Server Error');
-    header("Content-Type: application/json; charset=UTF-8");
+    if (headers_sent()) {
+        exit;
+    }
 
-    $error = ['title' => 'Server error', 'message' => $e->getMessage()];
+    $code = $e->getCode() <= 505 ? $e->getCode() : 500;
+    
+    $response = new Response($code);
+
+    header(
+        sprintf(
+            'HTTP/%s %d %s',
+            $response->getProtocolVersion(),
+            $code,
+            $response->getReasonPhrase()
+        )
+    );
+    foreach ($response->getHeaders() as $header_name => $headers) {
+        header(sprintf("%s: %s", $header_name, $response->getHeaderLine($header_name)));
+    };
+
+    if ($e instanceof APIException) {
+        $error = $e->getErrorMessage();
+    } else {
+        $error = ['title' => 'Server error', 'message' => $e->getMessage()];
+    }
     $cj = new CollectionJson();
     $cj->setError($error);
     
-    echo json_encode($cj);
+    echo (string) $cj;
 });
 
 require_once __DIR__.'/bootstrap_common.php';
