@@ -36,7 +36,6 @@ class AlbumMapper extends Mapper
 
     public function searchBy(string $field, string $query, string $sort='title', string $sort_dir='ASC', array $fields = []): Collection
     {
-        $field_sql = '';
         $fields_sql = $this->prepareFields($fields);
         if (!in_array($sort_dir, ['ASC', 'DESC'])) {
             $sort_dir = 'ASC';

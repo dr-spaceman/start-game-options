@@ -122,7 +122,7 @@ abstract class Mapper
             $fields_pass = array_intersect($fields, $whitelist);
         }
 
-        if (empty($fields)) {
+        if (empty($fields_pass)) {
             return '*';
         }
 
