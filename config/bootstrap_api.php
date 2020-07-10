@@ -1,16 +1,13 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/constants.php';
+require_once __DIR__ . '/environment.php';
 
 define('API_BASE_URI', '/api');
-define('API_BASE_URL', sprintf('http://%s%s', $_SERVER['HTTP_HOST'], API_BASE_URI));
+define('API_BASE_URL', sprintf('http://%s%s', getenv('HOST_DOMAIN'), API_BASE_URI));
 
 use Vgsite\Registry;
 use Monolog\Logger;
-use Vgsite\API\CollectionJson;
-use Vgsite\API\Exceptions\APIException;
-use Vgsite\HTTP\Response;
 
 // Register logger
 $logger = new Logger('api');

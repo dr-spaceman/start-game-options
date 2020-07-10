@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/constants.php';
+require_once __DIR__ . '/environment.php';
 
 define('TEST_USER_ID', 2);
 define('TEST_USER_EMAIL', 'test@test.com');
