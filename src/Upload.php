@@ -29,9 +29,9 @@ class Upload extends UploadHandler
         } else {
             $file_remote = $file;
 
-            // if ($_SERVER['HTTP_HOST'] == getenv('APP_DOMAIN')) {
-            //     $file_remote = str_replace('http://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
-            //     $file_remote = str_replace('https://'.getenv('APP_DOMAIN'), PUBLIC_DIR, $file_remote);
+            // if ($_SERVER['HTTP_HOST'] == getenv('HOST_DOMAIN')) {
+            //     $file_remote = str_replace('http://'.getenv('HOST_DOMAIN'), PUBLIC_DIR, $file_remote);
+            //     $file_remote = str_replace('https://'.getenv('HOST_DOMAIN'), PUBLIC_DIR, $file_remote);
             // }
 
             if (substr($file_remote, 0, 4) == "http") {
