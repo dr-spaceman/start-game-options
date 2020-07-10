@@ -50,17 +50,21 @@ class GameController extends Controller
     {
         $page = $this->parseQuery('page', 1);
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
-        [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
         $sort = $this->parseQuery('sort', 'release', function ($var) {
             return in_array($var, static::SORTABLE_FIELDS);
         });
         $sort_dir = $this->parseQuery('sort_dir', 'asc');
         $sort_dir = strtoupper($sort_dir);
-        $query = $this->parseQuery('q', '');
         $fields = $this->parseQuery('fields', '*');
+        $query = $this->parseQuery('q', '');
         $search = $query ? "AND `title` LIKE CONCAT('%', :query, '%')" : '';
+        
+        $statement = $this->pdo->prepare("SELECT count(1) FROM pages_games WHERE `release` IS NOT NULL {$search}");
+        $statement->execute(['query' => $query]);
+        $num_rows = $statement->fetchColumn();
+        [$limit_min, $limit_max, $num_pages] = $this->convertPageToLimit($page, $per_page, $num_rows);
 
-        $sql = "SELECT {$fields} FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY `{$sort}` {$sort_dir} LIMIT {$limit_min}, {$limit_max}";
+        $sql = "SELECT {$fields}, `id` FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY `{$sort}` {$sort_dir} LIMIT {$limit_min}, {$limit_max}";
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['query' => $query]);
         $results = [];
@@ -73,6 +77,8 @@ class GameController extends Controller
             throw new APINotFoundException();
         }
 
-        $this->setPayload($results)->render(200);
+        $links = $this->buildLinks($page, $num_pages);
+
+        $this->setPayload($results, $links)->render(200);
     }
 }

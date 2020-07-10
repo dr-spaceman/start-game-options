@@ -128,11 +128,40 @@ abstract class Controller
         return $response;
     }
 
-    public function setPayload(array $items): self
+    public function setPayload(array $items, array $links=[]): self
     {
         $this->collection->setItems($items);
 
+        if (! empty($links)) {
+            $this->collection->setLinks($links);
+        }
+
         return $this;
+    }
+
+    public function buildLinks(int $page, int $num_pages): array
+    {
+        if ($num_pages < 1) {
+            return [];
+        }
+        
+        $links = [
+            'pagination' => [
+                'page' => $page,
+                'total_pages' => $num_pages,
+            ]
+        ];
+        if ($page < $num_pages) {
+            $req_query = $this->request->getQuery();
+            $req_query['page'] = $page + 1;
+            $querystring_next = http_build_query($req_query);
+
+            $links['pagination']['next'] = [
+                'href' => static::BASE_URI . '?' . $querystring_next
+            ];
+        }
+
+        return $links;
     }
 
     /**
@@ -270,10 +299,16 @@ abstract class Controller
         return $value;
     }
 
-    public function convertPageToLimit(int $page, int $per_page): array
+    public function convertPageToLimit(int $page, int $per_page, int $total_num=null): array
     {
         $min = ($page - 1) * $per_page;
-        return [$min, $per_page];
+        $return = [$min, $per_page];
+        if (! empty($total_num)) {
+            $num_pages = ceil($total_num / $per_page);
+            array_push($return, $num_pages);
+        }
+
+        return $return;
     }
 
     public function parseLink(string $id): string

@@ -1,14 +1,10 @@
 <?php declare(strict_types=1);
 
+require_once dirname(__FILE__) . '/../config/bootstrap_api.php';
 require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
 use Respect\Validation\Validator as v;
-use Vgsite\Registry;
-use Vgsite\Badge;
-use Vgsite\BadgeCollection;
-use Vgsite\BadgeMapper;
-use Vgsite\User;
 
 class APITest extends TestCase
 {
@@ -16,7 +12,7 @@ class APITest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $client = new GuzzleHttp\Client(['base_uri' => 'http://vgsite/api/', 'http_errors' => false]);
+        $client = new GuzzleHttp\Client(['base_uri' => API_BASE_URL.'/', 'http_errors' => false]);
         self::$client = $client;
     }
 
@@ -29,7 +25,7 @@ class APITest extends TestCase
     public function testClientCanConnectToApi()
     {
         $this->assertInstanceOf(GuzzleHttp\Client::class, self::$client);
-        $response = self::$client->get('/api');
+        $response = self::$client->get(API_BASE_URI);
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('application/json; charset=UTF-8', $response->getHeaderLine('content-type'));

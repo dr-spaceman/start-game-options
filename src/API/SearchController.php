@@ -12,7 +12,7 @@ class SearchController extends Controller
 {
     private $pdo;
 
-    const SORTABLE_FIELDS = ['title_sort'];
+    const SORTABLE_FIELDS = ['title_sort', 'type', 'category'];
 
     const BASE_URI = API_BASE_URI . '/search';
 
@@ -73,7 +73,6 @@ class SearchController extends Controller
             $statement->execute(['query' => $query]);
 
             while ($row = $statement->fetch()) {
-                $exact_match = strtolower($row['title']) == strtolower($query);
                 $title_sort = strtolower($row['title_sort']);
                 $title = $row['title'];
 
@@ -155,8 +154,10 @@ class SearchController extends Controller
             throw new APINotFoundException("The requested query `{$query}` returned no results.");
         }
 
-        usort($results, function ($a, $b) {
-            return strcmp($a['title_sort'], $b['title_sort']);
+        usort($results, function ($a, $b) use ($sort, $query) {
+            if (strtolower($a[$sort]) == strtolower($query)) return -1;
+            if (strtolower($b[$sort]) == strtolower($query)) return 1;
+            return strcmp($a[$sort], $b[$sort]);
         });
 
         $this->setPayload($results)->render(200);
