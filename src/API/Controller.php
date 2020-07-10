@@ -131,57 +131,48 @@ abstract class Controller
     public function setPayload(array $items): self
     {
         $this->collection->setItems($items);
-        // var_dump('Response::setPayload', $items, $this->collection);
+
         return $this;
     }
 
-    public function render(int $code, array $headers=[], $body=null): void
+    /**
+     * Render an HTTP response
+     *
+     * @param integer $code Status code
+     * @param array $headers Key-value pairs
+     * @param string $body Body; If null, renders the current collection object
+     * 
+     * @return void
+     */
+    public function render(int $code=200, array $headers=[], string $body=null): void
     {
-        // echo 'hi';
-        // var_dump('Controller::render');
         $response = new Response($code, $headers);
+        $response->render($body ?? (string) $this->collection);
+    }
 
-        header(
-            sprintf(
-                'HTTP/%s %d %s', 
-                $response->getProtocolVersion(), 
-                $code,
-                $response->getReasonPhrase()
-            )
-        );
-        foreach ($response->getHeaders() as $header_name => $headers) {
-            header(sprintf("%s: %s", $header_name, $response->getHeaderLine($header_name)));
-        };
-
-        if (isset($body)) {
-            echo (string) $body;
-        } else {
-            echo $this->collection;
+    /**
+     * Parse sort query string value
+     * Format: [?sort=]fieldname[:asc|desc]
+     *
+     * @param string $sort_query The query string
+     * 
+     * @return array [fieldname, sort_direction(asc|desc)]
+     */
+    public function parseSortQuery(string $sort_query, array $allowed_fields = []): array
+    {
+        $test = '/^\??(sort=)?([a-z\-_]*):?(asc|desc)?$/i';
+        if (!preg_match($test, $sort_query, $matches)) {
+            throw new APIInvalidArgumentException('Sort parameter not in valid format. Try: `?sort=fieldname[:asc|desc]`', '?sort');
         }
 
-        // $response = new Response($code, $headers);
-        // var_dump($response);
-        // $headers_default = [
-        //     'Access-Control-Allow-Origin' => '*',
-        //     'Content-Type' => 'application/json; charset=UTF-8',
-        //     'Access-Control-Allow-Methods' => 'OPTIONS,GET,POST,PUT,DELETE',
-        //     'Access-Control-Max-Age' => '3600',
-        //     'Access-Control-Allow-Headers' => 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With',
-        // ];
+        if (!empty($allowed_fields) && false === array_search($matches[2], $allowed_fields)) {
+            throw new APIInvalidArgumentException(
+                sprintf('Sort parameter fieldname given (`%s`) is not allowed. Try one of: %s.', $matches[2], implode(', ', $allowed_fields)),
+                '?sort'
+            );
+        }
 
-        // header(
-        //     sprintf(
-        //         'HTTP/%s %d %s',
-        //         $response->getProtocolVersion(),
-        //         $code,
-        //         $response->getReasonPhrase()
-        //     )
-        // );
-        // foreach ($headers_default as $key => $value) {
-        //     header(sprintf("%s: %s", $key, $value));
-        // };
-
-        // echo 'fuu';
+        return [$matches[2], $matches[3]];
     }
 
     /**

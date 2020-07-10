@@ -4,7 +4,6 @@ namespace Vgsite\API;
 
 use Respect\Validation\Validator as v;
 use Vgsite\Registry;
-use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
@@ -66,7 +65,6 @@ class GameController extends Controller
         $statement->execute(['query' => $query]);
         $results = [];
         while ($row = $statement->fetch()) {
-            echo $row;
             $row['href'] = $this->parseLink($row['id']);
             $results[] = $row;
         }

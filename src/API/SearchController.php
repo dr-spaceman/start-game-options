@@ -4,7 +4,6 @@ namespace Vgsite\API;
 
 use Vgsite\AlbumMapper;
 use Vgsite\Registry;
-use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
@@ -22,10 +21,6 @@ class SearchController extends Controller
         parent::__construct($request);
 
         $this->pdo = Registry::get('pdo');
-
-        if (! $request->getQuery()['q']) {
-            throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
-        }
     }
 
     protected function getOne($id): void
@@ -36,6 +31,9 @@ class SearchController extends Controller
     protected function getAll(): void
     {
         $query = $this->parseQuery('q', '');
+        if (empty($query)) {
+            throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
+        }
         $page = $this->parseQuery('page', 1);
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
         [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
@@ -152,6 +150,10 @@ class SearchController extends Controller
         // 		"url" => '/content/Special:new?title='.urlencode($q)
         // 	);
         // }
+        
+        if (empty($results)) {
+            throw new APINotFoundException("The requested query `{$query}` returned no results.");
+        }
 
         usort($results, function ($a, $b) {
             return strcmp($a['title_sort'], $b['title_sort']);

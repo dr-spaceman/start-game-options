@@ -16,7 +16,7 @@ class APITest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $client = new GuzzleHttp\Client(['base_uri' => 'http://vgsite/api/']);
+        $client = new GuzzleHttp\Client(['base_uri' => 'http://vgsite/api/', 'http_errors' => false]);
         self::$client = $client;
     }
 
@@ -41,8 +41,8 @@ class APITest extends TestCase
 
     public function testInvalidRequestMethod()
     {
-        $response = self::$client->request('INVALID_REQ_METHOD', 'search/foo', ['http_errors' => false]);
-        $this->assertEquals(400, $response->getStatusCode());
+        $response = self::$client->request('INVALID_REQ_METHOD', 'search?q=foo');
+        $this->assertEquals(405, $response->getStatusCode());
     }
 
     public function testSearchMethodReturns422WhenNoQueryGiven()
@@ -63,9 +63,9 @@ class APITest extends TestCase
         $this->assertNotFalse($found_Donkey_Kong);
     }
 
-    public function testSearchMethodCannotFindSomething()
+    public function testSearchMethodReturns404OnEmptySearchResults()
     {
-        $response = self::$client->get('search?q=marypoppins69burt_foobar_loremipsum', ['http_errors' => false]);
+        $response = self::$client->get('search?q=marypoppins69burt_foobar_loremipsum');
         $this->assertEquals(404, $response->getStatusCode());
     }
 
