@@ -1,4 +1,5 @@
-const API_ENDPOINT = '/api.php?query=';
+
+const API_ENDPOINT = '/api/search?q=';
 
 const Search = () => {
     console.log('Search component');
@@ -74,10 +75,15 @@ const Search = () => {
         .then(response => response.json())
         .then(result => {
             console.log('fetch result', result);
-            dispatchResults({
-                type: 'SEARCH_FETCH_SUCCESS',
-                payload: result.hits,
-            })
+
+            if (! result.collection.items.length) {
+                dispatchResults({ type: 'SEARCH_FETCH_FAIL' })
+            } else {
+                dispatchResults({
+                    type: 'SEARCH_FETCH_SUCCESS',
+                    payload: result.collection.items,
+                })
+            }
         })
         .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }))
     }, [searchTerm]);

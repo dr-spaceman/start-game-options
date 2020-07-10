@@ -1,7 +1,5 @@
 <?php
 
-require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
-
 // load template
 
 require_once dirname(__FILE__) . '/../config/bootstrap_app.php';

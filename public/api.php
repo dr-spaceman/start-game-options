@@ -67,7 +67,7 @@ switch ($base) {
 		exit;
 	}
 
-	$code = $e->getCode() <= 505 ? $e->getCode() : 500;
+	$code = $e->getCode() && array_key_exists($e->getCode(), Response::$phrases) ? $e->getCode() : 500;
 
 	if ($e instanceof APIException) {
 		$error = $e->getErrorMessage();
