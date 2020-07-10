@@ -14,6 +14,9 @@ use Vgsite\Registry;
 // header("Access-Control-Max-Age: 3600");
 // header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
+ob_start();
+
+try {
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
 $body = file_get_contents('php://input');
@@ -38,21 +41,45 @@ $schema = [
 
 // $show = Array('uri' => $uri, 'req' => $req, '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 
-	switch ($base) {
-		case 'search':
-			$controller = new Vgsite\API\SearchController($request);
-			$controller->processRequest();
-			break;
+switch ($base) {
+	case 'search':
+		$controller = new Vgsite\API\SearchController($request);
+		$controller->processRequest();
+		break;
+	
+	case 'games':
+		$controller = new Vgsite\API\GameController($request);
+		$controller->processRequest();
+		break;
 		
-		case 'games':
-			$controller = new Vgsite\API\GameController($request);
-			$controller->processRequest();
-			break;
-			
-		default:
-			header('HTTP/1.1 200 OK');
-			header("Content-Type: application/json; charset=UTF-8");
-			$cj = new CollectionJson();
-			$cj->setLinks($schema);
-			echo $cj;
+	default:
+		$cj = new CollectionJson();
+		$cj->setLinks($schema);
+		$response = new Response(200, [], $cj);
+		$response->render();
+}
+} catch (Exception | Error $e) {
+	Registry::get('logger')->warning($e);
+
+	ob_flush();
+
+	if (headers_sent() || in_array('API-Body-Rendered: true', headers_list())) {
+		exit;
 	}
+
+	$code = $e->getCode() <= 505 ? $e->getCode() : 500;
+
+	if ($e instanceof APIException) {
+		$error = $e->getErrorMessage();
+	} else {
+		$error = ['title' => 'Server error', 'message' => $e->getMessage()];
+	}
+
+	$cj = new CollectionJson();
+	$cj->setError($error);
+
+	$response = new Response($code);
+	$response->render($cj);
+} finally {
+	ob_end_flush();
+}

@@ -2,10 +2,9 @@
 
 namespace Vgsite\HTTP;
 
-use Psr\Http\Message\ResponseInterface;
-use Vgsite\API\CollectionJson;
+use GuzzleHttp\Psr7\Stream;
 use Vgsite\API\Exceptions\APIException;
-use Vgsite\API\Exceptions\APIInvalidArgumentException;
+use Vgsite\API\Exceptions\APISystemException;
 
 /**
  * Handles HTTP response
@@ -14,7 +13,7 @@ use Vgsite\API\Exceptions\APIInvalidArgumentException;
  * @link https://github.com/guzzle/psr7
  */
 
-class Response implements ResponseInterface
+class Response
 {
     use MessageTrait;
 
@@ -58,7 +57,7 @@ class Response implements ResponseInterface
         415 => 'Unsupported Media Type',
         416 => 'Requested range not satisfiable',
         417 => 'Expectation Failed',
-        418 => 'I\'m a teapot', //Thanks, Guzzle!
+        418 => 'I\'m a teapot',
         422 => 'Unprocessable Entity',
         423 => 'Locked',
         424 => 'Failed Dependency',
@@ -80,11 +79,8 @@ class Response implements ResponseInterface
         511 => 'Network Authentication Required',
     ];
 
-    /** @var string */
-    private $reasonPhrase = '';
-
     /** @var int */
-    private $statusCode = 200;
+    private $status_code = 200;
 
     /**
      * @param int                                  $status  Status code
@@ -94,85 +90,74 @@ class Response implements ResponseInterface
      * @param string|null                          $reason  Reason phrase (when empty a default will be used based on the status code)
      */
     public function __construct(
-        $status = 200,
+        $status_code = 200,
         array $headers = [],
         $body = null,
-        $version = '1.1',
-        $reason = null
+        $version = '1.1'
     ) {
-        $this->withStatus($status, $reason);
+        $this->setStatusCode($status_code);
 
-        if ($body !== '' && $body !== null) {
-            $stream = fopen('php://temp', 'r+');
-            $this->stream = new \GuzzleHttp\Psr7\Stream($stream);
-        }
+        // Output to buffer
+        echo $body;
+
+        // Default headers
+        $this->setHeader('Access-Control-Allow-Origin', '*');
+        $this->setHeader('Content-Type', 'application/json; charset=UTF-8');
+        $this->setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
+        $this->setHeader('Access-Control-Max-Age', '3600');
+        $this->setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
 
         $this->setHeaders($headers);
-
-        $this->withHeader('Access-Control-Allow-Origin', '*');
-        $this->withHeader('Content-Type', 'application/json; charset=UTF-8');
-        $this->withHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
-        $this->withHeader('Access-Control-Max-Age', '3600');
-        $this->withHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
 
         $this->protocol = $version;
     }
 
     public function getStatusCode(): int
     {
-        return $this->statusCode;
+        return $this->status_code;
     }
 
     public function getReasonPhrase(): string
     {
-        return $this->reasonPhrase;
+        return static::$phrases[$this->getStatusCode()];
     }
 
-    public function withStatus($code, $reasonPhrase = ''): self
+    public function setStatusCode($code): self
     {
-        $this->assertStatusCodeIsInteger($code);
-        $code = (int) $code;
-        $this->assertStatusCodeRange($code);
-
-        $this->statusCode = $code;
-        if ($reasonPhrase == '' && isset(self::$phrases[$this->statusCode])) {
-            $reasonPhrase = self::$phrases[$this->statusCode];
+        if (filter_var($code, FILTER_VALIDATE_INT) === false) {
+            throw new APISystemException(
+                sprintf('Status code must be an integer value (%s given)', $code)
+            );
         }
-        $this->reasonPhrase = $reasonPhrase;
+        $code = (int) $code;
+
+        if (! static::$phrases[$this->getStatusCode()]) {
+            throw new APISystemException(
+                sprintf('Status code must be an integer value within the standard range. (%s given)', $code)
+            );
+        }
+
+        $this->status_code = $code;
 
         return $this;
     }
-
-    private function assertStatusCodeIsInteger($statusCode): bool
-    {
-        if (filter_var($statusCode, FILTER_VALIDATE_INT) === false) {
-            throw new APIException(
-                sprintf('Status code must be an integer value (%s given)', $statusCode), 
-                null, 
-                'INVALID_REQUEST_METHOD', 
-                500
-            );
-        }
-
-        return true;
-    }
-
-    private function assertStatusCodeRange($statusCode): bool
-    {
-        if ($statusCode < 100 || $statusCode >= 600) {
-            throw new APIException(
-                sprintf('Status code must be an integer value between 1xx and 5xx. (%s given)', $statusCode),
-                null,
-                'INVALID_REQUEST_METHOD',
-                500
-            );
-        }
-
-        return true;
-    }
     
-    public function render(): void
+    public function render(string $body=null): void
     {
-        $this->getBody()->write($this->stream);
+        header(
+            sprintf(
+                'HTTP/%s %d %s',
+                $this->getProtocolVersion(),
+                $this->getStatusCode(),
+                $this->getReasonPhrase()
+            )
+        );
+        $this->setHeader('API-Body-Rendered', 'true');
+        foreach ($this->getHeaders() as $key => $value) {
+            header($this->renderHeader($key));
+        };
+
+        // Output to buffer
+        echo $body;
     }
 }

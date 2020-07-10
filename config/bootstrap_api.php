@@ -28,42 +28,13 @@ $logger->pushProcessor(function ($record) {
 });
 Registry::set('logger', $logger);
 
-// Catch uncaught exceptions
+// Catch open exceptions
 set_exception_handler(function (\Throwable $e) {
     Registry::get('logger')->warning($e);
 
-    if (headers_sent()) {
-        exit;
-    }
-
-    $code = $e->getCode() <= 505 ? $e->getCode() : 500;
-    
-    $response = new Response($code);
-
-    header(
-        sprintf(
-            'HTTP/%s %d %s',
-            $response->getProtocolVersion(),
-            $code,
-            $response->getReasonPhrase()
-        )
-    );
-    foreach ($response->getHeaders() as $header_name => $headers) {
-        header(sprintf("%s: %s", $header_name, $response->getHeaderLine($header_name)));
-    };
-
-    if ($e instanceof APIException) {
-        $error = $e->getErrorMessage();
-    } else {
-        $error = ['title' => 'Server error', 'message' => $e->getMessage()];
-    }
-    $cj = new CollectionJson();
-    $cj->setError($error);
-    
-    echo (string) $cj;
+    echo 'Uncaught Exception: ' . $e->getMessage();
 });
 
 require_once __DIR__.'/bootstrap_common.php';
 
 /** END API CONFIG */
-

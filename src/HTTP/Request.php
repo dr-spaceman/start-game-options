@@ -2,9 +2,6 @@
 
 namespace Vgsite\HTTP;
 
-use Vgsite\API\Exceptions\APIException;
-use Vgsite\API\Exceptions\APIInvalidArgumentException;
-
 /**
  * Handles HTTP request
  * 
@@ -72,31 +69,6 @@ class Request
 
             $this->stream = new \GuzzleHttp\Psr7\Stream($stream);
         }
-    }
-
-    /**
-     * Parse sort query string value
-     * Format: [?sort=]fieldname[:asc|desc]
-     *
-     * @param string $sort_query The query string
-     * 
-     * @return array [fieldname, sort_direction(asc|desc)]
-     */
-    public function parseSortQuery(string $sort_query, array $allowed_fields=[]): array
-    {
-        $test = '/^\??(sort=)?([a-z\-_]*):?(asc|desc)?$/i';
-        if (! preg_match($test, $sort_query, $matches)) {
-            throw new APIInvalidArgumentException('Sort parameter not in valid format. Try: `?sort=fieldname[:asc|desc]`', '?sort');
-        }
-
-        if (! empty($allowed_fields) && false === array_search($matches[2], $allowed_fields)) {
-            throw new APIInvalidArgumentException(
-                sprintf('Sort parameter fieldname given (`%s`) is not allowed. Try one of: %s.', $matches[2], implode(', ', $allowed_fields)), 
-                '?sort'
-            );
-        }
-
-        return [$matches[2], $matches[3]];
     }
 
     public function getMethod()
