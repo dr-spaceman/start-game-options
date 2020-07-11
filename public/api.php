@@ -32,7 +32,7 @@ $schema = [
 	'users/{id}'	=> ['GET'],
 	'posts/'		=> ['GET', 'POST', 'PUT'],
 	'posts/{id}'	=> ['GET', 'PUT', 'DELETE'],
-	'_PARAMETERS_'	=> ['q', 'page', 'per_page', 'sort', 'sort_dir', 'fields'],
+	'_PARAMETERS_'	=> ['q={query}', 'page={page}', 'per_page={number_per_page}', 'sort={field}[:asc|desc]', 'fields={list,of,fields}'],
 ];
 
 // foreach ($request->getHeaders() as $header_name => $headers) {

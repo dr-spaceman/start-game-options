@@ -50,11 +50,8 @@ class GameController extends Controller
     {
         $page = $this->parseQuery('page', 1);
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
-        $sort = $this->parseQuery('sort', 'release', function ($var) {
-            return in_array($var, static::SORTABLE_FIELDS);
-        });
-        $sort_dir = $this->parseQuery('sort_dir', 'asc');
-        $sort_dir = strtoupper($sort_dir);
+        $sort_sql = $this->parseQuery('sort', '`release` ASC');
+        // [$sort, $sort_by] = $this->parseSortSql($sort_sql);
         $fields = $this->parseQuery('fields', '*');
         $query = $this->parseQuery('q', '');
         $search = $query ? "AND `title` LIKE CONCAT('%', :query, '%')" : '';
@@ -64,7 +61,7 @@ class GameController extends Controller
         $num_rows = $statement->fetchColumn();
         [$limit_min, $limit_max, $num_pages] = $this->convertPageToLimit($page, $per_page, $num_rows);
 
-        $sql = "SELECT {$fields}, `id` FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY `{$sort}` {$sort_dir} LIMIT {$limit_min}, {$limit_max}";
+        $sql = "SELECT {$fields}, `id` FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY {$sort_sql} LIMIT {$limit_min}, {$limit_max}";
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['query' => $query]);
         $results = [];

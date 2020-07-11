@@ -12,7 +12,7 @@ class SearchController extends Controller
 {
     private $pdo;
 
-    const SORTABLE_FIELDS = ['title_sort', 'type', 'category'];
+    const SORTABLE_FIELDS = ['title', 'title_sort', 'type', 'category'];
 
     const BASE_URI = API_BASE_URI . '/search';
 
@@ -34,14 +34,11 @@ class SearchController extends Controller
         if (empty($query)) {
             throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
         }
-        $page = $this->parseQuery('page', 1);
-        $per_page = $this->parseQuery('per_page', static::PER_PAGE);
-        [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
-        $sort = $this->parseQuery('sort', 'title_sort', function ($var) {
-            return in_array($var, static::SORTABLE_FIELDS);
-        });
-        $sort_dir = $this->parseQuery('sort_dir', 'asc');
-        $sort_dir = strtoupper($sort_dir);
+        // $page = $this->parseQuery('page', 1);
+        // $per_page = $this->parseQuery('per_page', static::PER_PAGE);
+        // [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
+        $sort_sql = $this->parseQuery('sort', "`title_sort` ASC");
+        [$sort, $sort_by] = $this->parseSortSql($sort_sql);
 
         // This might be implemented in future
         $filter = null;
@@ -51,15 +48,15 @@ class SearchController extends Controller
         if (! $filter) {
             $sql[] = "SELECT `title`, `title_sort`, `subcategory`, `type`, `index_data` 
 				FROM `pages` WHERE `redirect_to`='' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) 
-				ORDER BY `title_sort` LIMIT 100";
+				ORDER BY {$sort_sql} LIMIT 100";
         } else {
             $tables = array(
-                "categories" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title` LIMIT 100",
-                "games" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'game' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title` LIMIT 100",
-                "people" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'person' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title` LIMIT 100",
-                "characters" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game character') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title`",
-                "locations" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game location') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title`",
-                "publishers" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game publisher') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY `title`"
+                "categories" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql} LIMIT 100",
+                "games" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'game' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql} LIMIT 100",
+                "people" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages WHERE `type` = 'person' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql} LIMIT 100",
+                "characters" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game character') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql}",
+                "locations" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game location') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql}",
+                "publishers" => "SELECT `title`, title_sort, `subcategory`, `type`, index_data FROM pages_links LEFT JOIN pages ON (pages_links.from_pgid = pages.pgid) WHERE (`to` = 'Game publisher') AND `namespace` = 'Category' AND `redirect_to` = '' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) ORDER BY {$sort_sql}"
             );
             foreach ($tables as $table => $query) {
                 if (stristr($filter, $table)) {
@@ -120,6 +117,7 @@ class SearchController extends Controller
             }
         }
 
+        // Search albums
         if (! $filter || stristr($filter, "albums")) {
             $mapper = new AlbumMapper();
             $album_results = $mapper->searchBy('title', $query);
@@ -154,9 +152,16 @@ class SearchController extends Controller
             throw new APINotFoundException("The requested query `{$query}` returned no results.");
         }
 
-        usort($results, function ($a, $b) use ($sort, $query) {
-            if (strtolower($a[$sort]) == strtolower($query)) return -1;
-            if (strtolower($b[$sort]) == strtolower($query)) return 1;
+        usort($results, function ($a, $b) use ($sort, $sort_by, $query) {
+            if ($sort == 'title_sort') {
+                // Prioritize results with exact matches in the title
+                if (strtolower($a['title']) == strtolower($query)) return -1;
+                if (strtolower($b['title']) == strtolower($query)) return 1;
+            }
+            
+            if ($sort_by == 'DESC') {
+                return strcmp($b[$sort], $a[$sort]);
+            }
             return strcmp($a[$sort], $b[$sort]);
         });
 

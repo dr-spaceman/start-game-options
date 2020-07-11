@@ -1,7 +1,7 @@
 openapi: '3.0.0'
 info:
   title: Vigeogamesite API
-  version: '1.0'
+  version: '0.3'
 components:
   schemas:
     game:
@@ -27,20 +27,30 @@ components:
       required: true
       schema:
         type: integer
+    q:
+      name: q
+      in: query
+      description: Search term
+      schema:
+        type: string
+    sort:
+      name: sort
+      in: query
+      description: Define sort field and direction
+      schema:
+        type: string
 paths:
-  /search/{query}:
-    description: Search everything
+  /search:
+    description: Search component
     get:
-      summary: Search all the things
+      description: Search all the things
       parameters:
-        - name: query
-          in: path
+        - $ref: '#/components/parameters/q'
           required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sort'
       responses:
         "200":
-          description: Things matching {query}
+          description: Things matching {q}
           content:
             application/json:
               schema:
@@ -51,7 +61,7 @@ paths:
   /games:
     description: Games list
     get:
-      summary: Complete list of games
+      description: Complete list of games
       responses:
         "200":
           description: Success getting games list

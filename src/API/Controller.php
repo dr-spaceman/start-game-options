@@ -139,6 +139,14 @@ abstract class Controller
         return $this;
     }
 
+    /**
+     * Build an array of links based on pagination status for collection output
+     *
+     * @param integer $page Current page
+     * @param integer $num_pages Total pages
+     * 
+     * @return array Array to push into $collection['links'] object
+     */
     public function buildLinks(int $page, int $num_pages): array
     {
         if ($num_pages < 1) {
@@ -170,8 +178,6 @@ abstract class Controller
      * @param integer $code Status code
      * @param array $headers Key-value pairs
      * @param string $body Body; If null, renders the current collection object
-     * 
-     * @return void
      */
     public function render(int $code=200, array $headers=[], string $body=null): void
     {
@@ -180,28 +186,18 @@ abstract class Controller
     }
 
     /**
-     * Parse sort query string value
-     * Format: [?sort=]fieldname[:asc|desc]
+     * Parse sort query to use variables freely
      *
-     * @param string $sort_query The query string
+     * @param string $sort_sql The MySQL fragment, Eg. "`fieldname` ASC"
      * 
      * @return array [fieldname, sort_direction(asc|desc)]
      */
-    public function parseSortQuery(string $sort_query, array $allowed_fields = []): array
+    public function parseSortSql(string $sort_sql): array
     {
-        $test = '/^\??(sort=)?([a-z\-_]*):?(asc|desc)?$/i';
-        if (!preg_match($test, $sort_query, $matches)) {
-            throw new APIInvalidArgumentException('Sort parameter not in valid format. Try: `?sort=fieldname[:asc|desc]`', '?sort');
-        }
-
-        if (!empty($allowed_fields) && false === array_search($matches[2], $allowed_fields)) {
-            throw new APIInvalidArgumentException(
-                sprintf('Sort parameter fieldname given (`%s`) is not allowed. Try one of: %s.', $matches[2], implode(', ', $allowed_fields)),
-                '?sort'
-            );
-        }
-
-        return [$matches[2], $matches[3]];
+        $test = '/^`?(?P<sort>[a-z_\-]+)`? ?(?P<sort_by>asc|desc)+$/i';
+        preg_match($test, $sort_sql, $matches);
+        
+        return [$matches['sort'], $matches['sort_by']];
     }
 
     /**
@@ -212,7 +208,7 @@ abstract class Controller
      * @param int|string $default Default value to return if the 
      * @param callable $test Additional test to perform; Throw exception on failure
      *
-     * @return string
+     * @return string Prepared MySQL query fragment
      */
     public function parseQuery(string $key, $default, callable $test=null): string
     {
@@ -244,21 +240,26 @@ abstract class Controller
             break;
 
             case 'sort':
-                if(! in_array($value, static::SORTABLE_FIELDS)) {
+                $test_regex = '/^\??(sort=)?(?P<sort>[a-z\-_]*):?(?P<sort_by>asc|desc)*$/i';
+                if (!preg_match($test_regex, $value, $matches)) {
+                    throw new APIInvalidArgumentException('Sort parameter not in valid format. Try: `?sort={field_name}[:asc|desc]`', '?sort');
+                }
+
+                if (!empty(static::SORTABLE_FIELDS) && false === array_search($matches['sort'], static::SORTABLE_FIELDS)) {
                     throw new APIInvalidArgumentException(
                         sprintf(
-                            'Requested sort key `%s` is out of the range of options available. Try one of: %s.',
-                            $value,
+                            'Requested sort key `%s` is out of the range of options available. Try one of: %s.', 
+                            $matches['sort'], 
                             implode(', ', static::SORTABLE_FIELDS)
                         ), '?sort'
                     );
                 }
+
+                $value = sprintf('`%s` %s', $matches['sort'], $matches['sort_by'] ? strtoupper($matches['sort_by']) : 'ASC');
             break;
 
             case 'sort_dir':
-                if (! in_array(strtolower($value), ['asc', 'desc'])) {
-                    throw new APIInvalidArgumentException('Parameter `sort_dir` must be one of: asc, desc.', '?sort_dir');
-                }
+                throw new APIInvalidArgumentException('The parameter `sort_dir` is depreciated. Try: `?sort={field_name}[:asc|desc]`', '?sort_dir');
             break;
 
             case 'q':
@@ -299,6 +300,15 @@ abstract class Controller
         return $value;
     }
 
+    /**
+     * Make a SQL LIMIT query fragment based on page request
+     *
+     * @param integer $page
+     * @param integer $per_page
+     * @param integer $total_num Optional
+     * 
+     * @return array [$min, $max[, $num_pages]] => 'LIMIT $min $max'
+     */
     public function convertPageToLimit(int $page, int $per_page, int $total_num=null): array
     {
         $min = ($page - 1) * $per_page;
@@ -311,6 +321,13 @@ abstract class Controller
         return $return;
     }
 
+    /**
+     * Make an API href link
+     *
+     * @param string $id Id
+     * 
+     * @return string Href link
+     */
     public function parseLink(string $id): string
     {
         return static::BASE_URI . '/' . $id;
