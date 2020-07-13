@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: 'Vigeogamesite API'
+  version: '0.3'
+servers:
+  -
+    url: 'http://vgsite/api'
+paths:
+  '/games/{id}':
+    get:
+      description: 'A game'
+      operationId: 'Vgsite\API\GameController::getOne'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+        -
+          $ref: '#/components/parameters/fields'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/game'
+        '404':
+          description: 'Requested game not found'
+  /games:
+    get:
+      description: 'A list of games'
+      operationId: 'Vgsite\API\GameController::getAll'
+      parameters:
+        -
+          $ref: '#/components/parameters/page'
+        -
+          $ref: '#/components/parameters/per_page'
+        -
+          $ref: '#/components/parameters/sort'
+        -
+          $ref: '#/components/parameters/fields'
+        -
+          $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/game'
+  /search:
+    get:
+      description: 'Search all the things'
+      operationId: 'Vgsite\API\SearchController::getAll'
+      parameters:
+        -
+          required: true
+          $ref: '#/components/parameters/q'
+        -
+          $ref: '#/components/parameters/sort'
+      responses:
+        '200':
+          description: 'Things matching request query {q}'
+          content:
+            application/json:
+              schema:
+                properties:
+                  title: { type: string }
+                  title_sort: { type: string }
+                  type: { type: string }
+                  category: { type: string }
+                  url: { type: string }
+                type: object
+components:
+  schemas:
+    game:
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        genre:
+          type: string
+        platform:
+          type: string
+        release:
+          type: string
+        href:
+          type: string
+      type: object
+  parameters:
+    q:
+      name: q
+      in: query
+      description: 'Search term'
+      schema:
+        type: string
+    sort:
+      name: sort
+      in: query
+      description: 'Custom sorted results. Format: ?sort=fieldname[:asc|desc]'
+      schema:
+        type: string
+    fields:
+      name: fields
+      in: query
+      description: 'A list of comma-separated fields to include in the response object. For example: `title,release_date,tags`'
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: 'Page number'
+      schema:
+        type: integer
+    per_page:
+      name: per_page
+      in: query
+      description: 'Number of results per page'
+      schema:
+        type: integer
+    id:
+      name: id
+      in: path
+      description: 'The numeric ID for the requested item'
+      required: true
+      schema:
+        type: integer

@@ -27,7 +27,25 @@ class SearchController extends Controller
     {
         throw new APINotFoundException();
     }
-    
+
+    /**
+     * @OA\Get(
+     *     path="/search",
+     *     description="Search all the things",
+     *     @OA\Parameter(ref="#/components/parameters/q", required=true),
+     *     @OA\Parameter(ref="#/components/parameters/sort"),
+     *     @OA\Response(response=200,
+     *         description="Things matching request query {q}",
+     *         @OA\JsonContent(type="object",
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="title_sort", type="string"),
+     *             @OA\Property(property="type", type="string"),
+     *             @OA\Property(property="category", type="string"),
+     *             @OA\Property(property="url", type="string"),
+     *         )
+     *     )
+     * )
+     */
     protected function getAll(): void
     {
         $query = $this->parseQuery('q', '');

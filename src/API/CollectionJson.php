@@ -15,7 +15,7 @@ class CollectionJson
     {
         $collection = [
             'collection' => [
-                'version' => '1.0',
+                'version' => API_VERSION,
                 'href' => $_SERVER['REQUEST_URI'],
                 'links' => [],
                 'items' => [],

@@ -241,11 +241,11 @@ abstract class Controller
 
             case 'sort':
                 $test_regex = '/^\??(sort=)?(?P<sort>[a-z\-_]*):?(?P<sort_by>asc|desc)*$/i';
-                if (!preg_match($test_regex, $value, $matches)) {
+                if (! preg_match($test_regex, $value, $matches)) {
                     throw new APIInvalidArgumentException('Sort parameter not in valid format. Try: `?sort={field_name}[:asc|desc]`', '?sort');
                 }
 
-                if (!empty(static::SORTABLE_FIELDS) && false === array_search($matches['sort'], static::SORTABLE_FIELDS)) {
+                if (! empty(static::SORTABLE_FIELDS) && false === array_search($matches['sort'], static::SORTABLE_FIELDS)) {
                     throw new APIInvalidArgumentException(
                         sprintf(
                             'Requested sort key `%s` is out of the range of options available. Try one of: %s.', 
