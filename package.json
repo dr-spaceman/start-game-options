@@ -1,0 +1,25 @@
+{
+    "name": "vgsite",
+    "description": "A videogame site",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dr-spaceman/videogam.in"
+    },
+    "scripts": {
+        "compile": "babel assets/javascript --out-dir public/javascript",
+        "watch": "babel assets/javascript --out-dir public/javascript --watch --verbose",
+        "watch_": "./vendor/bin/openapi --bootstrap ./config/bootstrap_api.php --output ./public/api/ ./public/api/ ./src/API/",
+        "test": "./vendor/bin/phpunit ./tests/"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "nodemon": "^2.0.4"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.10.4",
+        "@babel/core": "^7.10.4",
+        "@babel/preset-env": "^7.10.2",
+        "@babel/preset-react": "^7.10.1"
+    }
+}
