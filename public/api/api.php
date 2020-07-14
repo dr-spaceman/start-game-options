@@ -20,7 +20,7 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
  * @OA\Parameter(
  *     name="sort",
  *     in="query",
- *     description="Custom sorted results. Format: ?sort=fieldname[:asc|desc]",
+ *     description="Custom sorted results. Format: `?sort=fieldname[:asc|desc]`",
  *     @OA\Schema(type="string")
  * )
  * @OA\Parameter(

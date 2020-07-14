@@ -14,8 +14,8 @@ use Vgsite\HTTP\Request;
  *     @OA\Property(property="id", type="string"),
  *     @OA\Property(property="title", type="string"),
  *     @OA\Property(property="genre", type="string"),
- *     @OA\Property(property="platform", type="string"),
- *     @OA\Property(property="release", type="string"),
+ *     @OA\Property(property="platforms", type="array", @OA\Items(type="string")),
+ *     @OA\Property(property="release", type="string", format="date"),
  *     @OA\Property(property="href", type="string"),
  * )
  */
@@ -24,7 +24,7 @@ class GameController extends Controller
 {
     private $pdo;
 
-    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platform', 'release'];
+    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platforms', 'release'];
 
     const BASE_URI = API_BASE_URI . '/games';
 
@@ -43,7 +43,7 @@ class GameController extends Controller
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Response(response=200,
      *         description="Success!",
-     *         @OA\JsonContent(type="object", ref="#/components/schemas/game")
+     *         @OA\JsonContent(ref="#/components/schemas/game")
      *     ),
      *     @OA\Response(response=404,
      *         description="Requested game not found",
@@ -63,8 +63,7 @@ class GameController extends Controller
         $statement->execute(['id' => $id]);
         $results = [];
         while ($row = $statement->fetch()) {
-            $row['href'] = $this->parseLink($row['id']);
-            $results[] = $row;
+            $results[] = $this->parseRow($row);
         }
 
         if (empty($results)) {
@@ -85,7 +84,7 @@ class GameController extends Controller
      *     @OA\Parameter(ref="#/components/parameters/q"),
      *     @OA\Response(response=200,
      *         description="Success!",
-     *         @OA\JsonContent(type="object", ref="#/components/schemas/game")
+     *         @OA\JsonContent(ref="#/components/schemas/game")
      *     ),
      * )
      */
@@ -109,8 +108,7 @@ class GameController extends Controller
         $statement->execute(['query' => $query]);
         $results = [];
         while ($row = $statement->fetch()) {
-            $row['href'] = $this->parseLink($row['id']);
-            $results[] = $row;
+            $results[] = $this->parseRow($row);
         }
 
         if (empty($results)) {
@@ -120,5 +118,14 @@ class GameController extends Controller
         $links = $this->buildLinks($page, $num_pages);
 
         $this->setPayload($results, $links)->render(200);
+    }
+
+    public function parseRow(array $row): array
+    {
+        $row['platforms'] = explode((', '), $row['platform']);
+        unset($row['platform']);
+        $row['href'] = $this->parseLink($row['id']);
+
+        return $row;
     }
 }

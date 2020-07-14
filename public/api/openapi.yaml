@@ -21,7 +21,6 @@ paths:
           content:
             application/json:
               schema:
-                type: object
                 $ref: '#/components/schemas/game'
         '404':
           description: 'Requested game not found'
@@ -46,7 +45,6 @@ paths:
           content:
             application/json:
               schema:
-                type: object
                 $ref: '#/components/schemas/game'
   /search:
     get:
@@ -76,15 +74,18 @@ components:
     game:
       properties:
         id:
-          type: string
+          type: number
         title:
           type: string
         genre:
           type: string
-        platform:
-          type: string
+        platforms:
+          type: array
+          items:
+            type: string
         release:
           type: string
+          format: date
         href:
           type: string
       type: object
