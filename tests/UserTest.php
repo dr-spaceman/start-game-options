@@ -18,17 +18,10 @@ class UserTest extends TestCase
         self::$mapper = new UserMapper();
     }
 
-    public function testUserStaticMethodsFindUsers()
+    public function testUserMapperInit()
     {
-        $user = User::findById(TEST_USER_ID);
-        $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals($user->getEmail(), TEST_USER_EMAIL);
-
-        $user = User::findByEmail(TEST_USER_EMAIL);
-        $this->assertEquals($user->getId(), TEST_USER_ID);
-        
-        $user = User::findByUsername(TEST_USER_USERNAME);
-        $this->assertEquals($user->getId(), TEST_USER_ID);
+        $mapper = self::$mapper;
+        $this->assertInstanceOf(UserMapper::class, $mapper);
     }
 
     public function testUserRanksAreWorking()
@@ -44,27 +37,24 @@ class UserTest extends TestCase
         User::getRankName(99);
     }
 
-    public function testUserNotFoundWhenGivenWackyInfo()
+    public function testUserNotFoundWhenGivenWackyUsername()
     {
-        $this->assertNull(User::findByUsername('invalid_foobar_xyz_123'));
-        $this->assertNull(User::findById(9876543210));
+        $this->expectException(OutOfBoundsException::class);
+        $this->assertNull(self::$mapper->findByUsername('invalid_foobar_xyz_123'));
+    }
+
+    public function testUserNotFoundWhenGivenWackyID()
+    {
+        $this->expectException(OutOfBoundsException::class);
+        $this->assertNull(self::$mapper->findById(98765887943210));
     }
 
     public function testUserFindByIdThrowsTypeErrorExceptionWhenNotPassedInteger()
     {
         $this->expectException(TypeError::class);
-        User::findById('not_an_int');
+        self::$mapper->findById('not_an_int');
     }
 
-    public function testUserMapperInit()
-    {
-        $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-    }
-
-    /**
-     * @depends testUserMapperInit
-     */
     public function testFindUser()
     {
         $mapper = self::$mapper;
@@ -81,9 +71,6 @@ class UserTest extends TestCase
         return $mapper;
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testSaveUserAfterPropChangesMade()
     {
         $mapper = self::$mapper;
@@ -102,48 +89,28 @@ class UserTest extends TestCase
         $this->assertTrue($mapper->save($user));
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testUserConfirmInvalidPropSetFails_Email()
     {
         $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $this->expectException(InvalidArgumentException::class);
         $user = $mapper->findByEmail(TEST_USER_EMAIL);
         $user->setEmail('invalid');
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testUserConfirmInvalidPropSetFails_Password()
     {
-        $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $this->expectException(InvalidArgumentException::class);
         $user = new User(-1, 'test_'.TEST_ID, 'password', 'email');
         $user->setPassword(' invalid_spaces_on_end ');
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testUserConfirmInvalidPropSetFails_Rank()
     {
-        $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $this->expectException(InvalidArgumentException::class);
         $user = new User(-1, 'test_'.TEST_ID, 'password', 'email');
         $user->setRank(99999); //Doesn't exist
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testUserPasswordHashCanMatchInputPassword()
     {
         $mapper = self::$mapper;
@@ -151,40 +118,25 @@ class UserTest extends TestCase
         $this->assertTrue(password_verify(TEST_USER_PASSWORD, $user->getPassword()));
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testInsertUserUsernameDuplicationFails()
     {
         $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $this->expectException(Exception::class);
         $user = new User(-1, TEST_USER_USERNAME, 'password', 'email');
         $mapper->insert($user);
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testInsertUserEmailDuplicationFails()
     {
         $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $this->expectException(Exception::class);
         $user = new User(-1, 'foo_123_xyz_fuuuuu', 'password', TEST_USER_EMAIL);
         $mapper->insert($user);
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testInsertUser(): User
     {
         $mapper = self::$mapper;
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
         $user = new User(-1, 'test_'.TEST_ID, 'password', 'test_foobar'.TEST_ID.'@bar.com', User::MEMBER);
         $this->assertTrue($mapper->insert($user));
         $this->assertTrue(($user->getId() > -1));
@@ -196,9 +148,6 @@ class UserTest extends TestCase
         return $user;
     }
 
-    /**
-     * @depends testUserMapperInit
-     */
     public function testUserCollectionCanCollectUsersRows()
     {
         $mapper = self::$mapper;
@@ -218,7 +167,7 @@ class UserTest extends TestCase
     public function testUserCollectionCanCollectUsersObjects()
     {
         $collection = new UserCollection();
-        $collection->add(User::findById(TEST_USER_ID));
+        $collection->add(self::$mapper->findById(TEST_USER_ID));
         $collection->add(new User(-1, 'TheMadTargaryen', 'password', 'foo@bar.com', User::MEMBER));
         $this->assertInstanceOf(UserCollection::class, $collection);
         foreach ($collection->getGenerator() as $user) {

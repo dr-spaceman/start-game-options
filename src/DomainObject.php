@@ -11,34 +11,32 @@ abstract class DomainObject
 
     public function __construct(int $id)
     {
-        if (!is_null($id)) {
-            $this->id = $id;
-        }
+        $this->id = $id;
     }
 
-    protected static function getMapper()
+    protected static function getMapper(): Mapper
     {
         return Registry::getMapper(static::class);
     }
 
-    /**
-     * Static entry points
-     * Load registered mapper and use the mapper method to access data
-     * 
-     * @param  int    $id Database primary key
-     * @return DomainObject|null
-     */
-    public static function findById(int $id): ?DomainObject
-    {
-        return self::getMapper()->findById($id);
-    }
+    // /**
+    //  * Static entry points
+    //  * Load registered mapper and use the mapper method to access data
+    //  * 
+    //  * @param  int    $id Database primary key
+    //  * @return DomainObject|null
+    //  */
+    // public static function findById(int $id): ?DomainObject
+    // {
+    //     return self::getMapper()->findById($id);
+    // }
 
-    public static function findAll(): Collection
-    {
-        return self::getMapper()->findAll();
-    }
+    // public static function findAll(): Collection
+    // {
+    //     return self::getMapper()->findAll();
+    // }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }
@@ -46,11 +44,6 @@ abstract class DomainObject
     public function setId(int $id)
     {
         $this->id = $id;
-    }
- 
-    public static function getCollection(string $type): Collection
-    {
-        return Collection::getCollection($type); 
     }
 
     public function __clone()

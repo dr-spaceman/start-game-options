@@ -32,7 +32,6 @@ class User extends DomainObject
         self::SUPERADMIN => 'SUPERADMIN',
     ];
 
-    protected $id = -1;
     protected $username;
     protected $password;
     protected $email;
@@ -56,13 +55,14 @@ class User extends DomainObject
         $this->password = $password;
         $this->email = $email;
         $this->rank = $rank;
+
         parent::__construct($id);
 	}
 
     /**
      * An array of private properties for Logging, debugging, etc.
      */
-    public function getObject(): array
+    public function getProps(): array
     {
         return array(
             'user_id' => $this->id,
@@ -135,16 +135,6 @@ class User extends DomainObject
     public function getAvatar(): Avatar
     {
         return new Avatar($this->data['avatar']);
-    }
-
-    public static function findByUsername(string $username): ?DomainObject
-    {
-        return static::getMapper()->findByUsername($username);
-    }
-
-    public static function findByEmail(string $email): ?DomainObject
-    {
-        return static::getMapper()->findByEmail($email);
     }
 
     public static function getRanks(): array

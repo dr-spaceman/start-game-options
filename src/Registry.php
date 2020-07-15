@@ -2,6 +2,8 @@
 
 namespace Vgsite;
 
+use InvalidArgumentException;
+
 /**
  * Store instantiated objects and variables for access among classes
  */
@@ -44,15 +46,20 @@ class Registry
         $inst->registry[$key] = $value;
     }
 
-    public static function getMapper(string $class)
+    public static function getMapper(string $class): Mapper
     {
         $inst = self::instance();
         if (isset($inst->mappers[$class])) {
             return $inst->mappers[$class];
         }
 
-        $mapper_class = $class.'Mapper';
-        $inst->mappers[$class] = new $mapper_class;
+        $mapper_class = "Vgsite\\{$class}Mapper";
+        
+        if (! class_exists($mapper_class)) {
+            throw new InvalidArgumentException("Cannot get mapper `{$mapper_class}`: Class does not exist.");
+        }
+
+        $inst->mappers[$class] = new $mapper_class();
 
         return $inst->mappers[$class];
     }

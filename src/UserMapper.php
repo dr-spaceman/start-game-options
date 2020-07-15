@@ -23,27 +23,27 @@ class UserMapper extends Mapper
         $this->delete_statement = $this->pdo->prepare("DELETE FROM users WHERE `user_id`=?");
     }
 
-    public function findByUsername(string $username): ?DomainObject
+    public function findByUsername(string $username): User
     {
         $statement = $this->pdo->prepare("SELECT * FROM users WHERE `username`=?");
         $statement->execute([$username]);
         $row = $statement->fetch();
 
-        if (!is_array($row)) {
-            return null;
+        if (empty($row)) {
+            throw new \OutOfBoundsException("User with username `{$username}` could not be found.");
         }
 
         return $this->createObject($row);
     }
 
-    public function findByEmail(string $email): ?DomainObject
+    public function findByEmail(string $email): User
     {
         $statement = $this->pdo->prepare("SELECT * FROM users WHERE `email`=?");
         $statement->execute([$email]);
         $row = $statement->fetch();
 
-        if (!is_array($row)) {
-            return null;
+        if (empty($row)) {
+            throw new \OutOfBoundsException("User with email `{$email}` could not be found.");
         }
 
         return $this->createObject($row);

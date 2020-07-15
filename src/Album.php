@@ -15,6 +15,7 @@ class Album extends DomainObject
     {
         $this->props = $data;
         $this->id = $id;
+        
         parent::__construct($id);
     }
 

@@ -59,7 +59,7 @@ class BadgeTest extends TestCase
     public function testBadgeAlreadyEarnedFails()
     {
         $badge_newbie = Badge::findById(1);
-        $user = User::findById(TEST_USER_ID);
+        $user = Registry::getMapper('User')->findById(TEST_USER_ID);
         $this->assertFalse($badge_newbie->earn($user));
     }
 
@@ -70,7 +70,7 @@ class BadgeTest extends TestCase
         $statement = $pdo->query($sql);
 
         $badge_newbie = Badge::findById(1);
-        $user = User::findById(TEST_USER_ID);
+        $user = Registry::getMapper('User')->findById(TEST_USER_ID);
         $this->assertTrue($badge_newbie->earn($user));
     }
 

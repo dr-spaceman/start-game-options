@@ -3,6 +3,9 @@
 namespace Vgsite;
 
 use Exception;
+use InvalidArgumentException;
+use OutOfBoundsException;
+use OutOfRangeException;
 
 /**
  * Handle database queries and logging, object storage into IdentityMap
@@ -46,7 +49,7 @@ abstract class Mapper
         $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
     }
 
-    public function findById(int $id): ?DomainObject
+    public function findById(int $id): DomainObject
     {
         if (true === $this->identity_map->hasId($id)) {
             return $this->identity_map->getObject($id);
@@ -57,7 +60,7 @@ abstract class Mapper
         $this->select_statement->closeCursor();
 
         if (!is_array($row)) {
-            return null;
+            throw new OutOfBoundsException("User with id `{$id}` could not be found.");
         }
 
         return $this->createObject($row);

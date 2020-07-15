@@ -19,13 +19,19 @@ class Badge extends DomainObject
         self::_SOMENAME_ => 'gold',
         self::_SOMEOTHERNAME_ => 'gold',
     ];
+
+    protected $name;
+    protected $description;
+    protected $value;
+    protected $sort;
     
     public function __construct(int $badge_id, string $name, string $description, int $value=1, int $sort=0) {
-        parent::__construct($badge_id);
         $this->name = $name;
         $this->description = $description;
         $this->value = ($this->getValueName[$value] ? $value : null);
         $this->sort = $sort;
+
+        parent::__construct($badge_id);
     }
 
     /**

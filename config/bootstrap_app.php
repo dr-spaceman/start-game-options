@@ -8,6 +8,7 @@ define('TEMPLATE_DIR', ROOT_DIR.'/templates');
 use Vgsite\Registry;
 use Vgsite\User;
 use Monolog\Logger;
+use Vgsite\UserMapper;
 
 // Register logger
 $logger = new Logger('app');
@@ -51,7 +52,8 @@ $usrid = -1;
 $_SESSION['user_rank'] = User::GUEST;
 
 if ($_SESSION['logged_in'] && $_SESSION['user_id']) {
-    $current_user = User::findById($_SESSION['user_id']);
+    $mapper = new UserMapper;
+    $current_user = $mapper->findById($_SESSION['user_id']);
     // Dicouraged old variable references
     $usrname = $current_user->getUsername();
     $usrid = $_SESSION['user_id'];

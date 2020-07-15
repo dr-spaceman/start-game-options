@@ -50,7 +50,7 @@ class UserController extends Controller
             throw new APIInvalidArgumentException('User ID must be numeric', 'id');
         }
 
-        if (! $user = User::findById($id)) {
+        if (! $user = Registry::getMapper('User')->findById($id)) {
             throw new APINotFoundException();
         }
         
