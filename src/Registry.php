@@ -53,7 +53,7 @@ class Registry
             return $inst->mappers[$class];
         }
 
-        $mapper_class = "Vgsite\\{$class}Mapper";
+        $mapper_class = $class."Mapper";
         
         if (! class_exists($mapper_class)) {
             throw new InvalidArgumentException("Cannot get mapper `{$mapper_class}`: Class does not exist.");

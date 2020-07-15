@@ -11,19 +11,32 @@ use Vgsite\User;
 
 class BadgeTest extends TestCase
 {
+    /** @var BadgeMapper */
+    protected static $mapper;
 
-    public function testBadgeStaticMethodsFindBadges()
+    public static function setUpBeforeClass(): void
     {
-        $badge = Badge::findById(1);
+        self::$mapper = new BadgeMapper();
+    }
+
+    public function testBadgeMapperInit()
+    {
+        $mapper = self::$mapper;
+        $this->assertInstanceOf(BadgeMapper::class, $mapper);
+    }
+
+    public function testBadgeStaticMapperMethodsFindBadges()
+    {
+        $badge = Badge::getMapper()->findById(1);
         $this->assertInstanceOf(Badge::class, $badge);
         $this->assertEquals($badge->name, 'Newbie');
     }
 
-    public function testBadgeStaticFindAll()
+    public function testBadgeFindAll()
     {
         $num_badges = $GLOBALS['pdo']->query("SELECT count(1) FROM badges")->fetchColumn();
 
-        $badges = Badge::findAll();
+        $badges = self::$mapper->findAll();
         $this->assertInstanceOf(BadgeCollection::class, $badges);
         $this->assertEquals($num_badges, $badges->count);
         $badges_gen = $badges->getGenerator();
@@ -37,7 +50,7 @@ class BadgeTest extends TestCase
 
     public function testBaggeMapperFindsBadges()
     {
-        $mapper = new BadgeMapper();
+        $mapper = self::$mapper;
         $badge = $mapper->findById(1);
         $this->assertInstanceOf(Badge::class, $badge);
         $this->assertEquals($badge->name, 'Newbie');
@@ -58,8 +71,8 @@ class BadgeTest extends TestCase
 
     public function testBadgeAlreadyEarnedFails()
     {
-        $badge_newbie = Badge::findById(1);
-        $user = Registry::getMapper('User')->findById(TEST_USER_ID);
+        $badge_newbie = self::$mapper->findById(1);
+        $user = Registry::getMapper(User::class)->findById(TEST_USER_ID);
         $this->assertFalse($badge_newbie->earn($user));
     }
 
@@ -69,8 +82,8 @@ class BadgeTest extends TestCase
         $sql = "DELETE FROM badges_earned WHERE badge_id=1 AND user_id=".TEST_USER_ID;
         $statement = $pdo->query($sql);
 
-        $badge_newbie = Badge::findById(1);
-        $user = Registry::getMapper('User')->findById(TEST_USER_ID);
+        $badge_newbie = self::$mapper->findById(1);
+        $user = Registry::getMapper(User::class)->findById(TEST_USER_ID);
         $this->assertTrue($badge_newbie->earn($user));
     }
 

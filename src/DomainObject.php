@@ -14,27 +14,16 @@ abstract class DomainObject
         $this->id = $id;
     }
 
-    protected static function getMapper(): Mapper
+    /**
+     * Get the registered mapper object for this class.
+     * Useful for quick chaining finds, eg. User::getMapper()->findByUsername('Rahul');
+     *
+     * @return Mapper
+     */
+    public static function getMapper(): Mapper
     {
         return Registry::getMapper(static::class);
     }
-
-    // /**
-    //  * Static entry points
-    //  * Load registered mapper and use the mapper method to access data
-    //  * 
-    //  * @param  int    $id Database primary key
-    //  * @return DomainObject|null
-    //  */
-    // public static function findById(int $id): ?DomainObject
-    // {
-    //     return self::getMapper()->findById($id);
-    // }
-
-    // public static function findAll(): Collection
-    // {
-    //     return self::getMapper()->findAll();
-    // }
 
     public function getId()
     {

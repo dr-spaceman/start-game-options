@@ -20,16 +20,21 @@ class Badge extends DomainObject
         self::_SOMEOTHERNAME_ => 'gold',
     ];
 
-    protected $name;
-    protected $description;
-    protected $value;
-    protected $sort;
+    public $name;
+    public $description;
+    public $value;
+    public $sort;
+
+    /** @var BadgeMapper */
+    protected $mapper;
     
     public function __construct(int $badge_id, string $name, string $description, int $value=1, int $sort=0) {
         $this->name = $name;
         $this->description = $description;
         $this->value = ($this->getValueName[$value] ? $value : null);
         $this->sort = $sort;
+
+        $this->mapper = new BadgeMapper();
 
         parent::__construct($badge_id);
     }
@@ -42,12 +47,12 @@ class Badge extends DomainObject
     public function earn(User $user): bool
     {
         //make sure hasn't already earned
-        $earned = $this->getMapper()->findEarned($this->getId(), $user->getId());
+        $earned = $this->mapper->findEarned($this->getId(), $user->getId());
         if (!is_null($earned)) {
             return false;
         }
         
-        $this->getMapper()->insertEarned($this->getId(), $user->getId());
+        $this->mapper->insertEarned($this->getId(), $user->getId());
         
         if ($user->getId() == $GLOBALS['user_id']) $_SESSION['newbadges'][] = $this->getId();
 

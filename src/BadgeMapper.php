@@ -6,6 +6,8 @@ class BadgeMapper extends Mapper
 {
     protected $db_table = 'badges';
     protected $db_id_field = 'badge_id';
+    
+    /** @var PDOStatement */
     protected $select_all_statement;
 
     public function __construct()
@@ -41,7 +43,7 @@ class BadgeMapper extends Mapper
         $statement->execute([$badge_id, $user_id]);
         $row = $statement->fetch();
 
-        if (!is_array($row)) {
+        if (empty($row)) {
             return null;
         }
 

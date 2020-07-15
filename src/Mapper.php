@@ -13,10 +13,10 @@ use OutOfRangeException;
 
 abstract class Mapper
 {
-    /**
-     * Database table name and primary key field name
-     */
+    /** @var string Database table name and primary key field name */
     protected $db_table;
+
+    /** @var string The primary key in database */
     protected $db_id_field = 'id';
 
     /** @var PDO Registry object */
@@ -25,6 +25,7 @@ abstract class Mapper
     /** @var Monolog Registry object */
     protected $logger;
 
+    /** @var IdentityMap */
     protected $identity_map;
     
     /**
