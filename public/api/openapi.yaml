@@ -74,7 +74,7 @@ components:
     game:
       properties:
         id:
-          type: number
+          type: string
         title:
           type: string
         genre:
@@ -99,7 +99,7 @@ components:
     sort:
       name: sort
       in: query
-      description: 'Custom sorted results. Format: ?sort=fieldname[:asc|desc]'
+      description: 'Custom sorted results. Format: `?sort=fieldname[:asc|desc]`'
       schema:
         type: string
     fields:

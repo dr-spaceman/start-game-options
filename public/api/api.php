@@ -102,9 +102,11 @@ try {
 			break;
 			
 		default:
-			$cj = new CollectionJson();
-			$cj->setLinks($schema);
-			$response = new Response(200, [], $cj);
+			readfile(__DIR__.'/index.html');
+			exit;
+			
+			// Render an empty collection object
+			$response = new Response(200, [], new CollectionJson());
 			$response->render();
 	}
 } catch (Exception | Error $e) {

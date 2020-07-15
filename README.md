@@ -7,19 +7,23 @@ A site where serious gamers can [discuss](http://videogamin.squarehaven.com/foru
 ## Built With
 
 * PHP 7
-* Javascript and jQuery
+* Javascript and React
 
 ## Launch
 
-Dependencies listed in [composer.json](composer.json); Set up your environment: `composer i`
+Dependencies listed in [composer.json](composer.json) and [package.json](package.json); Set up your environment: `composer i && npm install`
 
 ## Tests
 
-Tests can be run with [PHPUnit](https://phpunit.de/) within the `tests` folder. A database facsimile on your local machine is required for most tests.
+Unit tests are located in the `tests` folder and can be run with [PHPUnit](https://phpunit.de/): `composer test`
 
-## Contributing
+## API
 
-Contributions welcome!
+REST API endpoint is located at [/api](/api).
+
+### Documentation
+
+API documentation is compiled from doctrine annotation within the API controller files. To compile: `composer compile-apidoc && npm run compile-apidoc`
 
 ## Authors
 
@@ -28,21 +32,21 @@ Contributions welcome!
 * **Rahul Choudhury** - *Cofunder, Development advisor* - [Primigenus](https://github.com/Primigenus)
 * Your name here
 
-## Acknowledgments
+### Contributing
 
-* Dictionary data provided by [CC-CEDICT](http://cc-cedict.org/)
+Contributions welcome! Contact 
 
 ## Todo
 
 * Back end
-    * [ ] Convert mysqli to pdo
+    * [x] Convert mysqli to pdo
     * [ ] Classes to manage db tables and app functions
         * [x] Mapper
         * [x] Identity Map
         * [x] Storage/Registry for persistent sharing objects, eg. PDO connection
         * [x] Badge
         * [ ] Game Shelf
-        * [ ] Image
+        * [x] Image
         * [ ] Page construction/layout
         * [ ] Sblog
         * [x] Upload
@@ -52,3 +56,4 @@ Contributions welcome!
     * [ ] Sblog reporposed/reengineered as games journal/guide/tips 
 * Front end
     * [ ] Responsive CSS
+    * [ ] Incorporate React
