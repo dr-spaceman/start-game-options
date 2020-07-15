@@ -142,7 +142,6 @@ abstract class Mapper
     
     abstract public function getCollection(array $rows): Collection;
     abstract protected function doCreateObject(array $row): DomainObject;
-    abstract public function save(DomainObject $object);
     abstract protected function doInsert(DomainObject $object);
     abstract protected function targetClass(): string;
 }

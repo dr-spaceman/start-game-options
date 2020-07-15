@@ -9,6 +9,14 @@ trait PropsTrait
     /** @var array Data loaded from DB table via mapper; Must be set in constructor */
     private $props = [];
 
+    /**
+     * @param array $props Multidimentional array with keys and values corresponding to a database table
+     */
+    public function __construct(int $id=-1, array $props) {
+        $this->id = $id;
+        $this->props = $props;
+    }
+
     public function getProp(string $key)
     {
         return $this->props[$key] ?? null;

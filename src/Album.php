@@ -7,26 +7,13 @@ class Album extends DomainObject
     use PropsTrait;
 
     /**
-     * Album object construction
-     * May be passed by static functions like self::getByX
-     * Construction doesn't verify variables; Pass to set*() to filter
-     */
-    public function __construct(int $id=-1, array $data)
-    {
-        $this->props = $data;
-        $this->id = $id;
-        
-        parent::__construct($id);
-    }
-
-    /**
      * Render album link in HTML form
      * 
      * @return string HTML hyperlink
      */
     public function renderHyperlink(): string
     {
-        return sprintf('<a href="%s" title="%s" class="albumlink>%s</a>', $this->parseUrl(), $this->parseTitle(), $this->parseTitle());
+        return sprintf('<a href="%s" title="%s" class="albumlink>%s</a>', $this->getUrl(), $this->parseTitle(), $this->parseTitle());
     }
 
     /**
@@ -34,7 +21,7 @@ class Album extends DomainObject
      *
      * @return string Relative URI
      */
-    public function parseUrl(): string
+    public function getUrl(): string
     {
         return sprintf('/music/?id=%s', $this->getProp('albumid'));
     }

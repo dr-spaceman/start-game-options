@@ -2,6 +2,8 @@
 
 namespace Vgsite;
 
+use OutOfBoundsException;
+
 class AlbumMapper extends Mapper
 {
     protected $id_field = 'id';
@@ -21,14 +23,14 @@ class AlbumMapper extends Mapper
         $this->delete_statement = $this->pdo->prepare("DELETE FROM albums WHERE `id`=?");
     }
 
-    public function findByAlbumId(string $albumid): ?DomainObject
+    public function findByAlbumId(string $albumid): Album
     {
         $statement = $this->pdo->prepare("SELECT * FROM albums WHERE `albumid`=?");
         $statement->execute([$albumid]);
         $row = $statement->fetch();
 
         if (!is_array($row)) {
-            return null;
+            throw new OutOfBoundsException("The requested album id `{$albumid}` could not be found.");
         }
 
         return $this->createObject($row);
@@ -82,8 +84,10 @@ class AlbumMapper extends Mapper
         return true;
     }
 
-    public function save(DomainObject $album): bool
+    public function save(Album $album): bool
     {
+        return false;
+
         $values = [];
         $this->save_statement->execute($values);
 
@@ -92,7 +96,7 @@ class AlbumMapper extends Mapper
         return true;
     }
 
-    public function delete(DomainObject $album): bool
+    public function delete(Album $album): bool
     {
         $values = [$album->getId()];
         $this->delete_statement->execute($values);

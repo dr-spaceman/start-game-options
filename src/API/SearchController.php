@@ -145,7 +145,7 @@ class SearchController extends Controller
                     "title_sort" => $title_sort,
                     "type" => "album",
                     "category" => "music",
-                    "url" => $album->parseUrl(),
+                    "url" => $album->getUrl(),
                     "tag" => 'AlbumID:' . $album->getProp('albumid'),
                     "release_date" => $album->getProp('datesort'),
                 );

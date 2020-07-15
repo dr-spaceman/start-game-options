@@ -14,6 +14,7 @@ use Vgsite\Mapper;
 
 class AlbumTest extends TestCase
 {
+    /** @var AlbumMapper */
     protected static $mapper;
 
     public static function setUpBeforeClass(): void
@@ -23,11 +24,11 @@ class AlbumTest extends TestCase
     
     public function testAlbumStaticFind(): void
     {
-        $album = Album::findById(TEST_ALBUM_ID);
+        $album = static::$mapper->findById(TEST_ALBUM_ID);
         $this->assertInstanceOf(Album::class, $album);
         $this->assertEquals($album->getProp('id'), TEST_ALBUM_ID);
 
-        $albums = Album::findAll();
+        $albums = static::$mapper->findAll();
         $this->assertInstanceOf(Collection::class, $albums);
     }
 
