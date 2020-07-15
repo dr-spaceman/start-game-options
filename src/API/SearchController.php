@@ -32,7 +32,7 @@ class SearchController extends Controller
      * @OA\Get(
      *     path="/search",
      *     description="Search all the things",
-     *     @OA\Parameter(ref="#/components/parameters/q", required=true),
+     *     @OA\Parameter(ref="#/components/parameters/q", required=true, minLength=3),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Response(response=200,
      *         description="Things matching request query {q}",
@@ -52,9 +52,6 @@ class SearchController extends Controller
         if (empty($query)) {
             throw new APIInvalidArgumentException('No search term given. Try using the `q` parameter.', '?q');
         }
-        // $page = $this->parseQuery('page', 1);
-        // $per_page = $this->parseQuery('per_page', static::PER_PAGE);
-        // [$limit_min, $limit_max] = $this->convertPageToLimit($page, $per_page);
         $sort_sql = $this->parseQuery('sort', "`title_sort` ASC");
         [$sort, $sort_by] = $this->parseSortSql($sort_sql);
 

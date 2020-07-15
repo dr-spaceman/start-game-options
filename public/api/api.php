@@ -21,12 +21,14 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
  *     name="sort",
  *     in="query",
  *     description="Custom sorted results. Format: `?sort=fieldname[:asc|desc]`",
+ *     example="release:desc",
  *     @OA\Schema(type="string")
  * )
  * @OA\Parameter(
  *     name="fields",
  *     in="query",
- *     description="A list of comma-separated fields to include in the response object. For example: `title,release_date,tags`",
+ *     description="A list of comma-separated fields to include in the response object.
+ *     example="title,release_date,tags",
  *     @OA\Schema(type="string")
  * )
  * @OA\Parameter(
@@ -53,6 +55,7 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
 
 use Vgsite\API\CollectionJson;
 use Vgsite\API\Exceptions\APIException;
+use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
 use Vgsite\HTTP\Response;
 use Vgsite\Registry;
@@ -95,19 +98,19 @@ try {
 			$controller = new Vgsite\API\SearchController($request);
 			$controller->processRequest();
 			break;
-		
+
 		case 'games':
 			$controller = new Vgsite\API\GameController($request);
 			$controller->processRequest();
 			break;
+
+		case 'users':
+			$controller = new Vgsite\API\UserController($request);
+			$controller->processRequest();
+			break;
 			
 		default:
-			readfile(__DIR__.'/index.html');
-			exit;
-			
-			// Render an empty collection object
-			$response = new Response(200, [], new CollectionJson());
-			$response->render();
+			throw new APINotFoundException();
 	}
 } catch (Exception | Error $e) {
 	Registry::get('logger')->warning($e);

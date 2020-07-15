@@ -22,6 +22,12 @@ abstract class Controller
     /** @var array For `?sort` parameter; List of keys to whitelist */
     const SORTABLE_FIELDS = Array();
 
+    /** @var array For ?fields parameter; List of fields to whitelist */
+    const ALLOWED_FIELDS = Array();
+
+    /** @var array For ?fields parameter; List of fields to require */
+    const REQUIRED_FIELDS = Array();
+
     /** @var string The base URI for this constroller; Used to make links */
     const BASE_URI = API_BASE_URI . '/_';
 
@@ -186,21 +192,6 @@ abstract class Controller
     }
 
     /**
-     * Parse sort query to use variables freely
-     *
-     * @param string $sort_sql The MySQL fragment, Eg. "`fieldname` ASC"
-     * 
-     * @return array [fieldname, sort_direction(asc|desc)]
-     */
-    public function parseSortSql(string $sort_sql): array
-    {
-        $test = '/^`?(?P<sort>[a-z_\-]+)`? ?(?P<sort_by>asc|desc)+$/i';
-        preg_match($test, $sort_sql, $matches);
-        
-        return [$matches['sort'], $matches['sort_by']];
-    }
-
-    /**
      * Parse a variable in the query string. Returned value is appropriate to
      * use to fetch data or some other operation.
      *
@@ -280,10 +271,25 @@ abstract class Controller
                 $fields_pass = array_filter($fields_pass);
 
                 if (empty($fields_pass)) {
-                    return '*';
+                    return $default;
                 }
 
-                $value = implode(', ', array_map(function ($field) {
+                $blacklist = array_diff($fields_pass, static::ALLOWED_FIELDS);
+                if (! empty(static::ALLOWED_FIELDS && !empty($blacklist))) {
+                    throw new APIInvalidArgumentException(
+                        sprintf(
+                            'Requested field(s) `%s` not within allowed options. Try any of: %s.', 
+                            implode(',', $blacklist), 
+                            implode(',', static::ALLOWED_FIELDS)
+                        ), '?fields'
+                    );
+                }
+
+                if (! empty(static::REQUIRED_FIELDS)) {
+                    $fields_pass = array_unique(array_merge($fields_pass, static::REQUIRED_FIELDS));
+                }
+
+                $value = implode(',', array_map(function ($field) {
                     return '`' . $field . '`';
                 }, $fields_pass));
         }
@@ -298,6 +304,38 @@ abstract class Controller
         }
 
         return $value;
+    }
+
+    /**
+     * Parse sort query to use variables freely
+     *
+     * @param string $sort_sql The MySQL fragment, Eg. "`fieldname` ASC"
+     * 
+     * @return array [fieldname, sort_direction(asc|desc)]
+     */
+    public function parseSortSql(string $sort_sql): array
+    {
+        $test = '/^`?(?P<sort>[a-z_\-]+)`? ?(?P<sort_by>asc|desc)+$/i';
+        preg_match($test, $sort_sql, $matches);
+
+        return [$matches['sort'], $matches['sort_by']];
+    }
+
+    /**
+     * Parse fields query to use variables freely
+     *
+     * @param string $fields_sql The MySQL fragment, Eg. "`id`,`release`"
+     * 
+     * @return array List of fields
+     */
+    public function parseFieldsSql(string $fields_sql): array
+    {
+        $fields = explode(',', $fields_sql);
+        $fields = array_map(function ($field) {
+            return str_replace('`', '', $field);
+        }, $fields);
+
+        return $fields;
     }
 
     /**
