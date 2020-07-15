@@ -156,7 +156,6 @@ function login()
     $_SESSION['user_id'] = $user->getId();
     $_SESSION['user_rank'] = $user->getRank();
     $_SESSION['logged_in'] = 'true';
-    ObjectCache::add($user);
 
     /**
      * Login complete; Post-login business below

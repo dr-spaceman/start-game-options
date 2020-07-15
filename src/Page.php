@@ -96,7 +96,6 @@ class Page
 		global $current_user;
 
 		$user_id = (int) $_SESSION['user_id'] ?: null;
-		$user = ObjectCache::get(User::class, $user_id);
 
 		if ($this->superminimalist) {
 			$this->minimalist = true;
