@@ -97,7 +97,7 @@ class AlbumMapper extends Mapper
         $values = [$album->getId()];
         $this->delete_statement->execute($values);
 
-        if ($this->logger) $this->logger->info("Delete Album data ", $album->getProperties());
+        if ($this->logger) $this->logger->info("Delete Album data ", $album->getProps());
 
         return true;
     }

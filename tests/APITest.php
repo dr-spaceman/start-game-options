@@ -25,7 +25,7 @@ class APITest extends TestCase
     public function testClientCanConnectToApi()
     {
         $this->assertInstanceOf(GuzzleHttp\Client::class, self::$client);
-        $response = self::$client->get(API_BASE_URI);
+        $response = self::$client->get(API_BASE_URI.'/users');
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('application/json; charset=UTF-8', $response->getHeaderLine('content-type'));
@@ -68,6 +68,12 @@ class APITest extends TestCase
     public function testGameMethodFailsWhenNotGivenIntegerId()
     {
         $response = self::$client->get('games/notaninteger');
+        $this->assertEquals(422, $response->getStatusCode());
+    }
+
+    public function testFieldsParameterRestriction()
+    {
+        $response = self::$client->get('users/1?fields=foo,bar');
         $this->assertEquals(422, $response->getStatusCode());
     }
 }

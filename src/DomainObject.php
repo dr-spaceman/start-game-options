@@ -58,4 +58,3 @@ abstract class DomainObject
         $this->id = -1;
     }
 }
-?>

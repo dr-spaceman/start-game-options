@@ -2,10 +2,13 @@
 
 namespace Vgsite;
 
+use Respect\Validation\Validator as v;
 use Vgsite\Exceptions\UserException;
 
 class User extends DomainObject
 {
+    use PropsTrait;
+
 	public const GUEST = 0;
 	public const RESTRICTED = 1;
 	public const MEMBER = 2;
@@ -47,7 +50,7 @@ class User extends DomainObject
      * May be passed by static functions like self::getByEmail
      * Construction doesn't verify variables; Pass to set*() to filter
      */
-    public function __construct(int $id, string $username, string $password, string $email, int $rank=self::GUEST)
+    public function __construct(int $id, string $username, string $password=null, string $email, int $rank=self::GUEST)
     {
         $this->username = $username;
         $this->password = $password;
@@ -59,7 +62,7 @@ class User extends DomainObject
     /**
      * An array of private properties for Logging, debugging, etc.
      */
-    public function getProperties(): array
+    public function getObject(): array
     {
         return array(
             'user_id' => $this->id,
@@ -80,10 +83,9 @@ class User extends DomainObject
         return $this->password;
     }
 
-    public function setPassword(string $password, $hash=true)
+    public function setPassword(string $password, $hash=false)
     {
-        $password_check = trim($password);
-        if ($password_check != $password) {
+        if (! v::noWhitespace()->validate($password)) {
             throw new \InvalidArgumentException("Password can't be blank or have whitespace at the beginning or end");
         }
 
@@ -99,7 +101,6 @@ class User extends DomainObject
 
     public function hashPassword(string $password)
     {
-
         $this->setPassword($password, true);
     }
 
@@ -134,11 +135,6 @@ class User extends DomainObject
     public function getAvatar(): Avatar
     {
         return new Avatar($this->data['avatar']);
-    }
-
-    public static function findById(int $id): ?DomainObject
-    {
-        return static::getMapper()->findById($id);
     }
 
     public static function findByUsername(string $username): ?DomainObject

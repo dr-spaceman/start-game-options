@@ -49,6 +49,33 @@ class UserMapper extends Mapper
         return $this->createObject($row);
     }
 
+    public function findAll(
+        string $search=null, 
+        string $sort='user_id', 
+        int $limit_min=null, 
+        int $limit_max=null,
+        array $input_parameters=[]
+    ): Collection
+    {
+        if ($search) {
+            $search = "WHERE {$search}";
+        }
+
+        if (! is_null($limit_min) && ! is_null($limit_max)) {
+            $limit = "LIMIT {$limit_min}, {$limit_max}";
+        }
+
+        $sql = "SELECT * FROM users {$search} ORDER BY {$sort} {$limit}";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($input_parameters);
+        $rows = array();
+        while ($row = $statement->fetch()) {
+            $rows[] = $row;
+        }
+
+        return $this->getCollection($rows);
+    }
+
     protected function targetClass(): string
     {
         return User::class;
@@ -69,7 +96,7 @@ class UserMapper extends Mapper
             (int)($row['rank'] ?: $row[4]),
         );
 
-        $user->details = array_diff($row, $user->getProperties());
+        $user->details = array_diff($row, $user->getProps());
 
         return $user;
     }
@@ -111,7 +138,7 @@ class UserMapper extends Mapper
         $values = [$user->getId()];
         $this->delete_statement->execute($values);
 
-        if ($this->logger) $this->logger->info("Delete User data ", $user->getProperties());
+        if ($this->logger) $this->logger->info("Delete User data ", $user->getProps());
 
         return true;
     }

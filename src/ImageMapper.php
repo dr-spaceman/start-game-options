@@ -94,7 +94,7 @@ class ImageMapper extends Mapper
         $this->save_statement->bindValue(':img_id', $image->img_id);
         $this->save_statement->execute();
 
-        if ($this->logger) $this->logger->info("Update Image data ", $image->getProperties());
+        if ($this->logger) $this->logger->info("Update Image data ", $image->getProps());
 
         return true;
     }
@@ -133,7 +133,7 @@ class ImageMapper extends Mapper
             return false;
         }
 
-        if ($this->logger) $this->logger->info("Delete Image ", $image->getProperties());
+        if ($this->logger) $this->logger->info("Delete Image ", $image->getProps());
         copy(PUBLIC_DIR.'/'.$image->getSrc(), Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->img_name);
         unlink(PUBLIC_DIR.'/'.$image->getSrc());
         unset($image);

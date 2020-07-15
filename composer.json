@@ -1,7 +1,7 @@
 {
     "scripts": {
         "compile-apidoc": "openapi --bootstrap ./config/bootstrap_api.php --output ./public/api/ ./public/api/ ./src/API/",
-        "test": "phpunit ./tests/"
+        "test": "phpunit"
     },
     "autoload": {
         "psr-4": {

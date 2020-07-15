@@ -3,12 +3,20 @@
 require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
+use Vgsite\Collection;
+use Vgsite\Registry;
 use Vgsite\User;
 use Vgsite\UserMapper;
 use Vgsite\UserCollection;
 
 class UserTest extends TestCase
 {
+    protected static $mapper;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$mapper = new UserMapper();
+    }
 
     public function testUserStaticMethodsFindUsers()
     {
@@ -48,29 +56,18 @@ class UserTest extends TestCase
         User::findById('not_an_int');
     }
 
-    public function testUserMapperInit(): UserMapper
+    public function testUserMapperInit()
     {
-        $mapper = new UserMapper();
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
-
-        return $mapper;
     }
 
     /**
      * @depends testUserMapperInit
      */
-    public function testUserMapperConnectsToDb($mapper)
+    public function testFindUser()
     {
-        $this->assertInstanceOf(UserMapper::class, $mapper);
-
-        $this->assertInstanceOf(\PDO::class, $mapper->getPdo());
-    }
-
-    /**
-     * @depends testUserMapperInit
-     */
-    public function testFindUser($mapper)
-    {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $user = $mapper->findById(TEST_USER_ID);
@@ -87,8 +84,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testSaveUserAfterPropChangesMade($mapper)
+    public function testSaveUserAfterPropChangesMade()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $user = $mapper->findById(TEST_USER_ID);
@@ -107,8 +105,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testUser_ConfirmInvalidPropSetFails_Email($mapper)
+    public function testUserConfirmInvalidPropSetFails_Email()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $this->expectException(InvalidArgumentException::class);
@@ -119,8 +118,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testUser_ConfirmInvalidPropSetFails_Password($mapper)
+    public function testUserConfirmInvalidPropSetFails_Password()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $this->expectException(InvalidArgumentException::class);
@@ -131,8 +131,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testUser_ConfirmInvalidPropSetFails_Rank($mapper)
+    public function testUserConfirmInvalidPropSetFails_Rank()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $this->expectException(InvalidArgumentException::class);
@@ -143,8 +144,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testUserPasswordHashCanMatchInputPassword($mapper)
+    public function testUserPasswordHashCanMatchInputPassword()
     {
+        $mapper = self::$mapper;
         $user = $mapper->findById(TEST_USER_ID);
         $this->assertTrue(password_verify(TEST_USER_PASSWORD, $user->getPassword()));
     }
@@ -152,8 +154,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testInsertUserUsernameDuplicationFails($mapper)
+    public function testInsertUserUsernameDuplicationFails()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $this->expectException(Exception::class);
@@ -164,8 +167,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testInsertUserEmailDuplicationFails($mapper)
+    public function testInsertUserEmailDuplicationFails()
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $this->expectException(Exception::class);
@@ -176,8 +180,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testInsertUser($mapper): User
+    public function testInsertUser(): User
     {
+        $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
 
         $user = new User(-1, 'test_'.TEST_ID, 'password', 'test_foobar'.TEST_ID.'@bar.com', User::MEMBER);
@@ -194,8 +199,9 @@ class UserTest extends TestCase
     /**
      * @depends testUserMapperInit
      */
-    public function testUserCollectionCanCollectUsersRows($mapper)
+    public function testUserCollectionCanCollectUsersRows()
     {
+        $mapper = self::$mapper;
         $rows = array( 
             array(TEST_USER_ID, TEST_USER_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL),
             array(-1, 'test_'.TEST_ID, 'password', 'email'),
@@ -220,12 +226,31 @@ class UserTest extends TestCase
         }
     }
 
+    public function testUserFindsAll()
+    {
+        $mapper = self::$mapper;
+        $users = $mapper->findAll();
+        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertGreaterThanOrEqual(1, $users->count);
+    }
+
+    public function testUserFindsAllWithParameters()
+    {
+        $mapper = self::$mapper;
+        $users = $mapper->findAll("email LIKE '%@gmail.com'", 'username', 0, 3);
+        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertEquals(3, $users->count);
+        foreach ($users->getGenerator() as $user) {
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertStringEndsWith('gmail.com', $user->getEmail());
+        }
+    }
+
     /**
-     * @depends testUserMapperInit
      * @depends testInsertUser
      */
-    public function testDeleteUser($mapper, $user)
+    public function testDeleteUser($user)
     {
-        $this->assertTrue($mapper->delete($user));
+        $this->assertTrue(self::$mapper->delete($user));
     }
 }

@@ -44,7 +44,7 @@ class Registry
         $inst->registry[$key] = $value;
     }
 
-    public static function getMapper($class)
+    public static function getMapper(string $class)
     {
         $inst = self::instance();
         if (isset($inst->mappers[$class])) {

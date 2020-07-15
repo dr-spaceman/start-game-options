@@ -4,8 +4,7 @@ namespace Vgsite;
 
 class Album extends DomainObject
 {
-    /** @var array Data loaded from DB table via mapper */
-    private $props = [];
+    use PropsTrait;
 
     /**
      * Album object construction
@@ -17,23 +16,6 @@ class Album extends DomainObject
         $this->props = $data;
         $this->id = $id;
         parent::__construct($id);
-    }
-
-    public function getProp(string $key)
-    {
-        return $this->props[$key] ?? null;
-    }
-
-    public function getProps(): array
-    {
-        return $this->props;
-    }
-
-    public function setProp(string $key, $val): self
-    {
-        $this->props[$key] = $val;
-
-        return $this;
     }
 
     /**
