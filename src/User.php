@@ -38,13 +38,6 @@ class User extends DomainObject
     protected $rank = 0;
 
     /**
-     * Details loaded from the other table columns via mapper
-     * There's probably a better way to do it!!!
-     * @var array
-     */
-    public $details = [];
-
-    /**
      * User construction
      * May be passed by static functions like self::getByEmail
      * Construction doesn't verify variables; Pass to set*() to filter

@@ -4,6 +4,7 @@ require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
 
 use Vgsite\Page;
 use Verot\Upload;
+use Vgsite\Exceptions\UploadException;
 use Vgsite\Image;
 
 $action = filter_input(INPUT_POST, 'action');
@@ -103,7 +104,7 @@ if ($action == "submimg") {
 		if ($is_reupload) {
 			$image_mapper->save($handle->image);
 		} else {
-			$image_mapper->insert($handle->image);
+			$handle->image = $image_mapper->insert($handle->image);
 			$image_mapper->saveSession($image_collection);
 			
 			//given tags

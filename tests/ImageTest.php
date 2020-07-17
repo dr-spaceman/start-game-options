@@ -10,12 +10,34 @@ use Vgsite\ImageMapper;
 use Vgsite\ImageCollection;
 use Vgsite\Collection;
 use Vgsite\Exceptions\UploadException;
+use Vgsite\Registry;
 
 define("TEST_IMAGE_SRC", "http://videogamin.squarehaven.com/magus.jpg");
 define("TEST_IMAGE_SRC_BOX", "http://videogamin.squarehaven.com/chrono_trigger-na_box.jpg");
 
 class ImageTest extends TestCase
 {
+    /** @var ImageMapper */
+    protected static $mapper;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$mapper = new ImageMapper();
+    }
+
+    public function testImageDatabaseFetchAndObjectConstruction()
+    {
+        $statement = Registry::get('pdo')->query("SELECT * FROM images LIMIT 1");
+        $row = $statement->fetch();
+        $image = new Image($row['img_id'], $row);
+        $this->assertInstanceOf(Image::class, $image);
+    }
+
+    public function testImageMapperLoadsFromRegistry()
+    {
+        $this->assertInstanceOf(ImageMapper::class, self::$mapper);
+    }
+
     public function testImageSizeConstants()
     {
         $this->assertEquals('op', Image::OPTIMAL);
@@ -77,46 +99,37 @@ class ImageTest extends TestCase
         $this->assertInstanceOf(Image::class, $image);
         $this->assertFileExists($image->getSrc(null, true));
 
-        $image_check = Image::findByName(TEST_ID.'.jpg');
+        $image_check = self::$mapper->findByName(TEST_ID.'.jpg');
         $this->assertEquals($image->img_id, $image_check->img_id);
 
         return $image;
     }
 
-    public function testLoadImageMapper()
-    {
-        $mapper = new ImageMapper();
-        $this->assertInstanceOf(ImageMapper::class, $mapper);
-
-        return $mapper;
-    }
-
     /**
      * @depends testSaveUpload
-     * @depends testLoadImageMapper
      */
-    public function testImageInsertDuplicateFailure($image, $mapper)
+    public function testImageInsertDuplicateFailure($image)
     {
         $this->expectException(Exception::class);
-        $mapper->insert($image);
+        $image = self::$mapper->insert($image);
     }
     
     /**
      * @depends testSaveUpload
-     * @depends testLoadImageMapper
      */
-    public function testImageSave($image, $mapper)
+    public function testImageSave($image)
     {
-        $image->img_title = 'foo';
-        $image->img_description = 'bar';
-        $this->assertTrue($mapper->save($image));
+        $mapper = self::$mapper;
+        $image->setProp('img_title', 'foo');
+        $image->setProp('img_description', 'bar');
+        $image = $mapper->save($image);
         $this->assertTrue($image->getId() > 0);
 
-        $image_check = $mapper->findById($image->getId());
+        $image_check = $mapper->findById($image->getId(), false);
         $this->assertInstanceOf(Image::class, $image_check);
         $this->assertEquals($image->getId(), $image_check->getId());
-        $this->assertEquals('foo', $image_check->img_title);
-        $this->assertEquals('bar', $image_check->img_description);
+        $this->assertEquals('foo', $image_check->getProp('img_title'));
+        $this->assertEquals('bar', $image_check->getProp('img_description'));
     }
 
     public function testUploadNotAnImageThrowsException()
@@ -126,16 +139,15 @@ class ImageTest extends TestCase
     }
 
     /**
-     * @depends testLoadImageMapper
      */
-    public function testImageFetch($mapper)
+    public function testImageFetch()
     {
-        $this->assertInstanceOf(ImageMapper::class, $mapper);
+        $mapper = self::$mapper;
         $image = $mapper->findByName(TEST_ID.'.jpg');
         $this->assertNotNull($image);
         $this->assertNotNull($mapper->findById($image->getId()));
-        $this->assertNotNull(Image::findById($image->getId()));
-        $this->assertNotNull(Image::findByName(TEST_ID.'.jpg'));
+        $this->assertNotNull($mapper->findById($image->getId()));
+        $this->assertNotNull($mapper->findByName(TEST_ID.'.jpg'));
 
         return $image;
     }
@@ -164,11 +176,10 @@ class ImageTest extends TestCase
 
     /**
      * @depends testImageCollectionAddItem
-     * @depends testLoadImageMapper
      */
-    public function testImageCollectionSave($collection, $mapper)
+    public function testImageCollectionSave($collection)
     {
-        $this->assertTrue($mapper->saveSession($collection));
+        $this->assertTrue(self::$mapper->saveSession($collection));
     }
 
     /**
@@ -186,12 +197,11 @@ class ImageTest extends TestCase
 
     /**
      * @depends testImageCollectionAddItem
-     * @depends testLoadImageMapper
      */
-    public function testImageCollectionFindAllBySessionId($collection, $mapper)
+    public function testImageCollectionFindAllBySessionId($collection)
     {
         $session_id = $collection->getId();
-        $collection_check = $mapper->findAllBySessionId($session_id);
+        $collection_check = self::$mapper->findAllBySessionId($session_id);
         $this->assertInstanceOf(ImageCollection::class, $collection_check);
         $this->assertEquals(2, $collection_check->count);
 
@@ -200,7 +210,7 @@ class ImageTest extends TestCase
 
     public function testResizeImagesAndThumbnails()
     {
-        $image = Image::findByName(TEST_ID.'_box.jpg');
+        $image = self::$mapper->findByName(TEST_ID.'_box.jpg');
         $this->assertFileExists($image->getSrc(Image::OPTIMAL, true));
         $this->assertFileExists($image->getSrc(Image::MEDIUM, true));
         $this->assertFileExists($image->getSrc(Image::SMALL, true));
@@ -213,10 +223,11 @@ class ImageTest extends TestCase
 
     /**
      * @depends testImageCollectionFindAllBySessionId
-     * @depends testLoadImageMapper
      */
-    public function testImageDelete(ImageCollection $collection, ImageMapper $mapper)
+    public function testImageDelete(ImageCollection $collection)
     {
+        $mapper = self::$mapper;
+
         foreach($collection->getGenerator() as $image) {
             $check_image_names[] = $image->img_name;
             $this->assertTrue($mapper->delete($image));

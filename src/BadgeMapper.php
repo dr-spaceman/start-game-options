@@ -80,7 +80,7 @@ class BadgeMapper extends Mapper
         return $obj;
     }
 
-    protected function doInsert(DomainObject $obj): bool
+    protected function doInsert(DomainObject &$obj): DomainObject
     {
     }
 

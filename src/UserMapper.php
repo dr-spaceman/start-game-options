@@ -101,13 +101,20 @@ class UserMapper extends Mapper
         return $user;
     }
 
-    protected function doInsert(DomainObject $user): bool
+    /**
+     * Insert into DB
+     *
+     * @param User $user
+     * 
+     * @return User
+     */
+    protected function doInsert(DomainObject &$user): DomainObject
     {
         $values = [
             $user->getUsername(), 
             $user->getPassword(), 
             $user->getEmail(),
-            $user->getRank(), 
+            $user->getRank(),
         ];
         $this->insert_statement->execute($values);
         $id = $this->pdo->lastInsertId();
@@ -115,7 +122,7 @@ class UserMapper extends Mapper
 
         if ($this->logger) $this->logger->info("Insert User data ", $values);
 
-        return true;
+        return $user;
     }
 
     public function save(DomainObject $user): bool

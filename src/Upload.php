@@ -112,7 +112,7 @@ class Upload extends UploadHandler
         // Rename if necessary
         $i = 0;
         $t_file_body = $file_body;
-        while (false === is_null(Image::findByName($file_name))) {
+        while (false === is_null(Registry::getMapper(Image::class)->findByName($file_name))) {
             $i++;
             $t_file_body = $file_body."_".$i;
             $file_name = $t_file_body.".".$this->file_src_name_ext;
@@ -127,7 +127,7 @@ class Upload extends UploadHandler
         $image_params['img_category_id'] = $category_id;
         $image_params['user_id'] = $user->getId();
 
-        $this->image = new Image($image_params);
+        $this->image = new Image($image_params['img_id'], $image_params);
 
         // Make directories
         $dir = Image::IMAGES_DIR.'/'.$this->image->getDir();
@@ -219,7 +219,7 @@ class Upload extends UploadHandler
     public function insertImage(): Image
     {
         $image_mapper = Registry::getMapper(Image::class);
-        $image_mapper->insert($this->image);
+        $this->image = $image_mapper->insert($this->image);
 
         return $this->image;
     }

@@ -2,15 +2,9 @@
 
 namespace Vgsite;
 
-use Exception;
-use InvalidArgumentException;
-use OutOfBoundsException;
-use OutOfRangeException;
-
 /**
  * Handle database queries and logging, object storage into IdentityMap
  */
-
 abstract class Mapper
 {
     /** @var string Database table name and primary key field name */
@@ -18,6 +12,21 @@ abstract class Mapper
 
     /** @var string The primary key in database */
     protected $db_id_field = 'id';
+    
+    /** @var string */
+    protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
+    /** @var PDOStatement */
+    protected $select_statement;
+    /** @var string */
+    protected $select_all_sql = "SELECT * FROM `%s`";
+    /** @var PDOStatement */
+    protected $select_all_statement;
+    /** @var PDOStatement */
+    protected $save_statement;
+    /** @var PDOStatement */
+    protected $insert_statement;
+    /** @var PDOStatement */
+    protected $delete_statement;
 
     /** @var PDO Registry object */
     protected $pdo;
@@ -27,18 +36,6 @@ abstract class Mapper
 
     /** @var IdentityMap */
     protected $identity_map;
-    
-    /**
-     * PDO statements
-     * @var PDOStatement|string object
-     */
-    protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
-    protected $select_statement;
-    protected $select_all_sql = "SELECT * FROM `%s`";
-    protected $select_all_statement;
-    protected $save_statement;
-    protected $insert_statement;
-    protected $delete_statement;
 
     public function __construct()
     {
@@ -50,9 +47,9 @@ abstract class Mapper
         $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
     }
 
-    public function findById(int $id): DomainObject
+    public function findById(int $id, $get_identity_map=true): DomainObject
     {
-        if (true === $this->identity_map->hasId($id)) {
+        if ($get_identity_map && true === $this->identity_map->hasId($id)) {
             return $this->identity_map->getObject($id);
         }
 
@@ -61,7 +58,7 @@ abstract class Mapper
         $this->select_statement->closeCursor();
 
         if (!is_array($row)) {
-            throw new OutOfBoundsException("User with id `{$id}` could not be found.");
+            throw new \OutOfBoundsException("User with id `{$id}` could not be found.");
         }
 
         return $this->createObject($row);
@@ -92,7 +89,14 @@ abstract class Mapper
         return $obj;
     }
 
-    public function insert(DomainObject $obj)
+    /**
+     * Insert object into database
+     *
+     * @param DomainObject $obj
+     * 
+     * @return DomainObject New object with ID
+     */
+    public function insert(DomainObject &$obj): DomainObject
     {
         $insert_result = $this->doInsert($obj);
 
@@ -142,6 +146,6 @@ abstract class Mapper
     
     abstract public function getCollection(array $rows): Collection;
     abstract protected function doCreateObject(array $row): DomainObject;
-    abstract protected function doInsert(DomainObject $object);
+    abstract protected function doInsert(DomainObject &$object): DomainObject;
     abstract protected function targetClass(): string;
 }

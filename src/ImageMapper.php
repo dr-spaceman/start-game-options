@@ -2,32 +2,16 @@
 
 namespace Vgsite;
 
-class ImageMapper extends Mapper
+class ImageMapper extends MapperProps
 {
     protected $db_table = 'images';
     protected $db_id_field = 'img_id';
     protected $save_statement;
     protected $insert_statement;
 
-    private $save_fields = ['img_size', 'img_width', 'img_height', 'img_bits', 
+    protected $save_fields = ['img_size', 'img_width', 'img_height', 'img_bits', 
         'img_minor_mime', 'img_category_id', 'img_title', 'img_description', 'sort'];
-    private $insert_fields = [];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $save_keys = implode(',', array_map(function($field) {
-            return "`{$field}`=:{$field}";
-        }, $this->save_fields));
-        $save_sql = "UPDATE `images` SET $save_keys WHERE img_id=:img_id LIMIT 1";
-        $this->save_statement = $this->pdo->prepare($save_sql);
-        
-        $this->insert_fields = array_diff(Image::PROPERTIES_KEYS, ['img_id']);
-        $insert_keys = implode(',', $this->insert_fields);
-        $insert_vals = implode(',', array_fill(0, count($this->insert_fields), '?'));
-        $this->insert_statement = $this->pdo->prepare("INSERT INTO images ($insert_keys) VALUES ($insert_vals);");
-    }
+    protected $insert_fields = [];
 
     public function findByName(string $img_name): ?DomainObject
     {
@@ -52,12 +36,7 @@ class ImageMapper extends Mapper
         return new ImageCollection($row, $this);
     }
 
-    protected function doCreateObject(array $row): DomainObject
-    {
-        return new Image($row);
-    }
-
-    protected function doInsert(DomainObject $image): bool
+    protected function doInsert(DomainObject &$image): DomainObject
     {
         // Determine sort value -- put it at the end
         if (empty($image->sort) && $this->img_session_id) {
@@ -72,34 +51,10 @@ class ImageMapper extends Mapper
             }
         }
 
-        $values = array();
-        foreach ($this->insert_fields as $key) {
-            $values[] = $image->{$key};
-        }
-
-        $this->insert_statement->execute($values);
-        $id = $this->pdo->lastInsertId();
-        $image->setId($id);
-
-        if ($this->logger) $this->logger->info("Insert Image data ", $values);
-
-        return true;
+        return parent::doInsert($image);
     }
 
-    public function save(DomainObject $image): bool
-    {
-        foreach ($this->save_fields as $key) {
-            $this->save_statement->bindValue($key, $image->{$key});
-        }
-        $this->save_statement->bindValue(':img_id', $image->img_id);
-        $this->save_statement->execute();
-
-        if ($this->logger) $this->logger->info("Update Image data ", $image->getProps());
-
-        return true;
-    }
-
-    public function delete(DomainObject $image): bool
+    public function delete(Image $image): bool
     {
         try {
             $this->pdo->beginTransaction();
@@ -126,7 +81,7 @@ class ImageMapper extends Mapper
             }
 
             $this->pdo->commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->pdo->rollback();
             if ($this->logger) $this->logger->error("Delete Image failure: ".$e->getMessage(), ['img_name'=>$image->img_name, 'img_id'=>$image->getId()]);
 
@@ -147,7 +102,6 @@ class ImageMapper extends Mapper
 
     public function findAllBySessionId(int $session_id): ?Collection
     {
-        echo 'ImageMapper::findAllBySessionId('.$session_id.')'.PHP_EOL;
         $statement = $this->pdo->prepare("SELECT img_session_id, img_session_description FROM images_sessions WHERE img_session_id=? LIMIT 1");
         $statement->execute([$session_id]);
         $row = $statement->fetch();
@@ -214,7 +168,7 @@ class ImageMapper extends Mapper
     {
         $tag = formatName($tag);
         $sql = "INSERT INTO images_tags (img_id, tag, user_id) VALUES (?, ?, ?);";
-        $statement->prepare($sql);
+        $statement = $this->pdo->prepare($sql);
         $statement->execute([$tag, $image->getId(), $user->getId()]);
     }
 
@@ -222,6 +176,6 @@ class ImageMapper extends Mapper
     {
         $sql = "DELETE FROM images_tags WHERE id=? LIMIT 1";
         $statement = $this->pdo->prepare($sql);
-        return $statement->execute([$id]);
+        return $statement->execute([$tag_id]);
     }
 }

@@ -6,6 +6,12 @@ class Album extends DomainObject
 {
     use PropsTrait;
 
+    public const PROPS_KEYS = [
+        'id', 'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid', 
+        'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series', 
+        'new', 'view', 'media', 'path'
+    ];
+
     /**
      * Render album link in HTML form
      * 

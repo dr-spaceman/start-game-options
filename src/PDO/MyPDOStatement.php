@@ -16,14 +16,20 @@ class MyPDOStatement extends PDOStatement
         // need this empty construct()!
     }
 
+    // public function bindValue($parameter, $value, $data_type = \PDO::PARAM_STR)
+    // {
+    //     printf('bind:%s=%s'.PHP_EOL, $parameter, $value);
+    //     parent::bindValue($parameter, $value, $data_type);
+    // }
+
     ///\brief overrides execute saving array of values and catching exception with error logging
-    public function execute($values = array())
+    public function execute($input_parameters = null)
     {
-        $this->_debugValues = $values;
+        $this->_debugValues = $input_parameters;
         $this->_ValuePos    = 0;
 
         try {
-            $t = parent::execute($values);
+            $t = parent::execute($input_parameters);
         } catch (PDOException $e) {
             if ($logger = Registry::get('logger')) {
                 $logger->warning('PDOException thrown based on the following query: '.$this->_debugQuery().'; Detail: '.$e->getMessage());

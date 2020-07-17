@@ -21,10 +21,9 @@ class IdentityMap
     }
 
     /**
-    * @param integer $id
-    * @param mixed $object
+    * @param DomainObject $object
     */
-    public function set(DomainObject $object)
+    public function set(DomainObject &$object)
     {
         $id = $object->getId();
         if ($id < 1) return;

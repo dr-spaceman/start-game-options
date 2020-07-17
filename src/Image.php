@@ -24,16 +24,42 @@ namespace Vgsite;
 
 class Image extends DomainObject
 {
+    use PropsTrait;
+    
+    /** Object properties **/
+
+    public const PROPS_KEYS = [
+        'img_name', 'img_id', 'img_session_id', 'img_size',
+        'img_width', 'img_height', 'img_bits', 'img_minor_mime', 'img_category_id',
+        'img_title', 'img_description', 'sort', 'user_id'
+    ];
+
+    /** @var bool */
+    public $notfound = true;
+
+    /** @var string Session ID for uploads */
+    public $img_session_id;
+    public $img_name = 'unknown.png';
+    public $img_id;
+    public $optimized; // t or f if optimized size exitst
+    private $src;
+    public $img_size = 3810;
+    public $img_width = 601;
+    public $img_height = 601;
+    public $img_minor_mime = "png";
+    public $img_category_id;
+    public $img_title;
+    public $img_description;
+    public $sort;
+
+    /** Directory and file locations */
+
     public const IMAGES_DIR_REL    = 'images'; // Relative to public directory
     public const IMAGES_DIR        = PUBLIC_DIR.'/'.self::IMAGES_DIR_REL; // Absolute path
     public const UPLOAD_TEMP_DIR   = ROOT_DIR.'/var/uploads';
     public const DELETED_FILES_DIR = ROOT_DIR.'/var/deleted_files';
 
-    public const PROPERTIES_KEYS = ['img_name','img_id','img_session_id','img_size',
-        'img_width','img_height','img_bits','img_minor_mime','img_category_id',
-        'img_title','img_description','sort','user_id'];
-
-    /** Image Sizes **/
+    /** Image sizes **/
 
     public const OPTIMAL = 'op';
     public const MEDIUM = 'md';
@@ -113,79 +139,10 @@ class Image extends DomainObject
         self::LOGO => 'Logos, icons, or other graphic marks or emblems',
     ];
 
-    /** Object properties **/
-
-    public $notfound = true;
-
-    /**
-     * Session ID for uploads
-     * @var [type]
-     */
-    public $img_session_id;
-    public $img_name = 'unknown.png';
-    public $img_id;
-    public $optimized; // t or f if optimized size exitst
-    private $src;
-    public $img_size = 3810;
-    public $img_width = 601;
-    public $img_height = 601;
-    public $img_minor_mime = "png";
-    public $img_category_id;
-    public $img_title;
-    public $img_description;
-    public $sort;
-    
-    /**
-     * Image construction
-     * @param array $params Key-value pairs relevant to an image, e.g. DB row
-     * Image::PROPERTIES_KEYS holds list of keys
-     */
-    public function __construct(array $params)
-    {
-        # var $img_params string Either the numeric img_id or the img_name (ie "DonkeyKong.jpg")
-        # if not found, sets $notfound=true and grabs "unknown.png", a placeholder image
-        
-        if (empty($params) || !isset($params['img_id'])) {
-            throw new InvalidArgumentException("Image class requires at least an img_id parameter passed to the constructor. Try -1 for a prototype object.");
-        }
-
-        parent::__construct($params['img_id']);
-        
-        $this->img_name = $params['img_name'];
-        $this->img_id = $params['img_id'];
-        $this->img_session_id = $params['img_session_id'];
-        $this->img_size = $params['img_size'];
-        $this->img_width = $params['img_width'];
-        $this->img_height = $params['img_height'];
-        $this->img_bits = $params['img_bits']; 
-        $this->img_minor_mime = $params['img_minor_mime'];
-        $this->img_category_id = $params['img_category_id'];
-        $this->img_title = $params['img_title'];
-        $this->img_description = $params['img_description'];
-        $this->sort = $params['sort'];
-        $this->user_id = $params['user_id'];
-        $this->img_timestamp = $params['img_timestamp'];
-        $this->img_views = $params['img_views'];
-        
-        if ($this->img_name && $this->img_id) {
-            $this->notfound = false;
-        }
-    }
-
     public function setId(int $id)
     {
         $this->img_id = $id;
         parent::setId($id);
-    }
-
-    public function getProperties(): array
-    {
-        $props = array();
-        foreach (self::PROPERTIES_KEYS as $key) {
-            $props[$key] = $this->{$key};
-        }
-
-        return $props;
     }
 
     /**
@@ -241,11 +198,6 @@ class Image extends DomainObject
     {
         $alt = $this->img_title ? htmlsc($this->img_title) : $this->img_name;
         return '<div class="imagefigure"><a href="'.$this->getUrl().'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$this->getSrc($size).'" alt="'.$alt.'"/></a></div>';
-    }
-
-    public static function findByName(string $name): ?DomainObject
-    {
-        return self::getMapper()->findByName($name);
     }
     
     /**

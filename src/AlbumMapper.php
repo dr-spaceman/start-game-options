@@ -4,24 +4,22 @@ namespace Vgsite;
 
 use OutOfBoundsException;
 
-class AlbumMapper extends Mapper
+class AlbumMapper extends MapperProps
 {
-    protected $id_field = 'id';
+    protected $db_table = 'albums';
+    protected $db_id_field = 'id';
     protected $select_statement;
     protected $select_all_statement;
     protected $save_statement;
     protected $insert_statement;
     protected $delete_statement;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->select_statement = $this->pdo->prepare("SELECT * FROM albums WHERE `id`=?");
-        $this->select_all_statement = $this->pdo->prepare("SELECT * FROM albums");
-        $this->save_statement = $this->pdo->prepare("UPDATE albums WHERE `id`=?");
-        $this->insert_statement = $this->pdo->prepare("INSERT INTO albums () VALUES ();");
-        $this->delete_statement = $this->pdo->prepare("DELETE FROM albums WHERE `id`=?");
-    }
+    
+    protected $save_fields = [
+        'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid',
+        'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series',
+        'new', 'view', 'media', 'path'
+    ];
+    protected $insert_fields = [];
 
     public function findByAlbumId(string $albumid): Album
     {
@@ -65,45 +63,6 @@ class AlbumMapper extends Mapper
     public function getCollection(array $rows): Collection
     {
         return new AlbumCollection($rows, $this);
-    }
-
-    protected function doCreateObject(array $row): DomainObject
-    {
-        return new Album($row['id'], $row);
-    }
-
-    protected function doInsert(DomainObject $album): bool
-    {
-        $values = [];
-        $this->insert_statement->execute($values);
-        $id = $this->pdo->lastInsertId();
-        $album->setId((int) $id);
-
-        if ($this->logger) $this->logger->info("Insert Album data ", $values);
-
-        return true;
-    }
-
-    public function save(Album $album): bool
-    {
-        return false;
-
-        $values = [];
-        $this->save_statement->execute($values);
-
-        if ($this->logger) $this->logger->info("Update Album data ", $values);
-
-        return true;
-    }
-
-    public function delete(Album $album): bool
-    {
-        $values = [$album->getId()];
-        $this->delete_statement->execute($values);
-
-        if ($this->logger) $this->logger->info("Delete Album data ", $album->getProps());
-
-        return true;
     }
 
     public function selectStatement(): \PDOStatement

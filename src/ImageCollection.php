@@ -18,7 +18,7 @@ class ImageCollection extends Collection
             $is_new = false;
         }
 
-        $this->session_id = $session_id ?: $this->makeSessionId();echo 'New sessid:'.$this->session_id.PHP_EOL;
+        $this->session_id = $session_id ?: $this->makeSessionId();
         $this->description = $description;
 
         parent::__construct($rows, $mapper);

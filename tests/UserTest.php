@@ -80,13 +80,13 @@ class UserTest extends TestCase
         $this->assertEquals($user->getEmail(), TEST_USER_EMAIL);
         $user->setEmail('foo_xyz_123@bar.com');
         $user->setRank(User::RESTRICTED);
-        $this->assertTrue($mapper->save($user));
+        $mapper->save($user);
 
         $user = $mapper->findByEmail('foo_xyz_123@bar.com');
         $this->assertEquals(User::RESTRICTED, $user->getRank());
         $user->setRank(User::MEMBER);
         $user->setEmail(TEST_USER_EMAIL);
-        $this->assertTrue($mapper->save($user));
+        $mapper->save($user);
     }
 
     public function testUserConfirmInvalidPropSetFails_Email()
@@ -123,7 +123,7 @@ class UserTest extends TestCase
         $mapper = self::$mapper;
         $this->expectException(Exception::class);
         $user = new User(-1, TEST_USER_USERNAME, 'password', 'email');
-        $mapper->insert($user);
+        $user = $mapper->insert($user);
     }
 
     public function testInsertUserEmailDuplicationFails()
@@ -131,14 +131,14 @@ class UserTest extends TestCase
         $mapper = self::$mapper;
         $this->expectException(Exception::class);
         $user = new User(-1, 'foo_123_xyz_fuuuuu', 'password', TEST_USER_EMAIL);
-        $mapper->insert($user);
+        $user = $mapper->insert($user);
     }
 
     public function testInsertUser(): User
     {
         $mapper = self::$mapper;
         $user = new User(-1, 'test_'.TEST_ID, 'password', 'test_foobar'.TEST_ID.'@bar.com', User::MEMBER);
-        $this->assertTrue($mapper->insert($user));
+        $user = $mapper->insert($user);
         $this->assertTrue(($user->getId() > -1));
 
         $this->assertInstanceOf(User::class, $mapper->findById($user->getId()));
@@ -193,6 +193,11 @@ class UserTest extends TestCase
             $this->assertInstanceOf(User::class, $user);
             $this->assertStringEndsWith('gmail.com', $user->getEmail());
         }
+    }
+
+    public function TestUserDetail()
+    {
+        
     }
 
     /**
