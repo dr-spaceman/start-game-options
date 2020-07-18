@@ -4,28 +4,17 @@ namespace Vgsite;
 
 use Vgsite\Exceptions\UserException;
 
-class UserMapper extends Mapper
+class UserMapper extends MapperProps
 {
-    protected $id_field = 'user_id';
-    protected $select_statement;
-    protected $select_all_statement;
-    protected $save_statement;
-    protected $insert_statement;
-    protected $delete_statement;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->select_statement = $this->pdo->prepare("SELECT * FROM users WHERE `user_id`=?");
-        $this->select_all_statement = $this->pdo->prepare("SELECT * FROM users");
-        $this->save_statement = $this->pdo->prepare("UPDATE users SET `password`=?,`email`=?,`rank`=? WHERE `user_id`=?");
-        $this->insert_statement = $this->pdo->prepare("INSERT INTO users (`username`,`password`,`email`,`rank`) VALUES (?,?,?,?);");
-        $this->delete_statement = $this->pdo->prepare("DELETE FROM users WHERE `user_id`=?");
-    }
+    protected $db_table = 'users';
+    protected $db_id_field = 'user_id';
+    protected $save_fields = [
+        'username', 'password', 'email', 'verified', 'gender', 'region', 'rank', 'avatar', 'timezone'
+    ];
 
     public function findByUsername(string $username): User
     {
-        $statement = $this->pdo->prepare("SELECT * FROM users WHERE `username`=?");
+        $statement = $this->pdo->prepare("SELECT * FROM users WHERE `username`=? LIMIT 1");
         $statement->execute([$username]);
         $row = $statement->fetch();
 
@@ -38,7 +27,7 @@ class UserMapper extends Mapper
 
     public function findByEmail(string $email): User
     {
-        $statement = $this->pdo->prepare("SELECT * FROM users WHERE `email`=?");
+        $statement = $this->pdo->prepare("SELECT * FROM users WHERE `email`=? LIMIT 1");
         $statement->execute([$email]);
         $row = $statement->fetch();
 
@@ -84,70 +73,6 @@ class UserMapper extends Mapper
     public function getCollection(array $rows): Collection
     {
         return new UserCollection($rows, $this);
-    }
-
-    protected function doCreateObject(array $row): DomainObject
-    {
-        $user = new User(
-            (int)($row['user_id'] ?: $row[0]),
-            $row['username'] ?: $row[1],
-            $row['password'] ?: $row[2],
-            $row['email'] ?: $row[3],
-            (int)($row['rank'] ?: $row[4]),
-        );
-
-        $user->details = array_diff($row, $user->getProps());
-
-        return $user;
-    }
-
-    /**
-     * Insert into DB
-     *
-     * @param User $user
-     * 
-     * @return User
-     */
-    protected function doInsert(DomainObject &$user): DomainObject
-    {
-        $values = [
-            $user->getUsername(), 
-            $user->getPassword(), 
-            $user->getEmail(),
-            $user->getRank(),
-        ];
-        $this->insert_statement->execute($values);
-        $id = $this->pdo->lastInsertId();
-        $user->setId((int)$id);
-
-        if ($this->logger) $this->logger->info("Insert User data ", $values);
-
-        return $user;
-    }
-
-    public function save(DomainObject $user): bool
-    {
-        $values = [
-            $user->getPassword(),
-            $user->getEmail(),
-            $user->getRank(),
-            $user->getId(),
-        ];
-        $this->save_statement->execute($values);
-
-        if ($this->logger) $this->logger->info("Update User data ", $values);
-
-        return true;
-    }
-
-    public function delete(DomainObject $user): bool
-    {
-        $values = [$user->getId()];
-        $this->delete_statement->execute($values);
-
-        if ($this->logger) $this->logger->info("Delete User data ", $user->getProps());
-
-        return true;
     }
 
     public function selectStatement(): \PDOStatement

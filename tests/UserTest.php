@@ -18,6 +18,21 @@ class UserTest extends TestCase
         self::$mapper = new UserMapper();
     }
 
+    public function testSetupTestUser(): void
+    {
+        $props = [
+            'user_id' => TEST_USER_ID,
+            'username' => TEST_USER_USERNAME,
+            'email' => TEST_USER_EMAIL,
+            'password' => TEST_USER_PASSWORD,
+        ];
+        $user = new User($props);
+        $user->setPassword(TEST_USER_PASSWORD, true);
+        $sql = "UPDATE `users` SET `username`=?, `email`=?, `password`=? WHERE `user_id`=? LIMIT 1";
+        $statement = Registry::get('pdo')->prepare($sql);
+        $this->assertTrue($statement->execute([TEST_USER_USERNAME, TEST_USER_EMAIL, $user->getPassword(), TEST_USER_ID]));
+    }
+
     public function testUserMapperInit()
     {
         $mapper = self::$mapper;
@@ -100,14 +115,14 @@ class UserTest extends TestCase
     public function testUserConfirmInvalidPropSetFails_Password()
     {
         $this->expectException(InvalidArgumentException::class);
-        $user = new User(-1, 'test_'.TEST_ID, 'password', 'email');
+        $user = new User(['user_id'=>-1, 'username' => 'test_'.TEST_ID, 'email'=>'email', 'password'=>'password']);
         $user->setPassword(' invalid_spaces_on_end ');
     }
 
     public function testUserConfirmInvalidPropSetFails_Rank()
     {
         $this->expectException(InvalidArgumentException::class);
-        $user = new User(-1, 'test_'.TEST_ID, 'password', 'email');
+        $user = new User(['user_id'=>-1, 'username' => 'test_'.TEST_ID, 'email'=>'email', 'password'=>'password']);
         $user->setRank(99999); //Doesn't exist
     }
 
@@ -122,7 +137,7 @@ class UserTest extends TestCase
     {
         $mapper = self::$mapper;
         $this->expectException(Exception::class);
-        $user = new User(-1, TEST_USER_USERNAME, 'password', 'email');
+        $user = new User(['user_id'=>-1, 'username'=>TEST_USER_USERNAME, 'email'=>'email', 'password'=>'password']);
         $user = $mapper->insert($user);
     }
 
@@ -130,14 +145,15 @@ class UserTest extends TestCase
     {
         $mapper = self::$mapper;
         $this->expectException(Exception::class);
-        $user = new User(-1, 'foo_123_xyz_fuuuuu', 'password', TEST_USER_EMAIL);
+        $user = new User(['user_id'=>-1, 'username'=>'foo_123_xyz_fuuuuu', 'email'=>TEST_USER_EMAIL, 'password'=>'password']);
         $user = $mapper->insert($user);
     }
 
     public function testInsertUser(): User
     {
         $mapper = self::$mapper;
-        $user = new User(-1, 'test_'.TEST_ID, 'password', 'test_foobar'.TEST_ID.'@bar.com', User::MEMBER);
+        $user = new User(['user_id'=>-1, 'username'=>'test_'.TEST_ID, 'password'=>'password', 'email'=>'test_foobar'.TEST_ID.'@bar.com', 'rank'=>User::MEMBER]);
+        $this->assertEquals(0, $user->getProp('verified'));
         $user = $mapper->insert($user);
         $this->assertTrue(($user->getId() > -1));
 
@@ -152,8 +168,8 @@ class UserTest extends TestCase
     {
         $mapper = self::$mapper;
         $rows = array( 
-            array(TEST_USER_ID, TEST_USER_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL),
-            array(-1, 'test_'.TEST_ID, 'password', 'email'),
+            array('user_id'=>TEST_USER_ID, 'username'=>TEST_USER_USERNAME, 'password'=>TEST_USER_PASSWORD, 'email'=>TEST_USER_EMAIL),
+            array('user_id'=>-1, 'username'=>'test_'.TEST_ID, 'email'=>'email', 'password'=>'password'),
         );
         $collection = new UserCollection($rows, $mapper);
         $this->assertInstanceOf(UserCollection::class, $collection);
@@ -168,7 +184,7 @@ class UserTest extends TestCase
     {
         $collection = new UserCollection();
         $collection->add(self::$mapper->findById(TEST_USER_ID));
-        $collection->add(new User(-1, 'TheMadTargaryen', 'password', 'foo@bar.com', User::MEMBER));
+        $collection->add(new User(['user_id'=>-1, 'username'=>'TheMadTargaryen', 'password'=>'password', 'email'=>'foo@bar.com', 'rank'=>User::MEMBER]));
         $this->assertInstanceOf(UserCollection::class, $collection);
         foreach ($collection->getGenerator() as $user) {
             $this->assertInstanceOf(User::class, $user);
@@ -193,11 +209,6 @@ class UserTest extends TestCase
             $this->assertInstanceOf(User::class, $user);
             $this->assertStringEndsWith('gmail.com', $user->getEmail());
         }
-    }
-
-    public function TestUserDetail()
-    {
-        
     }
 
     /**

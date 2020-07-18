@@ -2,8 +2,9 @@
 
 namespace Vgsite;
 
+use DateTime;
+use InvalidArgumentException;
 use Respect\Validation\Validator as v;
-use Vgsite\Exceptions\UserException;
 
 class User extends DomainObject
 {
@@ -32,39 +33,19 @@ class User extends DomainObject
         self::SUPERADMIN => 'SUPERADMIN',
     ];
 
+    public const PROPS_KEYS = [
+        'user_id', 'username', 'password', 'email', 'verified', 'gender', 'region', 'rank', 'avatar', 'timezone'
+    ];
+    public const PROPS_REQUIRED = ['user_id', 'username', 'password', 'email'];
     protected $username;
     protected $password;
     protected $email;
-    protected $rank = 0;
-
-    /**
-     * User construction
-     * May be passed by static functions like self::getByEmail
-     * Construction doesn't verify variables; Pass to set*() to filter
-     */
-    public function __construct(int $id, string $username, string $password=null, string $email, int $rank=self::GUEST)
-    {
-        $this->username = $username;
-        $this->password = $password;
-        $this->email = $email;
-        $this->rank = $rank;
-
-        parent::__construct($id);
-	}
-
-    /**
-     * An array of private properties for Logging, debugging, etc.
-     */
-    public function getProps(): array
-    {
-        return array(
-            'user_id' => $this->id,
-            'username' => $this->username,
-            'password' => $this->password,
-            'email' => $this->email,
-            'rank' => $this->rank,
-        );
-    }
+    protected $rank = self::GUEST;
+    protected $gender;
+    protected $region;
+    protected $avatar;
+    protected $timezone;
+    protected $verified = '0';
 
     public function getUsername(): string
     {
@@ -76,7 +57,7 @@ class User extends DomainObject
         return $this->password;
     }
 
-    public function setPassword(string $password, $hash=false)
+    public function setPassword(string $password, $hash=false): User
     {
         if (! v::noWhitespace()->validate($password)) {
             throw new \InvalidArgumentException("Password can't be blank or have whitespace at the beginning or end");
@@ -90,6 +71,8 @@ class User extends DomainObject
         }
 
         $this->password = $password;
+
+        return $this;
     }
 
     public function hashPassword(string $password)
@@ -102,7 +85,7 @@ class User extends DomainObject
         return $this->email;
     }
 
-    public function setEmail(string $email)
+    public function setEmail(string $email): void
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             throw new \InvalidArgumentException("Email `{$email}` couldn't be validated");
@@ -113,12 +96,12 @@ class User extends DomainObject
 
     public function getRank(): int
     {
-        return $this->rank;
+        return (int) $this->rank;
     }
 
-    public function setRank(int $rank)
+    public function setRank(int $rank): void
     {
-        if (!isset(static::$ranks[$rank])) {
+        if (! isset(static::$ranks[$rank])) {
             throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
         }
 
@@ -130,6 +113,11 @@ class User extends DomainObject
         return new Avatar($this->data['avatar']);
     }
 
+    public function setAvatar(string $avatar): void
+    {
+        $this->avatar = $avatar;
+    }
+
     public static function getRanks(): array
     {
         return array_flip(static::$ranks);
@@ -137,27 +125,22 @@ class User extends DomainObject
 
     public static function getRankName(int $rank): string
     {
-        if (!isset(static::$ranks[$rank])) {
+        if (! isset(static::$ranks[$rank])) {
             throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
         }
 
         return static::$ranks[$rank];
     }
 
-    public function getLastLogin()
+    public function getLastLogin(): DateTime
     {
-        return $this->getDetail('activity');
-    }
-
-    public function getDetail(string $key)
-    {
-        return $this->details[$key];
+        return new DateTime($this->getProp('activity'));
     }
 
     /**
      * Render user in HTML form
      */
-    public function render($show_avatar=true, $link_profile=true)
+    public function render($show_avatar=true, $link_profile=true): string
     {
         $ret = '';
         if ($link_profile) $ret.= '<a href="/~'.$this->username.'" title="'.$this->username.'\'s profile">';
