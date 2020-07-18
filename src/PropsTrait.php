@@ -1,6 +1,7 @@
 <?php
 namespace Vgsite;
 
+use InvalidArgumentException;
 use OutOfRangeException;
 
 /**
@@ -8,26 +9,54 @@ use OutOfRangeException;
  */
 trait PropsTrait
 {
-    /** @var array Keys for loaded from DB table via mapper; Vals set in constructor. */
+    /** @var array Keys for loaded from DB table via mapper; The first key should by Promary Key; Vals set in constructor. */
     // public const PROPS_KEYS = [];
 
+    /** @var array List of props required to have scalar values for object construction; Throws exception if not given. */
+    // public const PROPS_REQUIRED = [];
+
     /**
-     * @param int $id Id proprty; Set to -1 for prototype object.
      * @param array $props Multidimentional array with keys and values corresponding to a database table.
      */
-    public function __construct(int $id=-1, array $props) {
+    public function __construct(array $props) {
+        if (empty(static::PROPS_KEYS)) {
+            throw new \Exception(get_called_class() . ' requires const PROPS_KEYS list.');
+        }
+
+        if (null !== static::PROPS_REQUIRED) {
+            foreach (static::PROPS_REQUIRED as $prop) {
+                if (null === $props[$prop]) {
+                    var_dump('Exception', $prop, $props, $props[$prop]);
+                    throw new InvalidArgumentException(
+                        sprintf('%s object requires prop `%s` when constructing.', get_called_class(), $prop)
+                    );
+                }
+            }
+        }
+
+        foreach ($props as $key => $val) {
+            if ($this->hasPropKey($key)) {
+                $this->setProp($key, $val);
+            }
+        }
+
+        $id_key_field = static::PROPS_KEYS[0];
+        $id = (int) $this->getProp($id_key_field);
+        if (empty($id)) {
+            throw new InvalidArgumentException(
+                sprintf('%s object requires ID prop `%s` when constructing.', get_called_class(), $id_key_field)
+            );
+        }
+
         // DomainObject::__construct
         parent::__construct($id);
-        foreach (static::PROPS_KEYS as $key) {
-            $this->setProp($key, $props[$key]);
-        }
     }
 
     public function getProp(string $key)
     {
-        $this->assertPropKeyExists($key);
+        $this->assertHasPropKey($key);
 
-        return $this->{$key} ?? null;
+        return $this->{$key};
     }
 
     public function getProps(): array
@@ -42,16 +71,21 @@ trait PropsTrait
 
     public function setProp(string $key, $val): self
     {
-        $this->assertPropKeyExists($key);
+        $this->assertHasPropKey($key);
         $this->{$key} = $val;
 
         return $this;
     }
 
-    public function assertPropKeyExists(string $key): void
+    public function assertHasPropKey(string $key): void
     {
-        if (!in_array($key, static::PROPS_KEYS)) {
+        if (! $this->hasPropKey($key)) {
             throw new OutOfRangeException(sprintf('%s does not have a property key `%s`.', static::class, $key));
         }
+    }
+
+    public function hasPropKey(string $key): bool
+    {
+        return in_array($key, static::PROPS_KEYS);
     }
 }

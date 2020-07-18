@@ -17,7 +17,7 @@ class BaseClassesTest extends TestCase
 
     public function testIdentityMapSetsAndGets()
     {
-        $user = new User(TEST_USER_ID, TEST_USER_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
+        $user = new User(TEST_USER_ID, [TEST_USER_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL]);
         $imap = new IdentityMap();
         $imap->set($user);
         $this->assertTrue($imap->hasObject($user));

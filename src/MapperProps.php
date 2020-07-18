@@ -2,50 +2,38 @@
 
 namespace Vgsite;
 
+use PDOStatement;
+
 /**
  * Extension of Mapper for DomainObjects that use Props trait
  */
 abstract class MapperProps extends Mapper
 {
+    /** The following props should be defined in child class. */
+
+    /** @var string Database table to query */
     protected $db_table;
+    /** @var string Database field that holds the primary key. */
     protected $db_id_field;
-    /** @var PDOStatement */
-    protected $save_statement;
-    /** @var PDOStatement */
-    protected $insert_statement;
 
-    /** @var PDO */
-    protected $pdo;
-
-    /** @var array List of fields for an UPDATE statement; Corresponds to DomainObject props. */
+    /** @var array List of fields for an UPDATE statement; Corresponds to
+     * DomainObject props. */
     protected $save_fields = Array();
 
-    /** @var array List of fields for an INSERT statement; Corresponds to DomainObject props. */
+    /** @var array List of fields for an INSERT statement; Corresponds to
+     * DomainObject props. All fields except primary key will be used by
+     * default. */
     protected $insert_fields = Array();
 
     public function __construct()
     {
         parent::__construct();
-
-        // Parse UPDATE statement fields and build SQL query
-        $save_keys = implode(',', array_map(function ($field) {
-            return "`{$field}`=:{$field}";
-        }, $this->save_fields));
-        $save_sql = "UPDATE `{$this->db_table}` SET {$save_keys} WHERE {$this->db_id_field}=:{$this->db_id_field} LIMIT 1";
-        $this->save_statement = $this->pdo->prepare($save_sql);
-
-        // Parse INSERT statement fields and build SQL query
-        // Uses all props except ID
-        $this->insert_fields = array_diff($this->targetClass()::PROPS_KEYS, [$this->db_id_field]);
-        $insert_keys = implode(',', $this->insert_fields);
-        $insert_vals = implode(',', array_fill(0, count($this->insert_fields), '?'));
-        $this->insert_statement = $this->pdo->prepare("INSERT INTO {$this->db_table} ({$insert_keys}) VALUES ({$insert_vals});");
     }
 
     protected function doCreateObject(array $row): DomainObject
     {
         $class = $this->targetClass();
-        return new $class($row[$this->db_id_field], $row);
+        return new $class($row);
     }
 
     /**
@@ -57,12 +45,23 @@ abstract class MapperProps extends Mapper
      */
     protected function doInsert(DomainObject &$obj): DomainObject
     {
+        $insert_fields = $this->insert_fields ?: array_diff($this->targetClass()::PROPS_KEYS, [$this->db_id_field]);
+        $insert = array();
+        $insert_sql = array();
+        foreach ($insert_fields as $field) {
+            if (is_null($obj->getProp($field))) continue;
+            $insert[$field] = $obj->getProp($field);
+            $insert_sql["`{$field}`"] = ":{$field}";
+        }
+        $sql = sprintf("INSERT INTO {$this->db_table} (%s) VALUES (%s);", implode(',', array_keys($insert_sql)), implode(',', array_values($insert_sql)));
+        $statement = $this->pdo->prepare($sql);
+        
         $input_parameters = array();
-        foreach ($this->insert_fields as $key) {
-            $input_parameters[] = $obj->getProp($key);
+        foreach ($insert as $key => $val) {
+            $statement->bindValue($key, $val);
         }
 
-        $this->insert_statement->execute($input_parameters);
+        $statement->execute();
         $id = $this->pdo->lastInsertId();
         $obj->setId($id);
 
@@ -79,11 +78,18 @@ abstract class MapperProps extends Mapper
      */
     public function save(DomainObject $obj): DomainObject
     {
+        $save_keys = array_reduce($this->save_fields, function ($carry, $field) use ($obj) {
+            if (is_null($obj->getProp($field))) return $carry;
+            return ($carry ? $carry . "," : "") . "`{$field}`=:{$field}";
+        });
+        $sql = "UPDATE `{$this->db_table}` SET {$save_keys} WHERE {$this->db_id_field}=:{$this->db_id_field} LIMIT 1";
+        $statement = $this->pdo->prepare($sql);
+
         foreach ($this->save_fields as $key) {
-            $this->save_statement->bindValue($key, $obj->getProp($key));
+            $statement->bindValue($key, $obj->getProp($key));
         }
-        $this->save_statement->bindValue($this->db_id_field, $obj->getId());
-        $this->save_statement->execute();
+        $statement->bindValue($this->db_id_field, $obj->getId());
+        $statement->execute();
 
         if ($this->logger) $this->logger->info("Update row " . $this->targetClass(), $obj->getProps());
 
@@ -99,9 +105,10 @@ abstract class MapperProps extends Mapper
     public function delete(DomainObject $obj): bool
     {
         $input_parameters = [$obj->getId()];
-        $this->delete_statement->execute($input_parameters);
+        $statement = $this->pdo->prepare("DELETE FROM {$this->db_table} WHERE `{$this->db_id_field}`=?");
+        $statement->execute($input_parameters);
 
-        if (!$this->delete_statement->rowCount()) {
+        if (! $statement->rowCount()) {
             throw new \Exception('Delete statement was executed, but no result recorded.');
         }
 
