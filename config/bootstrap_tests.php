@@ -43,3 +43,4 @@ require_once __DIR__ . '/bootstrap_common.php';
 $_SESSION['logged_in'] = 'true';
 $_SESSION['user_id'] = TEST_USER_ID;
 $current_user = Registry::getMapper(User::class)->findById($_SESSION['user_id']);
+Registry::set('current_user', $current_user);

@@ -86,6 +86,7 @@ abstract class MapperProps extends Mapper
         $statement = $this->pdo->prepare($sql);
 
         foreach ($this->save_fields as $key) {
+            if (is_null($obj->getProp($key))) continue;
             $statement->bindValue($key, $obj->getProp($key));
         }
         $statement->bindValue($this->db_id_field, $obj->getId());

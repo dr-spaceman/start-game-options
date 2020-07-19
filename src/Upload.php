@@ -2,6 +2,7 @@
 
 namespace Vgsite;
 
+use OutOfBoundsException;
 use Vgsite\Exceptions\UploadException;
 
 class Upload extends UploadHandler
@@ -76,7 +77,7 @@ class Upload extends UploadHandler
      * @param  int       $session_id  Corresponding img_session_id, denotes a Collection of images
      * @param  int|null  $category_id Corresponds to an Image category
      * @param  User|null $user        User who uploaded the image
-     * @return Image                  Image object created by preparing and uploading the image
+     * @return Upload                 Upload object created by preparing and uploading the image
      */
     public function prepare(int $session_id, int $category_id, User $user): Upload
     {
@@ -110,13 +111,14 @@ class Upload extends UploadHandler
      
         // Check filename in database and avoid duplicates
         // Rename if necessary
-        $i = 0;
         $t_file_body = $file_body;
-        while (false === is_null(Registry::getMapper(Image::class)->findByName($file_name))) {
-            $i++;
-            $t_file_body = $file_body."_".$i;
-            $file_name = $t_file_body.".".$this->file_src_name_ext;
-        }
+        $filename_exists = false;
+        try {
+            Registry::getMapper(Image::class)->findByName($file_name);
+
+            $t_file_body = $file_body . "_" . rand();
+            $file_name = $t_file_body . "." . $this->file_src_name_ext;
+        } catch (OutOfBoundsException $e) {}
         $file_body = $t_file_body;
 
         // Image construction
@@ -127,7 +129,7 @@ class Upload extends UploadHandler
         $image_params['img_category_id'] = $category_id;
         $image_params['user_id'] = $user->getId();
 
-        $this->image = new Image($image_params['img_id'], $image_params);
+        $this->image = new Image($image_params);
 
         // Make directories
         $dir = Image::IMAGES_DIR.'/'.$this->image->getDir();
@@ -158,21 +160,21 @@ class Upload extends UploadHandler
             throw new UploadException(sprintf("Naming error: Processed filename '%s' not expected '%s'", $this->file_dst_name, $file_name));
         }
 
-        $this->image->img_size = $this->file_src_size;
-        $this->image->img_width = $this->image_src_x;
-        $this->image->img_height = $this->image_src_y;
-        $this->image->img_bits = $this->image_src_bits;
-        $this->image->img_minor_mime = $this->image_src_type;
+        $this->image->setProp('img_size', $this->file_src_size);
+        $this->image->setProp('img_width', $this->image_src_x);
+        $this->image->setProp('img_height', $this->image_src_y);
+        $this->image->setProp('img_bits', $this->image_src_bits);
+        $this->image->setProp('img_minor_mime', $this->image_src_type);
 
         $this->resize(Image::getSize(Image::OPTIMAL), $dir.'/'.Image::OPTIMAL);
         $this->resize(Image::getSize(Image::MEDIUM), $dir.'/'.Image::MEDIUM);
         $this->resize(Image::getSize(Image::SMALL), $dir.'/'.Image::SMALL);
         if (in_array($category_id, Image::CATEGORY_GROUP_BOXART)) {
-            $this->resize(Image::getSize(Image::BOX), $dir.'/'.Image::BOX, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->img_name]);
+            $this->resize(Image::getSize(Image::BOX), $dir.'/'.Image::BOX, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->getProp('img_name')]);
         }
-        $this->resize(Image::getSize(Image::THUMBNAIL), $dir.'/'.Image::THUMBNAIL, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'image_ratio' => false, 'image_ratio_y' => false, 'file_new_name_body' => $this->image->img_name]);
+        $this->resize(Image::getSize(Image::THUMBNAIL), $dir.'/'.Image::THUMBNAIL, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'image_ratio' => false, 'image_ratio_y' => false, 'file_new_name_body' => $this->image->getProp('img_name')]);
         if (in_array($category_id, Image::CATEGORY_GROUP_SCREENSHOT)) {
-            $this->resize(Image::getSize(Image::SCREEN), $dir.'/'.Image::SCREEN, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->img_name]);
+            $this->resize(Image::getSize(Image::SCREEN), $dir.'/'.Image::SCREEN, ['image_convert' => 'png', 'file_new_name_ext' => 'png', 'image_ratio_crop' => 'T', 'file_new_name_body' => $this->image->getProp('img_name')]);
         }
 
         if ($this->copied_file) {

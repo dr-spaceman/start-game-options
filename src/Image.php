@@ -22,14 +22,10 @@ namespace Vgsite;
 //     'original'   => 'or',
 // );
 
-class Image extends DomainObject
+class Image extends DomainObjectProps
 {
-    use PropsTrait;
-    
-    /** Object properties **/
-
     public const PROPS_KEYS = [
-        'img_name', 'img_id', 'img_session_id', 'img_size',
+        'img_id', 'img_name', 'img_session_id', 'img_size',
         'img_width', 'img_height', 'img_bits', 'img_minor_mime', 'img_category_id',
         'img_title', 'img_description', 'sort', 'user_id'
     ];
@@ -38,19 +34,19 @@ class Image extends DomainObject
     public $notfound = true;
 
     /** @var string Session ID for uploads */
-    public $img_session_id;
-    public $img_name = 'unknown.png';
-    public $img_id;
-    public $optimized; // t or f if optimized size exitst
-    private $src;
-    public $img_size = 3810;
-    public $img_width = 601;
-    public $img_height = 601;
-    public $img_minor_mime = "png";
-    public $img_category_id;
-    public $img_title;
-    public $img_description;
-    public $sort;
+    protected $img_session_id;
+    protected $img_name = 'unknown.png';
+    protected $img_id;
+    protected $optimized; // t or f if optimized size exitst
+    protected $src;
+    protected $img_size = 3810;
+    protected $img_width = 601;
+    protected $img_height = 601;
+    protected $img_minor_mime = "png";
+    protected $img_category_id;
+    protected $img_title;
+    protected $img_description;
+    protected $sort;
 
     /** Directory and file locations */
 
@@ -139,24 +135,18 @@ class Image extends DomainObject
         self::LOGO => 'Logos, icons, or other graphic marks or emblems',
     ];
 
-    public function setId(int $id)
-    {
-        $this->img_id = $id;
-        parent::setId($id);
-    }
-
     /**
      * Get the directory within the main /images dir (self::IMAGES_DIR) where this image is stored
      * Appropriate for HTML tags but not for file references (prepend self::IMAGES_DIR for file ref)
      * 
      * @return string Directory name
      */
-    public function getDir()
+    public function getDir(): string
     {
         return substr($this->img_session_id, 12, 7);
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return '/image/'.$this->img_name;
     }
@@ -165,9 +155,10 @@ class Image extends DomainObject
      * Return a file location for local access
      * @param  string  $size           One of the size constants; NULL for original image
      * @param  boolean $absolute_path  Return the location relative to the root directory
+     * 
      * @return string                  Path relative to PUBLIC_DIR __without__ leading forward slash
      */
-    public function getSrc($size=null, $absolute_path=false)
+    public function getSrc($size=null, $absolute_path=false): string
     {
         $base = ($absolute_path ? PUBLIC_DIR.'/' : '') . self::IMAGES_DIR_REL.'/'.$this->getDir();
 
@@ -191,22 +182,14 @@ class Image extends DomainObject
     /**
      * Render HTML tag
      * @param  string $size     One of the sizes in getSrc() like 'op', 'tn', etc.
-     * @param  STRING $rel      Image group
+     * @param  string $rel      Image group
+     * 
      * @return string           HTML
      */
-    public function render($size=self::OPTIMAL, $rel=null, $figstyle=null)
+    public function render($size=self::OPTIMAL, $rel=null, $figstyle=null): string
     {
         $alt = $this->img_title ? htmlsc($this->img_title) : $this->img_name;
         return '<div class="imagefigure"><a href="'.$this->getUrl().'" title="'.$alt.'" rel="'.$rel.'" class="imgupl" data-imgname="'.$this->img_name.'"><img src="'.$this->getSrc($size).'" alt="'.$alt.'"/></a></div>';
-    }
-    
-    /**
-     * Gget info about this image's session group, including previous & next files
-     * @return [type] [description]
-     */
-    public function getSessionData()
-    {
-        return $this->getMapper()->getSession($this->img_session_id);
     }
 
     public static function getCategories(): array

@@ -54,6 +54,8 @@ $_SESSION['user_rank'] = User::GUEST;
 if ($_SESSION['logged_in'] && $_SESSION['user_id']) {
     $mapper = new UserMapper;
     $current_user = $mapper->findById($_SESSION['user_id']);
+    Registry::set('current_user', $current_user);
+
     // Dicouraged old variable references
     $usrname = $current_user->getUsername();
     $usrid = $_SESSION['user_id'];

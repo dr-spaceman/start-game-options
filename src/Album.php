@@ -2,10 +2,8 @@
 
 namespace Vgsite;
 
-class Album extends DomainObject
+class Album extends DomainObjectProps
 {
-    use PropsTrait;
-
     public const PROPS_KEYS = [
         'id', 'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid', 
         'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series', 

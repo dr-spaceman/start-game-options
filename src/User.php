@@ -3,13 +3,10 @@
 namespace Vgsite;
 
 use DateTime;
-use InvalidArgumentException;
 use Respect\Validation\Validator as v;
 
-class User extends DomainObject
+class User extends DomainObjectProps
 {
-    use PropsTrait;
-
 	public const GUEST = 0;
 	public const RESTRICTED = 1;
 	public const MEMBER = 2;

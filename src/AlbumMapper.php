@@ -8,18 +8,12 @@ class AlbumMapper extends MapperProps
 {
     protected $db_table = 'albums';
     protected $db_id_field = 'id';
-    protected $select_statement;
-    protected $select_all_statement;
-    protected $save_statement;
-    protected $insert_statement;
-    protected $delete_statement;
     
     protected $save_fields = [
         'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid',
         'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series',
         'new', 'view', 'media', 'path'
     ];
-    protected $insert_fields = [];
 
     public function findByAlbumId(string $albumid): Album
     {

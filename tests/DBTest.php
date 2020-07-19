@@ -55,7 +55,6 @@ class DBTest extends TestCase
         $this->assertTrue($num_rows > 100);
 
         $foo = self::$pdo->query("SELECT * FROM test WHERE foo='baz_xyz'")->fetchColumn();
-        var_dump($foo);
 
         $stmt = self::$pdo->query("SELECT 1 FROM users WHERE email='foo123@marypoppins69burt.com'");
         $user_exists = $stmt->fetchColumn();

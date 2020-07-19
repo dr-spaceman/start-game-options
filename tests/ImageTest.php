@@ -29,7 +29,7 @@ class ImageTest extends TestCase
     {
         $statement = Registry::get('pdo')->query("SELECT * FROM images LIMIT 1");
         $row = $statement->fetch();
-        $image = new Image($row['img_id'], $row);
+        $image = new Image($row);
         $this->assertInstanceOf(Image::class, $image);
     }
 
@@ -80,11 +80,12 @@ class ImageTest extends TestCase
     /**
      * @depends testImageCollectionConstruction
      */
-    public function testUpload(ImageCollection $collection)
+    public function testUpload(ImageCollection $collection): Upload
     {
         $upload = new Upload(TEST_IMAGE_SRC);
         $upload->setFilename(TEST_ID);
-        $upload->prepare($collection->getId(), Image::OFFICIALART, $GLOBALS['current_user']);
+        $upload->prepare($collection->getId(), Image::OFFICIALART, Registry::get('current_user'));
+        $this->assertEquals(TEST_ID.'.jpg', $upload->image->getProp('img_name'));
         $this->assertFileExists(Image::IMAGES_DIR.'/'.$upload->image->getDir().'/'.TEST_ID.'.jpg');
 
         return $upload;
@@ -93,14 +94,14 @@ class ImageTest extends TestCase
     /**
      * @depends testUpload
      */
-    public function testSaveUpload($upload)
+    public function testSaveUpload(Upload $upload): Image
     {
         $image = $upload->insertImage();
         $this->assertInstanceOf(Image::class, $image);
         $this->assertFileExists($image->getSrc(null, true));
 
         $image_check = self::$mapper->findByName(TEST_ID.'.jpg');
-        $this->assertEquals($image->img_id, $image_check->img_id);
+        $this->assertEquals($image->getId(), $image_check->getId());
 
         return $image;
     }
@@ -160,11 +161,11 @@ class ImageTest extends TestCase
     {
         $this->assertEquals(0, $collection->count);
         $collection->add($image);
-        $this->assertEquals($collection->getId(), $image->img_session_id);
+        $this->assertEquals($collection->getId(), $image->getProp('img_session_id'));
 
         $upload = new Upload(TEST_IMAGE_SRC_BOX);
         $upload->setFilename(TEST_ID.'_box');
-        $upload->prepare($collection->getId(), Image::BOXART, $GLOBALS['current_user']);
+        $upload->prepare($collection->getId(), Image::BOXART, Registry::get('current_user'));
         $image_2 = $upload->insertImage();
         $this->assertFileExists($image_2->getSrc(Image::BOX, true));
 
@@ -229,12 +230,15 @@ class ImageTest extends TestCase
         $mapper = self::$mapper;
 
         foreach($collection->getGenerator() as $image) {
-            $check_image_names[] = $image->img_name;
+            $check_image_names[] = $image->getProp('img_name');
             $this->assertTrue($mapper->delete($image));
         }
 
         foreach ($check_image_names as $img_name) {
-            $this->assertNull($mapper->findByName($img_name));
+            try {
+                $i = $mapper->findByName($img_name);
+                $this->assertNull($i);
+            } catch (OutOfBoundsException $e) {}
         }
 
         $this->assertNull($mapper->findAllBySessionId($collection->getId()));

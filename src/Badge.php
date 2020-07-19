@@ -97,7 +97,8 @@ class Badge extends DomainObject
         $this->mapper->markShown($badge, $user);
     }
     
-    function show($badge_id, $user_id=''){
+    //refactor to render()
+    public function show($badge_id, $user_id=''){
         
         //show a given badge
         //if $user_id, show when user earned it

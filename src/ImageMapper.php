@@ -2,25 +2,24 @@
 
 namespace Vgsite;
 
+use OutOfBoundsException;
+
 class ImageMapper extends MapperProps
 {
     protected $db_table = 'images';
     protected $db_id_field = 'img_id';
-    protected $save_statement;
-    protected $insert_statement;
 
     protected $save_fields = ['img_size', 'img_width', 'img_height', 'img_bits', 
         'img_minor_mime', 'img_category_id', 'img_title', 'img_description', 'sort'];
-    protected $insert_fields = [];
 
-    public function findByName(string $img_name): ?DomainObject
+    public function findByName(string $img_name): DomainObject
     {
         $statement = $this->pdo->prepare("SELECT * FROM images WHERE `img_name`=? LIMIT 1");
         $statement->execute([$img_name]);
         $row = $statement->fetch();
 
-        if (!is_array($row)) {
-            return null;
+        if (empty($row)) {
+            throw new OutOfBoundsException("Image name {$img_name} not found");
         }
 
         return $this->createObject($row);
@@ -54,7 +53,14 @@ class ImageMapper extends MapperProps
         return parent::doInsert($image);
     }
 
-    public function delete(Image $image): bool
+    /**
+     * Delete an image from associated DB rows
+     *
+     * @param Image $image
+     * 
+     * @return boolean
+     */
+    public function delete(DomainObject $image): bool
     {
         try {
             $this->pdo->beginTransaction();
@@ -64,7 +70,8 @@ class ImageMapper extends MapperProps
 
             // Update session table to reflect one less image 
             // or delete the session if this is the only image
-            $session_id = $image->img_session_id;
+            $session_id = $image->getProp('img_session_id');
+
             $sql = sprintf("SELECT COUNT(1) FROM images WHERE img_session_id=%d", $session_id);
             if ($num_sess_imgs = $this->pdo->query($sql)->fetchColumn()) {
                 $sql = sprintf("UPDATE images_sessions SET img_qty = '$num_sess_imgs' WHERE img_session_id = '%d' LIMIT 1", $session_id);
@@ -83,13 +90,13 @@ class ImageMapper extends MapperProps
             $this->pdo->commit();
         } catch (\Exception $e) {
             $this->pdo->rollback();
-            if ($this->logger) $this->logger->error("Delete Image failure: ".$e->getMessage(), ['img_name'=>$image->img_name, 'img_id'=>$image->getId()]);
+            if ($this->logger) $this->logger->error("Delete Image failure: ".$e->getMessage(), ['img_name'=>$image->getProp('img_name'), 'img_id'=>$image->getId()]);
 
             return false;
         }
 
         if ($this->logger) $this->logger->info("Delete Image ", $image->getProps());
-        copy(PUBLIC_DIR.'/'.$image->getSrc(), Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->img_name);
+        copy(PUBLIC_DIR.'/'.$image->getSrc(), Image::DELETED_FILES_DIR.'/'.$image->getId().'_'.$image->getProp('img_name'));
         unlink(PUBLIC_DIR.'/'.$image->getSrc());
         unset($image);
         
