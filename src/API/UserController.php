@@ -2,11 +2,11 @@
 
 namespace Vgsite\API;
 
+use OutOfBoundsException;
 use Respect\Validation\Validator as v;
 use Vgsite\User;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
-use Vgsite\HTTP\Request;
 use Vgsite\Registry;
 use Vgsite\UserMapper;
 
@@ -14,18 +14,22 @@ use Vgsite\UserMapper;
  * @OA\Schema(schema="user",
  *     type="object",
  *     @OA\Property(property="id", type="string"),
- *     @OA\Property(property="title", type="string"),
- *     @OA\Property(property="genre", type="string"),
- *     @OA\Property(property="platforms", type="array", @OA\Items(type="string")),
- *     @OA\Property(property="release", type="string", format="date"),
+ *     @OA\Property(property="username", type="string"),
+ *     @OA\Property(property="email", type="string"),
+ *     @OA\Property(property="verified", type="boolean"),
+ *     @OA\Property(property="gender", type="string"),
+ *     @OA\Property(property="region", type="string", description="enum('us', 'jp', 'eu', 'au')"),
+ *     @OA\Property(property="rank", type="string"),
+ *     @OA\Property(property="avatar", type="string"),
+ *     @OA\Property(property="timezone", type="string"),
  *     @OA\Property(property="href", type="string"),
  * )
  */
 
 class UserController extends Controller
 {
-    const SORTABLE_FIELDS = ['user_id', 'username', 'email', 'rank'];
-    const ALLOWED_FIELDS = ['user_id', 'password', 'username', 'email', 'rank'];
+    const SORTABLE_FIELDS = ['user_id', 'username', 'email', 'rank', 'region', 'timezone'];
+    const ALLOWED_FIELDS = ['user_id', 'password', 'username', 'email', 'rank', 'region', 'timezone'];
     const REQUIRED_FIELDS = ['user_id', 'username'];
     const BASE_URI = API_BASE_URI . '/users';
 
@@ -50,8 +54,11 @@ class UserController extends Controller
             throw new APIInvalidArgumentException('User ID must be numeric', 'id');
         }
 
-        if (! $user = Registry::getMapper('User')->findById($id)) {
-            throw new APINotFoundException();
+        try {
+            $mapper = new UserMapper();
+            $user = $mapper->findById($id);
+        } catch (OutOfBoundsException $e) {
+            throw new APINotFoundException($e);
         }
         
         $results[] = $this->parseRow($user);
@@ -124,6 +131,10 @@ class UserController extends Controller
             $row = array_filter($row, function ($key) use ($fields) {
                 return in_array($key, $fields);
             }, ARRAY_FILTER_USE_KEY);
+        }
+
+        if (isset($row['verified'])) {
+            $row['verified'] = $row['verified'] ? true : false;
         }
 
         // Don't include password unless it's explicitly requested

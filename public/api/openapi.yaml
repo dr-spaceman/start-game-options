@@ -53,6 +53,7 @@ paths:
       parameters:
         -
           required: true
+          minLength: 3
           $ref: '#/components/parameters/q'
         -
           $ref: '#/components/parameters/sort'
@@ -69,6 +70,46 @@ paths:
                   category: { type: string }
                   url: { type: string }
                 type: object
+  '/users/{id}':
+    get:
+      description: 'A user'
+      operationId: 'Vgsite\API\UserController::getOne'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+        -
+          $ref: '#/components/parameters/fields'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '404':
+          description: 'Requested user not found'
+  /users:
+    get:
+      description: 'A list of users'
+      operationId: 'Vgsite\API\UserController::getAll'
+      parameters:
+        -
+          $ref: '#/components/parameters/page'
+        -
+          $ref: '#/components/parameters/per_page'
+        -
+          $ref: '#/components/parameters/sort'
+        -
+          $ref: '#/components/parameters/fields'
+        -
+          $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
 components:
   schemas:
     game:
@@ -89,6 +130,36 @@ components:
         href:
           type: string
       type: object
+    user:
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        verified:
+          type: boolean
+        gender:
+          type: string
+        region:
+          type: enum
+          items:
+            type: string
+            enum:
+              - us
+              - jp
+              - eu
+              - au
+        rank:
+          type: string
+        avatar:
+          type: string
+        timezone:
+          type: string
+        href:
+          type: string
+      type: object
   parameters:
     q:
       name: q
@@ -102,12 +173,14 @@ components:
       description: 'Custom sorted results. Format: `?sort=fieldname[:asc|desc]`'
       schema:
         type: string
+      example: 'release:desc'
     fields:
       name: fields
       in: query
-      description: 'A list of comma-separated fields to include in the response object. For example: `title,release_date,tags`'
+      description: 'A list of comma-separated fields to include in the response object.'
       schema:
         type: string
+      example: 'title,release_date,tags'
     page:
       name: page
       in: query

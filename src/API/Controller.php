@@ -16,19 +16,19 @@ use Respect\Validation\Validator as v;
  */
 abstract class Controller
 {
-    /** @var int Number of items per page */
+    /** @var int Number of items per page. */
     const PER_PAGE = 100;
 
-    /** @var array For `?sort` parameter; List of keys to whitelist */
+    /** @var array For `?sort` parameter; List of keys to whitelist. */
     const SORTABLE_FIELDS = Array();
 
-    /** @var array For ?fields parameter; List of fields to whitelist */
+    /** @var array For ?fields parameter; List of fields to whitelist. */
     const ALLOWED_FIELDS = Array();
 
-    /** @var array For ?fields parameter; List of fields to require */
+    /** @var array List of fields to require in the collection object. */
     const REQUIRED_FIELDS = Array();
 
-    /** @var string The base URI for this constroller; Used to make links */
+    /** @var string The base URI for this controller; Used to make links. */
     const BASE_URI = API_BASE_URI . '/_';
 
     /** @var Request */
