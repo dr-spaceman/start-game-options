@@ -27,7 +27,7 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
  * @OA\Parameter(
  *     name="fields",
  *     in="query",
- *     description="A list of comma-separated fields to include in the response object.
+ *     description="A list of comma-separated fields to include in the response object.",
  *     example="title,release_date,tags",
  *     @OA\Schema(type="string")
  * )
@@ -93,24 +93,18 @@ try {
 
 	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 
-	switch ($base) {
-		case 'search':
-			$controller = new Vgsite\API\SearchController($request);
-			$controller->processRequest();
-			break;
-
-		case 'games':
-			$controller = new Vgsite\API\GameController($request);
-			$controller->processRequest();
-			break;
-
-		case 'users':
-			$controller = new Vgsite\API\UserController($request);
-			$controller->processRequest();
-			break;
-			
-		default:
-			throw new APINotFoundException();
+	$controllers = [
+		'search' => 'Vgsite\API\SearchController',
+		'games' => 'Vgsite\API\GameController',
+		'users' => 'Vgsite\API\UserController',
+		'albums' => 'Vgsite\API\AlbumController',
+	];
+	
+	if ($controller = $controllers[$base]) {
+		$controller = new $controller($request);
+		$controller->processRequest();
+	} else {
+		throw new APINotFoundException();
 	}
 } catch (Exception | Error $e) {
 	Registry::get('logger')->warning($e);

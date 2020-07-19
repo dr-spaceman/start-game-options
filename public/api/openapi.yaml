@@ -6,6 +6,46 @@ servers:
   -
     url: 'http://vgsite/api'
 paths:
+  '/albums/{id}':
+    get:
+      description: 'An album'
+      operationId: 'Vgsite\API\AlbumController::getOne'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+        -
+          $ref: '#/components/parameters/fields'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/album'
+        '404':
+          description: 'Requested album not found'
+  /albums:
+    get:
+      description: 'A list of albums'
+      operationId: 'Vgsite\API\AlbumController::getAll'
+      parameters:
+        -
+          $ref: '#/components/parameters/page'
+        -
+          $ref: '#/components/parameters/per_page'
+        -
+          $ref: '#/components/parameters/sort'
+        -
+          $ref: '#/components/parameters/fields'
+        -
+          $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/album'
   '/games/{id}':
     get:
       description: 'A game'
@@ -112,6 +152,29 @@ paths:
                 $ref: '#/components/schemas/user'
 components:
   schemas:
+    album:
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        keywords:
+          type: boolean
+        publisher:
+          type: string
+        cid:
+          type: string
+        albumid:
+          type: string
+        release:
+          type: string
+        price:
+          type: string
+        href:
+          type: string
+      type: object
     game:
       properties:
         id:
@@ -143,14 +206,8 @@ components:
         gender:
           type: string
         region:
-          type: enum
-          items:
-            type: string
-            enum:
-              - us
-              - jp
-              - eu
-              - au
+          description: 'enum(''us'', ''jp'', ''eu'', ''au'')'
+          type: string
         rank:
           type: string
         avatar:
