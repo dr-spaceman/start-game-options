@@ -2,6 +2,8 @@
 
 namespace Vgsite;
 
+use PDOStatement;
+
 /**
  * Handle database queries and logging, object storage into IdentityMap
  */
@@ -12,21 +14,6 @@ abstract class Mapper
 
     /** @var string The primary key in database */
     protected $db_id_field = 'id';
-    
-    /** @var string */
-    protected $select_sql = "SELECT * FROM `%s` WHERE `%s`=? LIMIT 1";
-    /** @var PDOStatement */
-    protected $select_statement;
-    /** @var string */
-    protected $select_all_sql = "SELECT * FROM `%s`";
-    /** @var PDOStatement */
-    protected $select_all_statement;
-    /** @var PDOStatement */
-    protected $save_statement;
-    /** @var PDOStatement */
-    protected $insert_statement;
-    /** @var PDOStatement */
-    protected $delete_statement;
 
     /** @var PDO Registry object */
     protected $pdo;
@@ -42,9 +29,11 @@ abstract class Mapper
         $this->pdo = Registry::get('pdo');
         $this->logger = Registry::get('logger');
         $this->identity_map = new IdentityMap();
+    }
 
-        $this->select_statement = $this->pdo->prepare(sprintf($this->select_sql, $this->db_table, $this->db_id_field));
-        $this->select_all_statement = $this->pdo->prepare(sprintf($this->select_all_sql, $this->db_table));
+    private function selectStatement(): PDOStatement
+    {
+        return $this->pdo->prepare("SELECT * FROM `{$this->db_table}` WHERE `{$this->db_id_field}`=? LIMIT 1");
     }
 
     public function findById(int $id, $get_identity_map=true): DomainObject
@@ -53,22 +42,43 @@ abstract class Mapper
             return $this->identity_map->getObject($id);
         }
 
-        $this->select_statement->execute([$id]);
-        $row = $this->select_statement->fetch();
-        $this->select_statement->closeCursor();
+        $statement = $this->selectStatement();
+        $statement->execute([$id]);
+        $row = $statement->fetch();
+        $statement->closeCursor();
 
         if (!is_array($row)) {
-            throw new \OutOfBoundsException("User with id `{$id}` could not be found.");
+            throw new \OutOfBoundsException("{$this->db_table} with {$this->db_id_field} `{$id}` could not be found.");
         }
 
         return $this->createObject($row);
     }
 
-    public function findAll(): Collection
-    {
-        $this->select_all_statement->execute([]);
+    public function findAll(
+        string $search = null,
+        string $sort = null,
+        int $limit_min = null,
+        int $limit_max = null,
+        array $input_parameters = []
+    ): Collection {
+        if ($search) {
+            $search = "WHERE {$search}";
+        }
+
+        if (null === $sort) {
+            $sort = $this->db_id_field;
+        }
+
+        if (! is_null($limit_min) && !is_null($limit_max)) {
+            $limit = "LIMIT {$limit_min}, {$limit_max}";
+        }
+
+        $sql = "SELECT * FROM {$this->db_table} {$search} ORDER BY {$sort} {$limit}";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($input_parameters);
+
         $rows = array();
-        while ($row = $this->select_all_statement->fetch()) {
+        while ($row = $statement->fetch()) {
             $rows[] = $row;
         }
 

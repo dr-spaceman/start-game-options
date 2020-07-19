@@ -2,19 +2,22 @@
 
 namespace Vgsite;
 
+use PDOStatement;
+
 class BadgeMapper extends Mapper
 {
     protected $db_table = 'badges';
     protected $db_id_field = 'badge_id';
-    
-    /** @var PDOStatement */
-    protected $select_all_statement;
 
-    public function __construct()
-    {
-        parent::__construct();
-        
-        $this->select_all_statement = $this->pdo->prepare("SELECT * FROM badges ORDER BY `sort`");
+    public function findAll(
+        string $search = null,
+        string $sort = null,
+        int $limit_min = null,
+        int $limit_max = null,
+        array $input_parameters = []
+    ): Collection {
+        $sort = $sort ?? 'sort';
+        return parent::findAll($search, $sort, $limit_min, $limit_max, $input_parameters);
     }
 
     public function findByName(string $name): ?DomainObject

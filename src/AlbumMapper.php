@@ -58,9 +58,4 @@ class AlbumMapper extends MapperProps
     {
         return new AlbumCollection($rows, $this);
     }
-
-    public function selectStatement(): \PDOStatement
-    {
-        return $this->select_statement;
-    }
 }
