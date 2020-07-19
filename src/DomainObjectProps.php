@@ -1,4 +1,5 @@
 <?php
+
 namespace Vgsite;
 
 use InvalidArgumentException;
@@ -7,32 +8,24 @@ use OutOfRangeException;
 /**
  * Implements methods to manage object properties.
  */
-trait PropsTrait
+abstract class DomainObjectProps extends DomainObject
 {
     /** @var array Keys for loaded from DB table via mapper; The first key should by Promary Key; Vals set in constructor. */
-    // public const PROPS_KEYS = [];
+    public const PROPS_KEYS = [];
 
     /** @var array List of props required to have scalar values for object construction; Throws exception if not given. */
-    // public const PROPS_REQUIRED = [];
+    public const PROPS_REQUIRED = [];
 
     /**
      * @param array $props Multidimentional array with keys and values corresponding to a database table.
      */
-    public function __construct(array $props) {
+    public function __construct(array $props)
+    {
         if (empty(static::PROPS_KEYS)) {
             throw new \Exception(get_called_class() . ' requires const PROPS_KEYS list.');
         }
 
-        if (null !== static::PROPS_REQUIRED) {
-            foreach (static::PROPS_REQUIRED as $prop) {
-                if (null === $props[$prop]) {
-                    var_dump('Exception', $prop, $props, $props[$prop]);
-                    throw new InvalidArgumentException(
-                        sprintf('%s object requires prop `%s` when constructing.', get_called_class(), $prop)
-                    );
-                }
-            }
-        }
+        $this->assertRequiredProps($props);
 
         foreach ($props as $key => $val) {
             if ($this->hasPropKey($key)) {
@@ -40,13 +33,7 @@ trait PropsTrait
             }
         }
 
-        $id_key_field = static::PROPS_KEYS[0];
-        $id = (int) $this->getProp($id_key_field);
-        if (empty($id)) {
-            throw new InvalidArgumentException(
-                sprintf('%s object requires ID prop `%s` when constructing.', get_called_class(), $id_key_field)
-            );
-        }
+        $id = $this->parseIdProp();
 
         // DomainObject::__construct
         parent::__construct($id);
@@ -79,7 +66,7 @@ trait PropsTrait
 
     public function assertHasPropKey(string $key): void
     {
-        if (! $this->hasPropKey($key)) {
+        if (!$this->hasPropKey($key)) {
             throw new OutOfRangeException(sprintf('%s does not have a property key `%s`.', static::class, $key));
         }
     }
@@ -87,5 +74,31 @@ trait PropsTrait
     public function hasPropKey(string $key): bool
     {
         return in_array($key, static::PROPS_KEYS);
+    }
+
+    public function assertRequiredProps(array $props): void
+    {
+        if (null !== static::PROPS_REQUIRED) {
+            foreach (static::PROPS_REQUIRED as $prop) {
+                if (null === $props[$prop]) {
+                    throw new InvalidArgumentException(
+                        sprintf('%s object requires prop `%s` when constructing.', get_called_class(), $prop)
+                    );
+                }
+            }
+        }
+    }
+
+    public function parseIdProp(): int
+    {
+        $id_key_field = static::PROPS_KEYS[0];
+        $id = (int) $this->getProp($id_key_field);
+        if (empty($id)) {
+            throw new InvalidArgumentException(
+                sprintf('%s object requires ID prop `%s` when constructing.', get_called_class(), $id_key_field)
+            );
+        }
+
+        return $id;
     }
 }
