@@ -98,6 +98,7 @@ try {
 		'games' => 'Vgsite\API\GameController',
 		'users' => 'Vgsite\API\UserController',
 		'albums' => 'Vgsite\API\AlbumController',
+		'badges' => 'Vgsite\API\BadgeController',
 	];
 	
 	if ($controller = $controllers[$base]) {

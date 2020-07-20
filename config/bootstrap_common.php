@@ -23,7 +23,7 @@ $dsn = sprintf(
     getenv('DB_PORT'),
 );
 try {
-    $pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options);
+    $pdo = new PDO($dsn, getenv('DB_USERNAME'), getenv('DB_PASSWORD'), $db_options_default);
     // Use the class extension MyPDOStatement instead of PDOStatement for statements
     $pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [MyPDOStatement::class]);
     Registry::set('pdo', $pdo);

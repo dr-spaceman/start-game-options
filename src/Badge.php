@@ -31,12 +31,24 @@ class Badge extends DomainObject
     public function __construct(int $badge_id, string $name, string $description, int $value=1, int $sort=0) {
         $this->name = $name;
         $this->description = $description;
-        $this->value = ($this->getValueName[$value] ? $value : null);
+        $this->assertValueExists($value);
+        $this->value = $value;
         $this->sort = $sort;
 
         $this->mapper = new BadgeMapper();
 
         parent::__construct($badge_id);
+    }
+
+    public function getProps(): array
+    {
+        return [
+            'badge_id' => $this->getId(),
+            'name' => $this->name,
+            'description' => $this->description,
+            'value' => $this->value,
+            'sort' => $this->sort,
+        ];
     }
 
     /**
@@ -143,10 +155,15 @@ class Badge extends DomainObject
      */
     public static function getValueName(int $value): string
     {
-        if (!isset(static::$values[$value])) {
-            throw new \InvalidArgumentException('Value "'.$value.'" is not defined, use one of: '.implode(', ', array_keys(static::$values)));
-        }
+        self::assertValueExists($value);
 
         return static::$values[$value];
+    }
+
+    private static function assertValueExists(int $value): void
+    {
+        if (!isset(static::$values[$value])) {
+            throw new \InvalidArgumentException('Value "' . $value . '" is not defined, use one of: ' . implode(', ', array_keys(static::$values)));
+        }
     }
 }
