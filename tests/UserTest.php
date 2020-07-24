@@ -11,6 +11,7 @@ use Vgsite\UserCollection;
 
 class UserTest extends TestCase
 {
+    /** @var UserMapper */
     protected static $mapper;
 
     public static function setUpBeforeClass(): void
@@ -37,6 +38,23 @@ class UserTest extends TestCase
     {
         $mapper = self::$mapper;
         $this->assertInstanceOf(UserMapper::class, $mapper);
+    }
+
+    public function testUserCRUDLifecycle()
+    {
+        $user = new User([
+            'user_id' => -1,
+            'username' => 'test_'.uniqid(),
+            'email' => uniqid().'@foo.com',
+            'password' => 'foo',
+        ]);
+        $user = self::$mapper->insert($user);
+        $this->assertGreaterThanOrEqual(1, $user->getId());
+
+        $user->setUsername('test_' . uniqid());
+        $this->assertEquals($user, self::$mapper->save($user));
+
+        $this->assertTrue(self::$mapper->delete($user));
     }
 
     public function testUserRanksAreWorking()
@@ -102,6 +120,13 @@ class UserTest extends TestCase
         $user->setRank(User::MEMBER);
         $user->setEmail(TEST_USER_EMAIL);
         $mapper->save($user);
+    }
+
+    public function testUserConfirmInvalidPropSetFails_Username()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $user = self::$mapper->findByEmail(TEST_USER_EMAIL);
+        $user->setUsername(' invalid**username ');
     }
 
     public function testUserConfirmInvalidPropSetFails_Email()
@@ -214,8 +239,45 @@ class UserTest extends TestCase
     /**
      * @depends testInsertUser
      */
-    public function testDeleteUser($user)
+    public function testChangeUsername(User $user)
     {
+        $sql = "DELETE FROM `users_change_username` WHERE user_id=?";
+        $statement = Registry::get('pdo')->prepare($sql);
+        $this->assertTrue($statement->execute([$user->getId()]));
+
+        $user->setUsername('test_changed');
+        $user = self::$mapper->save($user);
+
+        return $user;
+    }
+
+    public function testChangeUsernameFailsWhenChangingToPreviouslyChanged()
+    {
+        $this->expectException(Exception::class);
+        $user = self::$mapper->findById(TEST_USER_ID);
+        $user->setUsername('test_changed');
+        self::$mapper->save($user);
+    }
+
+    /**
+     * @depends testChangeUsername
+     */
+    public function testChangeUsernameFailsOnTooFrequentChange(User $user)
+    {
+        $this->expectException(Exception::class);
+        $user->setUsername('test_'.uniqid());
+        self::$mapper->save($user);
+    }
+
+    /**
+     * @depends testInsertUser
+     */
+    public function testDeleteUser(User $user)
+    {
+        $this->assertTrue(($user->getId() > -1));
         $this->assertTrue(self::$mapper->delete($user));
+
+        $this->expectException(OutOfBoundsException::class);
+        self::$mapper->findById($user->getId(), false);
     }
 }

@@ -36,19 +36,25 @@ class User extends DomainObjectProps
         'region', 'rank', 'avatar', 'timezone'
     ];
     public const PROPS_REQUIRED = ['user_id', 'username', 'password', 'email'];
+    protected $user_id;
     protected $username;
     protected $password;
     protected $email;
-    protected $rank = self::GUEST;
+    protected $rank = self::MEMBER;
     protected $gender;
     protected $region;
     protected $avatar;
     protected $timezone;
-    protected $verified = '0';
+    protected $verified = 0;
+
+    public function setUser_id(int $id): User
+    {
+        return $this->setId($id);
+    }
 
     public function setUsername(string $username): User
     {
-        if (! v::regex('/[a-zA-Z0-9_\-]/')->length(2, 25)->validate($username)) {
+        if (preg_match('/[^a-zA-Z0-9-_]/', $username) || ! v::length(2, 25)->validate($username)) {
             throw new InvalidArgumentException("Username `{$username}` is not valid; Usernames must contain only: letters digits - _; and between 2 and 25 chatacters in length.");
         }
 

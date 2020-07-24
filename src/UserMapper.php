@@ -2,6 +2,8 @@
 
 namespace Vgsite;
 
+use Carbon\Carbon;
+use OutOfBoundsException;
 use Vgsite\Exceptions\UserException;
 
 class UserMapper extends MapperProps
@@ -75,5 +77,52 @@ class UserMapper extends MapperProps
         }
 
         return $row;
+    }
+
+    /**
+     * @param User $obj
+     * @return User
+     */
+    public function save(DomainObject $obj): DomainObject
+    {
+        // Check for major changes first
+        $user_check = $this->findById($obj->getId(), false);
+        if ($user_check->getUsername() != $obj->getUsername()) {
+            $statement = $this->pdo->prepare("SELECT (1) FROM `users_change_username` WHERE username_old=? AND user_id !=?");
+            $statement->execute([$obj->getUsername(), $obj->getId()]);
+            if ($statement->fetchColumn()) {
+                throw new OutOfBoundsException("Username `{$obj->getUsername()}` has been previously used.");
+            }
+
+            $statement = $this->pdo->prepare("SELECT * FROM `users_change_username` WHERE user_id=? ORDER BY date_changed DESC");
+            $statement->execute([$obj->getId()]);
+            if ($row = $statement->fetch()) {
+                $last_changed = new Carbon($row['date_changed']);
+                if ($last_changed->diffInDays(Carbon::now()) < 30) {
+                    throw new \Exception("Account username has been changed recently and cannot be changed right now.");
+                }
+            }
+
+            $new_username = true;
+            $change_username_message = "User changed username from `{$user_check->getUsername()}` to `{$obj->getUsername()}`";
+        }
+
+        if ($user_check->getEmail() != $obj->getEmail()) {
+            
+        }
+
+        $obj = parent::save($obj);
+
+        if ($new_username) {
+            $sql = "INSERT INTO `users_change_username` (`user_id`, `username_old`, `username_new`) VALUES (?, ?, ?);";
+            $statement = $this->pdo->prepare($sql);
+            if (! $statement->execute([$obj->getId(), $obj->getUsername(), $user_check->getUsername()])) {
+                if ($this->logger) $this->logger->error("Could not INSERT INTO users_change_username table on username change");
+            }
+
+            if ($this->logger) $this->logger->notice($change_username_message, $obj->getProps());
+        }
+
+        return $obj;
     }
 }
