@@ -10,7 +10,7 @@ use OutOfRangeException;
  */
 abstract class DomainObjectProps extends DomainObject
 {
-    /** @var array Keys for loaded from DB table via mapper; The first key should by Promary Key; Vals set in constructor. */
+    /** @var array Keys loaded from DB table via mapper; The first key should by Primary Key; Vals set in constructor. */
     public const PROPS_KEYS = [];
 
     /** @var array List of props required to have scalar values for object construction; Throws exception if not given. */

@@ -46,6 +46,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/album'
+  '/badges/{id}':
+    get:
+      description: 'A badge'
+      operationId: 'Vgsite\API\BadgeController::getOne'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+        -
+          $ref: '#/components/parameters/fields'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/badge'
+        '404':
+          description: 'Requested badge not found'
+  /badges:
+    get:
+      description: 'A list of badges'
+      operationId: 'Vgsite\API\BadgeController::getAll'
+      parameters:
+        -
+          $ref: '#/components/parameters/sort'
+        -
+          $ref: '#/components/parameters/fields'
+        -
+          $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/badge'
   '/games/{id}':
     get:
       description: 'A game'
@@ -175,19 +211,72 @@ components:
         href:
           type: string
       type: object
-    game:
+    badge:
       properties:
         id:
           type: string
+        name:
+          type: string
+        description:
+          type: string
+        value:
+          type: boolean
+        value_description:
+          type: string
+        sort:
+          type: string
+      type: object
+    game:
+      properties:
+        id:
+          type: integer
         title:
           type: string
-        genre:
+        title_sort:
+          description: 'A modified title better used for natural sorting'
           type: string
+        keywords:
+          type: string
+        description:
+          type: string
+        created:
+          description: 'When the database entry was created'
+          type: string
+          format: datetime
+        modified:
+          description: 'When the database entry was modified'
+          type: string
+          format: datetime
+        contributors:
+          description: 'List of user IDs of users who helped build the data entry'
+          type: array
+          items:
+            type: integer
+        genres:
+          type: array
+          items:
+            type: string
+        developers:
+          type: array
+          items:
+            type: string
+        series:
+          type: array
+          items:
+            type: string
         platforms:
           type: array
           items:
             type: string
+        platform:
+          description: 'Main platform'
+          type: string
         release:
+          description: 'Main platform release date'
+          type: string
+          format: date
+        first_release:
+          description: 'Earliest release for any platform or region'
           type: string
           format: date
         href:

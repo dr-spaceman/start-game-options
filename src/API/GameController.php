@@ -11,11 +11,21 @@ use Vgsite\HTTP\Request;
 /**
  * @OA\Schema(schema="game",
  *     type="object",
- *     @OA\Property(property="id", type="string"),
+ *     @OA\Property(property="id", type="integer"),
  *     @OA\Property(property="title", type="string"),
- *     @OA\Property(property="genre", type="string"),
+ *     @OA\Property(property="title_sort", type="string", description="A modified title better used for natural sorting"),
+ *     @OA\Property(property="keywords", type="string"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="created", type="string", format="datetime", description="When the database entry was created"),
+ *     @OA\Property(property="modified", type="string", format="datetime", description="When the database entry was modified"),
+ *     @OA\Property(property="contributors", type="array", @OA\Items(type="integer"), description="List of user IDs of users who helped build the data entry"),
+ *     @OA\Property(property="genres", type="array", @OA\Items(type="string")),
+ *     @OA\Property(property="developers", type="array", @OA\Items(type="string")),
+ *     @OA\Property(property="series", type="array", @OA\Items(type="string")),
  *     @OA\Property(property="platforms", type="array", @OA\Items(type="string")),
- *     @OA\Property(property="release", type="string", format="date"),
+ *     @OA\Property(property="platform", type="string", description="Main platform"),
+ *     @OA\Property(property="release", type="string", format="date", description="Main platform release date"),
+ *     @OA\Property(property="first_release", type="string", format="date", description="Earliest release for any platform or region"),
  *     @OA\Property(property="href", type="string"),
  * )
  */
@@ -24,8 +34,9 @@ class GameController extends Controller
 {
     private $pdo;
 
-    const SORTABLE_FIELDS = ['id', 'title', 'genre', 'platforms', 'release'];
-
+    const SORTABLE_FIELDS = ['id', 'title', 'release', 'first_release', 'platform'];
+    const ALLOWED_FIELDS = ['id', 'title', 'genres', 'developers', 'series', 'platforms', 'platform', 'release', 'first_release'];
+    const REQUIRED_FIELDS = ['id', 'title'];
     const BASE_URI = API_BASE_URI . '/games';
 
     public function __construct(Request $request)
@@ -56,9 +67,7 @@ class GameController extends Controller
             throw new APIInvalidArgumentException('Game ID must be numeric', 'id');
         }
 
-        $fields = $this->parseQuery('fields', '*');
-
-        $sql = "SELECT {$fields}, `id` FROM pages_games WHERE `id`=:id LIMIT 1";
+        $sql = "SELECT * FROM pages WHERE `id`=:id LIMIT 1";
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['id' => $id]);
         $results = [];
@@ -92,18 +101,15 @@ class GameController extends Controller
     {
         $page = $this->parseQuery('page', 1);
         $per_page = $this->parseQuery('per_page', static::PER_PAGE);
-        $sort_sql = $this->parseQuery('sort', '`release` ASC');
-        // [$sort, $sort_by] = $this->parseSortSql($sort_sql);
-        $fields = $this->parseQuery('fields', '*');
         $query = $this->parseQuery('q', '');
-        $search = $query ? "AND `title` LIKE CONCAT('%', :query, '%')" : '';
+        $search = $query ? "AND `title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')" : '';
         
-        $statement = $this->pdo->prepare("SELECT count(1) FROM pages_games WHERE `release` IS NOT NULL {$search}");
+        $statement = $this->pdo->prepare("SELECT count(1) FROM pages WHERE `type`='game' AND `redirect_to`='' {$search}");
         $statement->execute(['query' => $query]);
         $num_rows = $statement->fetchColumn();
         [$limit_min, $limit_max, $num_pages] = $this->convertPageToLimit($page, $per_page, $num_rows);
 
-        $sql = "SELECT {$fields}, `id` FROM pages_games WHERE `release` IS NOT NULL {$search} ORDER BY {$sort_sql} LIMIT {$limit_min}, {$limit_max}";
+        $sql = "SELECT * FROM pages WHERE `type`='game' AND `redirect_to`='' {$search} ORDER BY `title` LIMIT {$limit_min}, {$limit_max}";
         $statement = $this->pdo->prepare($sql);
         $statement->execute(['query' => $query]);
         $results = [];
@@ -115,6 +121,21 @@ class GameController extends Controller
             throw new APINotFoundException();
         }
 
+        $sort_sql = $this->parseQuery('sort', "`title_sort` ASC");
+        [$sort, $sort_by] = $this->parseSortSql($sort_sql);
+        usort($results, function ($a, $b) use ($sort, $sort_by, $query) {
+            if ($sort == 'title_sort') {
+                // Prioritize results with exact matches in the title
+                if (strtolower($a['title']) == strtolower($query)) return -1;
+                if (strtolower($b['title']) == strtolower($query)) return 1;
+            }
+
+            if ($sort_by == 'DESC') {
+                return strcmp($b[$sort], $a[$sort]);
+            }
+            return strcmp($a[$sort], $b[$sort]);
+        });
+
         $links = $this->buildLinks($page, $num_pages);
 
         $this->setPayload($results, $links)->render(200);
@@ -122,8 +143,22 @@ class GameController extends Controller
 
     public function parseRow(array $row): array
     {
-        $row['platforms'] = explode((', '), $row['platform']);
-        unset($row['platform']);
+        $row['contributors'] = json_decode($row['contributors'], true) ?: [];
+        $row['id'] = (int) $row['id'];
+
+        $index_data = json_decode($row['index_data'], true) ?: [];
+        $row = array_merge($row, $index_data);
+        $row['links']['page'] = pageURL($row['title'], 'game');
+        $row['links']['box_art'] = $row['rep_image'];
+        unset($row['index_data'], $row['rep_image'], $row['rep_image'], $row['background_image'], $row['redirect_to'], $row['creator'], $row['modifier'], $row['featured']);
+        
+        if ($fields_sql = $this->parseQuery('fields', '')) {
+            $fields = $this->parseFieldsSql($fields_sql);
+            $row = array_filter($row, function($val, $key) use ($fields) {
+                return in_array($key, $fields);
+            }, ARRAY_FILTER_USE_BOTH);
+        }
+        
         $row['href'] = $this->parseLink($row['id']);
 
         return $row;
