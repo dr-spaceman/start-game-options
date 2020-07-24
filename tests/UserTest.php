@@ -169,7 +169,7 @@ class UserTest extends TestCase
         $mapper = self::$mapper;
         $rows = array( 
             array('user_id'=>TEST_USER_ID, 'username'=>TEST_USER_USERNAME, 'password'=>TEST_USER_PASSWORD, 'email'=>TEST_USER_EMAIL),
-            array('user_id'=>-1, 'username'=>'test_'.TEST_ID, 'email'=>'email', 'password'=>'password'),
+            array('user_id'=>-1, 'username'=>'test_'.TEST_ID, 'email'=>'email@email.com', 'password'=>'password'),
         );
         $collection = new UserCollection($rows, $mapper);
         $this->assertInstanceOf(UserCollection::class, $collection);

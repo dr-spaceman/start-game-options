@@ -43,6 +43,11 @@ abstract class DomainObjectProps extends DomainObject
     {
         $this->assertHasPropKey($key);
 
+        $method = 'get' . ucfirst($key);
+        if (method_exists($this, $method)) {
+            return $this->$method($key);
+        }
+
         return $this->{$key};
     }
 
@@ -59,6 +64,12 @@ abstract class DomainObjectProps extends DomainObject
     public function setProp(string $key, $val): self
     {
         $this->assertHasPropKey($key);
+
+        $method = 'set' . ucfirst($key);
+        if (method_exists($this, $method)) {
+            return $this->$method($val);
+        }
+
         $this->{$key} = $val;
 
         return $this;

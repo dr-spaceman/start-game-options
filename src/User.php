@@ -3,6 +3,7 @@
 namespace Vgsite;
 
 use DateTime;
+use InvalidArgumentException;
 use Respect\Validation\Validator as v;
 
 class User extends DomainObjectProps
@@ -45,14 +46,20 @@ class User extends DomainObjectProps
     protected $timezone;
     protected $verified = '0';
 
+    public function setUsername(string $username): User
+    {
+        if (! v::regex('/[a-zA-Z0-9_\-]/')->length(2, 25)->validate($username)) {
+            throw new InvalidArgumentException("Username `{$username}` is not valid; Usernames must contain only: letters digits - _; and between 2 and 25 chatacters in length.");
+        }
+
+        $this->username = $username;
+
+        return $this;
+    }
+
     public function getUsername(): string
     {
         return $this->username;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
     }
 
     public function setPassword(string $password, $hash=false): User
@@ -78,18 +85,25 @@ class User extends DomainObjectProps
         $this->setPassword($password, true);
     }
 
-    public function getEmail(): string
+    public function getPassword(): string
     {
-        return $this->email;
+        return $this->password;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): User
     {
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        if (! v::email()->validate($email)) {
             throw new \InvalidArgumentException("Email `{$email}` couldn't be validated");
         }
 
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
     }
 
     public function getRank(): int
@@ -97,23 +111,25 @@ class User extends DomainObjectProps
         return (int) $this->rank;
     }
 
-    public function setRank(int $rank): void
+    public function setRank(int $rank): User
     {
         if (! isset(static::$ranks[$rank])) {
             throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
         }
 
         $this->rank = $rank;
+
+        return $this;
     }
 
-    public function getAvatar(): Avatar
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function getAvatarObject(): Avatar
     {
         return new Avatar($this->data['avatar']);
-    }
-
-    public function setAvatar(string $avatar): void
-    {
-        $this->avatar = $avatar;
     }
 
     public static function getRanks(): array
@@ -124,10 +140,53 @@ class User extends DomainObjectProps
     public static function getRankName(int $rank): string
     {
         if (! isset(static::$ranks[$rank])) {
-            throw new \InvalidArgumentException('Rank "'.$rank.'" is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
+            throw new \InvalidArgumentException('Rank `'.$rank.'` is not defined, use one of: '.implode(', ', array_keys(static::$ranks)));
         }
 
         return static::$ranks[$rank];
+    }
+
+    public function setGender($gender=''): User
+    {
+        if (empty($gender)) {
+            $gender = 'they';
+        }
+        
+        $genders = ['she', 'he', 'they', 'it', 'female', 'male', 'asexual'];
+        if (! v::in($genders)->validate($gender)) {
+            throw new InvalidArgumentException("Gender `{$gender}` not valid. Gender must be one of: " . implode(', ', $genders));
+        }
+
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function setRegion($region='us'): User
+    {
+        v::in(['us', 'jp', 'eu', 'au'])->assert($region);
+
+        $this->region = $region;
+
+        return $this;
+    }
+
+    public function setTimezone($timezone=''): User
+    {
+        if (empty($timezone)) {
+            $timezone = 'America/Los_Angeles';
+        }
+
+        $raw = file_get_contents(ROOT_DIR . '/assets/data/timezones.json');
+        $timezones = json_decode($raw, true);
+
+        if (! array_key_exists($timezone, $timezones)) {
+            throw new InvalidArgumentException("Timezone `{$timezone}` is not a valid option.");
+        }
+
+        $this->timezone = $timezone;
+
+        return $this;
     }
 
     public function getLastLogin(): DateTime
