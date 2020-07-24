@@ -62,6 +62,10 @@ const Search = () => {
         type: 'RESET'
       });
       return;
+    }
+
+    if (searchTerm.length < 3) {
+      return;
     } // Mark search form as initializing/loading
 
 
@@ -131,8 +135,8 @@ function SearchResult(props) {
     item
   } = props;
   return /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("a", {
-    href: item.url
-  }, /*#__PURE__*/React.createElement("dfn", null, item.title), /*#__PURE__*/React.createElement("span", null, "(", item.type, ")")));
+    href: item.links.page
+  }, /*#__PURE__*/React.createElement("dfn", null, item.title), " ", /*#__PURE__*/React.createElement("span", null, "(", item.type, ")")));
 }
 
 ReactDOM.render(React.createElement(Search), document.getElementById('search'));

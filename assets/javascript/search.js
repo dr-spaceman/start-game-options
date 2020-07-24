@@ -64,6 +64,10 @@ const Search = () => {
             return;
         }
 
+        if (searchTerm.length < 3) {
+            return;
+        }
+
         // Mark search form as initializing/loading
         dispatchResults({ type: 'SEARCH_FETCH_INIT' });
         
@@ -85,7 +89,7 @@ const Search = () => {
                 })
             }
         })
-        .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }))
+        .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }));
     }, [searchTerm]);
     
     return (
@@ -127,9 +131,8 @@ function SearchResult(props) {
 
     return (
         <li>
-            <a href={item.url}>
-                <dfn>{item.title}</dfn> 
-                <span>({item.type})</span>
+            <a href={item.links.page}>
+                <dfn>{item.title}</dfn> <span>({item.type})</span>
             </a>
         </li>
     )
