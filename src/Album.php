@@ -27,7 +27,7 @@ class Album extends DomainObjectProps
      */
     public function getUrl(): string
     {
-        return sprintf('/music/?id=%s', $this->getProp('albumid'));
+        return sprintf('/music/?id=%s', $this->getId());
     }
 
     /**
@@ -37,6 +37,6 @@ class Album extends DomainObjectProps
      */
     public function parseTitle(): string
     {
-        return trim($this->props['title'] . ' ' . $this->props['subtitle']);
+        return trim($this->title . ' ' . $this->subtitle);
     }
 }

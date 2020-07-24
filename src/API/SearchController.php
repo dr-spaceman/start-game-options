@@ -32,7 +32,7 @@ class SearchController extends Controller
      * @OA\Get(
      *     path="/search",
      *     description="Search all the things",
-     *     @OA\Parameter(ref="#/components/parameters/q", required=true, minLength=3),
+     *     @OA\Parameter(ref="#/components/parameters/q", required=true),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Response(response=200,
      *         description="Things matching request query {q}",
@@ -41,7 +41,8 @@ class SearchController extends Controller
      *             @OA\Property(property="title_sort", type="string"),
      *             @OA\Property(property="type", type="string"),
      *             @OA\Property(property="category", type="string"),
-     *             @OA\Property(property="url", type="string"),
+     *             @OA\Property(property="links", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="href", type="string"),
      *         )
      *     )
      * )
@@ -61,7 +62,7 @@ class SearchController extends Controller
         // Populate with SQL sql queries
         $sql = Array();
         if (! $filter) {
-            $sql[] = "SELECT `title`, `title_sort`, `subcategory`, `type`, `index_data` 
+            $sql[] = "SELECT `id`,`title`,`title_sort`,`subcategory`,`type`,`index_data` 
 				FROM `pages` WHERE `redirect_to`='' AND (`title` LIKE CONCAT('%', :query, '%') OR `keywords` LIKE CONCAT('%', :query, '%')) 
 				ORDER BY {$sort_sql} LIMIT 100";
         } else {
@@ -95,40 +96,18 @@ class SearchController extends Controller
                     $category = $row['type'];
                 }
 
-                $arr = array(
+                $item = array(
                     "title" => $title,
                     "title_sort" => $row['title_sort'],
                     "type" => $row['type'],
                     "category" => $category,
-                    "url" => pageURL($row['title'], $row['type'])
+                    "links" => array(
+                        "page" => pageURL($row['title'], $row['type']),
+                    ),
+                    "href" => $this->parseLink($row['id'], $row['type']),
                 );
 
-                // if(strstr($_GET['return_vars'], "data")) $arr["data"] = json_decode($row['index_data']);
-                // if(strstr($_GET['return_vars'], "platform_shorthand")){
-                // 	if(!$platform_shorthand = $pf_shorthand[strtolower($arr['data']->platform)]) $platform_shorthand = $arr['data']->platform;
-                // 	$arr['data']->platform_shorthand = $platform_shorthand;
-                // 	if(is_array($arr['data']->platforms)){
-                // 		foreach($arr['data']->platforms as $pf){
-                // 			if(!$platform_shorthand = $pf_shorthand[strtolower($pf)]) $platform_shorthand = $pf;
-                // 			$arr['data']->platforms_shorthand[] = $platform_shorthand;
-                // 		}
-                // 	}
-                // }
-                // if(strstr($_GET['return_vars'], "platform_acronym")){
-                // 	if(!$platform_acronym = $pf_acronyms[strtolower($arr['data']->platform)]) $platform_acronym = $arr['data']->platform;
-                // 	$arr['data']->platform_acronym = $platform_acronym;
-                // 	if(is_array($arr['data']->platforms)){
-                // 		$arr['data']->platforms_acronym_formatted = '';
-                // 		$i = 0;
-                // 		foreach($arr['data']->platforms as $pf){
-                // 			if(!$platform_acronym = $pf_acronyms[strtolower($pf)]) $platform_acronym = $pf;
-                // 			$arr['data']->platforms_acronym[] = $platform_acronym;
-                // 			if($i++ < 3) $arr['data']->platforms_acronym_formatted.= $platform_acronym.", ";
-                // 		}
-                // 	} else $arr['data']->platforms_acronym_formatted = $platform_acronym;
-                // }
-
-                $results[] = $arr;
+                $results[] = $item;
             }
         }
 
@@ -140,28 +119,22 @@ class SearchController extends Controller
             foreach ($album_results->getGenerator() as $album) {
                 $title_sort = formatName($album->parseTitle(), "sortable");
                 $title_sort = strtolower($title_sort);
-                $params = array(
+                $item = array(
                     "title" => $album->parseTitle(),
                     "title_sort" => $title_sort,
                     "type" => "album",
                     "category" => "music",
-                    "url" => $album->getUrl(),
                     "tag" => 'AlbumID:' . $album->getProp('albumid'),
                     "release_date" => $album->getProp('datesort'),
+                    "links" => array(
+                        "page" => $album->getUrl(),
+                    ),
+                    "href" => $this->parseLink($album->getId(), 'album'),
                 );
 
-                $results[] = $params;
+                $results[] = $item;
             }
         }
-
-        // if($_GET['add_db_link'] && !$exact_match) {
-        // 	$ret['zzzzz'][] = array(
-        // 		"title" => 'Add <i><b>'.$q.'</b></i> to the database',
-        // 		"type" => '',
-        // 		"category" => '',
-        // 		"url" => '/content/Special:new?title='.urlencode($q)
-        // 	);
-        // }
         
         if (empty($results)) {
             throw new APINotFoundException("The requested query `{$query}` returned no results.");

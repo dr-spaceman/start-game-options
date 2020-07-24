@@ -31,7 +31,8 @@ class User extends DomainObjectProps
     ];
 
     public const PROPS_KEYS = [
-        'user_id', 'username', 'password', 'email', 'verified', 'gender', 'region', 'rank', 'avatar', 'timezone'
+        'user_id', 'username', 'password', 'email', 'verified', 'gender', 
+        'region', 'rank', 'avatar', 'timezone'
     ];
     public const PROPS_REQUIRED = ['user_id', 'username', 'password', 'email'];
     protected $username;

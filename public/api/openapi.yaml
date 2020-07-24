@@ -129,7 +129,6 @@ paths:
       parameters:
         -
           required: true
-          minLength: 3
           $ref: '#/components/parameters/q'
         -
           $ref: '#/components/parameters/sort'
@@ -144,7 +143,8 @@ paths:
                   title_sort: { type: string }
                   type: { type: string }
                   category: { type: string }
-                  url: { type: string }
+                  links: { type: array, items: { type: string } }
+                  href: { type: string }
                 type: object
   '/users/{id}':
     get:

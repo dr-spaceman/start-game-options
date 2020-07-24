@@ -165,6 +165,7 @@ abstract class Controller
                 'total_pages' => $num_pages,
             ]
         ];
+
         if ($page < $num_pages) {
             $req_query = $this->request->getQuery();
             $req_query['page'] = $page + 1;
@@ -172,6 +173,16 @@ abstract class Controller
 
             $links['pagination']['next'] = [
                 'href' => static::BASE_URI . '?' . $querystring_next
+            ];
+        }
+
+        if ($page > 1) {
+            $req_query = $this->request->getQuery();
+            $req_query['page'] = $page - 1;
+            $querystring_previous = http_build_query($req_query);
+
+            $links['pagination']['previous'] = [
+                'href' => static::BASE_URI . '?' . $querystring_previous
             ];
         }
 
@@ -363,11 +374,27 @@ abstract class Controller
      * Make an API href link
      *
      * @param string $id Id
+     * @param string $root Root directory
      * 
      * @return string Href link
      */
-    public function parseLink(string $id): string
+    public function parseLink(string $id, string $root=null): ?string
     {
+        if ($root) {
+            $roots = [
+                'game' => 'games',
+                'album' => 'albums',
+                'user' => 'users',
+                'badge' => 'badges',
+            ];
+
+            if ($dir = $roots[$root]) {
+                return API_BASE_URI . '/' . $dir . '/' . $id;
+            }
+
+            return null;
+        }
+        
         return static::BASE_URI . '/' . $id;
     }
 }
