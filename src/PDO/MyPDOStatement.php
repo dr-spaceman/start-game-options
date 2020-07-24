@@ -28,10 +28,14 @@ class MyPDOStatement extends PDOStatement
         $this->_debugValues = $input_parameters;
         $this->_ValuePos    = 0;
 
+        $logger = Registry::get('logger');
+
         try {
             $t = parent::execute($input_parameters);
+
+            if ($logger) $logger->debug($this->_debugQuery());
         } catch (PDOException $e) {
-            if ($logger = Registry::get('logger')) {
+            if ($logger) {
                 $logger->warning('PDOException thrown based on the following query: '.$this->_debugQuery().'; Detail: '.$e->getMessage());
             }
 

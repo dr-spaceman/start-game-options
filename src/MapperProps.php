@@ -2,6 +2,7 @@
 
 namespace Vgsite;
 
+use Exception;
 use PDOStatement;
 
 /**
@@ -46,18 +47,23 @@ abstract class MapperProps extends Mapper
     protected function doInsert(DomainObject &$obj): DomainObject
     {
         $insert_fields = $this->insert_fields ?: array_diff($this->targetClass()::PROPS_KEYS, [$this->db_id_field]);
-        $insert = array();
+        $input_parameters = array();
         $insert_sql = array();
         foreach ($insert_fields as $field) {
-            if (is_null($obj->getProp($field))) continue;
-            $insert[$field] = $obj->getProp($field);
+            $val = $obj->getProp($field);
+            if (is_null($val)) continue;
+            
+            $input_parameters[$field] = $val;
             $insert_sql["`{$field}`"] = ":{$field}";
         }
-        $sql = sprintf("INSERT INTO {$this->db_table} (%s) VALUES (%s);", implode(',', array_keys($insert_sql)), implode(',', array_values($insert_sql)));
+        $sql = sprintf(
+            "INSERT INTO {$this->db_table} (%s) VALUES (%s);", 
+            implode(',', array_keys($insert_sql)), 
+            implode(',', array_values($insert_sql))
+        );
         $statement = $this->pdo->prepare($sql);
         
-        $input_parameters = array();
-        foreach ($insert as $key => $val) {
+        foreach ($input_parameters as $key => $val) {
             $statement->bindValue($key, $val);
         }
 
@@ -78,6 +84,8 @@ abstract class MapperProps extends Mapper
      */
     public function save(DomainObject $obj): DomainObject
     {
+        $this->assertValidId($obj);
+
         $save_keys = array_reduce($this->save_fields, function ($carry, $field) use ($obj) {
             if (is_null($obj->getProp($field))) return $carry;
             return ($carry ? $carry . "," : "") . "`{$field}`=:{$field}";
@@ -105,6 +113,8 @@ abstract class MapperProps extends Mapper
      */
     public function delete(DomainObject $obj): bool
     {
+        $this->assertValidId($obj);
+
         $input_parameters = [$obj->getId()];
         $statement = $this->pdo->prepare("DELETE FROM {$this->db_table} WHERE `{$this->db_id_field}`=?");
         $statement->execute($input_parameters);
@@ -116,5 +126,13 @@ abstract class MapperProps extends Mapper
         if ($this->logger) $this->logger->info("Delete row " . $this->targetClass(), $obj->getProps());
 
         return true;
+    }
+
+    private function assertValidId(DomainObject $obj): void
+    {
+        $id = $obj->getId();
+        if (empty($id) || $id < 1) {
+            throw new Exception('Object ID not valid');
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Vgsite;
 
+use OutOfRangeException;
 use PDOStatement;
 
 /**
@@ -38,6 +39,10 @@ abstract class Mapper
 
     public function findById(int $id, $get_identity_map=true): DomainObject
     {
+        if ($id < 1) {
+            throw new OutOfRangeException('ID parameter must be an unsigned integer');
+        }
+        
         if ($get_identity_map && true === $this->identity_map->hasId($id)) {
             return $this->identity_map->getObject($id);
         }

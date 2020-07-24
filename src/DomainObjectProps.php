@@ -55,10 +55,18 @@ abstract class DomainObjectProps extends DomainObject
     {
         $props = array();
         foreach (static::PROPS_KEYS as $key) {
-            $props[$key] = $this->{$key};
+            $props[$key] = $this->getProp($key);
         }
 
         return $props;
+    }
+
+    public function setId(int $id): DomainObject
+    {
+        $id_key_field = static::PROPS_KEYS[0];
+        $this->$id_key_field = $id;
+        
+        return parent::setId($id);
     }
 
     public function setProp(string $key, $val): self
