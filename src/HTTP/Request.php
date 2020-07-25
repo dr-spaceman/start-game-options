@@ -16,6 +16,9 @@ class Request
     private $method;
 
     private $uri;
+    
+    /** @var \GuzzleHttp\Psr7\Stream */
+    private $body;
 
     /** @var array URI path split into an array */
     private $path = Array();
@@ -70,7 +73,7 @@ class Request
             fwrite($stream, $body);
             fseek($stream, 0);
 
-            $this->stream = new \GuzzleHttp\Psr7\Stream($stream);
+            $this->body = new \GuzzleHttp\Psr7\Stream($stream);
         }
     }
 
@@ -87,5 +90,10 @@ class Request
     public function getQuery(): array
     {
         return $this->query;
+    }
+
+    public function getBody(): string
+    {
+        return $this->body->getContents();
     }
 }

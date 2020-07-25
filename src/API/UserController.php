@@ -4,6 +4,7 @@ namespace Vgsite\API;
 
 use OutOfBoundsException;
 use Respect\Validation\Validator as v;
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\User;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
@@ -50,20 +51,27 @@ class UserController extends Controller
      */
     protected function getOne($id): void
     {
+        $user = $this->findById($id);
+        
+        $results[] = $this->parseRow($user);
+
+        $this->setPayload($results)->render(200);
+    }
+
+    protected function findById(int $id): User
+    {
         if (! v::IntVal()->validate($id)) {
             throw new APIInvalidArgumentException('User ID must be numeric', 'id');
         }
 
         try {
-            $mapper = new UserMapper();
-            $user = $mapper->findById($id);
+            $mapper = Registry::getMapper(User::class);
+            $user = $mapper->findById($id, false);
         } catch (OutOfBoundsException $e) {
             throw new APINotFoundException($e);
         }
-        
-        $results[] = $this->parseRow($user);
 
-        $this->setPayload($results)->render(200);
+        return $user;
     }
 
     /**
@@ -96,7 +104,7 @@ class UserController extends Controller
         $num_rows = $statement->fetchColumn();
         [$limit_min, $limit_max, $num_pages] = $this->convertPageToLimit($page, $per_page, $num_rows);
 
-        $mapper = new UserMapper();
+        $mapper = Registry::getMapper(User::class);
         $users = $mapper->findAll($search, $sort_sql, $limit_min, $limit_max, ['query' => $query]);
 
         if ($users->count == 0) {
@@ -106,15 +114,6 @@ class UserController extends Controller
         foreach ($users->getGenerator() as $user) {
             $results[] = $this->parseRow($user);
         }
-
-        // $sql = "SELECT {$fields}, `user_id` FROM users {$search} ORDER BY {$sort_sql} LIMIT {$limit_min}, {$limit_max}";
-        // $statement = $pdo->prepare($sql);
-        // $statement->execute(['query' => $query]);
-        // $results = Array();
-        // while ($row = $statement->fetch()) {
-        //     $results[] = $this->parseRow($row);
-        // }
-
 
         $links = $this->buildLinks($page, $num_pages);
 
@@ -145,5 +144,41 @@ class UserController extends Controller
         $row['href'] = $this->parseLink($row['user_id']);
 
         return $row;
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/users/{id}",
+     *     description="Modify a user",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=200,
+     *         description="User modified",
+     *         @OA\JsonContent(ref="#/components/schemas/user")
+     *     ),
+     *     @OA\Response(response=404,
+     *         description="Requested user not found",
+     *     ),
+     * )
+     */
+    protected function updateFromRequest($id, $body): void
+    {
+        // validate user object
+        $user = $this->findById($id);
+
+        $input = $this->parseBodyJson($body);
+
+        try {
+            foreach ($input as $key => $value) {
+                $user->setProp($key, $value);
+            }
+        } catch (\Exception $e) {
+            throw new APIInvalidArgumentException($e);
+        }
+
+        /** @var UserMapper */
+        $mapper = Registry::getMapper(User::class);
+        $mapper->save($user);
+
+        $this->getOne($id);
     }
 }

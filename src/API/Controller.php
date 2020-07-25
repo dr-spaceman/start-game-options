@@ -16,6 +16,8 @@ use Respect\Validation\Validator as v;
  */
 abstract class Controller
 {
+    const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+
     /** @var int Number of items per page. */
     const PER_PAGE = 100;
 
@@ -46,27 +48,7 @@ abstract class Controller
     public function processRequest(): void
     {
         try {
-            switch ($this->request->getMethod()) {
-                case 'GET':
-                    if (! $this->request->getPath()[1]) {
-                        $this->getAll();
-                    } else {
-                        $this->getOne($this->request->getPath()[1]);
-                    };
-                break;
-                case 'POST':
-                    $this->createFromRequest();
-                break;
-                case 'PUT':
-                    $this->updateFromRequest();
-                break;
-                case 'DELETE':
-                    $this->delete();
-                break;
-                default:
-                    $message = "Request Method not valid ({$this->request->getMethod()} received). Try one of: GET, POST, PUT, DELETE.";
-                    throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 405);
-            }
+            $this->doProcessRequest();
         } catch (APIException $e) {
             $this->collection->setError($e->getErrorMessage());
             $this->render($e->getCode());
@@ -79,20 +61,46 @@ abstract class Controller
         }
     }
 
+    private function doProcessRequest(): void
+    {
+        switch ($this->request->getMethod()) {
+            case 'GET':
+                if (!$this->request->getPath()[1]) {
+                    $this->getAll();
+                } else {
+                    $this->getOne($this->request->getPath()[1]);
+                };
+                break;
+            case 'POST':
+                $this->createFromRequest();
+                break;
+            case 'PATCH':
+                $this->assertBodyJson();
+
+                $body_raw = $this->request->getBody();
+
+                if (empty($body_raw)) {
+                    throw new APIInvalidArgumentException('No parameters found in HTTP body.', 'body', 'MISSING_REQUIRED_PARAMETER', 422);
+                }
+
+                $this->updateFromRequest($this->request->getPath()[1], $body_raw);
+                
+                break;
+            case 'DELETE':
+                $this->delete();
+                break;
+            default:
+                $message = sprintf(
+                    "Request Method not valid (%s received). Try one of: %s.", 
+                    $this->request->getMethod(), 
+                    implode(', ', static::ALLOWED_METHODS)
+                );
+                throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 405);
+        }
+    }
+
     abstract protected function getOne($id): void;
     abstract protected function getAll(): void;
-
-    // Model response method
-    private function getUser($id)
-    {
-        $result = $this->personGateway->find($id);
-        if (!$result) {
-            return $this->notFoundResponse();
-        }
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = json_encode($result);
-        return $response;
-    }
 
     private function createFromRequest()
     {
@@ -106,21 +114,25 @@ abstract class Controller
         return $response;
     }
 
-    private function updateFromRequest()
+    protected function assertBodyJson(): void
     {
-        $result = $this->personGateway->find($id);
-        if (!$result) {
-            return $this->notFoundResponse();
+        if ($this->request->getHeader('Content-Type') != 'application/json') {
+            throw new APIException('PUT request must use Content-Type: application/json', null, 'INVALID_REQUEST_METHOD', 405);
         }
-        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-        if (!$this->validatePerson($input)) {
-            return $this->unprocessableEntityResponse();
-        }
-        $this->personGateway->update($id, $input);
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = null;
-        return $response;
     }
+
+    protected function parseBodyJson(string $body_raw): array
+    {
+        $body_params = json_decode($body_raw, true);
+
+        if (empty($body_params)) {
+            throw new APIInvalidArgumentException('No parameters found in HTTP body.', 'body', 'MISSING_REQUIRED_PARAMETER', 422);
+        }
+
+        return $body_params;
+    }
+
+    abstract protected function updateFromRequest($id, $body): void;
 
     private function delete()
     {
@@ -394,7 +406,7 @@ abstract class Controller
 
             return null;
         }
-        
+
         return static::BASE_URI . '/' . $id;
     }
 }

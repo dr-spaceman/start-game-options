@@ -155,4 +155,6 @@ class SearchController extends Controller
 
         $this->setPayload($results)->render(200);
     }
+
+    protected function updateFromRequest($id, $body): void {}
 }

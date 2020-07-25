@@ -78,12 +78,12 @@ try {
 
 	$schema = [
 		'search/'		=> ['GET'],
-		'games' 		=> ['GET'],
-		'games/{id}'	=> ['GET'],
-		'users' 		=> ['GET'],
-		'users/{id}'	=> ['GET'],
-		'posts/'		=> ['GET', 'POST', 'PUT'],
-		'posts/{id}'	=> ['GET', 'PUT', 'DELETE'],
+		'games' 		=> ['GET', 'POST'],
+		'games/{id}'	=> ['GET', 'PATCH', 'DELETE'],
+		'users' 		=> ['GET', 'POST'],
+		'users/{id}'	=> ['GET', 'PATCH', 'DELETE'],
+		'posts/'		=> ['GET', 'POST'],
+		'posts/{id}'	=> ['GET', 'PATCH', 'DELETE'],
 		'_PARAMETERS_'	=> ['q={query}', 'page={page}', 'per_page={number_per_page}', 'sort={field}[:asc|desc]', 'fields={list,of,fields}'],
 	];
 
@@ -101,12 +101,12 @@ try {
 		'badges' => 'Vgsite\API\BadgeController',
 	];
 	
-	if ($controller = $controllers[$base]) {
-		$controller = new $controller($request);
-		$controller->processRequest();
-	} else {
+	if (! $controller = $controllers[$base]) {
 		throw new APINotFoundException();
 	}
+
+	$controller = new $controller($request);
+	$controller->processRequest();
 } catch (Exception | Error $e) {
 	Registry::get('logger')->warning($e);
 

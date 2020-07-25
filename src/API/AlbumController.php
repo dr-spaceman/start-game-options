@@ -139,4 +139,6 @@ class AlbumController extends Controller
 
         return $row;
     }
+
+    protected function updateFromRequest($id, $body): void {}
 }

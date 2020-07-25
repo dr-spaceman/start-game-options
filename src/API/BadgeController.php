@@ -114,4 +114,6 @@ class BadgeController extends Controller
 
         return $row;
     }
+
+    protected function updateFromRequest($id, $body): void {}
 }

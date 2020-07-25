@@ -163,4 +163,6 @@ class GameController extends Controller
 
         return $row;
     }
+
+    protected function updateFromRequest(): void {}
 }
