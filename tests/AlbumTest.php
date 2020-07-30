@@ -24,11 +24,11 @@ class AlbumTest extends TestCase
     
     public function testAlbumStaticFind(): void
     {
-        $album = static::$mapper->findById(TEST_ALBUM_ID);
+        $album = self::$mapper->findById(TEST_ALBUM_ID);
         $this->assertInstanceOf(Album::class, $album);
-        $this->assertEquals($album->getProp('id'), TEST_ALBUM_ID);
+        $this->assertEquals($album->getId(), TEST_ALBUM_ID);
 
-        $albums = static::$mapper->findAll();
+        $albums = self::$mapper->findAll();
         $this->assertInstanceOf(Collection::class, $albums);
     }
 

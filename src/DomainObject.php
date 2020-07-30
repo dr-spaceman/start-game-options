@@ -32,7 +32,7 @@ abstract class DomainObject
 
     public function setId(int $id): DomainObject
     {
-        if ($this->id > 0 && $id > 0) {
+        if ($this->id > 0 && $this->id != $id) {
             throw new \Exception("ID parameter cannot be changed after it is set.");
         }
 
