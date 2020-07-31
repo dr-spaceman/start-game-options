@@ -6,9 +6,31 @@ class Album extends DomainObjectProps
 {
     public const PROPS_KEYS = [
         'id', 'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid', 
-        'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series', 
-        'new', 'view', 'media', 'path'
+        'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series', 'new', 
+        'view', 'media', 'path'
     ];
+
+    public const PROPS_REQUIRED = ['id', 'title', 'albumid'];
+
+    protected $title;
+    protected $subtitle;
+    protected $keywords;
+    protected $coverimg;
+    protected $jp;
+    protected $publisher;
+    protected $cid;
+    protected $albumid;
+    protected $release;
+    protected $price;
+    protected $no_commerce;
+    protected $compose;
+    protected $arrange;
+    protected $perform;
+    protected $series;
+    protected $new;
+    protected $view;
+    protected $media;
+    protected $path;
 
     /**
      * Render album link in HTML form

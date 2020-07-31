@@ -11,7 +11,7 @@ class AlbumMapper extends MapperProps
     
     protected $save_fields = [
         'title', 'subtitle', 'keywords', 'coverimg', 'jp', 'publisher', 'cid', 'albumid',
-        'datesort', 'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series',
+        'release', 'price', 'no_commerce', 'compose', 'arrange', 'perform', 'series',
         'new', 'view', 'media', 'path'
     ];
 
