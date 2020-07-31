@@ -4,6 +4,7 @@ namespace Vgsite\API;
 
 use OutOfBoundsException;
 use Respect\Validation\Validator as v;
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\Registry;
 use Vgsite\Badge;
 use Vgsite\BadgeMapper;
@@ -33,6 +34,7 @@ class BadgeController extends Controller
      * @OA\Get(
      *     path="/badges/{id}",
      *     description="A badge",
+     *     operationId="Badges:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Response(response=200,
@@ -66,6 +68,7 @@ class BadgeController extends Controller
      * @OA\Get(
      *     path="/badges",
      *     description="A list of badges",
+     *     operationId="Badges:GetAll",
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Parameter(ref="#/components/parameters/q"),
@@ -115,5 +118,18 @@ class BadgeController extends Controller
         return $row;
     }
 
-    protected function updateFromRequest($id, $body): void {}
+    protected function createFromRequest($body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function updateFromRequest($id, $body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function delete($id): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
 }

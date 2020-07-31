@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: 'Vigeogamesite API'
-  version: '0.3'
+  version: 0.3.3
 servers:
   -
     url: 'http://vgsite/api'
@@ -9,7 +9,7 @@ paths:
   '/albums/{id}':
     get:
       description: 'An album'
-      operationId: 'Vgsite\API\AlbumController::getOne'
+      operationId: 'Albums:GetOne'
       parameters:
         -
           $ref: '#/components/parameters/id'
@@ -27,7 +27,7 @@ paths:
   /albums:
     get:
       description: 'A list of albums'
-      operationId: 'Vgsite\API\AlbumController::getAll'
+      operationId: 'Albums:GetAll'
       parameters:
         -
           $ref: '#/components/parameters/page'
@@ -49,7 +49,7 @@ paths:
   '/badges/{id}':
     get:
       description: 'A badge'
-      operationId: 'Vgsite\API\BadgeController::getOne'
+      operationId: 'Badges:GetOne'
       parameters:
         -
           $ref: '#/components/parameters/id'
@@ -67,7 +67,7 @@ paths:
   /badges:
     get:
       description: 'A list of badges'
-      operationId: 'Vgsite\API\BadgeController::getAll'
+      operationId: 'Badges:GetAll'
       parameters:
         -
           $ref: '#/components/parameters/sort'
@@ -85,7 +85,7 @@ paths:
   '/games/{id}':
     get:
       description: 'A game'
-      operationId: 'Vgsite\API\GameController::getOne'
+      operationId: 'Games:GetOne'
       parameters:
         -
           $ref: '#/components/parameters/id'
@@ -103,7 +103,7 @@ paths:
   /games:
     get:
       description: 'A list of games'
-      operationId: 'Vgsite\API\GameController::getAll'
+      operationId: 'Games:GetAll'
       parameters:
         -
           $ref: '#/components/parameters/page'
@@ -125,7 +125,7 @@ paths:
   /search:
     get:
       description: 'Search all the things'
-      operationId: 'Vgsite\API\SearchController::getAll'
+      operationId: Search
       parameters:
         -
           required: true
@@ -149,7 +149,7 @@ paths:
   '/users/{id}':
     get:
       description: 'A user'
-      operationId: 'Vgsite\API\UserController::getOne'
+      operationId: 'Users:GetOne'
       parameters:
         -
           $ref: '#/components/parameters/id'
@@ -164,10 +164,37 @@ paths:
                 $ref: '#/components/schemas/user'
         '404':
           description: 'Requested user not found'
+    patch:
+      description: 'Modify a user'
+      operationId: 'Users:Patch'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+      responses:
+        '200':
+          description: 'User modified'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: 'Requested user not found'
+        '409':
+          description: 'Conflict: Parameter not valid'
   /users:
     get:
       description: 'A list of users'
-      operationId: 'Vgsite\API\UserController::getAll'
+      operationId: 'Users:GetAll'
       parameters:
         -
           $ref: '#/components/parameters/page'
@@ -186,6 +213,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/user'
+  /users/:
+    post:
+      description: 'Create a user'
+      operationId: 'Users:Create'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+      responses:
+        '200':
+          description: 'User modified'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: 'Conflict: Parameter not valid'
 components:
   schemas:
     album:
@@ -285,24 +335,36 @@ components:
     user:
       properties:
         id:
-          type: string
+          type: integer
         username:
+          type: string
+        password:
+          description: 'A hashed string; Only given if explicitly requested using the `fields` parameter.'
           type: string
         email:
           type: string
         verified:
           type: boolean
         gender:
+          description: 'enum(''he'', ''she'', ''them'')'
           type: string
         region:
           description: 'enum(''us'', ''jp'', ''eu'', ''au'')'
           type: string
         rank:
-          type: string
+          type: integer
         avatar:
           type: string
         timezone:
           type: string
+        data_created:
+          type: date-time
+        data_modified:
+          type: date-time
+        activity:
+          type: date-time
+        previous_activity:
+          type: date-time
         href:
           type: string
       type: object

@@ -65,29 +65,25 @@ abstract class Controller
     {
         switch ($this->request->getMethod()) {
             case 'GET':
-                if (!$this->request->getPath()[1]) {
+                if (! $this->request->getPath()[1]) {
                     $this->getAll();
                 } else {
                     $this->getOne($this->request->getPath()[1]);
                 };
                 break;
             case 'POST':
-                $this->createFromRequest();
+                $this->assertBodyJson();
+                $body_raw = $this->request->getBody();
+                $this->createFromRequest($body_raw);
                 break;
             case 'PATCH':
+            case 'PUT':
                 $this->assertBodyJson();
-
                 $body_raw = $this->request->getBody();
-
-                if (empty($body_raw)) {
-                    throw new APIInvalidArgumentException('No parameters found in HTTP body.', 'body', 'MISSING_REQUIRED_PARAMETER', 422);
-                }
-
                 $this->updateFromRequest($this->request->getPath()[1], $body_raw);
-                
                 break;
             case 'DELETE':
-                $this->delete();
+                $this->delete($this->request->getPath()[1]);
                 break;
             default:
                 $message = sprintf(
@@ -101,23 +97,14 @@ abstract class Controller
 
     abstract protected function getOne($id): void;
     abstract protected function getAll(): void;
-
-    private function createFromRequest()
-    {
-        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-        if (!$this->validatePerson($input)) {
-            return $this->unprocessableEntityResponse();
-        }
-        $this->personGateway->insert($input);
-        $response['status_code_header'] = 'HTTP/1.1 201 Created';
-        $response['body'] = null;
-        return $response;
-    }
+    abstract protected function createFromRequest($body): void;
+    abstract protected function updateFromRequest($id, $body): void;
+    abstract protected function delete($id): void;
 
     protected function assertBodyJson(): void
     {
         if ($this->request->getHeader('Content-Type') != 'application/json') {
-            throw new APIException('PUT request must use Content-Type: application/json', null, 'INVALID_REQUEST_METHOD', 405);
+            throw new APIException('PUT and PATCH requests must use Content-Type: application/json', 'body', 'MALFORMED_PATCH_DOCUMENT', 400);
         }
     }
 
@@ -130,20 +117,6 @@ abstract class Controller
         }
 
         return $body_params;
-    }
-
-    abstract protected function updateFromRequest($id, $body): void;
-
-    private function delete()
-    {
-        $result = $this->personGateway->find($id);
-        if (!$result) {
-            return $this->notFoundResponse();
-        }
-        $this->personGateway->delete($id);
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = null;
-        return $response;
     }
 
     public function setPayload(array $items, array $links=[]): self

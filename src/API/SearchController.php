@@ -3,6 +3,7 @@
 namespace Vgsite\API;
 
 use Vgsite\AlbumMapper;
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
@@ -32,6 +33,7 @@ class SearchController extends Controller
      * @OA\Get(
      *     path="/search",
      *     description="Search all the things",
+     *     operationId="Search",
      *     @OA\Parameter(ref="#/components/parameters/q", required=true),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Response(response=200,
@@ -81,6 +83,9 @@ class SearchController extends Controller
             }
         }
 
+        // Populate $results with results
+        $results = [];
+
         foreach ($sql as $sql) {
             $statement = $this->pdo->prepare($sql);
             $statement->execute(['query' => $query]);
@@ -117,8 +122,7 @@ class SearchController extends Controller
             $album_results = $mapper->searchBy('title', $query);
             
             foreach ($album_results->getGenerator() as $album) {
-                $title_sort = formatName($album->parseTitle(), "sortable");
-                $title_sort = strtolower($title_sort);
+                $title_sort = strtolower(formatName($album->parseTitle(), "sortable"));
                 $item = array(
                     "title" => $album->parseTitle(),
                     "title_sort" => $title_sort,
@@ -156,5 +160,18 @@ class SearchController extends Controller
         $this->setPayload($results)->render(200);
     }
 
-    protected function updateFromRequest($id, $body): void {}
+    protected function createFromRequest($body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function updateFromRequest($id, $body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function delete($id): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
 }

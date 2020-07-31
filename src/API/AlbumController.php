@@ -9,6 +9,7 @@ use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\Registry;
 use Vgsite\AlbumMapper;
+use Vgsite\API\Exceptions\APIException;
 
 /**
  * @OA\Schema(schema="album",
@@ -40,6 +41,7 @@ class AlbumController extends Controller
      * @OA\Get(
      *     path="/albums/{id}",
      *     description="An album",
+     *     operationId="Albums:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Response(response=200,
@@ -73,6 +75,7 @@ class AlbumController extends Controller
      * @OA\Get(
      *     path="/albums",
      *     description="A list of albums",
+     *     operationId="Albums:GetAll",
      *     @OA\Parameter(ref="#/components/parameters/page"),
      *     @OA\Parameter(ref="#/components/parameters/per_page"),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
@@ -140,5 +143,18 @@ class AlbumController extends Controller
         return $row;
     }
 
-    protected function updateFromRequest($id, $body): void {}
+    protected function createFromRequest($body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function updateFromRequest($id, $body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function delete($id): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
 }

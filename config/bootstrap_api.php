@@ -5,7 +5,7 @@ require_once __DIR__ . '/environment.php';
 
 define('API_BASE_URI', '/api');
 define('API_BASE_URL', sprintf('http://%s%s', getenv('HOST_DOMAIN'), API_BASE_URI));
-define('API_VERSION', '0.3.2');
+define('API_VERSION', '0.3.3');
 
 use Vgsite\Registry;
 use Monolog\Logger;

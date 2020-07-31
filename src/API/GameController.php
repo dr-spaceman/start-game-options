@@ -3,6 +3,7 @@
 namespace Vgsite\API;
 
 use Respect\Validation\Validator as v;
+use Vgsite\API\Exceptions\APIException;
 use Vgsite\Registry;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
@@ -50,6 +51,7 @@ class GameController extends Controller
      * @OA\Get(
      *     path="/games/{id}",
      *     description="A game",
+     *     operationId="Games:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Response(response=200,
@@ -86,6 +88,7 @@ class GameController extends Controller
      * @OA\Get(
      *     path="/games",
      *     description="A list of games",
+     *     operationId="Games:GetAll",
      *     @OA\Parameter(ref="#/components/parameters/page"),
      *     @OA\Parameter(ref="#/components/parameters/per_page"),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
@@ -164,5 +167,17 @@ class GameController extends Controller
         return $row;
     }
 
-    protected function updateFromRequest(): void {}
+    protected function createFromRequest($body): void {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function updateFromRequest($id, $body): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
+
+    protected function delete($id): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+    }
 }

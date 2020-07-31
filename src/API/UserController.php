@@ -14,15 +14,20 @@ use Vgsite\UserMapper;
 /**
  * @OA\Schema(schema="user",
  *     type="object",
- *     @OA\Property(property="id", type="string"),
+ *     @OA\Property(property="id", type="integer"),
  *     @OA\Property(property="username", type="string"),
+ *     @OA\Property(property="password", type="string", description="A hashed string; Only given if explicitly requested using the `fields` parameter."),
  *     @OA\Property(property="email", type="string"),
  *     @OA\Property(property="verified", type="boolean"),
- *     @OA\Property(property="gender", type="string"),
+ *     @OA\Property(property="gender", type="string", description="enum('he', 'she', 'them')"),
  *     @OA\Property(property="region", type="string", description="enum('us', 'jp', 'eu', 'au')"),
- *     @OA\Property(property="rank", type="string"),
+ *     @OA\Property(property="rank", type="integer"),
  *     @OA\Property(property="avatar", type="string"),
  *     @OA\Property(property="timezone", type="string"),
+ *     @OA\Property(property="data_created", type="date-time"),
+ *     @OA\Property(property="data_modified", type="date-time"),
+ *     @OA\Property(property="activity", type="date-time"),
+ *     @OA\Property(property="previous_activity", type="date-time"),
  *     @OA\Property(property="href", type="string"),
  * )
  */
@@ -38,6 +43,7 @@ class UserController extends Controller
      * @OA\Get(
      *     path="/users/{id}",
      *     description="A user",
+     *     operationId="Users:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Response(response=200,
@@ -78,6 +84,7 @@ class UserController extends Controller
      * @OA\Get(
      *     path="/users",
      *     description="A list of users",
+     *     operationId="Users:GetAll",
      *     @OA\Parameter(ref="#/components/parameters/page"),
      *     @OA\Parameter(ref="#/components/parameters/per_page"),
      *     @OA\Parameter(ref="#/components/parameters/sort"),
@@ -130,6 +137,10 @@ class UserController extends Controller
             $row = array_filter($row, function ($key) use ($fields) {
                 return in_array($key, $fields);
             }, ARRAY_FILTER_USE_KEY);
+        } else {
+            foreach (['data_created', 'data_modified', 'activity', 'previous_activity'] as $key) {
+                $row[$key] = $user->{$key} ?: null;
+            }
         }
 
         if (isset($row['verified'])) {
@@ -147,16 +158,77 @@ class UserController extends Controller
     }
 
     /**
-     * @OA\Put(
-     *     path="/users/{id}",
-     *     description="Modify a user",
-     *     @OA\Parameter(ref="#/components/parameters/id"),
+     * @OA\Post(
+     *     path="/users/",
+     *     description="Create a user",
+     *     operationId="Users:Create",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/user")
+     *     ),
      *     @OA\Response(response=200,
      *         description="User modified",
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
+     *     @OA\Response(response=401,
+     *         description="Unauthorized",
+     *     ),
+     *     @OA\Response(response=403,
+     *         description="Forbidden",
+     *     ),
+     *     @OA\Response(response=409,
+     *         description="Conflict: Parameter not valid",
+     *     ),
+     * )
+     */
+    protected function createFromRequest($body): void
+    {
+        $input = $this->parseBodyJson($body);
+        // Force prototype user
+        $input['user_id'] = -1;
+
+        try {
+            $user = new User($input);
+            // Hash password
+            $user->setPassword($input['password'], true);
+        } catch (\OutOfRangeException $e) {
+            throw new APIInvalidArgumentException($e, '', '', 409);
+        } catch (\Exception $e) {
+            throw new APIInvalidArgumentException($e);
+        }
+
+        /** @var UserMapper */
+        $mapper = Registry::getMapper(User::class);
+        $mapper->insert($user);
+
+        $this->getOne($user->getId());
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/users/{id}",
+     *     description="Modify a user",
+     *     operationId="Users:Patch",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/user")
+     *     ),
+     *     @OA\Response(response=200,
+     *         description="User modified",
+     *         @OA\JsonContent(ref="#/components/schemas/user")
+     *     ),
+     *     @OA\Response(response=401,
+     *         description="Unauthorized",
+     *     ),
+     *     @OA\Response(response=403,
+     *         description="Forbidden",
+     *     ),
      *     @OA\Response(response=404,
      *         description="Requested user not found",
+     *     ),
+     *     @OA\Response(response=409,
+     *         description="Conflict: Parameter not valid",
      *     ),
      * )
      */
@@ -168,9 +240,17 @@ class UserController extends Controller
         $input = $this->parseBodyJson($body);
 
         try {
+            if ($input['password']) {
+                // Hash password
+                $user->setPassword($input['password'], true);
+                unset($input['password']);
+            }
+
             foreach ($input as $key => $value) {
                 $user->setProp($key, $value);
             }
+        } catch (\OutOfRangeException $e) {
+            throw new APIInvalidArgumentException($e, '', '', 409);
         } catch (\Exception $e) {
             throw new APIInvalidArgumentException($e);
         }
@@ -180,5 +260,10 @@ class UserController extends Controller
         $mapper->save($user);
 
         $this->getOne($id);
+    }
+
+    protected function delete($id): void
+    {
+        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
     }
 }
