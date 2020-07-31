@@ -83,6 +83,10 @@ abstract class Controller
                 $this->updateFromRequest($this->request->getPath()[1], $body_raw);
                 break;
             case 'DELETE':
+                if (! $this->request->getPath()[1]) {
+                    throw new APIInvalidArgumentException('No ID parameter given in the request.', 'id', 'MISSING_PARAMETER');
+                }
+                
                 $this->delete($this->request->getPath()[1]);
                 break;
             default:

@@ -39,6 +39,21 @@ class UserController extends Controller
     const REQUIRED_FIELDS = ['user_id', 'username'];
     const BASE_URI = API_BASE_URI . '/users';
 
+    protected function findOrFail(int $id): User
+    {
+        if (!v::IntVal()->validate($id)) {
+            throw new APIInvalidArgumentException('User ID must be numeric', 'id');
+        }
+
+        try {
+            $user = Registry::getMapper(User::class)->findById($id, false);
+        } catch (OutOfBoundsException $e) {
+            throw new APINotFoundException($e);
+        }
+
+        return $user;
+    }
+
     /**
      * @OA\Get(
      *     path="/users/{id}",
@@ -46,38 +61,22 @@ class UserController extends Controller
      *     operationId="Users:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="Success!",
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
-     *     @OA\Response(response=404,
+     *     @OA\Response(response="404",
      *         description="Requested user not found",
      *     ),
      * )
      */
     protected function getOne($id): void
     {
-        $user = $this->findById($id);
+        $user = $this->findOrFail($id);
         
         $results[] = $this->parseRow($user);
 
         $this->setPayload($results)->render(200);
-    }
-
-    protected function findById(int $id): User
-    {
-        if (! v::IntVal()->validate($id)) {
-            throw new APIInvalidArgumentException('User ID must be numeric', 'id');
-        }
-
-        try {
-            $mapper = Registry::getMapper(User::class);
-            $user = $mapper->findById($id, false);
-        } catch (OutOfBoundsException $e) {
-            throw new APINotFoundException($e);
-        }
-
-        return $user;
     }
 
     /**
@@ -90,7 +89,7 @@ class UserController extends Controller
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Parameter(ref="#/components/parameters/q"),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="Success!",
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
@@ -170,17 +169,17 @@ class UserController extends Controller
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="User modified",
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
-     *     @OA\Response(response=401,
+     *     @OA\Response(response="401",
      *         description="Unauthorized",
      *     ),
-     *     @OA\Response(response=403,
+     *     @OA\Response(response="403",
      *         description="Forbidden",
      *     ),
-     *     @OA\Response(response=409,
+     *     @OA\Response(response="409",
      *         description="Conflict: Parameter not valid",
      *     ),
      * )
@@ -201,9 +200,7 @@ class UserController extends Controller
             throw new APIInvalidArgumentException($e);
         }
 
-        /** @var UserMapper */
-        $mapper = Registry::getMapper(User::class);
-        $mapper->insert($user);
+        Registry::getMapper(User::class)->insert($user);
 
         $this->getOne($user->getId());
     }
@@ -218,20 +215,20 @@ class UserController extends Controller
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="User modified",
      *         @OA\JsonContent(ref="#/components/schemas/user")
      *     ),
-     *     @OA\Response(response=401,
+     *     @OA\Response(response="401",
      *         description="Unauthorized",
      *     ),
-     *     @OA\Response(response=403,
+     *     @OA\Response(response="403",
      *         description="Forbidden",
      *     ),
-     *     @OA\Response(response=404,
+     *     @OA\Response(response="404",
      *         description="Requested user not found",
      *     ),
-     *     @OA\Response(response=409,
+     *     @OA\Response(response="409",
      *         description="Conflict: Parameter not valid",
      *     ),
      * )
@@ -239,7 +236,7 @@ class UserController extends Controller
     protected function updateFromRequest($id, $body): void
     {
         // validate user object
-        $user = $this->findById($id);
+        $user = $this->findOrFail($id);
 
         $input = $this->parseBodyJson($body);
 
@@ -266,8 +263,25 @@ class UserController extends Controller
         $this->getOne($id);
     }
 
+    /**
+     * @OA\Detele(
+     *     path="/users/{id}",
+     *     description="Remove a user",
+     *     operationId="Users:Remove",
+     *     @OA\Response(response="204", description="User removed"),
+     *     @OA\Response(response="401", description="Unauthorized"),
+     *     @OA\Response(response="403", description="Forbidden"),
+     *     @OA\Response(response="404", description="Requested user not found"),
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     * )
+     */
     protected function delete($id): void
     {
-        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+        // validate user object
+        $user = $this->findOrFail($id);
+
+        Registry::getMapper(User::class)->delete($user);
+
+        $this->render(204);
     }
 }

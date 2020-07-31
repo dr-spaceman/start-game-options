@@ -37,6 +37,21 @@ class AlbumController extends Controller
     const REQUIRED_FIELDS = ['id', 'title', 'subtitle'];
     const BASE_URI = API_BASE_URI . '/albums';
 
+    protected function findOrFail(int $id): Album
+    {
+        if (!v::IntVal()->validate($id)) {
+            throw new APIInvalidArgumentException('User ID must be numeric', 'id');
+        }
+
+        try {
+            $album = Registry::getMapper(Album::class)->findById($id, false);
+        } catch (OutOfBoundsException $e) {
+            throw new APINotFoundException($e);
+        }
+
+        return $album;
+    }
+
     /**
      * @OA\Get(
      *     path="/albums/{id}",
@@ -44,28 +59,19 @@ class AlbumController extends Controller
      *     operationId="Albums:GetOne",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="Success!",
      *         @OA\JsonContent(ref="#/components/schemas/album")
      *     ),
-     *     @OA\Response(response=404,
+     *     @OA\Response(response="404",
      *         description="Requested album not found",
      *     ),
      * )
      */
     protected function getOne($id): void
     {
-        if (! v::IntVal()->validate($id)) {
-            throw new APIInvalidArgumentException('Album ID must be numeric', 'id');
-        }
+        $album = $this->findOrFail($id);
 
-        try {
-            $mapper = new AlbumMapper();
-            $album = $mapper->findById($id);
-        } catch (OutOfBoundsException $e) {
-            throw new APINotFoundException($e);
-        }
-        
         $results[] = $this->parseRow($album);
 
         $this->setPayload($results)->render(200);
@@ -81,7 +87,7 @@ class AlbumController extends Controller
      *     @OA\Parameter(ref="#/components/parameters/sort"),
      *     @OA\Parameter(ref="#/components/parameters/fields"),
      *     @OA\Parameter(ref="#/components/parameters/q"),
-     *     @OA\Response(response=200,
+     *     @OA\Response(response="200",
      *         description="Success!",
      *         @OA\JsonContent(ref="#/components/schemas/album")
      *     ),
@@ -147,18 +153,117 @@ class AlbumController extends Controller
         return $row;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/albums/",
+     *     description="Create an album",
+     *     operationId="Albums:Create",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/album")
+     *     ),
+     *     @OA\Response(response="200",
+     *         description="Album modified",
+     *         @OA\JsonContent(ref="#/components/schemas/album")
+     *     ),
+     *     @OA\Response(response="401",
+     *         description="Unauthorized",
+     *     ),
+     *     @OA\Response(response="403",
+     *         description="Forbidden",
+     *     ),
+     *     @OA\Response(response="409",
+     *         description="Conflict: Parameter not valid",
+     *     ),
+     * )
+     */
     protected function createFromRequest($body): void
     {
-        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+        $input = $this->parseBodyJson($body);
+        // Force prototype album
+        $input['id'] = -1;
+
+        try {
+            $album = new Album($input);
+        } catch (\OutOfRangeException $e) {
+            throw new APIInvalidArgumentException($e, '', '', 409);
+        } catch (\Exception $e) {
+            throw new APIInvalidArgumentException($e);
+        }
+
+        Registry::getMapper(Album::class)->insert($album);
+
+        $this->getOne($album->getId());
     }
 
+    /**
+     * @OA\Patch(
+     *     path="/albums/{id}",
+     *     description="Modify an album",
+     *     operationId="Albums:Patch",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/album")
+     *     ),
+     *     @OA\Response(response="200",
+     *         description="Album modified",
+     *         @OA\JsonContent(ref="#/components/schemas/album")
+     *     ),
+     *     @OA\Response(response="401",
+     *         description="Unauthorized",
+     *     ),
+     *     @OA\Response(response="403",
+     *         description="Forbidden",
+     *     ),
+     *     @OA\Response(response="404",
+     *         description="Requested album not found",
+     *     ),
+     *     @OA\Response(response="409",
+     *         description="Conflict: Parameter not valid",
+     *     ),
+     * )
+     */
     protected function updateFromRequest($id, $body): void
     {
-        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+        // validate album object
+        $album = $this->findOrFail($id);
+
+        $input = $this->parseBodyJson($body);
+
+        try {
+            foreach ($input as $key => $value) {
+                $album->setProp($key, $value);
+            }
+        } catch (\OutOfRangeException $e) {
+            throw new APIInvalidArgumentException($e, '', '', 409);
+        } catch (\Exception $e) {
+            throw new APIInvalidArgumentException($e);
+        }
+
+        Registry::getMapper(Album::class)->save($album);
+
+        $this->getOne($id);
     }
 
+    /**
+     * @OA\Detele(
+     *     path="/albums/{id}",
+     *     description="Remove an album",
+     *     operationId="Albums:Remove",
+     *     @OA\Response(response="204", description="Album removed"),
+     *     @OA\Response(response="401", description="Unauthorized"),
+     *     @OA\Response(response="403", description="Forbidden"),
+     *     @OA\Response(response="404", description="Requested album not found"),
+     * )
+     */
     protected function delete($id): void
     {
-        throw new APIException('Method not supported', null, 'METHOD_NOT_SUPPORTED', 405);
+        // validate album object
+        $album = $this->findOrFail($id);
+
+        Registry::getMapper(Album::class)->delete($album);
+
+        $this->render(204);
     }
 }
