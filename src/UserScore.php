@@ -4,28 +4,27 @@ namespace Vgsite;
 
 class UserScore
 {
+    /** @var User */
     private $user;
+
+    /** @var PDO */
     private $pdo;
-    private $logger;
 
     public function __construct(User $user)
     {
         $this->user = $user;
         $this->data = static::getScoreByUserId($user->getId());
 
-        $registry = Registry::instance();
-        $this->pdo = $registry->get('pdo');
-        $this->logger = $registry->get('logger');
-
-        return $this;
+        $this->pdo = Registry::get('pdo');
+        $this->logger = Registry::get('logger');
     }
 
     public static function getScoreByUserId(int $user_id)
     {
         $sql = "SELECT * FROM users_data WHERE user_id=? ORDER BY `date` DESC LIMIT 1";
-        $statement = Registry::instance()->get('pdo')->prepare($sql);
+        $statement = Registry::get('pdo')->prepare($sql);
         $statement->execute([$user_id]);
-        if (!$row = $statement->fetch()) {
+        if (! $row = $statement->fetch()) {
             return null;
         }
         
@@ -75,6 +74,7 @@ class UserScore
         $sql = "INSERT INTO users_data (".implode(", ", array_keys($this->data)).") VALUES 
             ('".implode("', '", array_values($this->data))."');";
         $statement = $this->pdo->prepare($sql);
+
         return $statement->execute();
     }
 }

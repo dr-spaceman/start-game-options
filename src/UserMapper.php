@@ -125,4 +125,13 @@ class UserMapper extends MapperProps
 
         return $obj;
     }
+
+    public function getActivityDates(User $user): array
+    {
+        $sql = "SELECT data_created, data_modified, activity, previous_activity FROM users WHERE user_id=? LIMIT 1";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute([$user->getId()]);
+        
+        return $statement->fetch();
+    }
 }

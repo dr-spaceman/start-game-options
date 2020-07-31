@@ -47,6 +47,24 @@ class User extends DomainObjectProps
     protected $timezone;
     protected $verified = 0;
 
+    /**
+     * Activity Dates
+     * @var string Datetime format
+     */
+    public $data_created;
+    public $data_modified;
+    public $activity;
+    public $previous_activity;
+
+    public function __construct(array $props)
+    {
+        foreach (['data_created', 'data_modified', 'activity', 'previous_activity'] as $key) {
+            $this->{$key} = $props[$key] ?: null;
+        }
+        
+        parent::__construct($props);
+    }
+
     public function setUser_id(int $id): User
     {
         return $this->setId($id);
@@ -197,7 +215,16 @@ class User extends DomainObjectProps
 
     public function getLastLogin(): DateTime
     {
-        return new DateTime($this->getProp('activity'));
+        if ($this->activity) {
+            return new DateTime($this->activity);
+        }
+
+        $dates = static::getMapper()->getActivityDates($this);
+        foreach ($dates as $key => $value) {
+            $this->{$key} = $value;
+        }
+
+        return new DateTime($this->activity);
     }
 
     /**

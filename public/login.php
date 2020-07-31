@@ -8,6 +8,7 @@ use Vgsite\User;
 use Vgsite\UserMapper;
 use Vgsite\UserScore;
 use Vgsite\Badge;
+use Vgsite\Page;
 
 $logger_login = new Logger('login');
 // Register a handler -- file loc and minimum error level to record
@@ -149,7 +150,7 @@ function login()
     $passwordNeedsRehash = password_needs_rehash($user->getPassword(), $currentHashAlgorithm);
     if ($passwordNeedsRehash === true) {
         // Save new password hash
-        $user->setPassword($password);
+        $user->setPassword($password, true);
         $user_mapper->save($user);
     }
 
@@ -161,7 +162,8 @@ function login()
      * Login complete; Post-login business below
      */
 
-    $user_details = $user_mapper->getAllDetails($user);
+    // TODO
+    $user_details = [];//$user_mapper->getAllDetails($user);
 
     // check for new badges earned since last login
     // return array badge IDs
@@ -178,7 +180,12 @@ function login()
     }
 
     // Update activity
-    $sql = sprintf("UPDATE users SET activity='%s', previous_activity='%s' WHERE user_id=%d LIMIT 1", date("Y-m-d H:i:s"), $user->getDetail('activity'), $user->getId());
+    $sql = sprintf(
+        "UPDATE users SET activity='%s', previous_activity='%s' WHERE user_id=%d LIMIT 1", 
+        date("Y-m-d H:i:s"), 
+        $user->getLastLogin()->format('Y-m-d H:i:s'), 
+        $user->getId()
+    );
     $GLOBALS['pdo']->query($sql);
 
     //record current scores and counts
