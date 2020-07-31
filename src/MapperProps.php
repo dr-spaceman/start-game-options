@@ -123,7 +123,7 @@ abstract class MapperProps extends Mapper
             throw new \Exception('Delete statement was executed, but no result recorded.');
         }
 
-        if ($this->logger) $this->logger->info("Delete row " . $this->targetClass(), $obj->getProps());
+        if ($this->logger) $this->logger->notice("Delete row " . $this->targetClass(), $obj->getProps());
 
         return true;
     }
