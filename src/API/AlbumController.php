@@ -138,6 +138,10 @@ class AlbumController extends Controller
             }, ARRAY_FILTER_USE_KEY);
         }
 
+        $row['links'] = array(
+            "page" => 'http://' . getenv('HOST_DOMAIN') . $album->getUrl(),
+        );
+
         $row['href'] = $this->parseLink($row['id']);
 
         return $row;

@@ -227,13 +227,18 @@ class User extends DomainObjectProps
         return new DateTime($this->activity);
     }
 
+    public function getUrl(): string
+    {
+        return '/~' . $this->getUsername();
+    }
+
     /**
      * Render user in HTML form
      */
     public function render($show_avatar=true, $link_profile=true): string
     {
         $ret = '';
-        if ($link_profile) $ret.= '<a href="/~'.$this->username.'" title="'.$this->username.'\'s profile">';
+        if ($link_profile) $ret.= sprintf('<a href="%s" title="%s\'s profile">', $this->getUrl(), $this->username);
         if ($show_avatar) $ret.= $this->getAvatar()->avatar_tn_src;
         $ret.= '<span class="username">'.$this->username.'</span>';
         if ($link_profile) $ret.= '</a>';

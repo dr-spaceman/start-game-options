@@ -151,8 +151,9 @@ class GameController extends Controller
 
         $index_data = json_decode($row['index_data'], true) ?: [];
         $row = array_merge($row, $index_data);
-        $row['links']['page'] = pageURL($row['title'], 'game');
-        $row['links']['box_art'] = $row['rep_image'];
+        $domain = 'http://' . getenv('HOST_DOMAIN');
+        $row['links']['page'] = $domain . pageURL($row['title'], 'game');
+        $row['links']['box_art'] = $domain . $row['rep_image'];
         unset($row['index_data'], $row['rep_image'], $row['rep_image'], $row['background_image'], $row['redirect_to'], $row['creator'], $row['modifier'], $row['featured']);
         
         if ($fields_sql = $this->parseQuery('fields', '')) {

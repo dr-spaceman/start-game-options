@@ -107,7 +107,7 @@ class SearchController extends Controller
                     "type" => $row['type'],
                     "category" => $category,
                     "links" => array(
-                        "page" => pageURL($row['title'], $row['type']),
+                        "page" => 'http://' . getenv('HOST_DOMAIN') . pageURL($row['title'], $row['type']),
                     ),
                     "href" => $this->parseLink($row['id'], $row['type']),
                 );
@@ -131,7 +131,7 @@ class SearchController extends Controller
                     "tag" => 'AlbumID:' . $album->getProp('albumid'),
                     "release_date" => $album->getProp('datesort'),
                     "links" => array(
-                        "page" => $album->getUrl(),
+                        "page" => 'http://' . getenv('HOST_DOMAIN') . $album->getUrl(),
                     ),
                     "href" => $this->parseLink($album->getId(), 'album'),
                 );

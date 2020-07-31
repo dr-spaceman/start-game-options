@@ -152,6 +152,10 @@ class UserController extends Controller
             unset($row['password']);
         }
 
+        $row['links'] = array(
+            "page" => 'http://' . getenv('HOST_DOMAIN') . $user->getUrl(),
+        );
+
         $row['href'] = $this->parseLink($row['user_id']);
 
         return $row;
