@@ -129,7 +129,7 @@ class SearchController extends Controller
                     "type" => "album",
                     "category" => "music",
                     "tag" => 'AlbumID:' . $album->getProp('albumid'),
-                    "release_date" => $album->getProp('datesort'),
+                    "release_date" => $album->getProp('release'),
                     "links" => array(
                         "page" => 'http://' . getenv('HOST_DOMAIN') . $album->getUrl(),
                     ),

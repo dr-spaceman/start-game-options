@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: 'Vigeogamesite API'
-  version: 0.3.5
+  title: 'Videogamesite API'
+  version: 0.3.6
 servers:
   -
     url: 'http://vgsite/api'
@@ -181,6 +181,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/game'
+  '/people/{id}':
+    get:
+      description: 'A person'
+      operationId: 'People:GetOne'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+        -
+          $ref: '#/components/parameters/fields'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/person'
+        '404':
+          description: 'Requested person not found'
+  /people:
+    get:
+      description: 'A list of people'
+      operationId: 'People:GetAll'
+      parameters:
+        -
+          $ref: '#/components/parameters/page'
+        -
+          $ref: '#/components/parameters/per_page'
+        -
+          $ref: '#/components/parameters/sort'
+        -
+          $ref: '#/components/parameters/fields'
+        -
+          $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/person'
   /search:
     get:
       description: 'Search all the things'
@@ -397,6 +437,45 @@ components:
           description: 'Earliest release for any platform or region'
           type: string
           format: date
+        href:
+          type: string
+      type: object
+    person:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        name_sort:
+          description: 'A modified name better used for natural sorting'
+          type: string
+        keywords:
+          type: string
+        description:
+          type: string
+        created:
+          description: 'When the database entry was created'
+          type: string
+          format: datetime
+        modified:
+          description: 'When the database entry was modified'
+          type: string
+          format: datetime
+        contributors:
+          description: 'List of user IDs of users who helped build the data entry'
+          type: array
+          items:
+            type: integer
+        developers:
+          type: array
+          items:
+            type: string
+        dob:
+          description: 'Date of birth'
+          type: string
+          format: date
+        nationality:
+          type: string
         href:
           type: string
       type: object

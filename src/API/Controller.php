@@ -86,7 +86,7 @@ abstract class Controller
                 if (! $this->request->getPath()[1]) {
                     throw new APIInvalidArgumentException('No ID parameter given in the request.', 'id', 'MISSING_PARAMETER');
                 }
-                
+
                 $this->delete($this->request->getPath()[1]);
                 break;
             default:
@@ -372,6 +372,7 @@ abstract class Controller
         if ($root) {
             $roots = [
                 'game' => 'games',
+                'person' => 'people',
                 'album' => 'albums',
                 'user' => 'users',
                 'badge' => 'badges',

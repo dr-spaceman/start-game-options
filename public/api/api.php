@@ -7,7 +7,7 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
  */
 
 /**
- * @OA\Info(title="Vigeogamesite API", version=API_VERSION)
+ * @OA\Info(title="Videogamesite API", version=API_VERSION)
  */
 
 /** 
@@ -76,17 +76,6 @@ try {
 
 	$base = $request->getPath()[0];
 
-	$schema = [
-		'search/'		=> ['GET'],
-		'games' 		=> ['GET', 'POST'],
-		'games/{id}'	=> ['GET', 'PATCH', 'DELETE'],
-		'users' 		=> ['GET', 'POST'],
-		'users/{id}'	=> ['GET', 'PATCH', 'DELETE'],
-		'posts/'		=> ['GET', 'POST'],
-		'posts/{id}'	=> ['GET', 'PATCH', 'DELETE'],
-		'_PARAMETERS_'	=> ['q={query}', 'page={page}', 'per_page={number_per_page}', 'sort={field}[:asc|desc]', 'fields={list,of,fields}'],
-	];
-
 	// foreach ($request->getHeaders() as $header_name => $headers) {
 	// 	echo(sprintf("%s: %s", $header_name, $request->getHeaderLine($header_name))).PHP_EOL;
 	// };
@@ -96,6 +85,7 @@ try {
 	$controllers = [
 		'search' => 'Vgsite\API\SearchController',
 		'games' => 'Vgsite\API\GameController',
+		'people' => 'Vgsite\API\PersonController',
 		'users' => 'Vgsite\API\UserController',
 		'albums' => 'Vgsite\API\AlbumController',
 		'badges' => 'Vgsite\API\BadgeController',
