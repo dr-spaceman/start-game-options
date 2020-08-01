@@ -33,6 +33,16 @@ set_exception_handler(function (\Throwable $e) {
     echo 'Uncaught Exception: ' . $e->getMessage();
 });
 
+use Intervention\HttpAuth\HttpAuth;
+// create basic auth by array
+$auth = HttpAuth::make([
+    'type' => 'basic',
+    'realm' => 'Secure Resource',
+    'username' => 'admin',
+    'password' => 'secret',
+]);
+$auth->secure();
+
 require_once __DIR__.'/bootstrap_common.php';
 
 /** END API CONFIG */

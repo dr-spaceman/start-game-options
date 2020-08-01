@@ -13,7 +13,7 @@ use Vgsite\UserMapper;
 // Register logger
 $logger = new Logger('app');
 // Register a handler -- file loc and minimum error level to record
-$log_level = getenv('ENVIRONMENT') == "development" ? Logger::DEBUG : Logger::INFO;
+$log_level = getenv('ENVIRONMENT') == 'development' ? Logger::DEBUG : Logger::INFO;
 $logger->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/app.log', $log_level));
 // Inject details of error source
 $logger->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::ERROR));
@@ -26,17 +26,20 @@ $db_options = array();
 $loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);
 $template = new \Twig\Environment($loader, [
     'cache' => CACHE_DIR.'/compilation_cache',
-    'debug' => (getenv('ENVIRONMENT') == "development" ? true : false),
+    'debug' => getenv('ENVIRONMENT') == 'development',
 ]);
 
 // Catch uncaught exceptions
-set_exception_handler(function (\Throwable $e) {
+set_exception_handler(function (\Throwable $e) use ($template) {
     Registry::get('logger')->warning($e);
-    if (getenv('ENVIRONMENT') == "development") echo $e;
-    else echo $e->getMessage();
+    $message = (getenv('ENVIRONMENT') == 'development') ? $e : $e->getMessage();
+    echo $template->render('error.html', ['message' => $message]);
+    exit;
 });
 
 require_once __DIR__ . '/bootstrap_common.php';
+
+$template->addGlobal('session', $_SESSION);
 
 /** END APP CONFIG **/
 
@@ -47,19 +50,24 @@ $warnings = array();
 $results  = array();
 
 $current_user = null;
-$usrname = null;
-$usrid = -1;
-$_SESSION['user_rank'] = User::GUEST;
 
 if ($_SESSION['logged_in'] && $_SESSION['user_id']) {
-    $mapper = new UserMapper;
-    $current_user = $mapper->findById($_SESSION['user_id']);
-    Registry::set('current_user', $current_user);
+    try {
+        /** @var User */
+        $current_user = Registry::getMapper(User::class)->findById($_SESSION['user_id']);
+        Registry::set('current_user', $current_user);
+        $_SESSION['user_rank'] = $current_user->getRank();
+        $_SESSION['username'] = $current_user->getUsername();
+    } catch (Exception $e) {
+        unset($_SESSION['logged_in'], $_SESSION['user_id']);
+        echo $template->render('error.html', ['message' => 'There was an error registering your user session. We have deleted your user cookies. Try logging in again. Details: ' . $e->getMessage()]);
+        exit;
+    }
 
     // Dicouraged old variable references
-    $usrname = $current_user->getUsername();
-    $usrid = $_SESSION['user_id'];
-    $usrlastlogin = $current_user->getLastLogin();
+    // $usrname = $current_user->getUsername();
+    // $usrid = $_SESSION['user_id'];
+    // $usrlastlogin = $current_user->getLastLogin();
 }
 
 if ($_SESSION['user_rank'] == User::RESTRICTED) {
