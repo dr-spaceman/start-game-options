@@ -8,6 +8,15 @@
     </head>
     <body>
         <header>
+            <div id="login">
+                {% if session.logged_in %}
+                    Hello {{session.username}}! 
+                    <a href="/login.php?do=logout">Log Out</a>
+                {% else %}
+                Hello Guest!
+                    <a href="/login.php">Log In</a> | <a href="/register.php">Register</a>
+                {% endif %}
+            </div>
             <div id="search"></div>
         </header>
 

@@ -8,7 +8,6 @@ use Vgsite\User;
 use Vgsite\UserMapper;
 use Vgsite\UserScore;
 use Vgsite\Badge;
-use Vgsite\Page;
 
 $logger_login = new Logger('login');
 // Register a handler -- file loc and minimum error level to record
@@ -25,7 +24,8 @@ if (isset($_POST['login'])) {
 		$user = login();
 
 		header($_SERVER['SERVER_PROTOCOL'].' 200 OK', true, 200);
-		header('Location: /');
+        header('Location: /');
+        exit;
 
 		?><html>
 			<head>
@@ -85,15 +85,12 @@ if (isset($_POST['login'])) {
 echo $template->render('login.html', ['login_error' => $login_error]);
 
 //logout
-if(isset($_GET['do']) && $_GET['do'] == "logout") {
+if (isset($_GET['do']) && $_GET['do'] == "logout") {
 	setcookie(session_name(), '', time()-42000, '/');
-	setcookie("usrsession", "", time()-60*60*24*100, "/");
-	unset($_SESSION['usrname']);
-	unset($_SESSION['usrid']);
-	unset($_SESSION['usrrank']);
-	unset($_SESSION['usrlastlogin']);
+	unset($_SESSION['username'], $_SESSION['user_id'], $_SESSION['user_rank'], $_SESSION['logged_in']);
 	session_destroy();
-	?><?=Page::HTML_TAG?>
+	?><!DOCTYPE html>
+    <html>
     <head>
     <title>Redirecting....</title>
     <link rel="stylesheet" type="text/css" href="/bin/css/screen.css" />
@@ -156,6 +153,7 @@ function login()
 
     $_SESSION['user_id'] = $user->getId();
     $_SESSION['user_rank'] = $user->getRank();
+    $_SESSION['username'] = $user->getUsername();
     $_SESSION['logged_in'] = 'true';
 
     /**

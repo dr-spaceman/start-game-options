@@ -14,8 +14,6 @@
     <h2>Log In</h2>
 
     <p>{{ login_error }}</p>
-
-    <p><a href="/login_fb.php" style="display:block;" onclick="$.cookie('lastpage', '<?=$_SERVER['HTTP_REFERER']?>', {expires:1, path:'/'})"><img src="/bin/img/fbconnect_225.png" width="225" height="33" alt="Login with Facebook"/></a></p>
     
     <form method="post" action="login.php" id="loginform">
         <input type="hidden" name="do" value="login"/>
