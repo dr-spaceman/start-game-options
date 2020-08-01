@@ -247,14 +247,12 @@ class AlbumController extends Controller
     }
 
     /**
-     * @OA\Detele(
+     * @OA\Delete(
      *     path="/albums/{id}",
      *     description="Remove an album",
      *     operationId="Albums:Remove",
-     *     @OA\Response(response="204", description="Album removed"),
-     *     @OA\Response(response="401", description="Unauthorized"),
-     *     @OA\Response(response="403", description="Forbidden"),
-     *     @OA\Response(response="404", description="Requested album not found"),
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=204, description="Album successfully removed")
      * )
      */
     protected function delete($id): void

@@ -264,15 +264,12 @@ class UserController extends Controller
     }
 
     /**
-     * @OA\Detele(
+     * @OA\Delete(
      *     path="/users/{id}",
      *     description="Remove a user",
      *     operationId="Users:Remove",
-     *     @OA\Response(response="204", description="User removed"),
-     *     @OA\Response(response="401", description="Unauthorized"),
-     *     @OA\Response(response="403", description="Forbidden"),
-     *     @OA\Response(response="404", description="Requested user not found"),
      *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=204, description="User successfully removed"),
      * )
      */
     protected function delete($id): void

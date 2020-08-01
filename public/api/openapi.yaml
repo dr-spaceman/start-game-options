@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: 'Vigeogamesite API'
-  version: 0.3.4
+  version: 0.3.5
 servers:
   -
     url: 'http://vgsite/api'
@@ -24,6 +24,15 @@ paths:
                 $ref: '#/components/schemas/album'
         '404':
           description: 'Requested album not found'
+    delete:
+      description: 'Remove an album'
+      operationId: 'Albums:Remove'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: 'Album successfully removed'
     patch:
       description: 'Modify an album'
       operationId: 'Albums:Patch'
@@ -214,6 +223,15 @@ paths:
                 $ref: '#/components/schemas/user'
         '404':
           description: 'Requested user not found'
+    delete:
+      description: 'Remove a user'
+      operationId: 'Users:Remove'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: 'User successfully removed'
     patch:
       description: 'Modify a user'
       operationId: 'Users:Patch'
@@ -418,23 +436,6 @@ components:
         href:
           type: string
       type: object
-  responses:
-    '200':
-      description: 'Album modified'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/album'
-    '401':
-      description: Unauthorized
-    '403':
-      description: Forbidden
-    '404':
-      description: 'Requested album not found'
-    '409':
-      description: 'Conflict: Parameter not valid'
-    '204':
-      description: 'User removed'
   parameters:
     q:
       name: q
@@ -475,4 +476,3 @@ components:
       required: true
       schema:
         type: integer
-  requestBodies: {  }
