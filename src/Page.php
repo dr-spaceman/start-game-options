@@ -2,9 +2,12 @@
 
 namespace Vgsite;
 
+use Exception;
+use TypeError;
+
 class Page
 {
-	const HTML_TAG = '<!DOCTYPE html><html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
+	public const HTML_TAG = '<!DOCTYPE html><html dir="ltr" lang="en-US" xmlns:fb="http://www.facebook.com/2008/fbml">';
 
 	private $called = false;
 	private $called_sections = array();
@@ -23,65 +26,38 @@ class Page
 
 	public $fullwidth = false;
 
-	/**
-	 * Page title
-	 * @var string
-	 */
+	/** @var string */
 	public $title;
 
 	/**
-	 * attributes to apply to parts of the page [body, header]
+	 * Attributes to apply to parts of the page [body, header]
 	 * ie $dom['body']['style'][]='font-size:120%;', $dom['body']['class'][]='className'
 	 * @var array
 	 */
 	public $dom = array();
 
-	/**
-	 * list of css filenames
-	 * @var array
-	 */
+	/** @var array List of css filenames */
 	public $css = array();
 
-	/**
-	 * CSS put directly into page <style> tag
-	 * @var string
-	 */
+	/** @var string CSS put directly into page <style> tag */
 	public $freestyle;
 
-	/**
-	 * Javascript code put into page <script> tag
-	 * @var [type]
-	 */
+	/** @var [type] Javascript code put into page <script> tag */
 	public $javascript;
 
-	/**
-	 * list of js filenames
-	 * @var array
-	 */
+	/** @var array list of js filenames */
 	public $javascripts = array();
 
-	/**
-	 * Additional meta tags
-	 * @var string
-	 */
+	/** @var string Additional meta tags */
 	public $meta_data;
 
-	/**
-	 * meta data [$property => $content]
-	 * @var array
-	 */
+	/** @var array meta data [$property => $content] */
 	public $meta = array();
 
-	/**
-	 * connect to facebook
-	 * @var bool
-	 */
+	/** @var bool connect to facebook */
 	public $fb;
 
-	/**
-	 * attributes to give to the first page section
-	 * @var [type]
-	 */
+	/** @var [type] attributes to give to the first page section */
 	public $first_section;
 
 	public $badges;
@@ -103,9 +79,10 @@ class Page
 
 		$this->called_sections['header'] = 1;
 
-		if (!is_array($this->css)) {
-			$this->css = array();
+		if (! empty($this->css) && ! is_array($this->css)) {
+			throw new TypeError('Page property `css` should be an array; ' . gettype($this->css) . ' given.');
 		}
+		$print_style = '';
 		if ($this->css) {
 			foreach ($this->css as $src) {
 				if ($less = substr($src, -5) == ".less") {
@@ -116,7 +93,7 @@ class Page
 				}
 			}
 		}
-		if ($this->freestyle && !strstr($freestyle, '<style')) {
+		if ($this->freestyle && !strstr($this->freestyle, '<style')) {
 			$print_style.= '<style type="text/css"><!--'.$this->freestyle.'--></style>'."\n\t";
 		}
 
@@ -145,46 +122,46 @@ class Page
 		}
 
 		?><?=Page::HTML_TAG?>
-		<head<?=$this->head?>>
-			<meta charset="UTF-8">
-			<title><?=$this->title?></title>
-			<meta name="keywords" content="<?=$this->meta_keywords?>"/>
-			<meta name="description" content="<?=$this->meta_description?>"/>
-			<meta name="DC.title" content="<?=$this->title?>"/>
-			<meta property="fb:app_id" content="142628175764082"/>
-			<meta property="og:locale" content="en_US"/>
-			<?=$this->meta_data?>
-			<link rel="shortcut icon" href="/favicon.ico"/>
-			<link rel="stylesheet" type="text/css" href="/bin/css/screen.css" media="screen"/>
-			<?=$print_style?>
-			<script type="text/javascript" src="/bin/script/jquery.1.7.1.js"></script>
-			<script type="text/javascript" src="/bin/script/jquery-ui-2.js"></script>
-			<script type="text/javascript" src="/bin/script/jquery.cookies.js"></script>
-			<script type="text/javascript" src="/bin/script/jquery.address.js"></script>
-			<script type="text/javascript" src="/bin/script/jquery.mouseposscroll.js"></script>
-			<script type="text/javascript" src="/bin/script/global.js"></script>
-			<script type="text/javascript" src="/bin/script/tags.js"></script>
-			<?
-			if ($this->javascripts) {
-				$this->javascripts = array_unique($this->javascripts);
-				foreach ($this->javascripts as $src) {
-					echo '<script type="text/javascript" src="'.$src.'"></script>'."\n\t";
-				}
-			}
-			?>
-			<?=$this->javascript?>
-			<script type="text/javascript"><!--Google Analytics-->
-			  var _gaq = _gaq || [];
-			  _gaq.push(['_setAccount', 'UA-1998327-5']);
-			  _gaq.push(['_trackPageview']);
-			  (function() {
-			    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			  })();
-			</script>
-		</head>
-		<?
+<head<?=$this->head?>>
+	<meta charset="UTF-8">
+	<title><?=$this->title?></title>
+	<meta name="keywords" content="<?=$this->meta_keywords?>"/>
+	<meta name="description" content="<?=$this->meta_description?>"/>
+	<meta name="DC.title" content="<?=$this->title?>"/>
+	<meta property="fb:app_id" content="142628175764082"/>
+	<meta property="og:locale" content="en_US"/>
+	<?=$this->meta_data?>
+	<link rel="shortcut icon" href="/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/bin/css/screen.css" media="screen"/>
+	<?=$print_style?>
+	<script type="text/javascript" src="/bin/script/jquery.1.7.1.js"></script>
+	<script type="text/javascript" src="/bin/script/jquery-ui-2.js"></script>
+	<script type="text/javascript" src="/bin/script/jquery.cookies.js"></script>
+	<script type="text/javascript" src="/bin/script/jquery.address.js"></script>
+	<script type="text/javascript" src="/bin/script/jquery.mouseposscroll.js"></script>
+	<script type="text/javascript" src="/bin/script/global.js"></script>
+	<script type="text/javascript" src="/bin/script/tags.js"></script>
+	<?
+	if ($this->javascripts) {
+		$this->javascripts = array_unique($this->javascripts);
+		foreach ($this->javascripts as $src) {
+			echo '<script type="text/javascript" src="'.$src.'"></script>'."\n\t";
+		}
+	}
+	echo $this->javascript;
+	?>
+	<script type="text/javascript">
+		/** Google Analytics **/
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-1998327-5']);
+		_gaq.push(['_trackPageview']);
+		(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+</head><?
 
 		if ($this->minimalist) $this->dom['body']['class'][] = 'min';
 		if ($this->superminimalist) $this->dom['body']['class'][] = 'x-min';

@@ -1,9 +1,8 @@
 <?php
 
-// load template
-
 require_once dirname(__FILE__) . '/../config/bootstrap_app.php';
-echo $template->render('index.html');
+$page = $template->load('index.html');
+echo $page->render(['the' => 'variables', 'go' => 'here']);
 
 exit;
 

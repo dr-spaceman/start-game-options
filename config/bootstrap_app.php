@@ -27,6 +27,7 @@ $loader = new \Twig\Loader\FilesystemLoader(TEMPLATE_DIR);
 $template = new \Twig\Environment($loader, [
     'cache' => CACHE_DIR.'/compilation_cache',
     'debug' => getenv('ENVIRONMENT') == 'development',
+    'auto_reload' => getenv('ENVIRONMENT') == 'development',
 ]);
 
 // Catch uncaught exceptions
