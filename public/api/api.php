@@ -3,10 +3,6 @@
 require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
 
 /**
- * @OA\Server(url=API_BASE_URL)
- */
-
-/**
  * @OA\Info(title="Videogamesite API", version=API_VERSION)
  */
 

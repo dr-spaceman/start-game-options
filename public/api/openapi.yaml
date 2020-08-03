@@ -2,9 +2,6 @@ openapi: 3.0.0
 info:
   title: 'Videogamesite API'
   version: 0.3.6
-servers:
-  -
-    url: 'http://vgsite/api'
 paths:
   '/albums/{id}':
     get:

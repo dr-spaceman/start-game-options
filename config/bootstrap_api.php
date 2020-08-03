@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/environment.php';
 
 define('API_BASE_URI', '/api');
-define('API_BASE_URL', sprintf('http://%s%s', getenv('HOST_DOMAIN'), API_BASE_URI));
+define('API_BASE_URL', sprintf('https://%s%s', getenv('HOST_DOMAIN'), API_BASE_URI));
 define('API_VERSION', '0.3.6');
 
 use Vgsite\Registry;
@@ -33,15 +33,15 @@ set_exception_handler(function (\Throwable $e) {
     echo 'Uncaught Exception: ' . $e->getMessage();
 });
 
-use Intervention\HttpAuth\HttpAuth;
-// create basic auth by array
-$auth = HttpAuth::make([
-    'type' => 'basic',
-    'realm' => 'Secure Resource',
-    'username' => 'admin',
-    'password' => 'secret',
-]);
-$auth->secure();
+// use Intervention\HttpAuth\HttpAuth;
+// // create basic auth by array
+// $auth = HttpAuth::make([
+//     'type' => 'basic',
+//     'realm' => 'Secure Resource',
+//     'username' => 'admin',
+//     'password' => 'secret',
+// ]);
+// $auth->secure();
 
 require_once __DIR__.'/bootstrap_common.php';
 
