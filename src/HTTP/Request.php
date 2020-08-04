@@ -2,6 +2,9 @@
 
 namespace Vgsite\HTTP;
 
+use InvalidArgumentException;
+use Vgsite\API\AccessToken;
+
 /**
  * Handles HTTP request
  * 
@@ -95,5 +98,20 @@ class Request
     public function getBody(): string
     {
         return $this->body->getContents();
+    }
+
+    public function validateAuthorization(): void
+    {
+        if (! $this->hasHeader('Authorization')) {
+            throw new InvalidArgumentException('Request must include header `Authorization` with a token (`Bearer <token>`)');
+        }
+
+        $test = '/Bearer (?P<token>[a-zA-Z0-9]+)/i';
+        preg_match($test, $this->getHeader('Authorization'), $matches);
+        if (! $token = $matches['token']) {
+            throw new InvalidArgumentException('Could not extract token from Authorization header. Try: `Authorization: Bearer <TOKEN>');
+        }
+
+        AccessToken::validateToken($token);
     }
 }
