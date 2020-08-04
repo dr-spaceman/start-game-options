@@ -132,13 +132,13 @@ function login()
 
     $user_mapper = new UserMapper();
     
-    $user = !empty($email) ? $user_mapper->findByEmail($email) : $user_mapper->findByUsername($username);
-
-    if (is_null($user)) {
+    try {
+        $user = !empty($email) ? $user_mapper->findByEmail($email) : $user_mapper->findByUsername($username);
+    } catch (\OutOfBoundsException $e) {
         throw new LoginException('Invalid username', 401);
     }
 
-    if (password_verify($password, $user->getPassword()) === false) {
+    if (!password_verify($password, $user->getPassword())) {
         throw new LoginException('Invalid password', 401);
     }
 
