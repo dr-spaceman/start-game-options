@@ -2,6 +2,15 @@
 
 require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
 
+use Vgsite\API\AccessToken;
+use Vgsite\API\CollectionJson;
+use Vgsite\API\Exceptions\APIAuthorizationException;
+use Vgsite\API\Exceptions\APIException;
+use Vgsite\API\Exceptions\APINotFoundException;
+use Vgsite\HTTP\Request;
+use Vgsite\HTTP\Response;
+use Vgsite\Registry;
+
 /**
  * @OA\Server(url=API_BASE_URI)
  */
@@ -51,14 +60,49 @@ require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
  *     description="The numeric ID for the requested item",
  *     @OA\Schema(type="integer")
  * )
+ * 
+ * @OA\Schema(schema="token",
+ *     type="object",
+ *     @OA\Property(property="access_token", type="string", description="Provides the requested access token to authorize requests to the API."),
+ *     @OA\Property(property="created_at", type="date-time", description="Time at which the access token was generated."),
+ *     @OA\Property(property="expires_in", type="integer", description="Indicates that the generated access token expires in 36,000 seconds, 600 minutes, or 10 hours."),
+ * )
+ * 
+ * @OA\Post(
+ *     path="/token",
+ *     summary="Generate Token",
+ *     description="Use this method to generate an access token to authorize requests to the API.",
+ *     operationId="Auth:token",
+ *     @OA\Parameter(
+ *         name="client_id",
+ *         in="path",
+ *         required=true,
+ *         description="The client ID given by the API for a specific app",
+ *         @OA\Schema(type="integer"),
+ *     ),
+ *     @OA\Parameter(
+ *         name="client_secret",
+ *         in="path",
+ *         required=true,
+ *         description="The client secret given by the API for a specific app",
+ *         @OA\Schema(type="string"),
+ *     ),
+ *     @OA\Parameter(
+ *         name="grant_type",
+ *         in="path",
+ *         required=true,
+ *         description="enum('authorization_code', 'client_credentials')",
+ *         @OA\Schema(type="string"),
+ *     ),
+ *     @OA\Response(response="200",
+ *         description="Successfully generated token",
+ *         @OA\JsonContent(ref="#/components/schemas/token"),
+ *     ),
+ *     @OA\Response(response="401",
+ *         description="Unauthorized: client_id or client_secret are invalid.",
+ *     ),
+ * )
  */
-
-use Vgsite\API\CollectionJson;
-use Vgsite\API\Exceptions\APIException;
-use Vgsite\API\Exceptions\APINotFoundException;
-use Vgsite\HTTP\Request;
-use Vgsite\HTTP\Response;
-use Vgsite\Registry;
 
 ob_start();
 
@@ -75,6 +119,23 @@ try {
 	// };
 
 	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
+	
+	// OAUTH Token requested via HTTP POST
+	if ($base == "token") {
+		if ($request->getMethod() != "POST") {
+			throw new APIAuthorizationException('To get an access token, POST a request.', null, 'INVALID_REQUEST_METHOD', 405);
+		}
+
+		$token_params = [
+			$request->getQuery()['grant_type'],
+			$request->getQuery()['client_id'],
+			$request->getQuery()['client_secret']
+		];
+		$access = new AccessToken(...$token_params);
+
+		$response = new Response();
+		$response->render(json_encode(["access_token" => $access->getToken(), "created" => date('Y-m-d H:i:s'), "expires_in" => $access::EXPIRES]));
+	}
 
 	$controllers = [
 		'search' => 'Vgsite\API\SearchController',

@@ -7,7 +7,7 @@ use Vgsite\HTTP\Response;
 class APIException extends \Exception
 {
     public static $types = [
-        'UNDEFINED', 'MISSING_REQUIRED_PARAMETER', 'INVALID_PARAMETER', 'INVALID_REQUEST_METHOD', 'INVALID_RANGE_FORMAT', 'SYSTEM_ERROR'
+        'UNDEFINED', 'MISSING_REQUIRED_PARAMETER', 'INVALID_PARAMETER', 'INVALID_REQUEST_METHOD', 'INVALID_RANGE_FORMAT', 'SYSTEM_ERROR', 'INVLID_CREDENTIALS'
     ];
 
     private $error_message = Array();

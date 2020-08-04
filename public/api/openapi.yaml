@@ -1,11 +1,47 @@
 openapi: 3.0.0
 info:
   title: 'Videogamesite API'
-  version: 0.3.6
+  version: '0.4'
 servers:
   -
     url: /api
 paths:
+  /token:
+    post:
+      summary: 'Generate Token'
+      description: 'Use this method to generate an access token to authorize requests to the API.'
+      operationId: 'Auth:token'
+      parameters:
+        -
+          name: client_id
+          in: path
+          description: 'The client ID given by the API for a specific app'
+          required: true
+          schema:
+            type: integer
+        -
+          name: client_secret
+          in: path
+          description: 'The client secret given by the API for a specific app'
+          required: true
+          schema:
+            type: string
+        -
+          name: grant_type
+          in: path
+          description: 'enum(''authorization_code'', ''client_credentials'')'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Successfully generated token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/token'
+        '401':
+          description: 'Unauthorized: client_id or client_secret are invalid.'
   '/albums/{id}':
     get:
       description: 'An album'
@@ -346,6 +382,18 @@ paths:
           description: 'Conflict: Parameter not valid'
 components:
   schemas:
+    token:
+      properties:
+        access_token:
+          description: 'Provides the requested access token to authorize requests to the API.'
+          type: string
+        created_at:
+          description: 'Time at which the access token was generated.'
+          type: date-time
+        expires_in:
+          description: 'Indicates that the generated access token expires in 36,000 seconds, 600 minutes, or 10 hours.'
+          type: integer
+      type: object
     album:
       properties:
         id:

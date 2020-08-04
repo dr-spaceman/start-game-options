@@ -5,6 +5,8 @@ require_once dirname(__FILE__) . '/../config/bootstrap_tests.php';
 
 use PHPUnit\Framework\TestCase;
 use Respect\Validation\Validator as v;
+use Vgsite\API\AccessToken;
+use Vgsite\API\Exceptions\APIAuthorizationException;
 
 class APITest extends TestCase
 {
@@ -14,6 +16,8 @@ class APITest extends TestCase
     {
         $client = new GuzzleHttp\Client(['base_uri' => API_BASE_URL.'/', 'http_errors' => false]);
         self::$client = $client;
+
+        echo API_BASE_URL;
     }
 
     public function testHttpClient()
@@ -25,7 +29,7 @@ class APITest extends TestCase
     public function testClientCanConnectToApi()
     {
         $this->assertInstanceOf(GuzzleHttp\Client::class, self::$client);
-        $response = self::$client->get(API_BASE_URI.'/users');
+        $response = self::$client->get('users');
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('application/json; charset=UTF-8', $response->getHeaderLine('content-type'));
@@ -75,5 +79,38 @@ class APITest extends TestCase
     {
         $response = self::$client->get('users/1?fields=foo,bar');
         $this->assertEquals(422, $response->getStatusCode());
+    }
+
+    public function testGrantTokenFailsWhenGivenWackyCredentials()
+    {
+        $this->expectException(APIAuthorizationException::class);
+        $access = new AccessToken(12345, 'invalid');
+    }
+
+    public function testGrantToken()
+    {
+        $access = new AccessToken('client_credentials', getenv('API_CLIENT_ID'), getenv('API_CLIENT_SECRET'));
+        $this->assertNotEmpty($access->getToken());
+        $this->assertEquals($access->getToken(), (string) $access->getToken());
+
+        return $access->getToken();
+    }
+
+    public function testGrantTokenPost()
+    {
+        $url = sprintf(
+            'token?grant_type=client_credentials&client_id=%s&client_secret=%s',
+            getenv('API_CLIENT_ID'),
+            getenv('API_CLIENT_SECRET')
+        );
+        $response = self::$client->post($url);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    /** @depends testGrantToken */
+    public function testValidateToken(string $token)
+    {
+        $this->assertNotEmpty($token);
+        AccessToken::validateToken($token);
     }
 }

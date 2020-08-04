@@ -4,12 +4,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/environment.php';
 
 define('API_BASE_URI', '/api');
-define('API_BASE_URL', sprintf('https://%s%s', getenv('HOST_DOMAIN'), API_BASE_URI));
-define('API_VERSION', '0.3.6');
+define('API_BASE_URL', sprintf('%s://%s%s', getenv('ENVIRONMENT') == 'development' ? 'http' : 'https', getenv('HOST_DOMAIN'), API_BASE_URI));
+define('API_TOKEN_URL', API_BASE_URL . '/token');
+define('API_VERSION', '0.4');
 
 use Vgsite\Registry;
 use Monolog\Logger;
-use Intervention\HttpAuth\HttpAuth;
 
 // Register logger
 $logger = new Logger('api');
@@ -33,14 +33,6 @@ set_exception_handler(function (\Throwable $e) {
 
     echo 'Uncaught Exception: ' . $e->getMessage();
 });
-
-$auth = HttpAuth::make([
-    'type' => 'basic',
-    'realm' => 'Secure Resource',
-    'username' => 'admin',
-    'password' => 'vapid101',
-]);
-$auth->secure();
 
 require_once __DIR__.'/bootstrap_common.php';
 
