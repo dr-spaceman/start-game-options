@@ -138,7 +138,9 @@ function login()
         throw new LoginException('Invalid username', 401);
     }
 
-    if (!password_verify($password, $user->getPassword())) {
+    try {
+       $user->verifyPassword($password);
+    } catch (Exception $e) {
         throw new LoginException('Invalid password', 401);
     }
 

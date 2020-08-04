@@ -29,7 +29,7 @@ paths:
         -
           name: grant_type
           in: path
-          description: 'enum(''authorization_code'', ''client_credentials'')'
+          description: 'enum(''authorization_code'', ''password'', ''client_credentials'')'
           required: true
           schema:
             type: string

@@ -91,7 +91,7 @@ use Vgsite\Registry;
  *         name="grant_type",
  *         in="path",
  *         required=true,
- *         description="enum('authorization_code', 'client_credentials')",
+ *         description="enum('authorization_code', 'password', 'client_credentials')",
  *         @OA\Schema(type="string"),
  *     ),
  *     @OA\Response(response="200",

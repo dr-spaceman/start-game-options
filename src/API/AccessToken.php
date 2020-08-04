@@ -3,7 +3,6 @@
 namespace Vgsite\API;
 
 use Vgsite\API\Exceptions\APIAuthorizationException;
-use Vgsite\HTTP\Response;
 use Vgsite\Registry;
 
 class AccessToken
@@ -24,15 +23,22 @@ class AccessToken
         }
 
         switch ($grant_type) {
-            case 'client_credentials':
             case 'password':
+                try {
+                    $user = Registry::getMapper('User')->findByUsername($client_id);
+                    $user->verifyPassword($client_secret);
+                } catch (\Exception $e) {
+                    throw new APIAuthorizationException('Username or password not valid.');
+                }
+                break;
+
+            case 'client_credentials':
                 $this->validateCredentials($client_id, $client_secret);
                 break;
 
             default:
                 throw new APIAuthorizationException("Requested Greant Type `{$grant_type}` is not recognized.", 'grant_type');
         }
-
 
         $this->generateToken($client_id);
     }

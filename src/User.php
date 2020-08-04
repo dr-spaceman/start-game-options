@@ -114,6 +114,13 @@ class User extends DomainObjectProps
         return $this->password;
     }
 
+    public function verifyPassword(string $password): void
+    {
+        if (!password_verify($password, $this->getPassword())) {
+            throw new \Exception('Invalid password');
+        }
+    }
+
     public function setEmail(string $email): User
     {
         if (! v::email()->validate($email)) {
