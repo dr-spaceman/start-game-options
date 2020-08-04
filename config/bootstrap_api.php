@@ -9,6 +9,7 @@ define('API_VERSION', '0.3.6');
 
 use Vgsite\Registry;
 use Monolog\Logger;
+use Intervention\HttpAuth\HttpAuth;
 
 // Register logger
 $logger = new Logger('api');
@@ -33,15 +34,14 @@ set_exception_handler(function (\Throwable $e) {
     echo 'Uncaught Exception: ' . $e->getMessage();
 });
 
-// use Intervention\HttpAuth\HttpAuth;
-// // create basic auth by array
-// $auth = HttpAuth::make([
-//     'type' => 'basic',
-//     'realm' => 'Secure Resource',
-//     'username' => 'admin',
-//     'password' => 'secret',
-// ]);
-// $auth->secure();
+// create basic auth by array
+$auth = HttpAuth::make([
+    'type' => 'basic',
+    'realm' => 'Secure Resource',
+    'username' => 'admin',
+    'password' => 'vapid101',
+]);
+$auth->secure();
 
 require_once __DIR__.'/bootstrap_common.php';
 
