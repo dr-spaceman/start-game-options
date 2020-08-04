@@ -34,7 +34,6 @@ set_exception_handler(function (\Throwable $e) {
     echo 'Uncaught Exception: ' . $e->getMessage();
 });
 
-// create basic auth by array
 $auth = HttpAuth::make([
     'type' => 'basic',
     'realm' => 'Secure Resource',
@@ -44,5 +43,7 @@ $auth = HttpAuth::make([
 $auth->secure();
 
 require_once __DIR__.'/bootstrap_common.php';
+
+require_once __DIR__ . '/user_session.php';
 
 /** END API CONFIG */
