@@ -19,7 +19,9 @@ composer.phar
 /*.htm
 /*.css
 /*.js
-/bin
+/bin/css
+/bin/php
+/bin/script
 /forums
 /music
 /ninadmin

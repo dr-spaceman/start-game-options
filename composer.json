@@ -1,7 +1,8 @@
 {
     "scripts": {
         "compile-apidoc": "openapi --bootstrap ./config/bootstrap_api.php --output ./public/api/ ./public/api/ ./src/API/",
-        "test": "phpunit"
+        "test": "phpunit",
+        "reset-user-password": "php ./bin/reset_user_password.php"
     },
     "autoload": {
         "psr-4": {
