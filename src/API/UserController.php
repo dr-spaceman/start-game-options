@@ -8,6 +8,7 @@ use Vgsite\API\Exceptions\APIException;
 use Vgsite\User;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APINotFoundException;
+use Vgsite\HTTP\Request;
 use Vgsite\Registry;
 use Vgsite\UserMapper;
 
@@ -38,6 +39,13 @@ class UserController extends Controller
     const ALLOWED_FIELDS = ['user_id', 'password', 'username', 'email', 'rank', 'region', 'timezone'];
     const REQUIRED_FIELDS = ['user_id', 'username'];
     const BASE_URI = API_BASE_URI . '/users';
+
+    public function __construct(Request $request)
+    {
+        AccessToken::assertAuthorization($request);
+
+        parent::__construct($request);
+    }
 
     protected function findOrFail(int $id): User
     {

@@ -150,12 +150,6 @@ try {
 		throw new APINotFoundException();
 	}
 
-	try {
-		$request->validateAuthorization();
-	} catch (Exception $e) {
-		throw new APIAuthorizationException($e->getMessage());
-	}
-
 	$controller = new $controller($request);
 	$controller->processRequest();
 } catch (Exception | Error $e) {

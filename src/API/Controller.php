@@ -72,22 +72,27 @@ abstract class Controller
                 };
                 break;
             case 'POST':
+                AccessToken::assertAuthorization($this->request);
                 $this->assertBodyJson();
                 $body_raw = $this->request->getBody();
                 $this->createFromRequest($body_raw);
                 break;
             case 'PATCH':
             case 'PUT':
+                AccessToken::assertAuthorization($this->request);
                 $this->assertBodyJson();
                 $body_raw = $this->request->getBody();
                 $this->updateFromRequest($this->request->getPath()[1], $body_raw);
                 break;
             case 'DELETE':
+                AccessToken::assertAuthorization($this->request);
+
                 if (! $this->request->getPath()[1]) {
                     throw new APIInvalidArgumentException('No ID parameter given in the request.', 'id', 'MISSING_PARAMETER');
                 }
 
                 $this->delete($this->request->getPath()[1]);
+                
                 break;
             default:
                 $message = sprintf(

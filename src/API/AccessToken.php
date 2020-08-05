@@ -2,8 +2,12 @@
 
 namespace Vgsite\API;
 
+use OutOfBoundsException;
 use Vgsite\API\Exceptions\APIAuthorizationException;
+use Vgsite\Exceptions\LoginException;
+use Vgsite\HTTP\Request;
 use Vgsite\Registry;
+use Vgsite\UserMapper;
 
 class AccessToken
 {
@@ -23,24 +27,31 @@ class AccessToken
         }
 
         switch ($grant_type) {
-            case 'password':
-                try {
-                    $user = Registry::getMapper('User')->findByUsername($client_id);
-                    $user->verifyPassword($client_secret);
-                } catch (\Exception $e) {
-                    throw new APIAuthorizationException('Username or password not valid.');
-                }
-                break;
-
             case 'client_credentials':
                 $this->validateCredentials($client_id, $client_secret);
+                $this->generateToken($client_id);
+                break;
+                
+            case 'authorization_code':
+                throw new APIAuthorizationException("Grant type `authorization_code` is not operational yet.", 'grant_type');
+                break;
+
+            case 'password':
+                throw new APIAuthorizationException("Grant type `password` is not operational yet.", 'grant_type');
+
+                // This works, but cannot yet generate token given user info
+                try {
+                    $user = Registry::getMapper(null, UserMapper::class)->findByUsername($client_id);
+                    $user->verifyPassword($client_secret);
+                } catch (\Exception $e) {
+                    throw new APIAuthorizationException($e);
+                }
                 break;
 
             default:
                 throw new APIAuthorizationException("Requested Greant Type `{$grant_type}` is not recognized.", 'grant_type');
         }
 
-        $this->generateToken($client_id);
     }
 
     public function __toString()
@@ -80,5 +91,20 @@ class AccessToken
         if (!$statement->fetchColumn()) {
             throw new APIAuthorizationException('Access token not valid.');
         }
+    }
+
+    public static function assertAuthorization(Request $request): void
+    {
+        if (! $request->hasHeader('Authorization')) {
+            throw new APIAuthorizationException('Request must include header `Authorization` with a token (`Bearer <token>`)');
+        }
+
+        $test = '/Bearer (?P<token>[a-zA-Z0-9]+)/i';
+        preg_match($test, $request->getHeader('Authorization'), $matches);
+        if (! $token = $matches['token']) {
+            throw new APIAuthorizationException('Could not extract token from Authorization header. Try: `Authorization: Bearer <TOKEN>');
+        }
+
+        static::validateToken($token);
     }
 }

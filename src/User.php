@@ -37,7 +37,7 @@ class User extends DomainObjectProps
     public const REGIONS = ['us', 'jp', 'eu', 'au'];
 
     public const PLACEHOLDER_USER = 4651;
-    public const DELETED_USER = 5541;
+    public const DELETED_USER = 4800;
 
     public const PROPS_KEYS = [
         'user_id', 'username', 'password', 'email', 'verified', 'gender', 
