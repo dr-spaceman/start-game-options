@@ -11,13 +11,50 @@ use Vgsite\API\Exceptions\APIAuthorizationException;
 class APITest extends TestCase
 {
     protected static $client;
+    protected static $token;
 
     public static function setUpBeforeClass(): void
     {
-        $client = new GuzzleHttp\Client(['base_uri' => API_BASE_URL.'/', 'http_errors' => false]);
-        self::$client = $client;
+        $access = new AccessToken('client_credentials', getenv('API_CLIENT_ID'), getenv('API_CLIENT_SECRET'));
+        self::$token = $access->getToken();
 
-        echo API_BASE_URL;
+        $client = new GuzzleHttp\Client([
+            'base_uri' => API_BASE_URL . '/',
+            'http_errors' => false,
+            'headers' => [
+                'Authorization' => 'Bearer ' . self::$token,
+            ]
+        ]);
+        self::$client = $client;
+    }
+
+    public function testGrantTokenFailsWhenGivenWackyCredentials()
+    {
+        $this->expectException(APIAuthorizationException::class);
+        $access = new AccessToken(12345, 'invalid');
+    }
+
+    public function testGrantToken()
+    {
+        $this->assertNotEmpty(self::$token);
+        $this->assertEquals(self::$token, (string) self::$token);
+    }
+
+    public function testGrantTokenPost()
+    {
+        $url = sprintf(
+            'token?grant_type=client_credentials&client_id=%s&client_secret=%s',
+            getenv('API_CLIENT_ID'),
+            getenv('API_CLIENT_SECRET')
+        );
+        $response = self::$client->post($url);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testValidateToken()
+    {
+        $this->assertNotEmpty(self::$token);
+        AccessToken::validateToken(self::$token);
     }
 
     public function testHttpClient()
@@ -79,38 +116,5 @@ class APITest extends TestCase
     {
         $response = self::$client->get('users/1?fields=foo,bar');
         $this->assertEquals(422, $response->getStatusCode());
-    }
-
-    public function testGrantTokenFailsWhenGivenWackyCredentials()
-    {
-        $this->expectException(APIAuthorizationException::class);
-        $access = new AccessToken(12345, 'invalid');
-    }
-
-    public function testGrantToken()
-    {
-        $access = new AccessToken('client_credentials', getenv('API_CLIENT_ID'), getenv('API_CLIENT_SECRET'));
-        $this->assertNotEmpty($access->getToken());
-        $this->assertEquals($access->getToken(), (string) $access->getToken());
-
-        return $access->getToken();
-    }
-
-    public function testGrantTokenPost()
-    {
-        $url = sprintf(
-            'token?grant_type=client_credentials&client_id=%s&client_secret=%s',
-            getenv('API_CLIENT_ID'),
-            getenv('API_CLIENT_SECRET')
-        );
-        $response = self::$client->post($url);
-        $this->assertEquals(200, $response->getStatusCode());
-    }
-
-    /** @depends testGrantToken */
-    public function testValidateToken(string $token)
-    {
-        $this->assertNotEmpty($token);
-        AccessToken::validateToken($token);
     }
 }

@@ -27,9 +27,16 @@ class User extends DomainObjectProps
         self::TRUSTED    => 'TRUSTED',
         self::MODERATOR  => 'MODERATOR',
         self::ADMIN      => 'ADMIN',
+        self::MIDADMIN   => 'MIDADMIN',
         self::HIGHADMIN  => 'HIGHADMIN',
         self::SUPERADMIN => 'SUPERADMIN',
     ];
+
+    public const GENDERS = ['she', 'he', 'they', 'it', 'female', 'male', 'asexual'];
+    public const REGIONS = ['us', 'jp', 'eu', 'au'];
+
+    public const PLACEHOLDER_USER = 4651;
+    public const DELETED_USER = 5541;
 
     public const PROPS_KEYS = [
         'user_id', 'username', 'password', 'email', 'verified', 'gender', 
@@ -104,9 +111,13 @@ class User extends DomainObjectProps
         return $this;
     }
 
-    public function hashPassword(string $password)
+    public function hashPassword($password=null): User
     {
-        $this->setPassword($password, true);
+        if (empty($password)) {
+            $password = $this->password;
+        }
+        
+        return $this->setPassword($password, true);
     }
 
     public function getPassword(): string
@@ -183,9 +194,8 @@ class User extends DomainObjectProps
             $gender = 'they';
         }
         
-        $genders = ['she', 'he', 'they', 'it', 'female', 'male', 'asexual'];
-        if (! v::in($genders)->validate($gender)) {
-            throw new InvalidArgumentException("Gender `{$gender}` not valid. Gender must be one of: " . implode(', ', $genders));
+        if (! v::in(self::GENDERS)->validate($gender)) {
+            throw new InvalidArgumentException("Gender `{$gender}` not valid. Gender must be one of: " . implode(', ', self::GENDERS));
         }
 
         $this->gender = $gender;
@@ -195,7 +205,9 @@ class User extends DomainObjectProps
 
     public function setRegion($region='us'): User
     {
-        v::in(['us', 'jp', 'eu', 'au'])->assert($region);
+        if (! v::in(self::REGIONS)->validate($region)) {
+            throw new InvalidArgumentException("Region `{$region}` is not valid. Region must be one of: " . implode(', ', self::REGIONS));
+        }
 
         $this->region = $region;
 

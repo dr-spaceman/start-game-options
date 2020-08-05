@@ -137,7 +137,7 @@ class ImageMapper extends MapperProps
                 throw new \InvalidArgumentException("Session ID needed to insert image collection into databse");
             }
 
-            $sql = "INSERT INTO images_sessions (img_session_id, img_session_description, img_qty, usrid, img_session_created) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())";
+            $sql = "INSERT INTO images_sessions (img_session_id, img_session_description, img_qty, user_id, img_session_created) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())";
             $statement = $this->pdo->prepare($sql);
             $statement->execute([$collection->getId(), $collection->description, $collection->count, $_SESSION['user_id']]);
         } else {
