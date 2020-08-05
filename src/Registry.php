@@ -46,20 +46,26 @@ class Registry
         $inst->registry[$key] = $value;
     }
 
-    public static function getMapper(string $class): Mapper
+    /**
+     * Get a mapper from registry, or register it
+     *
+     * @param string $class
+     * @param class $mapper
+     * 
+     * @return Mapper
+     */
+    public static function getMapper($class=null, $mapper=null): Mapper
     {
         $inst = self::instance();
         if (isset($inst->mappers[$class])) {
             return $inst->mappers[$class];
         }
 
-        $mapper_class = $class."Mapper";
-        
-        if (! class_exists($mapper_class)) {
-            throw new InvalidArgumentException("Cannot get mapper `{$mapper_class}`: Class does not exist.");
+        if (!$mapper) {
+            $mapper = $class."Mapper";
         }
 
-        $inst->mappers[$class] = new $mapper_class();
+        $inst->mappers[$class] = new $mapper();
 
         return $inst->mappers[$class];
     }

@@ -5,6 +5,7 @@ namespace Vgsite;
 use DateTime;
 use InvalidArgumentException;
 use Respect\Validation\Validator as v;
+use Vgsite\Exceptions\LoginException;
 
 class User extends DomainObjectProps
 {
@@ -128,7 +129,7 @@ class User extends DomainObjectProps
     public function verifyPassword(string $password): void
     {
         if (!password_verify($password, $this->getPassword())) {
-            throw new \Exception('Invalid password');
+            throw new LoginException('Invalid password');
         }
     }
 
