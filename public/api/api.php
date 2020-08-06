@@ -118,12 +118,12 @@ try {
 	// 	echo(sprintf("%s: %s", $header_name, $request->getHeaderLine($header_name))).PHP_EOL;
 	// };
 
-	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
+	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER, '_REQUEST' => $_REQUEST);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 	
 	// OAUTH Token requested via HTTP POST
 	if ($base == "token") {
 		if ($request->getMethod() != "POST") {
-			throw new APIAuthorizationException('To get an access token, POST a request.', null, 'INVALID_REQUEST_METHOD', 405);
+			throw new APIAuthorizationException('To get an access token, POST a request (`'.$request->getMethod().'` used)', null, 'INVALID_REQUEST_METHOD', 405);
 		}
 
 		$token_params = [
