@@ -61,8 +61,12 @@ abstract class Controller
         }
     }
 
-    private function doProcessRequest(): void
+    protected function doProcessRequest(): void
     {
+        if (! in_array($this->request->getMethod(), static::ALLOWED_METHODS)) {
+            $this->invalidRequestMethod();
+        }
+        
         switch ($this->request->getMethod()) {
             case 'GET':
                 if (! $this->request->getPath()[1]) {
@@ -71,12 +75,14 @@ abstract class Controller
                     $this->getOne($this->request->getPath()[1]);
                 };
                 break;
+
             case 'POST':
                 AccessToken::assertAuthorization($this->request);
                 $this->assertBodyJson();
                 $body_raw = $this->request->getBody();
                 $this->createFromRequest($body_raw);
                 break;
+
             case 'PATCH':
             case 'PUT':
                 AccessToken::assertAuthorization($this->request);
@@ -84,6 +90,7 @@ abstract class Controller
                 $body_raw = $this->request->getBody();
                 $this->updateFromRequest($this->request->getPath()[1], $body_raw);
                 break;
+
             case 'DELETE':
                 AccessToken::assertAuthorization($this->request);
 
@@ -92,16 +99,22 @@ abstract class Controller
                 }
 
                 $this->delete($this->request->getPath()[1]);
-                
+
                 break;
+
             default:
-                $message = sprintf(
-                    "Request Method not valid (%s received). Try one of: %s.", 
-                    $this->request->getMethod(), 
-                    implode(', ', static::ALLOWED_METHODS)
-                );
-                throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 405);
+                $this->invalidRequestMethod();
         }
+    }
+
+    protected function invalidRequestMethod(): void
+    {
+        $message = sprintf(
+            "Request Method not valid (%s received). Try one of: %s.",
+            $this->request->getMethod(),
+            implode(', ', static::ALLOWED_METHODS)
+        );
+        throw new APIException($message, null, 'INVALID_REQUEST_METHOD', 405);
     }
 
     abstract protected function getOne($id): void;
@@ -113,7 +126,7 @@ abstract class Controller
     protected function assertBodyJson(): void
     {
         if ($this->request->getHeader('Content-Type') != 'application/json') {
-            throw new APIException('PUT and PATCH requests must use Content-Type: application/json', 'body', 'MALFORMED_PATCH_DOCUMENT', 400);
+            throw new APIException('PUT, PATCH, and POST requests must use Content-Type: application/json', 'body', 'MALFORMED_DOCUMENT', 400);
         }
     }
 

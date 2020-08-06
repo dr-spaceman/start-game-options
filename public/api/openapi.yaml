@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: 'Videogamesite API'
-  version: '0.4'
+  version: 0.4.1
 servers:
   -
     url: /api
@@ -11,28 +11,12 @@ paths:
       summary: 'Generate Token'
       description: 'Use this method to generate an access token to authorize requests to the API.'
       operationId: 'Auth:token'
-      parameters:
-        -
-          name: client_id
-          in: path
-          description: 'The client ID given by the API for a specific app'
-          required: true
-          schema:
-            type: integer
-        -
-          name: client_secret
-          in: path
-          description: 'The client secret given by the API for a specific app'
-          required: true
-          schema:
-            type: string
-        -
-          name: grant_type
-          in: path
-          description: 'enum(''authorization_code'', ''password'', ''client_credentials'')'
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/token_request'
       responses:
         '200':
           description: 'Successfully generated token'
@@ -389,10 +373,23 @@ components:
           type: string
         created_at:
           description: 'Time at which the access token was generated.'
-          type: date-time
+          type: string
+          format: date-time
         expires_in:
           description: 'Indicates that the generated access token expires in 36,000 seconds, 600 minutes, or 10 hours.'
           type: integer
+      type: object
+    token_request:
+      properties:
+        client_id:
+          description: 'The client ID given by the API for a specific app'
+          type: integer
+        client_secret:
+          description: 'The client secret given by the API for a specific app'
+          type: string
+        grant_type:
+          description: 'enum(''authorization_code'', ''password'', ''client_credentials'')'
+          type: string
       type: object
     album:
       properties:
@@ -553,13 +550,17 @@ components:
         timezone:
           type: string
         data_created:
-          type: date-time
+          type: string
+          format: date-time
         data_modified:
-          type: date-time
+          type: string
+          format: date-time
         activity:
-          type: date-time
+          type: string
+          format: date-time
         previous_activity:
-          type: date-time
+          type: string
+          format: date-time
         href:
           type: string
       type: object

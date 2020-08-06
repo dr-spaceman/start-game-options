@@ -25,10 +25,10 @@ use Vgsite\UserMapper;
  *     @OA\Property(property="rank", type="integer"),
  *     @OA\Property(property="avatar", type="string"),
  *     @OA\Property(property="timezone", type="string"),
- *     @OA\Property(property="data_created", type="date-time"),
- *     @OA\Property(property="data_modified", type="date-time"),
- *     @OA\Property(property="activity", type="date-time"),
- *     @OA\Property(property="previous_activity", type="date-time"),
+ *     @OA\Property(property="data_created", type="string", format="date-time"),
+ *     @OA\Property(property="data_modified", type="string", format="date-time"),
+ *     @OA\Property(property="activity", type="string", format="date-time"),
+ *     @OA\Property(property="previous_activity", type="string", format="date-time"),
  *     @OA\Property(property="href", type="string"),
  * )
  */
