@@ -28,12 +28,9 @@ class AccessToken
 
         switch ($grant_type) {
             case 'client_credentials':
+            case 'authorization_code':
                 $this->validateCredentials($client_id, $client_secret);
                 $this->generateToken($client_id);
-                break;
-                
-            case 'authorization_code':
-                throw new APIAuthorizationException("Grant type `authorization_code` is not operational yet.", 'grant_type');
                 break;
 
             case 'password':
