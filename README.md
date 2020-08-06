@@ -23,7 +23,7 @@ REST API endpoint is located at [/api](/api).
 
 ### Documentation
 
-API documentation is compiled from doctrine annotation within the API controller files. To compile: `composer compile-apidoc && npm run compile-apidoc`
+API documentation is compiled from doctrine annotation within the API controller files. To compile: `composer compile-apidoc`
 
 ## Authors
 
