@@ -1,9 +1,7 @@
 const API_ENDPOINT = '/api/search?q=';
 
 const Search = () => {
-  console.log('Search component');
   const [searchTerm, setSearchTerm] = React.useState('');
-  console.log('State:searchTerm', searchTerm);
   const resultsInitialState = {
     hits: [],
     isLoading: false,
@@ -11,8 +9,6 @@ const Search = () => {
   };
 
   const resultsReducer = (state, action) => {
-    console.log('Results Reducer', state, action);
-
     switch (action.type) {
       case 'SEARCH_FETCH_INIT':
         return { ...state,
@@ -47,16 +43,12 @@ const Search = () => {
 
 
   const [results, dispatchResults] = React.useReducer(resultsReducer, resultsInitialState);
-  console.log('State:results', results);
 
   const handleSearch = event => {
-    console.log('onInputChange event triggered', event);
     setSearchTerm(event.target.value);
   };
 
   React.useEffect(() => {
-    console.log('Effect:searchTerm');
-
     if (!searchTerm) {
       dispatchResults({
         type: 'RESET'
@@ -73,8 +65,7 @@ const Search = () => {
       type: 'SEARCH_FETCH_INIT'
     }); // Fetch from API
 
-    let url = API_ENDPOINT + searchTerm;
-    console.log('fetch', url);
+    const url = API_ENDPOINT + searchTerm;
     fetch(url).then(response => response.json()).then(result => {
       console.log('fetch result', result);
 
@@ -96,13 +87,13 @@ const Search = () => {
     className: "inputwithlabel"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "searchform"
-  }, "Search:"), /*#__PURE__*/React.createElement("input", {
+  }, "Search:"), ' ', /*#__PURE__*/React.createElement("input", {
     id: "searchform",
     type: "text",
     value: searchTerm,
     placeholder: "Search all the things",
     onChange: handleSearch
-  }), /*#__PURE__*/React.createElement("button", {
+  }), ' ', /*#__PURE__*/React.createElement("button", {
     type: "reset",
     onClick: () => setSearchTerm('')
   }, "Reset"), results.isError && /*#__PURE__*/React.createElement("p", null, "Something went wrong"), results.isLoading ? /*#__PURE__*/React.createElement("p", null, "Loading...") : /*#__PURE__*/React.createElement(SearchResults, {
@@ -111,11 +102,9 @@ const Search = () => {
 };
 
 function SearchResults(props) {
-  console.log('SearchResults component', props);
-  let {
+  const {
     results
   } = props;
-  console.log('results', results);
   if (results.hits.length === 0) return null;
   return /*#__PURE__*/React.createElement("ul", null, results.hits.map(item => /*#__PURE__*/React.createElement(SearchResult, {
     key: item.title_sort,
@@ -130,13 +119,12 @@ function SearchResults(props) {
 
 
 function SearchResult(props) {
-  // console.log('SearchResult component', props)
   const {
     item
   } = props;
   return /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("a", {
     href: item.links.page
-  }, /*#__PURE__*/React.createElement("dfn", null, item.title), " ", /*#__PURE__*/React.createElement("span", null, "(", item.type, ")")));
+  }, /*#__PURE__*/React.createElement("dfn", null, item.title), ' ', /*#__PURE__*/React.createElement("span", null, "(", item.type, ")")));
 }
 
 ReactDOM.render(React.createElement(Search), document.getElementById('search'));

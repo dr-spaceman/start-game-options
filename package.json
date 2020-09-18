@@ -8,6 +8,8 @@
     "scripts": {
         "compile": "babel assets/javascript --out-dir public/javascript",
         "watch": "babel assets/javascript --out-dir public/javascript --watch --verbose",
+        "#lint": "Runs ESLint on all relevant files",
+        "lint": "eslint assets/javascript --ext js,jsx --ignore-pattern public/javascript",
         "compile-apidoc": "npx redoc-cli bundle ./public/api/openapi.yaml --output ./public/api/index.html"
     },
     "author": "",
@@ -20,6 +22,17 @@
         "@babel/core": "^7.10.4",
         "@babel/preset-env": "^7.10.2",
         "@babel/preset-react": "^7.10.1",
-        "redoc-cli": "^0.9.8"
+        "babel-loader": "^8.1.0",
+        "eslint": "^7.9.0",
+        "eslint-config-airbnb": "^18.2.0",
+        "eslint-plugin-import": "^2.22.0",
+        "eslint-plugin-jsx-a11y": "^6.3.1",
+        "eslint-plugin-react": "^7.20.6",
+        "eslint-plugin-react-hooks": "^4.1.2",
+        "redoc-cli": "^0.9.8",
+        "webpack": "^4.44.2",
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-middleware": "^3.7.2",
+        "webpack-hot-middleware": "^2.25.0"
     }
 }
