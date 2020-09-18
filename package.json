@@ -6,8 +6,12 @@
         "url": "https://github.com/dr-spaceman/videogam.in"
     },
     "scripts": {
-        "compile": "babel assets/javascript --out-dir public/javascript",
-        "watch": "babel assets/javascript --out-dir public/javascript --watch --verbose",
+        "#old-compile": "babel assets/javascript --out-dir public/javascript",
+        "#old-watch": "babel assets/javascript --out-dir public/javascript --watch --verbose",
+        "#compile": "Generates JS bundles for production.",
+        "compile": "webpack --mode production",
+        "#watch": "Compile, and recompile on any changes.",
+        "watch": "webpack --watch",
         "#lint": "Runs ESLint on all relevant files",
         "lint": "eslint assets/javascript --ext js,jsx --ignore-pattern public/javascript",
         "compile-apidoc": "npx redoc-cli bundle ./public/api/openapi.yaml --output ./public/api/index.html"
@@ -15,7 +19,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "nodemon": "^2.0.4"
+        "nodemon": "^2.0.4",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1"
     },
     "devDependencies": {
         "@babel/cli": "^7.10.4",

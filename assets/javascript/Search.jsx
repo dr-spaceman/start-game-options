@@ -1,6 +1,8 @@
+import React from 'react';
+
 const API_ENDPOINT = '/api/search?q=';
 
-const Search = () => {
+export default function Search() {
     const [searchTerm, setSearchTerm] = React.useState('');
 
     const resultsInitialState = {
@@ -92,7 +94,7 @@ const Search = () => {
             {results.isLoading ? (<p>Loading...</p>) : (<SearchResults results={results} />)}
         </fieldset>
     );
-};
+}
 
 function SearchResults(props) {
     const { results } = props;
@@ -129,7 +131,7 @@ function SearchResult(props) {
     );
 }
 
-ReactDOM.render(
-    React.createElement(Search),
-    document.getElementById('search'),
-);
+// ReactDOM.render(
+//     React.createElement(Search),
+//     document.getElementById('search'),
+// );
