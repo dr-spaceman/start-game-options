@@ -11,7 +11,7 @@ composer.phar
 /var/logs/*
 /var/sessions/*
 /var/uploads/*
-/public/images/*
+/public/images/[0-9]*
 /node_modules/
 
 /* Old files awaiting refactoring *

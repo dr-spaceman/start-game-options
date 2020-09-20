@@ -2,7 +2,6 @@
 <html>
 <head>
     {% block head %}
-        <!-- <link rel="stylesheet" href="style.css" /> -->
         <title>{% block title %}{% endblock %}</title>
     {% endblock %}
 </head>
@@ -22,22 +21,11 @@
 
     <div id="content">{% block content %}{% endblock %}</div>
     
-    <div id="footer">
-        {% block footer %}{% endblock %}
-    </div>
-
-    <div id="colophon"></div>
+    <div id="footer">{% block footer %}{% endblock %}</div>
 
     {% block scripts %}
     <script src="/javascript/app_bundle.js"></script>
     <script src="/javascript/vendor_bundle.js"></script>
-    <!-- Load React. -->
-    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-    <!-- <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script> -->
-
-    <!-- Load our React component. -->
-    <!-- <script src="/javascript/search.js"></script> -->
     {% endblock %}
 </body>
 </html>

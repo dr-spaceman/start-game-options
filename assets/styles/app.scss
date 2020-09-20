@@ -2,6 +2,7 @@ $link-color:#06C;
 $link-hover-color:#39F;
 $red:#D33;
 $green:#00A264;
+$img-dir: '../images';
 
 .a {
   color: $link-color;
@@ -21,10 +22,27 @@ $body-background-color: #EEE;
 body {
   background: {
     color: $body-background-color;
+    image: url('#{$img-dir}/textured_bg.jpg');
   }
+  border-top: 3px solid #222;
+  font-size: 13px;
+  font-family: Helvetica, Arial;
+  text-align: left;
+  vertical-align: top;
 }
 
 .hello {
   color: pink;
   font-weight: bold;
+}
+
+.dark {
+  background-color: black;
+  color: white;
+  a {
+    color: white;
+    &:hover {
+      color: lightgray
+    }
+  }
 }
