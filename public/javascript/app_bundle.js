@@ -170,6 +170,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _Search_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Search.jsx */ "./assets/javascript/Search.jsx");
 /* harmony import */ var _Colophon_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Colophon.jsx */ "./assets/javascript/Colophon.jsx");
+/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../styles/app.scss */ "./assets/styles/app.scss");
+/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_styles_app_scss__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -201,18 +204,44 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Colophon; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _storageAvailable_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./storageAvailable.js */ "./assets/javascript/storageAvailable.js");
+
 
 function Colophon() {
+  if (!Object(_storageAvailable_js__WEBPACK_IMPORTED_MODULE_1__["default"])('localStorage')) {
+    return '';
+  }
+
+  localStorage.clear();
   const [open, setOpen] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
 
-  if (open) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "Welcome to Videogam.in, a site about videogames. ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
+  function handleClose(event) {
+    event.preventDefault();
+    setOpen(false);
+    localStorage.setItem('colophon', 'closed');
+  }
+
+  if (open && localStorage.getItem('colophon') !== 'closed') {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "container",
+      style: {
+        position: 'fixed',
+        zIndex: 999,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'black',
+        fontSize: '15px',
+        color: '#BBB',
+        boxShadow: '0 0 10px -5px black'
+      }
+    }, "Welcome to Videogam.in, a site about videogames. ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
       href: "/about.php"
     }, "Read more")), " about this site or else ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
       href: "#close",
       title: "hide this message and don't show it to me again",
       className: "tooltip",
-      onClick: () => setOpen(false)
+      onClick: handleClose
     }, "pay me for the door repair charge"), ".");
   }
 
@@ -364,6 +393,91 @@ function SearchResult(props) {
 //     React.createElement(Search),
 //     document.getElementById('search'),
 // );
+
+/***/ }),
+
+/***/ "./assets/javascript/storageAvailable.js":
+/*!***********************************************!*\
+  !*** ./assets/javascript/storageAvailable.js ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return storageAvailable; });
+// Usage:
+// if (storageAvailable('localStorage')) {/** */}
+function storageAvailable(type) {
+  let storage;
+
+  try {
+    storage = window[type];
+    const x = '__storage_test__';
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (e) {
+    return e instanceof DOMException && ( // everything except Firefox
+    e.code === 22 // Firefox
+    || e.code === 1014 // test name field too, because code might not be present
+    // everything except Firefox
+    || e.name === 'QuotaExceededError' // Firefox
+    || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') // acknowledge QuotaExceededError only if there's something already stored
+    && storage && storage.length !== 0;
+  }
+}
+
+/***/ }),
+
+/***/ "./assets/styles/app.scss":
+/*!********************************!*\
+  !*** ./assets/styles/app.scss ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./app.scss */ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./assets/styles/app.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./assets/styles/app.scss":
+/*!*************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./assets/styles/app.scss ***!
+  \*************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(true);
+// Module
+___CSS_LOADER_EXPORT___.push([module.i, ".a {\n  color: #06C;\n  text-decoration: underline;\n  cursor: pointer;\n}\n.a:active {\n  color: #6B3EA8;\n}\n.a:hover {\n  color: #39F;\n  border-color: #39F;\n}\n\n.red {\n  color: #D33;\n}\n.red:hover {\n  color: #F17878;\n}\n\nbody {\n  background-color: #EEE;\n}\n\n.hello {\n  color: pink;\n  font-weight: bold;\n}", "",{"version":3,"sources":["webpack://assets/styles/app.scss"],"names":[],"mappings":"AAKA;EACE,WANU;EAOV,0BAAA;EACA,eAAA;AAJF;AAKC;EAAW,cAAA;AAFZ;AAGC;EAAU,WATO;EASkB,kBATlB;AAUlB;;AAEA;EACC,WAZI;AAaL;AAAC;EAAU,cAAA;AAGX;;AAEA;EAEI,sBAJoB;AAIxB;;AAIA;EACE,WAAA;EACA,iBAAA;AADF","sourcesContent":["$link-color:#06C;\r\n$link-hover-color:#39F;\r\n$red:#D33;\r\n$green:#00A264;\r\n\r\n.a {\r\n  color: $link-color;\r\n  text-decoration: underline;\r\n  cursor: pointer;\r\n\t&:active { color:#6B3EA8; }\r\n\t&:hover { color:$link-hover-color; border-color:$link-hover-color; }\r\n}\r\n\r\n.red {\r\n\tcolor: $red;\r\n\t&:hover { color:#F17878; }\r\n}\r\n\r\n$body-background-color: #EEE;\r\n\r\nbody {\r\n  background: {\r\n    color: $body-background-color;\r\n  }\r\n}\r\n\r\n.hello {\r\n  color: pink;\r\n  font-weight: bold;\r\n}"],"sourceRoot":""}]);
+// Exports
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
+
 
 /***/ })
 

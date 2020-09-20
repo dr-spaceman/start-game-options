@@ -1,0 +1,30 @@
+$link-color:#06C;
+$link-hover-color:#39F;
+$red:#D33;
+$green:#00A264;
+
+.a {
+  color: $link-color;
+  text-decoration: underline;
+  cursor: pointer;
+	&:active { color:#6B3EA8; }
+	&:hover { color:$link-hover-color; border-color:$link-hover-color; }
+}
+
+.red {
+	color: $red;
+	&:hover { color:#F17878; }
+}
+
+$body-background-color: #EEE;
+
+body {
+  background: {
+    color: $body-background-color;
+  }
+}
+
+.hello {
+  color: pink;
+  font-weight: bold;
+}

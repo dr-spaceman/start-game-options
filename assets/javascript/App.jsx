@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 
 import Search from './Search.jsx';
 import Colophon from './Colophon.jsx';
+import '../styles/app.scss';
 
 ReactDOM.render(
     React.createElement(Search),
