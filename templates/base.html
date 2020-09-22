@@ -7,7 +7,8 @@
 </head>
 <body>
     <header>
-        <div id="login">
+        <h1><a href="/" title="Videogam.in">Videogam.in, a site about videogames</a></h1>
+        <div id="login" data-username="{{session.username}}">
             {% if session.logged_in %}
                 Hello {{session.username}}! 
                 <a href="/login.php?do=logout">Log Out</a>
@@ -17,11 +18,16 @@
             {% endif %}
         </div>
         <div id="search"></div>
+        <div id="menu"></div>
     </header>
 
     <div id="content">{% block content %}{% endblock %}</div>
     
-    <div id="footer">{% block footer %}{% endblock %}</div>
+    <div id="footer">
+        {% block footer %}
+        <div id="colophon"></div>
+        {% endblock %}
+    </div>
 
     {% block scripts %}
     <script src="/javascript/app_bundle.js"></script>

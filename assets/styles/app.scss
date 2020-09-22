@@ -1,28 +1,36 @@
-$link-color:#06C;
-$link-hover-color:#39F;
-$red:#D33;
-$green:#00A264;
-$img-dir: '../images';
+$link-color: #06c;
+$link-hover-color: #39f;
+$red: #d33;
+$green: #00a264;
+$img-dir: "../images";
 
 .a {
   color: $link-color;
   text-decoration: underline;
   cursor: pointer;
-	&:active { color:#6B3EA8; }
-	&:hover { color:$link-hover-color; border-color:$link-hover-color; }
+  &:active {
+    color: #6b3ea8;
+  }
+  &:hover {
+    color: $link-hover-color;
+    border-color: $link-hover-color;
+  }
 }
 
 .red {
-	color: $red;
-	&:hover { color:#F17878; }
+  color: $red;
+  &:hover {
+    color: #f17878;
+  }
 }
 
-$body-background-color: #EEE;
+$body-background-color: #eee;
 
 body {
+  padding: 1em;
   background: {
     color: $body-background-color;
-    image: url('#{$img-dir}/textured_bg.jpg');
+    image: url("#{$img-dir}/textured_bg.jpg");
   }
   border-top: 3px solid #222;
   font-size: 13px;
@@ -31,9 +39,66 @@ body {
   vertical-align: top;
 }
 
-.hello {
-  color: pink;
-  font-weight: bold;
+// Form & Input
+
+fieldset { margin-left:0; margin-right:0; padding:5px 10px 10px 10px; border:1px solid #CCC; }
+legend { font-size:14px; color:#666; }
+input[type="text"], input[type="password"], textarea, select, .inputfield {
+	padding:3px 1px 3px 2px; margin-bottom:1px;
+	border-width:1px; border-style:solid; border-color:#666 #BBB #BBB #666;
+	background:white; background:RGBA(255,255,255,.7);
+	border-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px;
+	font-size:13px; font-family:Arial;
+	outline:none;
+}
+textarea { font-family:monospace; font-size:12px; }
+select { padding:2px; }
+optgroup {
+	padding-top:2px;
+	font-weight:normal;
+	font-style:italic;
+	font-family:Arial;
+	color:#777;
+	background-color:#EEE;
+}
+optgroup > option {
+	padding-left:20px;
+	background-color:#FFF;
+	color:black;
+}
+optgroup > option:first-child {
+	margin-top:2px;
+}
+
+// .button-blue {
+// 	@link-color: darken(@link-hover-color, 16%);
+// 	color:rgba(255,255,255,.93); text-shadow:0 -1px @link-color, 0 1px @link-hover-color;
+// 	background:@link-color; background:-moz-linear-gradient(top, @link-hover-color 50%, @link-color 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,@link-hover-color), color-stop(50%,@link-color));
+// 	border-color:darken(@link-hover-color, 10%) darken(@link-color, 5%) darken(@link-color, 5%) darken(@link-hover-color, 5%);
+// 	box-shadow:0 1px 1px RGBA(0,0,0,.2);
+// 	&:hover { border-color:darken(@link-color, 25%); }
+// 	&:active { box-shadow:none; background:darken(@link-hover-color, 5%); border-color:darken(@link-color, 12%) darken(@link-hover-color, 12%) darken(@link-hover-color, 12%) darken(@link-color, 12%); }
+// }
+button, input[type="button"], input[type="submit"], input[type="reset"], .faux-button {
+	padding:3px 10px;
+	font-size:13px; font-family:Arial; color:#444; text-shadow:0 -1px #DADADA, 0 1px #EEE;
+	background:#DDD; background:-moz-linear-gradient(top, #EEE 50%, #DDD 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,#EEE), color-stop(50%,#DDD));
+	border-width:1px; border-style:solid; border-color:#DDD #AAA #AAA #DDD; border-radius:2px;
+	box-shadow:0 1px 0 RGBA(0,0,0,.1);
+	cursor:pointer;
+	&:hover { border-color:#777; }
+	&:active, &.active { box-shadow:none; background:#DDD; border-color:#AAA #CCC #CCC #AAA; }
+	&[disabled="disabled"] { color:#BBB; cursor:not-allowed; }
+	&.submit:hover {
+		background: $green;
+		border-color: #016C43;
+		color: white; text-shadow:none;
+	}
+	&.cancel:hover {
+		background: $red; 
+		border-color: darken($red, 15%);
+		color: white; text-shadow:none;
+	}
 }
 
 .dark {
@@ -42,7 +107,90 @@ body {
   a {
     color: white;
     &:hover {
-      color: lightgray
+      color: lightgray;
+    }
+  }
+}
+
+.modal-overlay {
+  width: 100%;
+  height: 100%;
+  z-index: 2; /* places the modal overlay between the main page and the modal dialog*/
+  background-color: rgba(0, 0, 0, 0.95);
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s;
+}
+.modal {
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2em;
+  background-color: #fff;
+  z-index: 3; /* places the modal dialog on top of everything else */
+  position: fixed;
+  top: 25%;
+  left: 25%;
+}
+.modal-close {
+  color: #aaa;
+  line-height: 50px;
+  font-size: 80%;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+  width: 70px;
+  text-decoration: none;
+  &:hover {
+    color: black;
+  }
+}
+
+#login {
+  .modal {
+    width: 225px;
+    margin: -112px 0 0 -112px;
+    top: 50%;
+    left: 50%;
+    background-color: transparent;
+  }
+  form {
+    margin-top: -1em;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    & > * {
+      margin-top: 1em;
+    }
+    input {
+      width: 100%;
+      padding: 6px 0 6px 8px;
+      font-size: 14px;
+      color: #666;
+      background: white;
+      background: -moz-linear-gradient(top, #e0e0e0, white 7px);
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e0e0e0), color-stop(100%, white));
+      border-width: 0;
+      border-radius: 3px;
+    }
+    button {
+      padding: 5px 15px;
+      font-size: 15px;
+      font-weight: bold;
+      border-width: 0;
+      box-shadow: 1px 1px 3px 1px black;
+      -moz-box-shadow: 1px 1px 3px 1px black;
+      -webkit-box-shadow: 1px 1px 3px 1px black;
+      &:active {
+        margin: 1px 0 0 1px;
+        box-shadow: 0 0 3px 1px black;
+        -moz-box-shadow: 0 0 3px 1px black;
+        -webkit-box-shadow: 0 0 3px 1px black;
+      }
     }
   }
 }

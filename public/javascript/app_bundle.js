@@ -196,18 +196,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _Search_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Search.jsx */ "./assets/javascript/Search.jsx");
 /* harmony import */ var _Colophon_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Colophon.jsx */ "./assets/javascript/Colophon.jsx");
-/* harmony import */ var normalize_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! normalize.css */ "./node_modules/normalize.css/normalize.css");
-/* harmony import */ var normalize_css__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(normalize_css__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../styles/app.scss */ "./assets/styles/app.scss");
-/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_styles_app_scss__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _Login_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Login.jsx */ "./assets/javascript/Login.jsx");
+/* harmony import */ var normalize_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! normalize.css */ "./node_modules/normalize.css/normalize.css");
+/* harmony import */ var normalize_css__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(normalize_css__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../styles/app.scss */ "./assets/styles/app.scss");
+/* harmony import */ var _styles_app_scss__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_styles_app_scss__WEBPACK_IMPORTED_MODULE_6__);
 
  // Components to render
+
 
 
  // Stylesheets that get injected into <head>
 
 
 
+const loginElement = document.getElementById('login');
+react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Login_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], loginElement.dataset), loginElement);
 react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Search_jsx__WEBPACK_IMPORTED_MODULE_2__["default"]), document.getElementById('search'));
 react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Colophon_jsx__WEBPACK_IMPORTED_MODULE_3__["default"]), document.getElementById('colophon')); // const element = (
 //     <>
@@ -318,6 +322,82 @@ function Colophon() {
   }
 
   return '';
+}
+
+/***/ }),
+
+/***/ "./assets/javascript/Login.jsx":
+/*!*************************************!*\
+  !*** ./assets/javascript/Login.jsx ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Login; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const useFocus = () => {
+  const htmlElRef = react__WEBPACK_IMPORTED_MODULE_0___default.a.useRef(null);
+
+  const setFocus = () => {
+    htmlElRef.current && htmlElRef.current.focus();
+  };
+
+  return [htmlElRef, setFocus];
+};
+
+function Login(props) {
+  const {
+    username
+  } = props;
+  const form = react__WEBPACK_IMPORTED_MODULE_0___default.a.useRef();
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    console.log(form.current.username.value, form.current.password.value);
+  };
+
+  const [open, setOpen] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(false);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  react__WEBPACK_IMPORTED_MODULE_0___default.a.useEffect(() => {
+    if (form.current && form.current.username) {
+      form.current.username.focus();
+    }
+  });
+  const loginButton = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+    type: "button",
+    onClick: handleOpen
+  }, "Login");
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, username || loginButton, open && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: "modal-overlay",
+    role: "button",
+    onClick: () => setOpen(false),
+    "aria-hidden": "true",
+    "aria-label": "close"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: "modal dark"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    ref: form,
+    onSubmit: handleSubmit
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+    type: "text",
+    name: "username",
+    placeholder: "Username"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+    type: "password",
+    name: "password",
+    placeholder: "Password"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+    type: "submit"
+  }, "Login")))));
 }
 
 /***/ }),
@@ -552,7 +632,7 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(true);
 var ___CSS_LOADER_URL_REPLACEMENT_0___ = _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_images_textured_bg_jpg__WEBPACK_IMPORTED_MODULE_2__["default"]);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ".a {\n  color: #06C;\n  text-decoration: underline;\n  cursor: pointer;\n}\n.a:active {\n  color: #6B3EA8;\n}\n.a:hover {\n  color: #39F;\n  border-color: #39F;\n}\n\n.red {\n  color: #D33;\n}\n.red:hover {\n  color: #F17878;\n}\n\nbody {\n  background-color: #EEE;\n  background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ");\n  border-top: 3px solid #222;\n  font-size: 13px;\n  font-family: Helvetica, Arial;\n  text-align: left;\n  vertical-align: top;\n}\n\n.hello {\n  color: pink;\n  font-weight: bold;\n}\n\n.dark {\n  background-color: black;\n  color: white;\n}\n.dark a {\n  color: white;\n}\n.dark a:hover {\n  color: lightgray;\n}", "",{"version":3,"sources":["webpack://app.scss"],"names":[],"mappings":"AAMA;EACE,WAPU;EAQV,0BAAA;EACA,eAAA;AALF;AAMC;EAAW,cAAA;AAHZ;AAIC;EAAU,WAVO;EAUkB,kBAVlB;AAUlB;;AAGA;EACC,WAbI;AAaL;AACC;EAAU,cAAA;AAEX;;AAGA;EAEI,sBAJoB;EAKpB,yDAAA;EAEF,0BAAA;EACA,eAAA;EACA,6BAAA;EACA,gBAAA;EACA,mBAAA;AAFF;;AAKA;EACE,WAAA;EACA,iBAAA;AAFF;;AAKA;EACE,uBAAA;EACA,YAAA;AAFF;AAGE;EACE,YAAA;AADJ;AAEI;EACE,gBAAA;AAAN","sourcesContent":["$link-color:#06C;\r\n$link-hover-color:#39F;\r\n$red:#D33;\r\n$green:#00A264;\r\n$img-dir: '../images';\r\n\r\n.a {\r\n  color: $link-color;\r\n  text-decoration: underline;\r\n  cursor: pointer;\r\n\t&:active { color:#6B3EA8; }\r\n\t&:hover { color:$link-hover-color; border-color:$link-hover-color; }\r\n}\r\n\r\n.red {\r\n\tcolor: $red;\r\n\t&:hover { color:#F17878; }\r\n}\r\n\r\n$body-background-color: #EEE;\r\n\r\nbody {\r\n  background: {\r\n    color: $body-background-color;\r\n    image: url('#{$img-dir}/textured_bg.jpg');\r\n  }\r\n  border-top: 3px solid #222;\r\n  font-size: 13px;\r\n  font-family: Helvetica, Arial;\r\n  text-align: left;\r\n  vertical-align: top;\r\n}\r\n\r\n.hello {\r\n  color: pink;\r\n  font-weight: bold;\r\n}\r\n\r\n.dark {\r\n  background-color: black;\r\n  color: white;\r\n  a {\r\n    color: white;\r\n    &:hover {\r\n      color: lightgray\r\n    }\r\n  }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ".a {\n  color: #06c;\n  text-decoration: underline;\n  cursor: pointer;\n}\n.a:active {\n  color: #6b3ea8;\n}\n.a:hover {\n  color: #39f;\n  border-color: #39f;\n}\n\n.red {\n  color: #d33;\n}\n.red:hover {\n  color: #f17878;\n}\n\nbody {\n  padding: 1em;\n  background-color: #eee;\n  background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ");\n  border-top: 3px solid #222;\n  font-size: 13px;\n  font-family: Helvetica, Arial;\n  text-align: left;\n  vertical-align: top;\n}\n\nfieldset {\n  margin-left: 0;\n  margin-right: 0;\n  padding: 5px 10px 10px 10px;\n  border: 1px solid #CCC;\n}\n\nlegend {\n  font-size: 14px;\n  color: #666;\n}\n\ninput[type=text], input[type=password], textarea, select, .inputfield {\n  padding: 3px 1px 3px 2px;\n  margin-bottom: 1px;\n  border-width: 1px;\n  border-style: solid;\n  border-color: #666 #BBB #BBB #666;\n  background: white;\n  background: RGBA(255, 255, 255, 0.7);\n  border-radius: 2px;\n  -moz-border-radius: 2px;\n  -webkit-border-radius: 2px;\n  font-size: 13px;\n  font-family: Arial;\n  outline: none;\n}\n\ntextarea {\n  font-family: monospace;\n  font-size: 12px;\n}\n\nselect {\n  padding: 2px;\n}\n\noptgroup {\n  padding-top: 2px;\n  font-weight: normal;\n  font-style: italic;\n  font-family: Arial;\n  color: #777;\n  background-color: #EEE;\n}\n\noptgroup > option {\n  padding-left: 20px;\n  background-color: #FFF;\n  color: black;\n}\n\noptgroup > option:first-child {\n  margin-top: 2px;\n}\n\nbutton, input[type=button], input[type=submit], input[type=reset], .faux-button {\n  padding: 3px 10px;\n  font-size: 13px;\n  font-family: Arial;\n  color: #444;\n  text-shadow: 0 -1px #DADADA, 0 1px #EEE;\n  background: #DDD;\n  background: -moz-linear-gradient(top, #EEE 50%, #DDD 50%);\n  background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, #EEE), color-stop(50%, #DDD));\n  border-width: 1px;\n  border-style: solid;\n  border-color: #DDD #AAA #AAA #DDD;\n  border-radius: 2px;\n  box-shadow: 0 1px 0 RGBA(0, 0, 0, 0.1);\n  cursor: pointer;\n}\nbutton:hover, input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover, .faux-button:hover {\n  border-color: #777;\n}\nbutton:active, button.active, input[type=button]:active, input[type=button].active, input[type=submit]:active, input[type=submit].active, input[type=reset]:active, input[type=reset].active, .faux-button:active, .faux-button.active {\n  box-shadow: none;\n  background: #DDD;\n  border-color: #AAA #CCC #CCC #AAA;\n}\nbutton[disabled=disabled], input[type=button][disabled=disabled], input[type=submit][disabled=disabled], input[type=reset][disabled=disabled], .faux-button[disabled=disabled] {\n  color: #BBB;\n  cursor: not-allowed;\n}\nbutton.submit:hover, input[type=button].submit:hover, input[type=submit].submit:hover, input[type=reset].submit:hover, .faux-button.submit:hover {\n  background: #00a264;\n  border-color: #016C43;\n  color: white;\n  text-shadow: none;\n}\nbutton.cancel:hover, input[type=button].cancel:hover, input[type=submit].cancel:hover, input[type=reset].cancel:hover, .faux-button.cancel:hover {\n  background: #d33;\n  border-color: #a81c1c;\n  color: white;\n  text-shadow: none;\n}\n\n.dark {\n  background-color: black;\n  color: white;\n}\n.dark a {\n  color: white;\n}\n.dark a:hover {\n  color: lightgray;\n}\n\n.modal-overlay {\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n  /* places the modal overlay between the main page and the modal dialog*/\n  background-color: rgba(0, 0, 0, 0.95);\n  position: fixed;\n  top: 0;\n  left: 0;\n  margin: 0;\n  padding: 0;\n  transition: all 0.3s;\n}\n\n.modal {\n  width: 50%;\n  margin-left: auto;\n  margin-right: auto;\n  padding: 2em;\n  background-color: #fff;\n  z-index: 3;\n  /* places the modal dialog on top of everything else */\n  position: fixed;\n  top: 25%;\n  left: 25%;\n}\n\n.modal-close {\n  color: #aaa;\n  line-height: 50px;\n  font-size: 80%;\n  position: absolute;\n  right: 0;\n  text-align: center;\n  top: 0;\n  width: 70px;\n  text-decoration: none;\n}\n.modal-close:hover {\n  color: black;\n}\n\n#login .modal {\n  width: 225px;\n  margin: -112px 0 0 -112px;\n  top: 50%;\n  left: 50%;\n  background-color: transparent;\n}\n#login form {\n  margin-top: -1em;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n}\n#login form > * {\n  margin-top: 1em;\n}\n#login form input {\n  width: 100%;\n  padding: 6px 0 6px 8px;\n  font-size: 14px;\n  color: #666;\n  background: white;\n  background: -moz-linear-gradient(top, #e0e0e0, white 7px);\n  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e0e0e0), color-stop(100%, white));\n  border-width: 0;\n  border-radius: 3px;\n}\n#login form button {\n  padding: 5px 15px;\n  font-size: 15px;\n  font-weight: bold;\n  border-width: 0;\n  box-shadow: 1px 1px 3px 1px black;\n  -moz-box-shadow: 1px 1px 3px 1px black;\n  -webkit-box-shadow: 1px 1px 3px 1px black;\n}\n#login form button:active {\n  margin: 1px 0 0 1px;\n  box-shadow: 0 0 3px 1px black;\n  -moz-box-shadow: 0 0 3px 1px black;\n  -webkit-box-shadow: 0 0 3px 1px black;\n}", "",{"version":3,"sources":["webpack://app.scss"],"names":[],"mappings":"AAMA;EACE,WAPW;EAQX,0BAAA;EACA,eAAA;AALF;AAME;EACE,cAAA;AAJJ;AAME;EACE,WAbe;EAcf,kBAde;AAUnB;;AAQA;EACE,WAlBI;AAaN;AAME;EACE,cAAA;AAJJ;;AAUA;EACE,YAAA;EAEE,sBALoB;EAMpB,yDAAA;EAEF,0BAAA;EACA,eAAA;EACA,6BAAA;EACA,gBAAA;EACA,mBAAA;AATF;;AAcA;EAAW,cAAA;EAAe,eAAA;EAAgB,2BAAA;EAA4B,sBAAA;AAPtE;;AAQA;EAAS,eAAA;EAAgB,WAAA;AAHzB;;AAIA;EACC,wBAAA;EAAyB,kBAAA;EACzB,iBAAA;EAAkB,mBAAA;EAAoB,iCAAA;EACtC,iBAAA;EAAkB,oCAAA;EAClB,kBAAA;EAAmB,uBAAA;EAAwB,0BAAA;EAC3C,eAAA;EAAgB,kBAAA;EAChB,aAAA;AAMD;;AAJA;EAAW,sBAAA;EAAuB,eAAA;AASlC;;AARA;EAAS,YAAA;AAYT;;AAXA;EACC,gBAAA;EACA,mBAAA;EACA,kBAAA;EACA,kBAAA;EACA,WAAA;EACA,sBAAA;AAcD;;AAZA;EACC,kBAAA;EACA,sBAAA;EACA,YAAA;AAeD;;AAbA;EACC,eAAA;AAgBD;;AAJA;EACC,iBAAA;EACA,eAAA;EAAgB,kBAAA;EAAmB,WAAA;EAAY,uCAAA;EAC/C,gBAAA;EAAiB,yDAAA;EAA0D,yGAAA;EAC3E,iBAAA;EAAkB,mBAAA;EAAoB,iCAAA;EAAkC,kBAAA;EACxE,sCAAA;EACA,eAAA;AAeD;AAdC;EAAU,kBAAA;AAiBX;AAhBC;EAAqB,gBAAA;EAAiB,gBAAA;EAAiB,iCAAA;AAqBxD;AApBC;EAAyB,WAAA;EAAY,mBAAA;AAwBtC;AAvBC;EACC,mBAzFM;EA0FN,qBAAA;EACA,YAAA;EAAc,iBAAA;AA0BhB;AAxBC;EACC,gBA/FI;EAgGJ,qBAAA;EACA,YAAA;EAAc,iBAAA;AA2BhB;;AAvBA;EACE,uBAAA;EACA,YAAA;AA0BF;AAzBE;EACE,YAAA;AA2BJ;AA1BI;EACE,gBAAA;AA4BN;;AAvBA;EACE,WAAA;EACA,YAAA;EACA,UAAA;EAAY,uEAAA;EACZ,qCAAA;EACA,eAAA;EACA,MAAA;EACA,OAAA;EACA,SAAA;EACA,UAAA;EACA,oBAAA;AA2BF;;AAzBA;EACE,UAAA;EACA,iBAAA;EACA,kBAAA;EACA,YAAA;EACA,sBAAA;EACA,UAAA;EAAY,sDAAA;EACZ,eAAA;EACA,QAAA;EACA,SAAA;AA6BF;;AA3BA;EACE,WAAA;EACA,iBAAA;EACA,cAAA;EACA,kBAAA;EACA,QAAA;EACA,kBAAA;EACA,MAAA;EACA,WAAA;EACA,qBAAA;AA8BF;AA7BE;EACE,YAAA;AA+BJ;;AA1BE;EACE,YAAA;EACA,yBAAA;EACA,QAAA;EACA,SAAA;EACA,6BAAA;AA6BJ;AA3BE;EACE,gBAAA;EACA,aAAA;EACA,sBAAA;EACA,uBAAA;AA6BJ;AA5BI;EACE,eAAA;AA8BN;AA5BI;EACE,WAAA;EACA,sBAAA;EACA,eAAA;EACA,WAAA;EACA,iBAAA;EACA,yDAAA;EACA,6GAAA;EACA,eAAA;EACA,kBAAA;AA8BN;AA5BI;EACE,iBAAA;EACA,eAAA;EACA,iBAAA;EACA,eAAA;EACA,iCAAA;EACA,sCAAA;EACA,yCAAA;AA8BN;AA7BM;EACE,mBAAA;EACA,6BAAA;EACA,kCAAA;EACA,qCAAA;AA+BR","sourcesContent":["$link-color: #06c;\r\n$link-hover-color: #39f;\r\n$red: #d33;\r\n$green: #00a264;\r\n$img-dir: \"../images\";\r\n\r\n.a {\r\n  color: $link-color;\r\n  text-decoration: underline;\r\n  cursor: pointer;\r\n  &:active {\r\n    color: #6b3ea8;\r\n  }\r\n  &:hover {\r\n    color: $link-hover-color;\r\n    border-color: $link-hover-color;\r\n  }\r\n}\r\n\r\n.red {\r\n  color: $red;\r\n  &:hover {\r\n    color: #f17878;\r\n  }\r\n}\r\n\r\n$body-background-color: #eee;\r\n\r\nbody {\r\n  padding: 1em;\r\n  background: {\r\n    color: $body-background-color;\r\n    image: url(\"#{$img-dir}/textured_bg.jpg\");\r\n  }\r\n  border-top: 3px solid #222;\r\n  font-size: 13px;\r\n  font-family: Helvetica, Arial;\r\n  text-align: left;\r\n  vertical-align: top;\r\n}\r\n\r\n// Form & Input\r\n\r\nfieldset { margin-left:0; margin-right:0; padding:5px 10px 10px 10px; border:1px solid #CCC; }\r\nlegend { font-size:14px; color:#666; }\r\ninput[type=\"text\"], input[type=\"password\"], textarea, select, .inputfield {\r\n\tpadding:3px 1px 3px 2px; margin-bottom:1px;\r\n\tborder-width:1px; border-style:solid; border-color:#666 #BBB #BBB #666;\r\n\tbackground:white; background:RGBA(255,255,255,.7);\r\n\tborder-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px;\r\n\tfont-size:13px; font-family:Arial;\r\n\toutline:none;\r\n}\r\ntextarea { font-family:monospace; font-size:12px; }\r\nselect { padding:2px; }\r\noptgroup {\r\n\tpadding-top:2px;\r\n\tfont-weight:normal;\r\n\tfont-style:italic;\r\n\tfont-family:Arial;\r\n\tcolor:#777;\r\n\tbackground-color:#EEE;\r\n}\r\noptgroup > option {\r\n\tpadding-left:20px;\r\n\tbackground-color:#FFF;\r\n\tcolor:black;\r\n}\r\noptgroup > option:first-child {\r\n\tmargin-top:2px;\r\n}\r\n\r\n// .button-blue {\r\n// \t@link-color: darken(@link-hover-color, 16%);\r\n// \tcolor:rgba(255,255,255,.93); text-shadow:0 -1px @link-color, 0 1px @link-hover-color;\r\n// \tbackground:@link-color; background:-moz-linear-gradient(top, @link-hover-color 50%, @link-color 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,@link-hover-color), color-stop(50%,@link-color));\r\n// \tborder-color:darken(@link-hover-color, 10%) darken(@link-color, 5%) darken(@link-color, 5%) darken(@link-hover-color, 5%);\r\n// \tbox-shadow:0 1px 1px RGBA(0,0,0,.2);\r\n// \t&:hover { border-color:darken(@link-color, 25%); }\r\n// \t&:active { box-shadow:none; background:darken(@link-hover-color, 5%); border-color:darken(@link-color, 12%) darken(@link-hover-color, 12%) darken(@link-hover-color, 12%) darken(@link-color, 12%); }\r\n// }\r\nbutton, input[type=\"button\"], input[type=\"submit\"], input[type=\"reset\"], .faux-button {\r\n\tpadding:3px 10px;\r\n\tfont-size:13px; font-family:Arial; color:#444; text-shadow:0 -1px #DADADA, 0 1px #EEE;\r\n\tbackground:#DDD; background:-moz-linear-gradient(top, #EEE 50%, #DDD 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,#EEE), color-stop(50%,#DDD));\r\n\tborder-width:1px; border-style:solid; border-color:#DDD #AAA #AAA #DDD; border-radius:2px;\r\n\tbox-shadow:0 1px 0 RGBA(0,0,0,.1);\r\n\tcursor:pointer;\r\n\t&:hover { border-color:#777; }\r\n\t&:active, &.active { box-shadow:none; background:#DDD; border-color:#AAA #CCC #CCC #AAA; }\r\n\t&[disabled=\"disabled\"] { color:#BBB; cursor:not-allowed; }\r\n\t&.submit:hover {\r\n\t\tbackground: $green;\r\n\t\tborder-color: #016C43;\r\n\t\tcolor: white; text-shadow:none;\r\n\t}\r\n\t&.cancel:hover {\r\n\t\tbackground: $red; \r\n\t\tborder-color: darken($red, 15%);\r\n\t\tcolor: white; text-shadow:none;\r\n\t}\r\n}\r\n\r\n.dark {\r\n  background-color: black;\r\n  color: white;\r\n  a {\r\n    color: white;\r\n    &:hover {\r\n      color: lightgray;\r\n    }\r\n  }\r\n}\r\n\r\n.modal-overlay {\r\n  width: 100%;\r\n  height: 100%;\r\n  z-index: 2; /* places the modal overlay between the main page and the modal dialog*/\r\n  background-color: rgba(0, 0, 0, 0.95);\r\n  position: fixed;\r\n  top: 0;\r\n  left: 0;\r\n  margin: 0;\r\n  padding: 0;\r\n  transition: all 0.3s;\r\n}\r\n.modal {\r\n  width: 50%;\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n  padding: 2em;\r\n  background-color: #fff;\r\n  z-index: 3; /* places the modal dialog on top of everything else */\r\n  position: fixed;\r\n  top: 25%;\r\n  left: 25%;\r\n}\r\n.modal-close {\r\n  color: #aaa;\r\n  line-height: 50px;\r\n  font-size: 80%;\r\n  position: absolute;\r\n  right: 0;\r\n  text-align: center;\r\n  top: 0;\r\n  width: 70px;\r\n  text-decoration: none;\r\n  &:hover {\r\n    color: black;\r\n  }\r\n}\r\n\r\n#login {\r\n  .modal {\r\n    width: 225px;\r\n    margin: -112px 0 0 -112px;\r\n    top: 50%;\r\n    left: 50%;\r\n    background-color: transparent;\r\n  }\r\n  form {\r\n    margin-top: -1em;\r\n    display: flex;\r\n    flex-direction: column;\r\n    align-items: flex-start;\r\n    & > * {\r\n      margin-top: 1em;\r\n    }\r\n    input {\r\n      width: 100%;\r\n      padding: 6px 0 6px 8px;\r\n      font-size: 14px;\r\n      color: #666;\r\n      background: white;\r\n      background: -moz-linear-gradient(top, #e0e0e0, white 7px);\r\n      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e0e0e0), color-stop(100%, white));\r\n      border-width: 0;\r\n      border-radius: 3px;\r\n    }\r\n    button {\r\n      padding: 5px 15px;\r\n      font-size: 15px;\r\n      font-weight: bold;\r\n      border-width: 0;\r\n      box-shadow: 1px 1px 3px 1px black;\r\n      -moz-box-shadow: 1px 1px 3px 1px black;\r\n      -webkit-box-shadow: 1px 1px 3px 1px black;\r\n      &:active {\r\n        margin: 1px 0 0 1px;\r\n        box-shadow: 0 0 3px 1px black;\r\n        -moz-box-shadow: 0 0 3px 1px black;\r\n        -webkit-box-shadow: 0 0 3px 1px black;\r\n      }\r\n    }\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 

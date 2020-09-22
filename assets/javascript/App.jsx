@@ -4,10 +4,14 @@ import ReactDOM from 'react-dom';
 // Components to render
 import Search from './Search.jsx';
 import Colophon from './Colophon.jsx';
+import Login from './Login.jsx';
 
 // Stylesheets that get injected into <head>
 import 'normalize.css';
 import '../styles/app.scss';
+
+const loginElement = document.getElementById('login');
+ReactDOM.render(<Login {...loginElement.dataset} />, loginElement);
 
 ReactDOM.render(
     React.createElement(Search),

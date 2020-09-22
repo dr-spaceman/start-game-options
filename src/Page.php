@@ -286,6 +286,7 @@ class Page
 		<?
 		}
 
+		/** Incorporated into React app
 		if(!$_COOKIE['colophon']){
 			?>
 			<div id="colophon" style="position:fixed; z-index:999; right:0; bottom:0; left:0; background-color:black; font-size:15px; color:#BBB; -moz-box-shadow:0 0 10px -5px black;" onclick="$.cookie('colophon', '1', {expires:365, path:'/'});">
@@ -300,7 +301,7 @@ class Page
 				
 			</div>
 			<?
-		}
+		}**/
 
 		if(!$this->no_first_section) $this->openSection($this->first_section);
 	}
