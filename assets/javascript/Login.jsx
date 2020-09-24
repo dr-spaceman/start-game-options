@@ -1,11 +1,5 @@
 import React from 'react';
-
-const useFocus = () => {
-    const htmlElRef = React.useRef(null)
-    const setFocus = () => { htmlElRef.current && htmlElRef.current.focus() }
-
-    return [htmlElRef, setFocus]
-}
+import { CSSTransition } from 'react-transition-group';
 
 export default function Login(props) {
     const { username } = props;
@@ -21,29 +15,26 @@ export default function Login(props) {
         setOpen(true);
     };
 
-    React.useEffect(() => {
-        if (form.current && form.current.username) {
-            form.current.username.focus();
-        }
-    });
-
     const loginButton = <button type="button" onClick={handleOpen}>Login</button>;
 
     return (
         <>
             {username || loginButton}
-            {open && (
-                <>
+            <CSSTransition in={open} timeout={500} classNames="modal" unmountOnExit>
+                <div className="modal-container">
                     <div className="modal-overlay" role="button" onClick={() => setOpen(false)} aria-hidden="true" aria-label="close" />
                     <div className="modal dark">
                         <form ref={form} onSubmit={handleSubmit}>
-                            <input type="text" name="username" placeholder="Username" />
+                            <input type="text" name="username" placeholder="Username" ref={(input) => input && input.focus()} />
                             <input type="password" name="password" placeholder="Password" />
-                            <button type="submit">Login</button>
+                            <div>
+                                <button type="submit">Login</button>
+                                <button type="button" onClick={() => setOpen(false)}>Cancel</button>
+                            </div>
                         </form>
                     </div>
-                </>
-            )}
+                </div>
+            </CSSTransition>
         </>
     );
 }
