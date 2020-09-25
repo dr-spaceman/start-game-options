@@ -10,11 +10,48 @@
 
     <div id="content">{% block content %}{% endblock %}</div>
     
-    <div id="footer">
+    <footer id="footer">
         {% block footer %}
+        <div class="about">
+            <ul>
+                <li><a href="/terms.php">Terms of Use</a></li>
+                <li><a href="/about.php">About Videogam.in</a></li>
+                <li><a href="/jobs.php">Join Us</a></li>
+                <li><a href="/contact.php">Contact Us</a></li>
+                <li><a href="http://twitter.com/videogamin" title="Follow Videogam.in on Twitter" class="link-twitter">Follow Us</a></li>
+                <li><a href="http://www.facebook.com/pages/Videogamin/113351978705186" title="Find us on Facebook" class="link-facebook">Like</a></li>
+            </ul>
+        </div>
+
+        <div class="featured">
+            <h5>Featured Content</h5>
+            <ul>
+                <li><a href="/games/Vagrant_Story">Vagrant Story</a></li>
+                <li><a href="/games/Banjo-Kazooie">Banjo-Kazooie</a></li>
+                <li><a href="/topics/Cosplay">Cosplay</a></li>
+                <li><a href="/categories/Nintendo_3DS">Nintendo 3DS</a></li>
+                <li><a href="/topics/Videogame_violence">Videogame violence</a></li>
+                <li><a href="/categories/Square_Enix">Square Enix</a></li>
+                <li><a href="/people/Akira_Yamaoka">Akira Yamoka</a></li>
+                <li><a href="/people/Hironobu_Sakaguchi">Hironobu Sakaguchi</a></li>
+                <li><a href="/categories/Peppy_Hare">Peppy Hare</a></li>
+            </ul>
+        </div>
+
+        <h5 style="font-weight:normal;">
+            <b>&copy; 2020 Videogam.in</b> a website about videogames
+        </h5>
+
+        <div id="diorama">
+            <div style="z-index:2; bottom:0; left:0; width:19px; height:10px; background-position: 24px -16px;"></div>
+            <div style="z-index:2; bottom:0; right:0; width:19px; height:10px; background-position: 24px -16px"></div>
+            <div style="z-index:1; bottom:0; left:0; right:0; width:100%; height:10px; background-position:0 -46px; background-repeat: repeat-x;"></div>
+            <div style="z-index:1; bottom:10px; right:0; width:35px; height:32px; background-position:0 0;"></div>
+        </div>
+
         <div id="colophon"></div>
         {% endblock %}
-    </div>
+    </footer>
 
     {% block scripts %}
     <script src="/javascript/app_bundle.js"></script>

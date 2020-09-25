@@ -3,19 +3,34 @@ $link-hover-color: #39f;
 $red: #d33;
 $green: #00a264;
 $body-background-color: #eee;
+
 $img-dir: "../images";
+
+$breakpoint-mobile: 640px;
 
 // Top Level (Global)
 
+:root {
+  font: normal 100% sans-serif;
+  font-size: calc(100vw / 25);
+}
+
+@media (min-width: $breakpoint-mobile) {
+  :root {
+    font-size: calc(100vw / 70);
+  }
+}
+
 body {
-  padding: 1em;
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 0 0 200px; // Bottom padding for footer
   background: {
     color: $body-background-color;
     image: url("#{$img-dir}/textured_bg.jpg");
   }
   border-top: 3px solid #222;
-  font-size: 13px;
-  font-family: Helvetica, Arial;
   text-align: left;
   vertical-align: top;
 }
@@ -33,32 +48,34 @@ a, .a {
 }
 
 fieldset { margin-left:0; margin-right:0; padding:5px 10px 10px 10px; border:1px solid #CCC; }
-legend { font-size:14px; color:#666; }
+legend { color:#666; }
 input[type="text"], input[type="password"], textarea, select, .inputfield {
-  padding:3px 1px 3px 2px; margin-bottom:1px;
-	border-width:1px; border-style:solid; border-color:#666 #BBB #BBB #666;
-	background:white; background:RGBA(255,255,255,.7);
-	border-radius:2px; -moz-border-radius:2px; -webkit-border-radius:2px;
-	font-size:13px; font-family:Arial;
-	outline:none;
+  padding: 3px 1px 3px 2px;
+  margin-bottom: 1px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #666 #BBB #BBB #666;
+  background: white;
+  background: rgba(255,255,255,.7);
+	border-radius: 2px;
+	outline: none;
 }
-textarea { font-family:monospace; font-size:12px; }
-select { padding:2px; }
+textarea { font-family: monospace; }
+select { padding: 2px; }
 optgroup {
-  padding-top:2px;
-	font-weight:normal;
-	font-style:italic;
-	font-family:Arial;
-	color:#777;
-	background-color:#EEE;
+  padding-top: 2px;
+	font-weight: normal;
+	font-style: italic;
+	color: #777;
+	background-color: #EEE;
 }
 optgroup > option {
-  padding-left:20px;
-	background-color:#FFF;
-	color:black;
+  padding-left: 20px;
+	background-color: #FFF;
+	color: black;
 }
 optgroup > option:first-child {
-  margin-top:2px;
+  margin-top: 2px;
 }
 
 // .button-blue {
@@ -66,17 +83,23 @@ optgroup > option:first-child {
 // 	color:rgba(255,255,255,.93); text-shadow:0 -1px @link-color, 0 1px @link-hover-color;
 // 	background:@link-color; background:-moz-linear-gradient(top, @link-hover-color 50%, @link-color 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,@link-hover-color), color-stop(50%,@link-color));
 // 	border-color:darken(@link-hover-color, 10%) darken(@link-color, 5%) darken(@link-color, 5%) darken(@link-hover-color, 5%);
-// 	box-shadow:0 1px 1px RGBA(0,0,0,.2);
+// 	box-shadow:0 1px 1px rgba(0,0,0,.2);
 // 	&:hover { border-color:darken(@link-color, 25%); }
 // 	&:active { box-shadow:none; background:darken(@link-hover-color, 5%); border-color:darken(@link-color, 12%) darken(@link-hover-color, 12%) darken(@link-hover-color, 12%) darken(@link-color, 12%); }
 // }
 button, input[type="button"], input[type="submit"], input[type="reset"], .faux-button {
-  padding:3px 10px;
-  font-size:13px; font-family:Arial; color:#444; text-shadow:0 -1px #DADADA, 0 1px #EEE;
-  background:#DDD; background:-moz-linear-gradient(top, #EEE 50%, #DDD 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,#EEE), color-stop(50%,#DDD));
-  border-width:1px; border-style:solid; border-color:#DDD #AAA #AAA #DDD; border-radius:2px;
-  box-shadow:0 1px 0 RGBA(0,0,0,.1);
-  cursor:pointer;
+  padding: 3px 10px;
+  color: #444;
+  text-shadow: 0 -1px #DADADA, 0 1px #EEE;
+  background: #DDD;
+  background: -moz-linear-gradient(top, #EEE 50%, #DDD 50%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,#EEE), color-stop(50%,#DDD));
+  border-width: 1px;
+  border-style: solid;
+  border-color: #DDD #AAA #AAA #DDD;
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+  cursor: pointer;
   &:hover { border-color:#777; }
   &:active, &.active { box-shadow:none; background:#DDD; border-color:#AAA #CCC #CCC #AAA; }
   &[disabled="disabled"] { color:#BBB; cursor:not-allowed; }
@@ -95,8 +118,6 @@ button, input[type="button"], input[type="submit"], input[type="reset"], .faux-b
 img { vertical-align: middle; }
 
 h1 {
-  font: 13px/1.5 Arial;
-  font-size: 3em;
   font-weight: 300;
   line-height: 1.1;
   margin-top: 0;
@@ -107,29 +128,25 @@ h1 {
 h2 {
   margin-bottom: .5em;
   font-weight: normal;
-  font-size: 21px;
   color: #333;
 }
 h3 {
   margin: 1em 0 .5em;
-  font-size: 17px;
 }
 h4 {
   margin: 1em 0 .5em;
-  font-size: 16px;
 }
 h5 {
   margin: 1em 0 .5em;
-  font-size: 15px;
+  font-size: 1.25rem;
 }
 h6 {
   margin: 1em 0 .5em;
-  font-size: 14px;
 }
 
+// Page Layouts
+
 body > header {
-  position: relative;
-  z-index: 15;
 	height: 110px;
 	margin-bottom: 40px;
 	h2 {
@@ -149,77 +166,17 @@ body > header {
 		}
 	}
 }
-
-// Custom Classes
-
-.dark {
-  background-color: black;
-  color: white;
-  a {
-    color: white;
-    &:hover {
-      color: lightgray;
-    }
+#navmenu {
+  #hamburger {
+    position: fixed;
+    top: 3em;
+    right: 3em;
   }
 }
-.red {
-  color: $red;
-  &:hover {
-    color: #f17878;
-  }
-}
-
-.modal-container {
-  &.modal-enter { opacity: 0; }
-  &.modal-enter-active { opacity: 1; transition: all 500ms; }
-  &.modal-exit { opacity: 1 }
-  &.modal-exit-active { opacity: 0; transition: opacity 500ms; }
-}
-.modal-overlay {
-  width: 100%;
-  height: 100%;
-  z-index: 2; /* places the modal overlay between the main page and the modal dialog*/
-  background-color: rgba(0, 0, 0, 0.95);
-  position: fixed;
-  top: 0;
-  left: 0;
-  margin: 0;
-  padding: 0;
-  transition: all 0.3s;
-}
-.modal {
-  width: 50%;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 2em;
-  background-color: #fff;
-  z-index: 3; /* places the modal dialog on top of everything else */
-  position: fixed;
-  top: 25%;
-  left: 25%;
-}
-.modal-close {
-  color: #aaa;
-  line-height: 50px;
-  font-size: 80%;
-  position: absolute;
-  right: 0;
-  text-align: center;
-  top: 0;
-  width: 70px;
-  text-decoration: none;
-  &:hover {
-    color: black;
-  }
-}
-
 #login {
-  .modal {
+  .modal-content {
     width: 225px;
-    margin: -112px 0 0 -112px;
-    top: 50%;
-    left: 50%;
-    background-color: transparent;
+    @extend %dark;
   }
   form {
     margin-top: -1em;
@@ -261,6 +218,134 @@ body > header {
   }
 }
 
+body > #content {
+  padding: 0 2rem;
+}
+
+body > footer {
+  width: 100%;
+  box-sizing: border-box;
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  left: 0;
+  padding: 2rem;
+	background: #030303 url("#{$img-dir}/pagesection_black.png") repeat-x 0 0;
+	color:#999;
+	> .container { width:940px; margin:0 auto; padding:30px 0 100px; position:relative; z-index:2; }
+	a { color:#aaa; }
+	a:hover { color:#CCC; }
+	h5 { margin:0 0 5px; font-size:15px; }
+	ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    li {
+      margin:0; padding:0;
+    }
+  }
+	.about, .featured {
+    display:none;
+    li {
+      a {
+        display:block; margin:0 14px 7px 0; font-size:14px; background-position:left center; background-repeat:no-repeat;
+        .link-twitter {
+          padding-left: 20px;
+          background: url("#{$img-dir}/twitter_sm.png") no-repeat left center;
+        }
+      }
+    }
+  }
+	.featured ul li {  }
+  #diorama {
+    width: 100%;
+    height: 48px;
+    div {
+      position: absolute;
+      background-image: url("#{$img-dir}/footer_diorama.png");
+    }
+  }
+}
+
+// Custom Classes
+
+%dark {
+  background-color: black;
+  color: white;
+  a {
+    color: white;
+    &:hover {
+      color: lightgray;
+    }
+  }
+}
+.dark { @extend %dark }
+.red {
+  color: $red;
+  &:hover {
+    color: #f17878;
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.modal-container {
+  &.modal-enter { opacity: 0; }
+  &.modal-enter-active { opacity: 1; transition: all 500ms; }
+  &.modal-exit { opacity: 1 }
+  &.modal-exit-active { opacity: 0; transition: opacity 500ms; }
+}
+.modal-overlay {
+  width: 100%;
+  height: 100%;
+  z-index: 10; /* places the modal overlay between the main page and the modal content*/
+  background-color: rgba(0, 0, 0, 0.95);
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s;
+}
+.modal-content {
+  width: auto;
+  margin: .5rem;
+  padding: 2rem;
+  z-index: 11; /* places the modal dialog on top of overlay */
+  position: relative;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  h5 {
+    margin-top: 0;
+  }
+  @media (min-width: $breakpoint-mobile) {
+    margin: 2em auto;
+    max-width: 500px;
+  }
+}
+.modal-close {
+  color: #aaa;
+  line-height: 50px;
+  font-size: 80%;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+  width: 70px;
+  text-decoration: none;
+  &:hover {
+    color: black;
+  }
+}
+
 .user {
 	height: 20px;
 	line-height: 20px;
@@ -277,6 +362,6 @@ body > header {
 .user-avatar {
 	&.big img { width: 144px; height: 144px; }
 	&.icon img { width: 48px; height: 48px; }
-	&.thumbnail img {  }
+	&.thumbnail img { width: 20px; height: 20px; }
 }
   

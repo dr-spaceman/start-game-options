@@ -30,7 +30,7 @@ export default function Login(props) {
     );
 
     return (
-        <>
+        <div id="login">
             {username || loginButton}
             <Modal open={open} close={handleClose}>
                 <form ref={form} onSubmit={handleSubmit}>
@@ -42,6 +42,6 @@ export default function Login(props) {
                     </div>
                 </form>
             </Modal>
-        </>
+        </div>
     );
 }

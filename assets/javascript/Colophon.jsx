@@ -7,7 +7,8 @@ export default function Colophon() {
     if (!storageAvailable('localStorage')) {
         return '';
     }
-    localStorage.clear();
+    // Prevent saving hidden status:
+    // localStorage.clear();
 
     const [open, setOpen] = React.useState(true);
 
@@ -20,7 +21,7 @@ export default function Colophon() {
     if (open && localStorage.getItem('colophon') !== 'closed') {
         return (
             <div className="container dark" style={{ position: 'fixed', zIndex: 999, right: 0, bottom: 0, left: 0, fontSize: '15px', color: '#BBB', boxShadow: '0 0 10px -5px black' }}>
-                <div style={{ width:'960px', padding:'30px 0', margin:'0 auto', textAlign:'center' }}>
+                <div style={{ padding: '30px 0', margin: '0 auto', textAlign: 'center' }}>
                     Welcome to Videogam.in, a site about videogames.
                     <br />
                     <a href="/about.php"><strong>Read more</strong></a> about this site or else <a href="#close" title="hide this message and don't show it to me again" className="tooltip" onClick={handleClose}><strong>pay me for the door repair charge</strong></a>.
