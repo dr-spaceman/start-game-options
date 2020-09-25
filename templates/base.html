@@ -6,20 +6,7 @@
     {% endblock %}
 </head>
 <body>
-    <header>
-        <h2><a href="/" title="Videogam.in">Videogam.in, a site about videogames</a></h2>
-        <div id="login" data-username="{{session.username}}">
-            {% if session.logged_in %}
-                Hello {{session.username}}! 
-                <a href="/login.php?do=logout">Log Out</a>
-            {% else %}
-            Hello Guest!
-                <a href="/login.php">Log In</a> | <a href="/register.php">Register</a>
-            {% endif %}
-        </div>
-        <div id="search"></div>
-        <div id="menu"></div>
-    </header>
+    <header id="header" data-username="{{session.username}}"></header>
 
     <div id="content">{% block content %}{% endblock %}</div>
     

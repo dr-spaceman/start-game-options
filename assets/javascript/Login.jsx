@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Modal from './Modal.jsx';
+import avatar from '../images/questionblock.png';
 
 export default function Login(props) {
     const { username } = props;
@@ -12,14 +13,21 @@ export default function Login(props) {
     };
 
     const [open, setOpen] = React.useState(false);
-    const handleOpen = () => {
+    const handleOpen = (event) => {
+        event.preventDefault();
         setOpen(true);
     };
     const handleClose = () => {
         setOpen(false);
     };
 
-    const loginButton = <button type="button" onClick={handleOpen}>Login</button>;
+    const loginButton = (
+        <span className="user">
+            <a href="/login.php" onClick={handleOpen} style={{ paddingLeft: 18, background: `url(${avatar}) no-repeat left center` }}>
+                Login
+            </a>
+        </span>
+    );
 
     return (
         <>

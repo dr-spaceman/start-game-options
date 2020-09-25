@@ -162,6 +162,12 @@ body > header {
     }
   }
 }
+.red {
+  color: $red;
+  &:hover {
+    color: #f17878;
+  }
+}
 
 .modal-container {
   &.modal-enter { opacity: 0; }
@@ -255,10 +261,22 @@ body > header {
   }
 }
 
-.red {
-  color: $red;
-  &:hover {
-    color: #f17878;
-  }
+.user {
+	height: 20px;
+	line-height: 20px;
+	.user-username {
+		display: inline-block;
+		vertical-align: middle;
+	}
+	.user-avatar.thumbnail {
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 5px;
+	}
+}
+.user-avatar {
+	&.big img { width: 144px; height: 144px; }
+	&.icon img { width: 48px; height: 48px; }
+	&.thumbnail img {  }
 }
   
