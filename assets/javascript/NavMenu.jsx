@@ -1,20 +1,27 @@
 import React from 'react';
-import { BiMenu, BiPlus } from 'react-icons/bi';
+import { IconContext } from 'react-icons';
+import { BiMenu, BiX } from 'react-icons/bi';
 import Modal from './Modal.jsx';
 
 export default function NavMenu(props) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = (event) => {
         event.preventDefault();
-        setOpen(true);
+        setOpen(!open);
     };
     const handleClose = () => {
         setOpen(false);
     };
 
+    const classname = open ? 'plain active' : 'plain inactive';
+
     return (
         <div id="navmenu">
-            <button type="button" id="hamburger" onClick={handleOpen}>Menu</button>
+            <button type="button" role="switch" aria-checked={open} id="hamburger" className={classname} onClick={handleOpen}>
+                <IconContext.Provider value={{ size: '30px' }}>
+                    {open ? <BiX /> : <BiMenu />}
+                </IconContext.Provider>
+            </button>
             <Modal open={open} close={handleClose}>
                 <ul>
                     <li><a href="/games">Games</a></li>
@@ -23,5 +30,5 @@ export default function NavMenu(props) {
                 </ul>
             </Modal>
         </div>
-    )
+    );
 }

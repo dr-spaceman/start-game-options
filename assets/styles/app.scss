@@ -7,16 +7,27 @@ $body-background-color: #eee;
 $img-dir: "../images";
 
 $breakpoint-mobile: 640px;
+$padding: 1rem;
+
+%padding { padding: $padding }
+%padding-top { padding: $padding }
+%padding-right { padding: $padding }
+%padding-bottom { padding: $padding }
+%padding-left { padding: $padding }
+@media (min-width: $breakpoint-mobile) {
+  %padding { padding: 2.5rem; }
+  %padding-top { padding: 2.5rem }
+  %padding-right { padding: 2.5rem }
+  %padding-bottom { padding: 2.5rem }
+  %padding-left { padding: 2.5rem }
+}
 
 // Top Level (Global)
 
 :root {
   font: normal 100% sans-serif;
   font-size: calc(100vw / 25);
-}
-
-@media (min-width: $breakpoint-mobile) {
-  :root {
+  @media (min-width: $breakpoint-mobile) {
     font-size: calc(100vw / 70);
   }
 }
@@ -87,7 +98,7 @@ optgroup > option:first-child {
 // 	&:hover { border-color:darken(@link-color, 25%); }
 // 	&:active { box-shadow:none; background:darken(@link-hover-color, 5%); border-color:darken(@link-color, 12%) darken(@link-hover-color, 12%) darken(@link-hover-color, 12%) darken(@link-color, 12%); }
 // }
-button, input[type="button"], input[type="submit"], input[type="reset"], .faux-button {
+button:not(.plain), input[type="button"], input[type="submit"], input[type="reset"], .faux-button {
   padding: 3px 10px;
   color: #444;
   text-shadow: 0 -1px #DADADA, 0 1px #EEE;
@@ -147,36 +158,45 @@ h6 {
 // Page Layouts
 
 body > header {
-	height: 110px;
-	margin-bottom: 40px;
-	h2 {
-    margin: 0;
-    padding: 0;
-		border: none;
-		a {
-      float: left;
-      width: 270px;
-      height: 55px;
-      text-indent: -1000px;
-      overflow: hidden;
-      background: transparent url("#{$img-dir}/h1.png") no-repeat scroll 0 0;
-			&:hover {
-        background-position: 0 -90px;
-      }
-		}
-	}
+  height: 55px;
+  margin: $padding 0;
 }
 #navmenu {
-  #hamburger {
+  button {
     position: fixed;
-    top: 3em;
-    right: 3em;
+    z-index: 9; // Behind modal overlay
+    top: $padding;
+    left: $padding;
+    width: 305px;
+    height: 55px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent url("#{$img-dir}/h1.png") no-repeat scroll 35px 0;
+    text-align: left;
+    cursor: pointer;
+    &:hover, &:active, &.active {
+      background-position: 35px -90px;
+    }
+    @media (min-width: $breakpoint-mobile) {
+      top: 2.5rem;
+      left: 2.5rem;
+    }
+	}
+  .modal, .modal-overlay {
+    z-index: 7;
+  }
+  .modal-content {
+    z-index: 8;
   }
 }
 #login {
   .modal-content {
     width: 225px;
-    @extend %dark;
+    margin-right: auto;
+    margin-left: auto;
+    @extend .dark;
+    background-color: transparent !important;
   }
   form {
     margin-top: -1em;
@@ -219,7 +239,10 @@ body > header {
 }
 
 body > #content {
-  padding: 0 2rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  @extend %padding-right;
+  @extend %padding-left;
 }
 
 body > footer {
@@ -229,7 +252,7 @@ body > footer {
   z-index: -1;
   bottom: 0;
   left: 0;
-  padding: 2rem;
+  @extend %padding;
 	background: #030303 url("#{$img-dir}/pagesection_black.png") repeat-x 0 0;
 	color:#999;
 	> .container { width:940px; margin:0 auto; padding:30px 0 100px; position:relative; z-index:2; }
@@ -269,7 +292,7 @@ body > footer {
 
 // Custom Classes
 
-%dark {
+.dark {
   background-color: black;
   color: white;
   a {
@@ -279,7 +302,6 @@ body > footer {
     }
   }
 }
-.dark { @extend %dark }
 .red {
   color: $red;
   &:hover {
@@ -289,10 +311,12 @@ body > footer {
 
 .modal {
   position: fixed;
+  z-index: 10;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
+  display: grid;
 }
 .modal-container {
   &.modal-enter { opacity: 0; }
@@ -316,8 +340,8 @@ body > footer {
   width: auto;
   margin: .5rem;
   padding: 2rem;
-  z-index: 11; /* places the modal dialog on top of overlay */
   position: relative;
+  z-index: 11; /* places the modal dialog on top of overlay */
   top: 0;
   left: 0;
   display: flex;
@@ -327,7 +351,7 @@ body > footer {
     margin-top: 0;
   }
   @media (min-width: $breakpoint-mobile) {
-    margin: 2em auto;
+    margin: auto;
     max-width: 500px;
   }
 }

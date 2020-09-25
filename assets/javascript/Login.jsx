@@ -21,17 +21,18 @@ export default function Login(props) {
         setOpen(false);
     };
 
-    const loginButton = (
+    const userLink = username && (
         <span className="user">
-            <a href="/login.php" onClick={handleOpen} style={{ paddingLeft: 18, background: `url(${avatar}) no-repeat left center` }}>
-                Login
-            </a>
+            <a href={`~${username}`}>{username}</a>
         </span>
     );
 
+    const loginButtonStyle = { paddingLeft: 18, background: `url(${avatar}) no-repeat left center` };
+    const loginButton = <a href="/login.php" onClick={handleOpen} style={loginButtonStyle}>Login</a>;
+
     return (
         <div id="login">
-            {username || loginButton}
+            {userLink || loginButton}
             <Modal open={open} close={handleClose}>
                 <form ref={form} onSubmit={handleSubmit}>
                     <input type="text" name="username" placeholder="Username" ref={(input) => input && input.focus()} />

@@ -8,10 +8,9 @@ export default function Header(props) {
 
     return (
         <>
-            <h2><a href="/" title="Videogam.in">Videogam.in, a site about videogames</a></h2>
-            <Login username={username} />
-            <Search />
             <NavMenu />
+            {/* <Login username={username} />
+            <Search /> */}
         </>
     );
 }
