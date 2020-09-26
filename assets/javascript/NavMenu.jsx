@@ -18,7 +18,7 @@ export default function NavMenu(props) {
     return (
         <div id="navmenu">
             <button type="button" role="switch" aria-checked={open} id="hamburger" className={classname} onClick={handleOpen}>
-                <IconContext.Provider value={{ size: '30px' }}>
+                <IconContext.Provider value={{ size: '30px', color: 'white' }}>
                     {open ? <BiX /> : <BiMenu />}
                 </IconContext.Provider>
             </button>
