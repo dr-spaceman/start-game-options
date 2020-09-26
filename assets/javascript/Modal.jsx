@@ -8,7 +8,7 @@ export default function Modal(props) {
         <CSSTransition in={open} timeout={timeout} classNames="modal" unmountOnExit>
             <div className="modal modal-container">
                 {overlay && <div className="modal-overlay" role="button" onClick={close} aria-hidden="true" aria-label="close" />}
-                <div className="modal-content">
+                <div className="modal-content light">
                     {children}
                 </div>
             </div>
