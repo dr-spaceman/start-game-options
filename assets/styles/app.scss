@@ -69,20 +69,24 @@ fieldset {
 legend {
     color: #666;
 }
+.inputitem {
+    border-radius: .1em;
+    margin: 0;
+    padding: .3em .5em;
+}
 input[type="text"],
 input[type="password"],
 textarea,
 select,
 .inputfield {
-    padding: 3px 1px 3px 2px;
-    margin-bottom: 1px;
     border-width: 1px;
     border-style: solid;
     border-color: #666 #bbb #bbb #666;
-    background: white;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 2px;
+    background-color: white;
     outline: none;
+    background: white;
+    background: linear-gradient( #e0e0e0, white 3px);
+    @extend .inputitem;
 }
 textarea {
     font-family: monospace;
@@ -115,12 +119,11 @@ optgroup > option:first-child {
 // 	&:hover { border-color:darken(@link-color, 25%); }
 // 	&:active { box-shadow:none; background:darken(@lightblue, 5%); border-color:darken(@link-color, 12%) darken(@lightblue, 12%) darken(@lightblue, 12%) darken(@link-color, 12%); }
 // }
-button:not(.plain),
+button:not(.access-button),
 input[type="button"],
 input[type="submit"],
 input[type="reset"],
 .faux-button {
-    padding: 3px 10px;
     color: #444;
     text-shadow: 0 -1px #dadada, 0 1px #eee;
     background: #ddd;
@@ -129,9 +132,9 @@ input[type="reset"],
     border-width: 1px;
     border-style: solid;
     border-color: #ddd #aaa #aaa #ddd;
-    border-radius: 2px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    @extend .inputitem;
     &:hover {
         border-color: #777;
     }
@@ -226,22 +229,29 @@ body {
 
 body > header {
     @extend .fullwidth;
+    @include spacing(padding-left);
+    @include spacing(padding-right);
     background-color: $color-body;
     border-bottom: 1px solid $color-surface;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    & > *:first-child {
+        flex: max-content;
+        & ~ * {
+            margin-left: 1em;
+        }
+    }
 }
 #navmenu {
+    width: 163px + 8px + 30px;
     height: 30px;
-    button {
+    #hamburger {
         position: fixed;
         z-index: 9; // Behind modal overlay
         @include spacing("top");
         @include spacing("left");
-        margin: 0;
-        padding: 0;
-        border: none;
-        text-align: left;
-        cursor: pointer;
-        background-color: transparent;
         display: flex;
         align-items: center;
         &:after {
@@ -267,11 +277,17 @@ body > header {
     }
     .modal-content {
         z-index: 8;
+        display: block; // Overwrite grid (vertical and horizontal centering)
+        margin: 0; // Overwrite centering
+        padding-top: calc(#{$spacing-mobile} + 30px + #{$spacing-mobile}); // 30px height of header img
+        @include breakpoint(screen) {
+            padding-top: calc(#{$spacing-monitor} + 30px + #{$spacing-monitor}); // 30px height of header img
+        }
     }
 }
 #login {
     .modal-content {
-        width: 225px;
+        width: 290px;
         margin-right: auto;
         margin-left: auto;
         @extend .dark;
@@ -286,25 +302,11 @@ body > header {
             margin-top: 1em;
         }
         input {
-            width: 100%;
-            padding: 6px 0 6px 8px;
-            font-size: 14px;
             color: #666;
-            background: white;
-            background: -moz-linear-gradient(top, #e0e0e0, white 7px);
-            background: -webkit-gradient(
-                linear,
-                left top,
-                left bottom,
-                color-stop(0%, #e0e0e0),
-                color-stop(100%, white)
-            );
             border-width: 0;
-            border-radius: 3px;
+            border-radius: .2em;
         }
         button {
-            padding: 5px 15px;
-            font-size: 15px;
             font-weight: bold;
             border-width: 0;
             box-shadow: 1px 1px 3px 1px black;
@@ -414,6 +416,20 @@ body > footer {
     }
 }
 
+.access-button {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+}
+.close-button {
+    @extend .access-button;
+    @extend .red;
+    font-size: 2em;
+}
+
 .modal {
     position: fixed;
     z-index: 10;
@@ -453,6 +469,7 @@ body > footer {
 }
 .modal-content {
     width: auto;
+    box-sizing: border-box;
     margin: 0.5rem;
     padding: 2rem;
     position: relative;
@@ -471,18 +488,10 @@ body > footer {
     }
 }
 .modal-close {
-    color: #aaa;
-    line-height: 50px;
-    font-size: 80%;
     position: absolute;
-    right: 0;
-    text-align: center;
-    top: 0;
-    width: 70px;
-    text-decoration: none;
-    &:hover {
-        color: black;
-    }
+    z-index: 12;
+    top: .5rem;
+    right: .5rem;
 }
 
 .user {

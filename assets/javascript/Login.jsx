@@ -33,7 +33,7 @@ export default function Login(props) {
     return (
         <div id="login">
             {userLink || loginButton}
-            <Modal open={open} close={handleClose}>
+            <Modal open={open} close={handleClose} closeButton={false}>
                 <form ref={form} onSubmit={handleSubmit}>
                     <input type="text" name="username" placeholder="Username" ref={(input) => input && input.focus()} />
                     <input type="password" name="password" placeholder="Password" />

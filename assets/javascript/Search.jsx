@@ -1,4 +1,6 @@
 import React from 'react';
+import { BiSearch } from 'react-icons/bi';
+import Modal from './Modal.jsx';
 
 const API_ENDPOINT = '/api/search?q=';
 
@@ -81,18 +83,29 @@ export default function Search() {
             .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }));
     }, [searchTerm]);
 
+    const [open, setOpen] = React.useState(false);
+    const handleClose = () => {
+        setOpen(false);
+    };
+
     return (
-        <fieldset className="inputwithlabel">
-            <label htmlFor="searchform">Search:</label>
-            {' '}
-            <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" onChange={handleSearch} />
-            {' '}
-            <button type="reset" onClick={() => setSearchTerm('')}>Reset</button>
+        <div id="search">
+            <button type="button" onClick={() => setOpen(true)}>
+                <BiSearch />
+                Search
+            </button>
+            <Modal open={open} close={handleClose}>
+                <div>
+                    <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" onChange={handleSearch} ref={(input) => input && input.focus()} />
+                    {' '}
+                    <button type="reset" onClick={() => setSearchTerm('')}>Reset</button>
 
-            {results.isError && <p>Something went wrong</p>}
+                    {results.isError && <p>Something went wrong</p>}
 
-            {results.isLoading ? (<p>Loading...</p>) : (<SearchResults results={results} />)}
-        </fieldset>
+                    {results.isLoading ? (<p>Loading...</p>) : (<SearchResults results={results} />)}
+                </div>
+            </Modal>
+        </div>
     );
 }
 

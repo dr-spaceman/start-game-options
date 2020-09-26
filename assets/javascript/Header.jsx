@@ -9,8 +9,8 @@ export default function Header(props) {
     return (
         <>
             <NavMenu />
-            {/* <Login username={username} />
-            <Search /> */}
+            <Login username={username} />
+            <Search />
         </>
     );
 }
