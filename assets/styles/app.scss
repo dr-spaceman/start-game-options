@@ -7,19 +7,15 @@ $body-background-color: #eee;
 $img-dir: "../images";
 
 $breakpoint-mobile: 640px;
-$padding: 1rem;
+$monitor-size: (min-width: $breakpoint-mobile);
+$spacing-mobile: 1rem;
+$spacing-monitor: 2.5rem;
 
-%padding { padding: $padding }
-%padding-top { padding: $padding }
-%padding-right { padding: $padding }
-%padding-bottom { padding: $padding }
-%padding-left { padding: $padding }
-@media (min-width: $breakpoint-mobile) {
-  %padding { padding: 2.5rem; }
-  %padding-top { padding: 2.5rem }
-  %padding-right { padding: 2.5rem }
-  %padding-bottom { padding: 2.5rem }
-  %padding-left { padding: 2.5rem }
+@mixin spacing($prop) {
+  #{$prop}: $spacing-mobile;
+  @media (min-width: #{$breakpoint-mobile}) {
+    #{$prop}: $spacing-monitor;
+  }
 }
 
 // Top Level (Global)
@@ -159,14 +155,17 @@ h6 {
 
 body > header {
   height: 55px;
-  margin: $padding 0;
+  @include spacing('margin-top');
+  @include spacing('margin-bottom');
+  margin-right: 0;
+  margin-left: 0;
 }
 #navmenu {
   button {
     position: fixed;
     z-index: 9; // Behind modal overlay
-    top: $padding;
-    left: $padding;
+    @include spacing('top');
+    @include spacing('left');
     width: 305px;
     height: 55px;
     margin: 0;
@@ -241,8 +240,8 @@ body > header {
 body > #content {
   padding-top: 0;
   padding-bottom: 0;
-  @extend %padding-right;
-  @extend %padding-left;
+  @include spacing('padding-right');
+  @include spacing('padding-left');
 }
 
 body > footer {
@@ -252,7 +251,7 @@ body > footer {
   z-index: -1;
   bottom: 0;
   left: 0;
-  @extend %padding;
+  @include spacing('padding');
 	background: #030303 url("#{$img-dir}/pagesection_black.png") repeat-x 0 0;
 	color:#999;
 	> .container { width:940px; margin:0 auto; padding:30px 0 100px; position:relative; z-index:2; }
