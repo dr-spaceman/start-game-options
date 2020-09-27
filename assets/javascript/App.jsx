@@ -23,6 +23,9 @@ const Content = () => {
     return (
         <>
             <h1>Hello World!</h1>
+            <h1>Hello World!</h1>
+            <h1>Hello World!</h1>
+            <h1>Hello World!</h1>
             {open &&
             <>
                 <p>Lorem ipsum dolor sit amet <a href="#consectetur">consectetur adipisicing elit</a>. Eveniet voluptas incidunt atque ipsam, nobis quis inventore, velit libero vel autem tempora, fugit soluta excepturi <a href="#foo">voluptatum</a>! Soluta possimus nihil dolore hic.</p>

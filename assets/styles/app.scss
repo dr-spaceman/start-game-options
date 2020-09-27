@@ -16,10 +16,13 @@ $breakpoint-mobile: 640px;
 
 @mixin breakpoint($view) {
     @if $view == mobile {
-        @media (max-width: $breakpoint-mobile) { @content; }
-    }
-    @else {
-        @media (min-width: $breakpoint-mobile + 1px) { @content; }
+        @media (max-width: $breakpoint-mobile) {
+            @content;
+        }
+    } @else {
+        @media (min-width: $breakpoint-mobile + 1px) {
+            @content;
+        }
     }
 }
 
@@ -33,6 +36,36 @@ $spacing-monitor: 3.5rem;
     @include breakpoint(screen) {
         #{$prop}: $spacing-monitor;
     }
+}
+
+// Fonts
+
+@font-face {
+    font-family: "Pixel Emulator";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/PixelEmulator.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Emulogic";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/Emulogic.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Press Start";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/prstart.woff") format("woff"), url("../fonts/prstartk.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Yoster Island";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/YosterIslandRegular.woff2") format("woff2");
 }
 
 // Top Level (Global)
@@ -70,9 +103,9 @@ legend {
     color: #666;
 }
 .inputitem {
-    border-radius: .1em;
+    border-radius: 0.1em;
     margin: 0;
-    padding: .3em .5em;
+    padding: 0.3em 0.5em;
 }
 input[type="text"],
 input[type="password"],
@@ -85,7 +118,7 @@ select,
     background-color: white;
     outline: none;
     background: white;
-    background: linear-gradient( #e0e0e0, white 3px);
+    background: linear-gradient(#e0e0e0, white 3px);
     @extend .inputitem;
 }
 textarea {
@@ -167,12 +200,21 @@ img {
 }
 
 h1 {
+    font-family: "Pixel Emulator";
     font-weight: 300;
     line-height: 1.1;
     margin-top: 0;
     margin-bottom: 0.75em;
     color: whitesmoke;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+    + h1 {
+        font-family: "Emulogic";
+        + h1 {
+            font-family: "Press Start";
+            text-transform: uppercase;
+            + h1 { font-family: "Yoster Island"; }
+        }
+    }
 }
 h2 {
     margin-bottom: 0.5em;
@@ -221,7 +263,9 @@ body {
     text-align: left;
     @extend .grid-page;
     grid-template-rows: min-content auto max-content;
-    > header, > main, > footer {
+    > header,
+    > main,
+    > footer {
         @include spacing(padding-top);
         @include spacing(padding-bottom);
     }
@@ -243,9 +287,11 @@ body > header {
             margin-left: 1em;
         }
     }
-    a, button.access-button {
+    a,
+    button.access-button {
         color: white;
-        &:hover, &:hover svg {
+        &:hover,
+        &:hover svg {
             color: rgb(224, 224, 224) !important;
         }
     }
@@ -270,7 +316,8 @@ body > header {
             margin: 2px 0 0 8px;
             background: transparent url("#{$img-dir}/h1_condensed.png") no-repeat scroll 0 0;
         }
-        &:hover::after, &.active::after {
+        &:hover::after,
+        &.active::after {
             background-position: 0 -19px;
         }
         &:hover svg {
@@ -323,7 +370,7 @@ body > header {
         input {
             color: #666;
             border-width: 0;
-            border-radius: .2em;
+            border-radius: 0.2em;
         }
         button {
             font-weight: bold;
@@ -511,8 +558,8 @@ body > footer {
 .modal-close {
     position: absolute;
     z-index: 12;
-    top: .5rem;
-    right: .5rem;
+    top: 0.5rem;
+    right: 0.5rem;
 }
 
 .user {
