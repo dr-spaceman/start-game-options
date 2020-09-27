@@ -1,3 +1,4 @@
+/* eslint-disable react/button-has-type */
 import React from 'react';
 import { BiSearch } from 'react-icons/bi';
 import Modal from './Modal.jsx';
@@ -90,9 +91,8 @@ export default function Search() {
 
     return (
         <div id="search">
-            <button type="button" onClick={() => setOpen(true)}>
-                <BiSearch />
-                Search
+            <button type="button" className="access-button" onClick={() => setOpen(true)}>
+                <BiSearch size="28" color="white" title="Search" />
             </button>
             <Modal open={open} close={handleClose}>
                 <div>

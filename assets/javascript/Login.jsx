@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Modal from './Modal.jsx';
-import avatar from '../images/questionblock.png';
+import { QuestionBlock } from './icons.js';
 
 export default function Login(props) {
     const { username } = props;
@@ -27,8 +27,12 @@ export default function Login(props) {
         </span>
     );
 
-    const loginButtonStyle = { paddingLeft: 18, background: `url(${avatar}) no-repeat left center` };
-    const loginButton = <a href="/login.php" onClick={handleOpen} style={loginButtonStyle}>Login</a>;
+    const loginButton = (
+        <a href="/login.php" onClick={handleOpen} className="user user-unknown">
+            <QuestionBlock className="user-avatar thumbnail" />
+            <span className="user-username">Login</span>
+        </a>
+    );
 
     return (
         <div id="login">

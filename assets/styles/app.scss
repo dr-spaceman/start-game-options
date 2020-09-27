@@ -243,6 +243,12 @@ body > header {
             margin-left: 1em;
         }
     }
+    a, button.access-button {
+        color: white;
+        &:hover, &:hover svg {
+            color: rgb(224, 224, 224) !important;
+        }
+    }
 }
 #navmenu {
     width: 163px + 8px + 30px;
@@ -254,6 +260,9 @@ body > header {
         @include spacing("left");
         display: flex;
         align-items: center;
+        svg {
+            transition: all 0.2s;
+        }
         &:after {
             content: "";
             width: 163px;
@@ -261,8 +270,11 @@ body > header {
             margin: 2px 0 0 8px;
             background: transparent url("#{$img-dir}/h1_condensed.png") no-repeat scroll 0 0;
         }
-        &:hover::after {
+        &:hover::after, &.active::after {
             background-position: 0 -19px;
+        }
+        &:hover svg {
+            transform: rotate(-90deg);
         }
         &.active svg {
             color: black !important;
@@ -286,6 +298,13 @@ body > header {
     }
 }
 #login {
+    @include breakpoint(mobile) {
+        .user-unknown {
+            .user-username {
+                display: none;
+            }
+        }
+    }
     .modal-content {
         width: 290px;
         margin-right: auto;
@@ -323,6 +342,8 @@ body > header {
             }
         }
     }
+}
+#search {
 }
 
 body > #content {
