@@ -92,7 +92,7 @@ export default function Search() {
     return (
         <div id="search">
             <button type="button" className="access-button" onClick={() => setOpen(true)}>
-                <BiSearch size="28" color="white" title="Search" />
+                <BiSearch size="28" title="Search" />
             </button>
             <Modal open={open} close={handleClose}>
                 <div>

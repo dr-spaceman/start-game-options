@@ -1,35 +1,38 @@
 import React from 'react';
-import { IconContext } from 'react-icons';
-import { BiMenu, BiX } from 'react-icons/bi';
+import classNames from 'classnames';
+import { CSSTransition } from 'react-transition-group';
+
 import Modal from './Modal.jsx';
 
 export default function NavMenu(props) {
     const [open, setOpen] = React.useState(false);
-    const handleOpen = () => {
+    const toggleOpen = () => {
         setOpen(!open);
     };
-    const handleClose = () => {
-        setOpen(false);
-    };
 
-    const classname = open ? 'access-button active' : 'access-button inactive';
+    const buttonClasses = classNames({
+        'access-button': true,
+        active: open,
+        inactive: !open,
+    });
 
     return (
-        <div id="navmenu">
-            <button type="button" role="switch" aria-checked={open} id="hamburger" className={classname} onClick={handleOpen}>
-                <IconContext.Provider value={{ size: '30px', color: 'white' }}>
-                    {open ? <BiX /> : <BiMenu />}
-                </IconContext.Provider>
-            </button>
-            <Modal open={open} close={handleClose} closeButton={false}>
-                <nav>
-                    <ul>
-                        <li><a href="/games">Games</a></li>
-                        <li><a href="/people">People</a></li>
-                        <li><a href="/music">Music</a></li>
-                    </ul>
-                </nav>
-            </Modal>
-        </div>
+        <CSSTransition in={open} timeout={1500}>
+            <nav id="navmenu">
+                <ul>
+                    <li className="navmenu-item-container">
+                        <h6><a href="/games">Start Game</a></h6>
+                    </li>
+                    <li className="navmenu-item-container">
+                        <button type="button" role="switch" aria-checked={open} id="menu" className={buttonClasses} onClick={toggleOpen}>
+                            Options
+                        </button>
+                    </li>
+                    <li className="navmenu-item-container hidden"><a href="/games">Games</a></li>
+                    <li className="navmenu-item-container hidden"><a href="/people">People</a></li>
+                    <li className="navmenu-item-container hidden"><a href="/music">Music</a></li>
+                </ul>
+            </nav>
+        </CSSTransition>
     );
 }

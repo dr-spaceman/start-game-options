@@ -280,7 +280,7 @@ body > header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     & > *:first-child {
         flex: max-content;
         & ~ * {
@@ -289,59 +289,50 @@ body > header {
     }
     a,
     button.access-button {
-        color: white;
+        color: rgb(224, 224, 224);
+        text-decoration: none;
         &:hover,
         &:hover svg {
-            color: rgb(224, 224, 224) !important;
+            color: white !important;
         }
     }
 }
 #navmenu {
-    width: 163px + 8px + 30px;
-    height: 30px;
-    #hamburger {
-        position: fixed;
-        z-index: 9; // Behind modal overlay
-        @include spacing("top");
-        @include spacing("left");
-        display: flex;
-        align-items: center;
-        svg {
-            transition: all 0.2s;
-        }
-        &:after {
-            content: "";
-            width: 163px;
-            height: 18px;
-            margin: 2px 0 0 8px;
-            background: transparent url("#{$img-dir}/h1_condensed.png") no-repeat scroll 0 0;
-        }
-        &:hover::after,
-        &.active::after {
-            background-position: 0 -19px;
-        }
-        &:hover svg {
-            transform: rotate(-90deg);
-        }
-        &.active svg {
-            color: black !important;
-        }
-        @include breakpoint(screen) {
-            margin-left: -38px; // hamburger:30px; bgimg padding:8px;
-        }
+    & .hidden, &.exit-done .hidden {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 500ms;
     }
-    .modal,
-    .modal-overlay {
-        z-index: 7;
+    &.enter .hidden {
+        max-height: 100px;
+        opacity: 1;
     }
-    .modal-content {
-        z-index: 8;
-        display: block; // Overwrite grid (vertical and horizontal centering)
-        margin: 0; // Overwrite centering
-        padding-top: calc(#{$spacing-mobile} + 30px + #{$spacing-mobile}); // 30px height of header img
-        @include breakpoint(screen) {
-            padding-top: calc(#{$spacing-monitor} + 30px + #{$spacing-monitor}); // 30px height of header img
+    &.enter-active .hidden, &.enter-done .hidden {
+        max-height: 55px;
+        opacity: 1;
+    }
+    &.exit .hidden {
+        max-height: 0;
+        opacity: 0;
+    }
+    ul, li {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    .navmenu-item-container {
+        margin: 0;
+        padding: 0;
+        & > * {
+            display: block;
+            margin: .5em 0 0;
+            padding: 0;
+            font-family: "Pixel Emulator";
+            font-size: 1.5em;
+            text-decoration: none;
         }
+
     }
 }
 #login {
