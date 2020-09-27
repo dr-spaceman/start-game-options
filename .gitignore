@@ -19,6 +19,7 @@ composer.phar
 /*.htm
 /*.css
 /*.js
+!webpack.config.js
 /bin/css
 /bin/php
 /bin/script
