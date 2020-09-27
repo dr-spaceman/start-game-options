@@ -28,7 +28,7 @@ export default function Login(props) {
     );
 
     const loginButton = (
-        <a href="/login.php" onClick={handleOpen} className="user user-unknown">
+        <a href="/login.php" title="Login" onClick={handleOpen} className="user user-unknown">
             <QuestionBlock className="user-avatar thumbnail" />
             <span className="user-username">Login</span>
         </a>

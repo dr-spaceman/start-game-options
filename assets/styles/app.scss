@@ -282,7 +282,7 @@ body > header {
     justify-content: space-between;
     align-items: flex-start;
     & > *:first-child {
-        flex: max-content;
+        flex-grow: 1;
         & ~ * {
             margin-left: 1em;
         }
@@ -298,18 +298,20 @@ body > header {
     }
 }
 #navmenu {
+    margin: -.5em 0 0; // Offset children margin
     & .hidden, &.exit-done .hidden {
         max-height: 0;
         opacity: 0;
         overflow: hidden;
-        transition: all 500ms;
+        transition-property: max-height, opacity;
+        transition-duration: 500ms;
     }
     &.enter .hidden {
-        max-height: 100px;
+        max-height: 100px; // Exceeds normal bounds
         opacity: 1;
     }
     &.enter-active .hidden, &.enter-done .hidden {
-        max-height: 55px;
+        max-height: 100px;
         opacity: 1;
     }
     &.exit .hidden {
@@ -330,17 +332,28 @@ body > header {
             padding: 0;
             font-family: "Pixel Emulator";
             font-size: 1.5em;
+            font-weight: normal;
             text-decoration: none;
+            letter-spacing: .13em;
+            @include breakpoint(screen) {
+                &::before {
+                    content: '> ';
+                    opacity: 0;
+                    position: absolute;
+                    left: 1.2em;
+                }
+                &:hover::before {
+                    opacity: 1;
+                }
+            }
         }
 
     }
 }
 #login {
-    @include breakpoint(mobile) {
-        .user-unknown {
-            .user-username {
-                display: none;
-            }
+    .user-unknown {
+        .user-username {
+            display: none;
         }
     }
     .modal-content {

@@ -24,6 +24,7 @@ export default function NavMenu(props) {
                         <h6><a href="/games">Start Game</a></h6>
                     </li>
                     <li className="navmenu-item-container">
+                        {/* accessibilize */}
                         <button type="button" role="switch" aria-checked={open} id="menu" className={buttonClasses} onClick={toggleOpen}>
                             Options
                         </button>
