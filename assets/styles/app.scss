@@ -12,15 +12,23 @@ $img-dir: "../images";
 
 // Breakpoint settings and methods
 
-$breakpoint-mobile: 640px;
-
+$breakpoints: (
+    "mobile": 640px,
+    "tablet": 768px,
+    "screen": 1024px,
+    "omnivision": 1200px,
+);
 @mixin breakpoint($view) {
     @if $view == mobile {
-        @media (max-width: $breakpoint-mobile) {
+        @media (max-width: map-get($breakpoints, "mobile")) {
+            @content;
+        }
+    } @else if $view == omnivision {
+        @media (min-width: map-get($breakpoints, "omnivision")) {
             @content;
         }
     } @else {
-        @media (min-width: $breakpoint-mobile + 1px) {
+        @media (min-width: map-get($breakpoints, "mobile") + 1px) {
             @content;
         }
     }
@@ -76,6 +84,9 @@ $spacing-monitor: 3.5rem;
     color: white;
     @include breakpoint(screen) {
         font-size: calc(100vw / 70);
+    }
+    @include breakpoint(omnivision) {
+        font-size: 17.1333px;
     }
 }
 
@@ -200,13 +211,11 @@ img {
 }
 
 h1 {
-    font-family: "Pixel Emulator";
-    font-weight: 300;
-    line-height: 1.1;
     margin-top: 0;
     margin-bottom: 0.75em;
-    color: whitesmoke;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+    font-family: "Pixel Emulator";
+    font-size: 1.5em;
+    font-weight: normal;
     + h1 {
         font-family: "Emulogic";
         + h1 {
@@ -298,7 +307,7 @@ body > header {
     }
 }
 #navmenu {
-    margin: -.5em 0 0; // Offset children margin
+    margin: -.5rem 0 0; // Offset children margin
     & .hidden, &.exit-done .hidden {
         max-height: 0;
         opacity: 0;
@@ -328,13 +337,13 @@ body > header {
         padding: 0;
         & > * {
             display: block;
-            margin: .5em 0 0;
+            margin: .5rem 0 0;
             padding: 0;
             font-family: "Pixel Emulator";
-            font-size: 1.5em;
+            font-size: 1.5rem;
             font-weight: normal;
             text-decoration: none;
-            letter-spacing: .13em;
+            letter-spacing: .15rem;
             @include breakpoint(screen) {
                 &::before {
                     content: '> ';
@@ -554,7 +563,7 @@ body > footer {
     h5 {
         margin-top: 0;
     }
-    @media (min-width: $breakpoint-mobile) {
+    @include breakpoint(mobile) {
         margin: auto;
         max-width: 500px;
     }
