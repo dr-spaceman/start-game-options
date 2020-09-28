@@ -94,11 +94,11 @@ export default function Search() {
             <button type="button" className="access-button" onClick={() => setOpen(true)}>
                 <BiSearch size="28" title="Search" />
             </button>
-            <Modal open={open} close={handleClose}>
+            <Modal open={open} close={handleClose} closeTabIndex="0">
                 <div>
-                    <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" onChange={handleSearch} ref={(input) => input && input.focus()} />
+                    <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" tabIndex="0" onChange={handleSearch} ref={(input) => input && input.focus()} />
                     {' '}
-                    <button type="reset" onClick={() => setSearchTerm('')}>Reset</button>
+                    <button type="reset" tabIndex="0" onClick={() => setSearchTerm('')}>Reset</button>
 
                     {results.isError && <p>Something went wrong</p>}
 

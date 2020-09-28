@@ -278,6 +278,9 @@ body {
         @include spacing(padding-top);
         @include spacing(padding-bottom);
     }
+    > *:not(header):not(main):not(footer) {
+        position: absolute; // Kick out any other elements from the grid, eg. browser module insertions
+    }
 }
 
 body > header {
@@ -344,6 +347,11 @@ body > header {
             font-weight: normal;
             text-decoration: none;
             letter-spacing: .15rem;
+            outline: none;
+            &:focus {
+                color: white;
+                text-decoration: underline;
+            }
             @include breakpoint(screen) {
                 &::before {
                     content: '> ';
@@ -563,7 +571,7 @@ body > footer {
     h5 {
         margin-top: 0;
     }
-    @include breakpoint(mobile) {
+    @include breakpoint(screen) {
         margin: auto;
         max-width: 500px;
     }

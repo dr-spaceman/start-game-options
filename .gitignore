@@ -15,14 +15,7 @@ composer.phar
 /node_modules/
 
 /* Old files awaiting refactoring *
-/*.php
-/*.htm
-/*.css
-/*.js
-!webpack.config.js
-/bin/css
-/bin/php
-/bin/script
+/refactor
 /forums
 /music
 /ninadmin

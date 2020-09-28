@@ -3,7 +3,9 @@ import { CSSTransition } from 'react-transition-group';
 import { BiX } from 'react-icons/bi';
 
 export default function Modal(props) {
-    const { children, open = true, close = null, timeout = 500, overlay = true, closeButton = true } = props;
+    const {
+        children, open = true, close = null, timeout = 500, overlay = true, closeButton = true,
+    } = props;
 
     const CloseButton = () => closeButton && (
         <button type="button" role="switch" aria-checked={open} aria-label="Close" className="modal-close close-button" onClick={close}>
@@ -17,10 +19,10 @@ export default function Modal(props) {
     return (
         <CSSTransition in={open} timeout={timeout} classNames="modal" unmountOnExit>
             <div className="modal modal-container">
-                <CloseButton />
                 <Overlay />
                 <div className="modal-content light">
                     {children}
+                    <CloseButton />
                 </div>
             </div>
         </CSSTransition>
