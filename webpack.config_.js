@@ -1,29 +1,17 @@
 /* eslint-disable indent */
 const path = require('path');
-const webpack = require('webpack'); // to access built-in plugins
 const dotenv = require('dotenv');
 
-// call dotenv and it will return an Object with a parsed key
-const env = dotenv.config().parsed;
-console.log('Environmental Variables:', env);
-
-// reduce it to a nice object, the same as before
-const envKeys = Object.keys(env).reduce((prev, next) => {
-    prev[`process.env.${next}`] = JSON.stringify(env[next]);
-    return prev;
-}, {});
-
 module.exports = {
-    mode: 'production',
+    mode: 'production', 
     entry: {
-        index: './browser/src/index.js', // non-HMR
+        app: './assets/javascript/App.jsx', // Non-HMR
         // app: ['./src/App.jsx'] // Hot Module Replacement
     },
     output: {
-        chunkFilename: '[name]_bundle.js',
         filename: '[name]_bundle.js',
         path: path.resolve(__dirname, 'public/javascript'),
-        publicPath: '/javascript/',
+        publicPath: '/', // This param added for Browser History Router, not needed for Hash Raouter
     },
     module: {
         rules: [
@@ -90,7 +78,4 @@ module.exports = {
     // Debug tool -- see source code instead of compiled code
     // Dev console > sources > webpack > . > [source files]
     devtool: 'source-map',
-    plugins: [
-        new webpack.DefinePlugin(envKeys),
-    ],
 };

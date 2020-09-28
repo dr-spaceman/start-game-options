@@ -3,7 +3,7 @@ import React from 'react';
 import { BiSearch } from 'react-icons/bi';
 import Modal from './Modal.jsx';
 
-const API_ENDPOINT = '/api/search?q=';
+const API_ENDPOINT = process.env.API_ENDPOINT_SEARCH;
 
 export default function Search() {
     const [searchTerm, setSearchTerm] = React.useState('');

@@ -1,7 +1,9 @@
 import React from 'react';
 
 import Modal from './Modal.jsx';
-import { QuestionBlock } from './icons.js';
+import { QuestionBlock } from '../lib/icons.js';
+
+const API_ENDPOINT = `${process.env.API_ENDPOINT}/users`;
 
 export default function Login(props) {
     const { username } = props;
