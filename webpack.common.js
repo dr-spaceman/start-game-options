@@ -1,17 +1,16 @@
 /* eslint-disable indent */
 const path = require('path');
-const dotenv = require('dotenv');
 
 module.exports = {
-    mode: 'production', 
     entry: {
-        app: './assets/javascript/App.jsx', // Non-HMR
+        index: './browser/src/index.js', // non-HMR
         // app: ['./src/App.jsx'] // Hot Module Replacement
     },
     output: {
+        chunkFilename: '[name]_bundle.js',
         filename: '[name]_bundle.js',
         path: path.resolve(__dirname, 'public/javascript'),
-        publicPath: '/', // This param added for Browser History Router, not needed for Hash Raouter
+        publicPath: '/javascript/',
     },
     module: {
         rules: [
@@ -75,7 +74,4 @@ module.exports = {
             chunks: 'all',
         },
     },
-    // Debug tool -- see source code instead of compiled code
-    // Dev console > sources > webpack > . > [source files]
-    devtool: 'source-map',
 };

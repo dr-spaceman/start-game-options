@@ -1,7 +1,8 @@
 *error_log
 *.log
 log
-.env
+.env*
+!.env.*example
 .ht*
 /node_modules/
 composer.phar

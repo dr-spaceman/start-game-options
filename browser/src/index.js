@@ -22,6 +22,7 @@ ReactDOM.render(
 
 const Content = () => {
     const [open, setOpen] = React.useState(true);
+
     return (
         <>
             <h1>Hello World!</h1>
@@ -41,7 +42,12 @@ const Content = () => {
                     <p>Fin.</p>
                 </>}
             <button type="button" onClick={() => setOpen(!open)}>Toggle filler text</button>
-            <p>Foo? {process.env.ENVIRONMENT}</p>
+            <p>Env</p>
+            {/* WARNING: These variables will be exposed in the bundle */}
+            <ul>
+                <li>ENVIRONMENT: {process.env.ENVIRONMENT}</li>
+                <li>HOST_DOMAIN: {process.env.HOST_DOMAIN}</li>
+            </ul>
         </>
     );
 };

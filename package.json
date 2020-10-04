@@ -6,14 +6,13 @@
         "url": "https://github.com/dr-spaceman/videogam.in"
     },
     "scripts": {
-        "#old-compile": "babel browser/src --out-dir public/javascript",
-        "#old-watch": "babel browser/src --out-dir public/javascript --watch --verbose",
-        "#compile": "Generates JS bundles for production.",
-        "compile": "webpack --mode production",
+        "#build": "Generate bundles for production.",
+        "build": "webpack --mode production --config webpack.production.js",
         "#watch": "Compile, and recompile on any changes.",
-        "watch": "webpack --watch",
+        "watch": "webpack --watch --config webpack.development.js",
         "#lint": "Runs ESLint on all relevant files",
         "lint": "eslint browser/src --ext js,jsx --ignore-pattern public/javascript",
+        "#compile-apidoc": "Recompile API documentation based on redoc comments",
         "compile-apidoc": "npx redoc-cli bundle ./public/api/openapi.yaml --output ./public/api/index.html"
     },
     "author": "",
@@ -51,6 +50,7 @@
         "webpack": "^4.44.2",
         "webpack-cli": "^3.3.12",
         "webpack-dev-middleware": "^3.7.2",
-        "webpack-hot-middleware": "^2.25.0"
+        "webpack-hot-middleware": "^2.25.0",
+        "webpack-merge": "^5.1.4"
     }
 }
