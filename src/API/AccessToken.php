@@ -4,7 +4,6 @@ namespace Vgsite\API;
 
 use OutOfBoundsException;
 use Vgsite\API\Exceptions\APIAuthorizationException;
-use Vgsite\Exceptions\LoginException;
 use Vgsite\HTTP\Request;
 use Vgsite\Registry;
 use Vgsite\UserMapper;

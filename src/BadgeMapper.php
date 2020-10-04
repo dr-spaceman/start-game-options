@@ -2,6 +2,7 @@
 
 namespace Vgsite;
 
+use PDO;
 use PDOStatement;
 
 class BadgeMapper extends Mapper
@@ -100,5 +101,16 @@ class BadgeMapper extends Mapper
         $sql = "UPDATE badges_earned SET `new` = '0' WHERE badge_id=? AND user_id=? LIMIT 1";
         $statement = $this->pdo->prepare($sql);
         return $statement->execute($badge->getId(), $user->getId());
+    }
+
+    public function checkForNew(User $user): array
+    {
+        // check for new badges earned since last login
+        // return array badge IDs
+        $sql = "SELECT badge_id FROM badges_earned WHERE user_id=? AND `new`=1";
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute([$user->getId()]);
+        
+        return $statement->fetchAll(PDO::FETCH_COLUMN);
     }
 }

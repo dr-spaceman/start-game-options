@@ -2,25 +2,90 @@ import React from 'react';
 
 import Modal from './Modal.jsx';
 import { QuestionBlock } from '../lib/icons.js';
+import { loadingIcon } from '../../images/icons/loading_mascot.gif';
 
-const API_ENDPOINT = `${process.env.API_ENDPOINT}/users`;
+const API_ENDPOINT = `${process.env.API_ENDPOINT}/login`;
+
+const initialState = {
+    isOpen: false,
+    isLoading: false,
+    isError: false,
+    error: {},
+};
+const reducer = (state, action) => {
+    switch (action.type) {
+        case 'TOGGLE':
+            return {
+                ...state,
+                isOpen: !state.isOpen,
+            };
+        case 'INIT':
+            return {
+                ...state,
+                isLoading: true,
+            };
+        case 'LOGIN_SUCCESS':
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+            };
+        case 'LOGIN_ERROR':
+            return {
+                ...state,
+                isLoading: false,
+                isError: true,
+                error: action.error,
+            };
+        default:
+            throw new Error();
+    }
+};
 
 export default function Login(props) {
     const { username } = props;
 
     const form = React.useRef();
-    const handleSubmit = (event) => {
+
+    const [state, dispatchState] = React.useReducer(reducer, initialState);
+
+    const toggleOpen = (event) => {
         event.preventDefault();
-        console.log(form.current.username.value, form.current.password.value);
+        dispatchState({ type: 'TOGGLE' });
     };
 
-    const [open, setOpen] = React.useState(false);
-    const handleOpen = (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
+
+        dispatchState({ type: 'INIT' });
+
+        const payload = {
+            password: form.current.password.value,
+        };
+        const userInput = form.current.username.value;
+        if (userInput.includes('@')) {
+            payload.email = userInput;
+        } else {
+            payload.username = userInput;
+        }
+
+        fetch(API_ENDPOINT, {
+            method: 'POST',
+            mode: 'same-origin',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        }).then((response) => response.json())
+            .then((result) => {
+                console.log(result);
+                if (result.collection.errors) {
+                    dispatchState({ type: 'LOGIN_ERROR', error: result.collection.errors[0] });
+                } else {
+                    dispatchState({ type: 'LOGIN_SUCCESS' });
+                }
+            }).catch(() => dispatchState({ type: 'LOGIN_ERROR' }));
     };
 
     const userLink = username && (
@@ -30,7 +95,7 @@ export default function Login(props) {
     );
 
     const loginButton = (
-        <a href="/login.php" title="Login" onClick={handleOpen} className="user user-unknown">
+        <a href="/login.php" title="Login" onClick={toggleOpen} className="user user-unknown">
             <QuestionBlock className="user-avatar thumbnail" />
             <span className="user-username">Login</span>
         </a>
@@ -39,13 +104,15 @@ export default function Login(props) {
     return (
         <div id="login">
             {userLink || loginButton}
-            <Modal open={open} close={handleClose} closeButton={false}>
+            <Modal open={state.isOpen} close={toggleOpen} closeButton={false}>
                 <form ref={form} onSubmit={handleSubmit}>
-                    <input type="text" name="username" placeholder="Username" ref={(input) => input && input.focus()} />
+                    {state.isError && <div className="error">{state.error.message}</div>}
+                    <input type="text" name="username" placeholder="Username or Email" ref={(input) => input && input.focus()} />
                     <input type="password" name="password" placeholder="Password" />
                     <div>
-                        <button type="submit">Login</button>
-                        <button type="button" onClick={handleClose}>Cancel</button>
+                        {state.isLoading && <img src={loadingIcon} className="loading" alt="loading" />}
+                        <button type="submit" disabled={state.isLoading}>Login</button>
+                        <button type="button" onClick={toggleOpen}>Cancel</button>
                     </div>
                 </form>
             </Modal>

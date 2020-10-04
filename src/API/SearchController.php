@@ -102,14 +102,14 @@ class SearchController extends Controller
                 }
 
                 $item = array(
-                    "title" => $title,
-                    "title_sort" => $row['title_sort'],
-                    "type" => $row['type'],
-                    "category" => $category,
-                    "links" => array(
-                        "page" => 'http://' . getenv('HOST_DOMAIN') . pageURL($row['title'], $row['type']),
+                    'title' => $title,
+                    'title_sort' => $row['title_sort'] . ' ' . $row['type'],
+                    'type' => $row['type'],
+                    'category' => $category,
+                    'links' => array(
+                        'page' => getenv('HOST_DOMAIN') . pageURL($row['title'], $row['type']),
                     ),
-                    "href" => $this->parseLink($row['id'], $row['type']),
+                    'href' => $this->parseLink($row['id'], $row['type']),
                 );
 
                 $results[] = $item;
@@ -119,21 +119,21 @@ class SearchController extends Controller
         // Search albums
         if (! $filter || stristr($filter, "albums")) {
             $mapper = new AlbumMapper();
-            $album_results = $mapper->searchBy('title', $query);
+            $album_results = $mapper->searchBy("title", $query);
             
             foreach ($album_results->getGenerator() as $album) {
                 $title_sort = strtolower(formatName($album->parseTitle(), "sortable"));
                 $item = array(
-                    "title" => $album->parseTitle(),
-                    "title_sort" => $title_sort,
-                    "type" => "album",
-                    "category" => "music",
-                    "tag" => 'AlbumID:' . $album->getProp('albumid'),
-                    "release_date" => $album->getProp('release'),
-                    "links" => array(
-                        "page" => 'http://' . getenv('HOST_DOMAIN') . $album->getUrl(),
+                    'title' => $album->parseTitle(),
+                    'title_sort' => $title_sort . ' album',
+                    'type' => 'album',
+                    'category' => 'music',
+                    'tag' => 'AlbumID:' . $album->getProp('albumid'),
+                    'release_date' => $album->getProp('release'),
+                    'links' => array(
+                        'page' => getenv('HOST_DOMAIN') . $album->getUrl(),
                     ),
-                    "href" => $this->parseLink($album->getId(), 'album'),
+                    'href' => $this->parseLink($album->getId(), 'album'),
                 );
 
                 $results[] = $item;

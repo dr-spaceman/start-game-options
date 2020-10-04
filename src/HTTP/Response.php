@@ -101,11 +101,12 @@ class Response
         echo $body;
 
         // Default headers
-        $this->setHeader('Access-Control-Allow-Origin', '*');
         $this->setHeader('Content-Type', 'application/json; charset=UTF-8');
-        $this->setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
+        $this->setHeader('Access-Control-Allow-Origin', getenv('HOST_DOMAIN'));
+        $this->setHeader('Access-Control-Allow-Credentials', 'true');
         $this->setHeader('Access-Control-Max-Age', '3600');
-        $this->setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+        $this->setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Authorization, X-Requested-With');
+        $this->setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, DELETE');
 
         $this->setHeaders($headers);
 

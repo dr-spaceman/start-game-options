@@ -70,16 +70,10 @@ export default function Search() {
         fetch(url)
             .then((response) => response.json())
             .then((result) => {
-                console.log('fetch result', result);
-
-                if (!result.collection.items.length) {
-                    dispatchResults({ type: 'SEARCH_FETCH_FAIL' });
-                } else {
-                    dispatchResults({
-                        type: 'SEARCH_FETCH_SUCCESS',
-                        payload: result.collection.items,
-                    });
-                }
+                dispatchResults({
+                    type: 'SEARCH_FETCH_SUCCESS',
+                    payload: result.collection.items,
+                });
             })
             .catch(() => dispatchResults({ type: 'SEARCH_FETCH_FAIL' }));
     }, [searchTerm]);
@@ -112,7 +106,9 @@ export default function Search() {
 function SearchResults(props) {
     const { results } = props;
 
-    if (results.hits.length === 0) return null;
+    if (results.hits.length === 0) {
+        return <p>No results found</p>;
+    }
 
     return (
         <ul>

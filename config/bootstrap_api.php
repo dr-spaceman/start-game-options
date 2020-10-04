@@ -3,8 +3,8 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/environment.php';
 
-define('API_BASE_URI', '/api');
-define('API_BASE_URL', sprintf('%s://%s%s', getenv('ENVIRONMENT') == 'development' ? 'http' : 'https', getenv('HOST_DOMAIN'), API_BASE_URI));
+define('API_BASE_URI', getenv('API_ENDPOINT'));
+define('API_BASE_URL', getenv('HOST_DOMAIN') . API_BASE_URI);
 define('API_TOKEN_URL', API_BASE_URL . '/token');
 define('API_VERSION', '0.4.1');
 

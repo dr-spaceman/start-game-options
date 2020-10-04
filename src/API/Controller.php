@@ -48,6 +48,7 @@ abstract class Controller
     public function processRequest(): void
     {
         try {
+            $this->assertAllowedMethod();
             $this->doProcessRequest();
         } catch (APIException $e) {
             $this->collection->setError($e->getErrorMessage());
@@ -62,11 +63,7 @@ abstract class Controller
     }
 
     protected function doProcessRequest(): void
-    {
-        if (! in_array($this->request->getMethod(), static::ALLOWED_METHODS)) {
-            $this->invalidRequestMethod();
-        }
-        
+    {        
         switch ($this->request->getMethod()) {
             case 'GET':
                 if (! $this->request->getPath()[1]) {
@@ -104,6 +101,13 @@ abstract class Controller
 
             default:
                 $this->invalidRequestMethod();
+        }
+    }
+
+    protected function assertAllowedMethod(): void
+    {
+        if (!in_array($this->request->getMethod(), static::ALLOWED_METHODS)) {
+            $this->invalidRequestMethod();
         }
     }
 

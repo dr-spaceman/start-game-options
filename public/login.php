@@ -15,13 +15,8 @@ $logger_login->pushHandler(new Monolog\Handler\StreamHandler(LOGS_DIR.'/login.lo
 $logger_login->pushProcessor(new Monolog\Processor\IntrospectionProcessor(Logger::DEBUG));
 
 if (isset($_POST['login'])) {
-
-	if ($ajax_request === true) {
-		//TODO
-	}
-
 	try {
-		$user = login();
+		$user = api_request();
 
 		header($_SERVER['SERVER_PROTOCOL'].' 200 OK', true, 200);
         header('Location: /');
@@ -104,123 +99,4 @@ if (isset($_GET['do']) && $_GET['do'] == "logout") {
     </html>
 	<?
 	exit;
-}
-
-function login()
-{
-	if (!isset($_POST['login'])) {
-        throw new LoginException('No login credentials found', 400);
-    }
-
-    $username = filter_input(INPUT_POST, "username");
-    if (!$username) {
-        throw new LoginException('Username or email is required to login', 400);
-    }
-
-    $email = '';
-    if(strstr($username, "@")) {
-        $email = filter_var($username, FILTER_VALIDATE_EMAIL);
-        if (!$email) {
-            throw new LoginException("The e-mail address '$email' couldn't be validated. Please try again!", 400);
-        }
-    }
-
-    $password = filter_input(INPUT_POST, "password");
-    if (!$password) {
-        throw new LoginException('Password is required.', 400);
-    }
-
-    $user_mapper = new UserMapper();
-    
-    try {
-        $user = !empty($email) ? $user_mapper->findByEmail($email) : $user_mapper->findByUsername($username);
-    } catch (\OutOfBoundsException $e) {
-        throw new LoginException('Invalid username', 401);
-    }
-
-    try {
-       $user->verifyPassword($password);
-    } catch (Exception $e) {
-        throw new LoginException('Invalid password', 401);
-    }
-
-    // Re-hash password if necessary
-    $currentHashAlgorithm = PASSWORD_DEFAULT;
-    $passwordNeedsRehash = password_needs_rehash($user->getPassword(), $currentHashAlgorithm);
-    if ($passwordNeedsRehash === true) {
-        // Save new password hash
-        $user->setPassword($password, true);
-        $user_mapper->save($user);
-    }
-
-    $_SESSION['user_id'] = $user->getId();
-    $_SESSION['user_rank'] = $user->getRank();
-    $_SESSION['username'] = $user->getUsername();
-    $_SESSION['logged_in'] = 'true';
-
-    /**
-     * Login complete; Post-login business below
-     */
-
-    // TODO
-    $user_details = [];//$user_mapper->getAllDetails($user);
-
-    // check for new badges earned since last login
-    // return array badge IDs
-    $sql = "SELECT badge_id FROM badges_earned WHERE user_id=? AND `new`=1";
-    $statement = $GLOBALS['pdo']->prepare($sql);
-    $statement->execute([$user->getId()]);
-    if ($rows = $statement->fetchAll(PDO::FETCH_COLUMN)) {
-        $_SESSION['newbadges'] = $rows;
-    }
-
-    //check birthday badge
-    if (substr($user_details['dob'], 5) == date("m-d")) {
-        Badge::findById(37)->earn($user);
-    }
-
-    // Update activity
-    $sql = sprintf(
-        "UPDATE users SET activity='%s', previous_activity='%s' WHERE user_id=%d LIMIT 1", 
-        date("Y-m-d H:i:s"), 
-        $user->getLastLogin()->format('Y-m-d H:i:s'), 
-        $user->getId()
-    );
-    $GLOBALS['pdo']->query($sql);
-
-    //record current scores and counts
-    $score = new UserScore($user);
-    $score->save();
-
-    //fb login
-    // $check_1 = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_oauth WHERE user_id=".$user->getId()." AND oauth_provider='facebook' LIMIT 1"));
-    // $check_2 = mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], "SELECT * FROM users_oauth WHERE user_id=".$user->getId()." LIMIT 1"));
-    // if (!$fbuser && $check_1) {
-    //     require_once $_SERVER['DOCUMENT_ROOT']."/bin/php/fb/src/facebook.php";
-    //     $fb = array(
-    //       'appId'  => '142628175764082',
-    //       'secret' => '5913f988087cecedd1965a3ed6e91eb1'
-    //     );
-    //     $facebook = new Facebook($fb);
-    //     $fbuser = $facebook->getUser();
-    //     if ($fbuser) {
-    //       try {
-    //         // Proceed knowing you have a logged in user who's authenticated.
-    //         $fbuser_data = $facebook->api('/me');
-    //       } catch (FacebookApiException $e) {
-    //         error_log($e);
-    //         $fbuser = null;
-    //       }
-    //     }
-    // /*} elseif(!mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q)) && !mysqli_num_rows(mysqli_query($GLOBALS['db']['link'], $q2)) && $_COOKIE['no_oauth'] != "ignore" && $userdat['registered'] != $userdat['activity']){
-    //     setcookie("no_oauth", "1", time()+60*60*24*100, "/");*/
-    // } elseif (!$check_1 && !$check_2 && $user_details['registered'] != $user_details['activity']) {
-    //     $GLOBALS['no_oauth'] = true;
-    // }
-
-    if($_POST['remember']) {
-        //TODO
-    }
-
-    return $user;
 }

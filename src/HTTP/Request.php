@@ -4,6 +4,7 @@ namespace Vgsite\HTTP;
 
 use InvalidArgumentException;
 use Vgsite\API\AccessToken;
+use Vgsite\API\Exceptions\APIAuthorizationException;
 
 /**
  * Handles HTTP request
@@ -98,5 +99,20 @@ class Request
     public function getBody(): string
     {
         return $this->body->getContents();
+    }
+
+    public function restrictSameDomain(): void
+    {
+        if ($this->getHeader('Referer')) {
+            $origin = $this->getHeader('Referer');
+            $test = parse_url($origin)['host'] == parse_url(getenv('HOST_DOMAIN'))['host'];
+        } else {
+            $origin = 'Unknown Origin';
+            $test = false;
+        }
+
+        if (! $test) {
+            throw new APIAuthorizationException("`$origin` is not authorized to access this resource.");
+        }
     }
 }

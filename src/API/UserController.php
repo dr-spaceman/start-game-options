@@ -160,7 +160,7 @@ class UserController extends Controller
         }
 
         $row['links'] = array(
-            "page" => 'http://' . getenv('HOST_DOMAIN') . $user->getUrl(),
+            "page" => getenv('HOST_DOMAIN') . $user->getUrl(),
         );
 
         $row['href'] = $this->parseLink($row['user_id']);

@@ -99,13 +99,16 @@ try {
 	$uri = $_SERVER['REQUEST_URI'];
 	$body = file_get_contents('php://input');
 	$request = new Request($method, $uri, getallheaders(), $body);
+	$request->restrictSameDomain();
 
 	$base = $request->getPath()[0];
 
+	// Debug headers:
 	// foreach ($request->getHeaders() as $header_name => $headers) {
-	// 	echo(sprintf("%s: %s", $header_name, $request->getHeaderLine($header_name))).PHP_EOL;
+	// 	echo(sprintf("%s: %s", $header_name, $headers)).PHP_EOL;
 	// };
 
+	// Debug variables:
 	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER, '_REQUEST' => $_REQUEST);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 
 	$controllers = [
@@ -116,6 +119,7 @@ try {
 		'users' => 'Vgsite\API\UserController',
 		'albums' => 'Vgsite\API\AlbumController',
 		'badges' => 'Vgsite\API\BadgeController',
+		'login' => 'Vgsite\API\LoginController',
 	];
 	
 	if (! $controller = $controllers[$base]) {

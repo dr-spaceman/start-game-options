@@ -239,12 +239,31 @@ class User extends DomainObjectProps
             return new DateTime($this->activity);
         }
 
-        $dates = static::getMapper()->getActivityDates($this);
+        /** @var UserMapper */
+        $mapper = static::getMapper();
+        $dates = $mapper->getActivityDates($this);
+        
         foreach ($dates as $key => $value) {
             $this->{$key} = $value;
         }
 
         return new DateTime($this->activity);
+    }
+
+    public function updateActivity(string $date=''): void
+    {
+        if (!$date) {
+            $date = date('Y-m-d H:i:s');
+        }
+
+        $pdo = Registry::get('pdo');
+        $sql = sprintf(
+            "UPDATE users SET activity='%s', previous_activity='%s' WHERE user_id=%d LIMIT 1",
+            $date,
+            $this->getLastLogin()->format('Y-m-d H:i:s'),
+            $this->getId()
+        );
+        $pdo->query($sql);
     }
 
     public function getUrl(): string

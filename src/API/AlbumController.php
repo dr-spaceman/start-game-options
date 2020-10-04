@@ -145,7 +145,7 @@ class AlbumController extends Controller
         }
 
         $row['links'] = array(
-            "page" => 'http://' . getenv('HOST_DOMAIN') . $album->getUrl(),
+            "page" => getenv('HOST_DOMAIN') . $album->getUrl(),
         );
 
         $row['href'] = $this->parseLink($row['id']);

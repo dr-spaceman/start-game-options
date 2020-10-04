@@ -154,7 +154,7 @@ class PersonController extends Controller
         $row = array_slice($row, 0, 3) + $row2 + array_slice($row, 3);
 
         // Build links
-        $domain = 'http://' . getenv('HOST_DOMAIN');
+        $domain = getenv('HOST_DOMAIN');
         $row['links']['page'] = $domain . pageURL($row['title'], 'person');
         $row['links']['portrait'] = $domain . $row['rep_image'];
 
