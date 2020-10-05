@@ -1,8 +1,10 @@
 import React from 'react';
+import classNames from 'classnames';
 
 import Modal from './Modal.jsx';
-import { QuestionBlock } from '../lib/icons.js';
-import { loadingIcon } from '../../images/icons/loading_mascot.gif';
+import Dropdown from './Dropdown.jsx';
+import User from './User.jsx';
+import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
 
 const API_ENDPOINT = `${process.env.API_ENDPOINT}/login`;
 
@@ -23,6 +25,7 @@ const reducer = (state, action) => {
             return {
                 ...state,
                 isLoading: true,
+                isError: false,
             };
         case 'LOGIN_SUCCESS':
             return {
@@ -88,11 +91,7 @@ export default function Login(props) {
             }).catch(() => dispatchState({ type: 'LOGIN_ERROR' }));
     };
 
-    const userLink = username && (
-        <span className="user">
-            <a href={`~${username}`}>{username}</a>
-        </span>
-    );
+    const userLink = username && <UserDropdown username={username} />;
 
     const loginButton = (
         <a href="/login.php" title="Login" onClick={toggleOpen} className="user user-unknown">
@@ -105,17 +104,32 @@ export default function Login(props) {
         <div id="login">
             {userLink || loginButton}
             <Modal open={state.isOpen} close={toggleOpen} closeButton={false}>
-                <form ref={form} onSubmit={handleSubmit}>
+                <form ref={form} onSubmit={handleSubmit} className={state.isLoading && 'loading'}>
                     {state.isError && <div className="error">{state.error.message}</div>}
                     <input type="text" name="username" placeholder="Username or Email" ref={(input) => input && input.focus()} />
                     <input type="password" name="password" placeholder="Password" />
                     <div>
-                        {state.isLoading && <img src={loadingIcon} className="loading" alt="loading" />}
+                        {state.isLoading && <LoadingMascot className="loading" />}
                         <button type="submit" disabled={state.isLoading}>Login</button>
                         <button type="button" onClick={toggleOpen}>Cancel</button>
                     </div>
                 </form>
             </Modal>
         </div>
+    );
+}
+
+function UserDropdown({ username }) {
+    return (
+        <Dropdown id="login-user-dropdown">
+            <Dropdown.Toggle className="access-button">
+                <User username={username} href="" avatar="" />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                <Dropdown.Item><a href={`/~${username}`}>Profile</a></Dropdown.Item>
+                <Dropdown.Item><a href={`/~${username}/games`}>Games</a></Dropdown.Item>
+                <Dropdown.Item><a href="/login.php?do=logout">Log out</a></Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
     );
 }

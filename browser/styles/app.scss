@@ -221,7 +221,9 @@ h1 {
         + h1 {
             font-family: "Press Start";
             text-transform: uppercase;
-            + h1 { font-family: "Yoster Island"; }
+            + h1 {
+                font-family: "Yoster Island";
+            }
         }
     }
 }
@@ -305,13 +307,14 @@ body > header {
         text-decoration: none;
         &:hover,
         &:hover svg {
-            color: white !important;
+            color: white;
         }
     }
 }
 #navmenu {
-    margin: -.5rem 0 0; // Offset children margin
-    & .hidden, &.exit-done .hidden {
+    margin: -0.5rem 0 0; // Offset children margin
+    & .hidden,
+    &.exit-done .hidden {
         max-height: 0;
         opacity: 0;
         overflow: hidden;
@@ -322,7 +325,8 @@ body > header {
         max-height: 100px; // Exceeds normal bounds
         opacity: 1;
     }
-    &.enter-active .hidden, &.enter-done .hidden {
+    &.enter-active .hidden,
+    &.enter-done .hidden {
         max-height: 100px;
         opacity: 1;
     }
@@ -330,7 +334,8 @@ body > header {
         max-height: 0;
         opacity: 0;
     }
-    ul, li {
+    ul,
+    li {
         list-style-type: none;
         margin: 0;
         padding: 0;
@@ -340,13 +345,13 @@ body > header {
         padding: 0;
         & > * {
             display: block;
-            margin: .5rem 0 0;
+            margin: 0.5rem 0 0;
             padding: 0;
             font-family: "Pixel Emulator";
             font-size: 1.5rem;
             font-weight: normal;
             text-decoration: none;
-            letter-spacing: .15rem;
+            letter-spacing: 0.15rem;
             outline: none;
             &:focus {
                 color: white;
@@ -354,7 +359,7 @@ body > header {
             }
             @include breakpoint(screen) {
                 &::before {
-                    content: '> ';
+                    content: "> ";
                     opacity: 0;
                     position: absolute;
                     left: 1.2em;
@@ -364,7 +369,6 @@ body > header {
                 }
             }
         }
-
     }
 }
 #login {
@@ -581,6 +585,55 @@ body > footer {
     z-index: 12;
     top: 0.5rem;
     right: 0.5rem;
+}
+
+.dropdown {
+    position: relative;
+    button.dropdown-toggle {
+        &::after {
+            content: "";
+            display: inline-block;
+            width: 0;
+            height: 0;
+            vertical-align: middle;
+            border-top: 4px dashed #666;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+            margin-left: 8px;
+        }
+    }
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 0;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        text-align: left;
+        border-radius: 0;
+        background-clip: padding-box;
+    }
+    &.open .dropdown-menu {
+        display: block;
+    }
+    .dropdown-item {
+        display: block;
+        padding: .5em 1em;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        &:hover {
+            background-color: lightgray;
+        }
+        & > * {
+            display: block;
+            margin: -.5em -1em;
+            padding: .5em 1em;
+        }
+    }
 }
 
 .user {

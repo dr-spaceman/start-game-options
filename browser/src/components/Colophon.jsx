@@ -1,6 +1,6 @@
 import React from 'react';
 
-import storageAvailable from '../lib/storageAvailable.js';
+import storageAvailable from '../lib/storage-available.js';
 import welcome from '../../images/colophon_welcome.png';
 
 export default function Colophon() {
