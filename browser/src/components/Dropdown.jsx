@@ -1,15 +1,17 @@
 import React from 'react';
 import classNames from 'classnames';
-import OutsideClickHandler from 'react-outside-click-handler';
 import matchComponent from '../lib/match-component.js';
+import useOutsideClick from '../lib/use-outside-click.js';
 
 const isDropdownToggle = matchComponent(DropdownToggle);
+const isDropdownMenu = matchComponent(DropdownMenu);
 
-const Dropdown = (props) => {
+function Dropdown(props) {
     const { className, children, ...rest } = props;
 
     const [open, setOpen] = React.useState(false);
     const handleToggle = () => setOpen(!open);
+    const handleClose = () => setOpen(false);
 
     const classnames = classNames({
         className,
@@ -17,27 +19,30 @@ const Dropdown = (props) => {
         open,
     });
 
+    // Event listener is always active... problem?
+    const wrapperRef = React.useRef(null);
+    useOutsideClick(wrapperRef, handleClose);
+
     return (
-        <OutsideClickHandler onOutsideClick={handleToggle}>
-            <div className={classnames} {...rest}>
-                {/* Map over children & inject toggle event into button child */}
-                {React.Children.map(children, (child) => {
-                    if (!React.isValidElement(child)) {
-                        return child;
-                    }
-
-                    if (isDropdownToggle(child)) {
-                        return React.cloneElement(child, {
-                            handleClick: handleToggle,
-                        });
-                    }
-
+        <div ref={wrapperRef} className={classnames} {...rest}>
+            {/* Map children & inject listeners */}
+            {React.Children.map(children, (child) => {
+                if (!React.isValidElement(child)) {
                     return child;
-                })}
-            </div>
-        </OutsideClickHandler>
+                }
+
+                // Button toggle dropdown menu
+                if (isDropdownToggle(child)) {
+                    return React.cloneElement(child, {
+                        handleClick: handleToggle,
+                    });
+                }
+
+                return child;
+            })}
+        </div>
     );
-};
+}
 
 function DropdownToggle({ className, children, handleClick }) {
     return (
@@ -49,7 +54,6 @@ function DropdownToggle({ className, children, handleClick }) {
 
 function DropdownMenu({ className, children }) {
     return (
-        
         <div className={`dropdown-menu light ${className}`} role="menu">
             {children}
         </div>

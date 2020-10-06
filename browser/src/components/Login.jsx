@@ -1,6 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
-
 import Modal from './Modal.jsx';
 import Dropdown from './Dropdown.jsx';
 import User from './User.jsx';
@@ -126,6 +124,7 @@ function UserDropdown({ username }) {
                 <User username={username} href="" avatar="" />
             </Dropdown.Toggle>
             <Dropdown.Menu>
+                <Dropdown.Item>foo</Dropdown.Item>
                 <Dropdown.Item><a href={`/~${username}`}>Profile</a></Dropdown.Item>
                 <Dropdown.Item><a href={`/~${username}/games`}>Games</a></Dropdown.Item>
                 <Dropdown.Item><a href="/login.php?do=logout">Log out</a></Dropdown.Item>
