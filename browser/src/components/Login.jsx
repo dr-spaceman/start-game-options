@@ -8,6 +8,7 @@
 import React from 'react';
 import Modal from './Modal.jsx';
 import UnderlinedInput from './UnderlinedInput.jsx';
+import NavMenu from './NavMenu.jsx';
 import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
 
 console.log('<Login> has been lazy loaded!');
@@ -167,12 +168,12 @@ export default function Login() {
             <Modal open={state.isOpen} close={toggleOpen}>
                 <form id="loginform" ref={form} onSubmit={handleSubmit} className={state.isLoading ? 'loading' : undefined}>
                     <div id="loginform-nav">
-                        <ul className="navmenu">
-                            <li className="selected"><a href="#login">New Name</a></li>
-                            <li><a href="">Blue</a></li>
-                            <li><a href="">Gary</a></li>
-                            <li><a href="">John</a></li>
-                        </ul>
+                        <NavMenu>
+                            <NavMenu.Item selected><a href="#login">New Name</a></NavMenu.Item>
+                            <NavMenu.Item><a href="">Blue</a></NavMenu.Item>
+                            <NavMenu.Item><a href="">Gary</a></NavMenu.Item>
+                            <NavMenu.Item><a href="">John</a></NavMenu.Item>
+                        </NavMenu>
                     </div>
                     <div id="loginform-rival" />
                     <div id="loginform-message">

@@ -2,9 +2,9 @@ import React from 'react';
 import Dropdown from './Dropdown.jsx';
 import User from './User.jsx';
 
-console.log('<NavMenuUser> has been lazy loaded!');
+console.log('<TopNavUser> has been lazy loaded!');
 
-export default function NavMenuUser({ username }) {
+export default function TopNavUser({ username }) {
     return (
         <Dropdown id="login-user-dropdown">
             <Dropdown.Toggle className="access-button">

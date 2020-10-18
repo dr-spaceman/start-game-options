@@ -1,9 +1,9 @@
 import React from 'react';
-import NavMenu from './NavMenu.jsx';
+import TopNav from './TopNav.jsx';
 import Search from './Search.jsx';
 import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
 
-const NavMenuUser = React.lazy(() => import(/* webpackChunkName: "NavMenuUser" */'./NavMenuUser.jsx'));
+const TopNavUser = React.lazy(() => import(/* webpackChunkName: "TopNavUser" */'./TopNavUser.jsx'));
 const Login = React.lazy(() => import(/* webpackChunkName: "Login" */'./Login.jsx'));
 
 function User({ username }) {
@@ -22,7 +22,7 @@ function User({ username }) {
     return (
         <div id="login">
             {username ? (
-                <React.Suspense fallback={"User"}><NavMenuUser username={username} /></React.Suspense>
+                <React.Suspense fallback={"User"}><TopNavUser username={username} /></React.Suspense>
             ) : (
                 <>{state ? <React.Suspense fallback={<LoadingMascot />}><Login /></React.Suspense> : <LoginButton />}</>
             )}
@@ -35,7 +35,7 @@ export default function Header(props) {
 
     return (
         <>
-            <NavMenu />
+            <TopNav />
             <User username={username} />
             <Search />
         </>

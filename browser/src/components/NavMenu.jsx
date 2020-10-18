@@ -1,39 +1,34 @@
 import React from 'react';
-import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
+import cn from 'classnames';
 
-import Modal from './Modal.jsx';
-
-export default function NavMenu(props) {
-    const [open, setOpen] = React.useState(false);
-    const toggleOpen = () => {
-        setOpen(!open);
-    };
-
-    const buttonClasses = classNames({
-        'access-button': true,
-        active: open,
-        inactive: !open,
+function NavMenu({ className, children, ...props }) {
+    const classNames = cn({
+        className,
+        navmenu: true,
     });
 
     return (
-        <CSSTransition in={open} timeout={1500}>
-            <nav id="navmenu">
-                <ul className="navmenu">
-                    <li className="selected">
-                        <h6><a href="/games">Start Game</a></h6>
-                    </li>
-                    <li>
-                        {/* accessibilize */}
-                        <button type="button" role="switch" aria-checked={open} id="menu" className={buttonClasses} onClick={toggleOpen}>
-                            Options
-                        </button>
-                    </li>
-                    <li className="hidden"><a href="/games">Games</a></li>
-                    <li className="hidden"><a href="/people">People</a></li>
-                    <li className="hidden"><a href="/music">Music</a></li>
-                </ul>
-            </nav>
-        </CSSTransition>
+        <ul className={classNames} {...props}>
+            {children}
+        </ul>
     );
 }
+
+function Item({ selected, className, children, ...props }) {
+    const classNames = cn({
+        className,
+        'navmenu-item': true,
+        'navmenu-selected': selected,
+    });
+
+    return (
+        <li className={classNames} role="menuitem" {...props}>
+            <span className="caret">&gt;</span>
+            {children}
+        </li>
+    );
+}
+
+NavMenu.Item = Item;
+
+export default NavMenu;

@@ -354,15 +354,6 @@ body > header {
         opacity: 0;
     }
 }
-%navmenu-caret {
-    &::before {
-        content: ">";
-        opacity: 0;
-    }
-    &:hover::before {
-        opacity: 1;
-    }
-}
 ul.navmenu {
     &,
     > li {
@@ -371,7 +362,7 @@ ul.navmenu {
         padding: 0;
     }
     > li {
-        & > * {
+        & > *:not(.caret) {
             display: block;
             margin: 0.5rem 0 0;
             padding: 0;
@@ -381,7 +372,6 @@ ul.navmenu {
             text-decoration: none;
             letter-spacing: 0.15rem;
             outline: none;
-            @extend %navmenu-caret;
             &:focus {
                 color: white;
                 text-decoration: underline;
