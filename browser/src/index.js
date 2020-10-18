@@ -26,9 +26,6 @@ const Content = () => {
     return (
         <>
             <h1>Hello World!</h1>
-            <h1>Hello World!</h1>
-            <h1>Hello World!</h1>
-            <h1>Hello World!</h1>
             {open &&
                 <>
                     <p>Lorem ipsum dolor sit amet <a href="#consectetur">consectetur adipisicing elit</a>. Eveniet voluptas incidunt atque ipsam, nobis quis inventore, velit libero vel autem tempora, fugit soluta excepturi <a href="#foo">voluptatum</a>! Soluta possimus nihil dolore hic.</p>
@@ -41,6 +38,16 @@ const Content = () => {
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa maxime quod ex iure eius et, sint doloremque! Libero exercitationem pariatur hic dignissimos, dolorum consequuntur odio consectetur voluptate accusamus voluptatem a.</p>
                     <p>Fin.</p>
                 </>}
+            <h1>&gt;START GAME Options Foo___foo.bar<br/>____________ (Layout font)</h1>
+            <h1 style={{ fontFamily: 'Press Start' }}>&gt;START GAME Options Foo___foo.bar<br/>____________ (Monospace font)</h1>
+            <h1 style={{ fontFamily: 'Emulogic' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
+            <h1 style={{ fontFamily: 'Yoster Island' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'Bc.BMP07_A' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'Bc.BMP07_K' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'NineteenNinetySeven' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+            <h1 style={{ fontFamily: 'Super Legend Boy' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
             <button type="button" onClick={() => setOpen(!open)}>Toggle filler text</button>
             <p>Env</p>
             {/* WARNING: These variables will be exposed in the bundle */}

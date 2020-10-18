@@ -40,13 +40,6 @@ class UserController extends Controller
     const REQUIRED_FIELDS = ['user_id', 'username'];
     const BASE_URI = API_BASE_URI . '/users';
 
-    public function __construct(Request $request)
-    {
-        AccessToken::assertAuthorization($request);
-
-        parent::__construct($request);
-    }
-
     protected function findOrFail(int $id): User
     {
         if (!v::IntVal()->validate($id)) {

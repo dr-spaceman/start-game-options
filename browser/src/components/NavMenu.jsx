@@ -19,19 +19,19 @@ export default function NavMenu(props) {
     return (
         <CSSTransition in={open} timeout={1500}>
             <nav id="navmenu">
-                <ul>
-                    <li className="navmenu-item-container">
+                <ul className="navmenu">
+                    <li className="selected">
                         <h6><a href="/games">Start Game</a></h6>
                     </li>
-                    <li className="navmenu-item-container">
+                    <li>
                         {/* accessibilize */}
                         <button type="button" role="switch" aria-checked={open} id="menu" className={buttonClasses} onClick={toggleOpen}>
                             Options
                         </button>
                     </li>
-                    <li className="navmenu-item-container hidden"><a href="/games">Games</a></li>
-                    <li className="navmenu-item-container hidden"><a href="/people">People</a></li>
-                    <li className="navmenu-item-container hidden"><a href="/music">Music</a></li>
+                    <li className="hidden"><a href="/games">Games</a></li>
+                    <li className="hidden"><a href="/people">People</a></li>
+                    <li className="hidden"><a href="/music">Music</a></li>
                 </ul>
             </nav>
         </CSSTransition>

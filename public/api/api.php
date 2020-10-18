@@ -2,6 +2,7 @@
 
 require_once dirname(__FILE__) . '/../../config/bootstrap_api.php';
 
+use Vgsite\API\AccessToken;
 use Vgsite\API\CollectionJson;
 use Vgsite\API\Exceptions\APIException;
 use Vgsite\API\Exceptions\APINotFoundException;
@@ -99,8 +100,6 @@ try {
 	$uri = $_SERVER['REQUEST_URI'];
 	$body = file_get_contents('php://input');
 	$request = new Request($method, $uri, getallheaders(), $body);
-	$request->restrictSameDomain();
-
 	$base = $request->getPath()[0];
 
 	// Debug headers:
@@ -111,22 +110,39 @@ try {
 	// Debug variables:
 	// $show = Array('uri' => $uri, 'path' => $request->getPath(), '_ENV' => $_ENV, '_SERVER' => $_SERVER, '_REQUEST' => $_REQUEST);header("Content-Type: application/json; charset=UTF-8");die(json_encode($show));
 
+
+	// Controllers accessed without any authorization or origin checks
+
 	$controllers = [
+		'login' => 'Vgsite\API\LoginController',
 		'token' => 'Vgsite\API\TokenController',
+	];
+
+	if ($controller_handle = $controllers[$base]) {
+		$controller = new $controller_handle($request);
+		$controller->processRequest();
+	}
+
+	// Authorize user
+
+	if (! $request->sameDomain()) {
+		AccessToken::assertAuthorization($request);
+	}
+
+	$controllers = [
 		'search' => 'Vgsite\API\SearchController',
 		'games' => 'Vgsite\API\GameController',
 		'people' => 'Vgsite\API\PersonController',
 		'users' => 'Vgsite\API\UserController',
 		'albums' => 'Vgsite\API\AlbumController',
 		'badges' => 'Vgsite\API\BadgeController',
-		'login' => 'Vgsite\API\LoginController',
 	];
 	
-	if (! $controller = $controllers[$base]) {
+	if (! $controller_handle = $controllers[$base]) {
 		throw new APINotFoundException();
 	}
 
-	$controller = new $controller($request);
+	$controller = new $controller_handle($request);
 	$controller->processRequest();
 } catch (Exception | Error $e) {
 	Registry::get('logger')->warning($e);

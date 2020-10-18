@@ -2,9 +2,18 @@ import React from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { BiX } from 'react-icons/bi';
 
+/**
+ * 
+ * @param {Boolean} props 
+ */
 export default function Modal(props) {
     const {
-        children, open = true, close = null, timeout = 500, overlay = true, closeButton = true,
+        children,
+        open = true,
+        close = null,
+        timeout = 500,
+        overlay = true,
+        closeButton = true,
     } = props;
 
     const CloseButton = () => closeButton && (

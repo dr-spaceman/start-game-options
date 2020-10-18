@@ -1,22 +1,33 @@
+/* eslint-disable no-prototype-builtins */
+
+/**
+ * Login component with login form
+ * Note: Component is lazy loaded upon clicking login button
+ */
+
 import React from 'react';
 import Modal from './Modal.jsx';
-import Dropdown from './Dropdown.jsx';
-import User from './User.jsx';
+import UnderlinedInput from './UnderlinedInput.jsx';
 import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
+
+console.log('<Login> has been lazy loaded!');
 
 const API_ENDPOINT = `${process.env.API_ENDPOINT}/login`;
 
 const initialState = {
-    isOpen: false,
+    isOpen: true,
     isLoading: false,
     isError: false,
+    mode: 'login', // login; register
+    current: 'username', // Form field to fill... username, password, email
+    user: {}, // user credentials: username, email, password
     error: {},
 };
 const reducer = (state, action) => {
     switch (action.type) {
         case 'TOGGLE':
             return {
-                ...state,
+                ...initialState,
                 isOpen: !state.isOpen,
             };
         case 'INIT':
@@ -25,7 +36,26 @@ const reducer = (state, action) => {
                 isLoading: true,
                 isError: false,
             };
+        case 'SUBMIT':
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+                current: action.current,
+                user: {
+                    ...state.user,
+                    [action.inputName]: action.inputValue,
+                },
+            };
+        case 'REGISTER':
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+                mode: 'register',
+            };
         case 'LOGIN_SUCCESS':
+            window.location.reload();
             return {
                 ...state,
                 isLoading: false,
@@ -36,16 +66,14 @@ const reducer = (state, action) => {
                 ...state,
                 isLoading: false,
                 isError: true,
-                error: action.error,
+                error: action.error ? action.error : { message: 'An error occurred.' },
             };
         default:
             throw new Error();
     }
 };
 
-export default function Login(props) {
-    const { username } = props;
-
+export default function Login() {
     const form = React.useRef();
 
     const [state, dispatchState] = React.useReducer(reducer, initialState);
@@ -55,80 +83,116 @@ export default function Login(props) {
         dispatchState({ type: 'TOGGLE' });
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         dispatchState({ type: 'INIT' });
 
-        const payload = {
-            password: form.current.password.value,
-        };
-        const userInput = form.current.username.value;
-        if (userInput.includes('@')) {
-            payload.email = userInput;
-        } else {
-            payload.username = userInput;
-        }
+        const input = form['current'][state.current]['value'];
 
-        fetch(API_ENDPOINT, {
-            method: 'POST',
-            mode: 'same-origin',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        }).then((response) => response.json())
-            .then((result) => {
-                console.log(result);
-                if (result.collection.errors) {
-                    dispatchState({ type: 'LOGIN_ERROR', error: result.collection.errors[0] });
-                } else {
-                    dispatchState({ type: 'LOGIN_SUCCESS' });
-                }
-            }).catch(() => dispatchState({ type: 'LOGIN_ERROR' }));
+        if (state.current === 'username') {
+            const response = await fetch(`${API_ENDPOINT}/${input}`, {
+                method: 'GET',
+                mode: 'same-origin',
+                credentials: 'same-origin',
+            });
+            if (response.ok) {
+                const result = await response.json();
+                dispatchState({
+                    type: 'SUBMIT',
+                    inputName: 'username',
+                    inputValue: result.collection.items[0].username,
+                    current: 'password',
+                });
+            } else {
+                dispatchState({ type: 'REGISTER' });
+            }
+        } else if (state.current === 'password') {
+            const payload = {
+                ...state.user,
+                password: input,
+            };
+
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                mode: 'same-origin',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            if (response.ok) {
+                dispatchState({ type: 'LOGIN_SUCCESS' });
+            } else {
+                const result = await response.json();
+                console.log(response, result);
+                dispatchState({ type: 'LOGIN_ERROR', error: result.collection.errors[0] });
+            }
+        } else {
+            dispatchState({ type: 'LOGIN_ERROR', error: 'An unknown error occurred.' });
+        }
     };
 
-    const userLink = username && <UserDropdown username={username} />;
-
-    const loginButton = (
+    const LoginButton = () => (
         <a href="/login.php" title="Login" onClick={toggleOpen} className="user user-unknown">
             <QuestionBlock className="user-avatar thumbnail" />
             <span className="user-username">Login</span>
         </a>
     );
 
+    let message;
+    if (state.isError) {
+        message = <div className="error">{state.error.hasOwnProperty('message') ? state.error.message : 'An error occurred'}</div>;
+    } else if (state.mode === 'login') {
+        if (state.current === 'username') message = "Erm... What's your name again?";
+        else if (state.current === 'password') message = `That's right! I remember now! Your name is ${state.user.username}!`;
+    } else if (state.mode === 'register') {
+        message = 'We don\'t have anyone registered by that name. Would you like to register?';
+    }
+
+    const LoginForm = () => {
+        if (state.current === 'username') {
+            return <UnderlinedInput name="username" placeholder="Username or Email" padding={17} autofocus />;
+        }
+
+        return <UnderlinedInput type="password" name="password" placeholder="Password" padding={17} autofocus />;
+    };
+
+    const RegisterForm = () => 'Register form here....';
+
     return (
-        <div id="login">
-            {userLink || loginButton}
-            <Modal open={state.isOpen} close={toggleOpen} closeButton={false}>
-                <form ref={form} onSubmit={handleSubmit} className={state.isLoading && 'loading'}>
-                    {state.isError && <div className="error">{state.error.message}</div>}
-                    <input type="text" name="username" placeholder="Username or Email" ref={(input) => input && input.focus()} />
-                    <input type="password" name="password" placeholder="Password" />
-                    <div>
-                        {state.isLoading && <LoadingMascot className="loading" />}
-                        <button type="submit" disabled={state.isLoading}>Login</button>
-                        <button type="button" onClick={toggleOpen}>Cancel</button>
+        <>
+            <LoginButton />
+            <Modal open={state.isOpen} close={toggleOpen}>
+                <form id="loginform" ref={form} onSubmit={handleSubmit} className={state.isLoading ? 'loading' : undefined}>
+                    <div id="loginform-nav">
+                        <ul className="navmenu">
+                            <li className="selected"><a href="#login">New Name</a></li>
+                            <li><a href="">Blue</a></li>
+                            <li><a href="">Gary</a></li>
+                            <li><a href="">John</a></li>
+                        </ul>
+                    </div>
+                    <div id="loginform-rival" />
+                    <div id="loginform-message">
+                        {message}
+                    </div>
+                    <div id="loginform-input">
+                        {state.mode === 'login' ? <LoginForm /> : <RegisterForm />}
+                    </div>
+                    <div id="loginform-submit">
+                        {state.isLoading ? (
+                            <>
+                                <LoadingMascot className="loading" />
+                                <span>Professor Oak is thinking</span>
+                            </>
+                        ) : (
+                            <button type="submit" disabled={state.isLoading}>Submit</button>
+                        )}
                     </div>
                 </form>
             </Modal>
-        </div>
-    );
-}
-
-function UserDropdown({ username }) {
-    return (
-        <Dropdown id="login-user-dropdown">
-            <Dropdown.Toggle className="access-button">
-                <User username={username} href="" avatar="" />
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-                <Dropdown.Item>foo</Dropdown.Item>
-                <Dropdown.Item><a href={`/~${username}`}>Profile</a></Dropdown.Item>
-                <Dropdown.Item><a href={`/~${username}/games`}>Games</a></Dropdown.Item>
-                <Dropdown.Item><a href="/login.php?do=logout">Log out</a></Dropdown.Item>
-            </Dropdown.Menu>
-        </Dropdown>
+        </>
     );
 }

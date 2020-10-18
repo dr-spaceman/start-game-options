@@ -2,11 +2,13 @@
 
 namespace Vgsite\API;
 
+use OutOfBoundsException;
 use Respect\Validation\Validator as v;
 use Vgsite\API\Controller;
 use Vgsite\User;
 use Vgsite\API\Exceptions\APIInvalidArgumentException;
 use Vgsite\API\Exceptions\APILoginException;
+use Vgsite\API\Exceptions\APINotFoundException;
 use Vgsite\HTTP\Request;
 use Vgsite\UserMapper;
 use Vgsite\UserScore;
@@ -34,27 +36,28 @@ use Vgsite\UserScore;
 
 class LoginController extends Controller
 {
-    const ALLOWED_METHODS = ['POST'];
+    const ALLOWED_METHODS = ['GET', 'POST'];
     const REQUIRED_FIELDS = ['password', 'username'];
     const BASE_URI = API_BASE_URI . '/login';
 
-    public function __construct(Request $request)
-    {
-        parent::__construct($request);
-    }
-
-    protected function doProcessRequest(): void
-    {
-        $this->assertAllowedMethod();
-        $this->assertBodyJson();
-        $body_raw = $this->request->getBody();
-        // POST request
-        $this->createFromRequest($body_raw);
-    }
-
     protected function getOne($id): void
     {
-        $this->invalidRequestMethod();
+        $user_mapper = new UserMapper();
+        try {
+            if (v::email()->validate($id)) {
+                $user = $user_mapper->findByEmail($id);
+            } else {
+                $user = $user_mapper->findByUsername($id);
+            }
+
+            $results = [
+                ['username' => $user->getUsername()],
+            ];
+
+            $this->setPayload($results)->render(200);
+        } catch (OutOfBoundsException $e) {
+            throw new APINotFoundException($e);
+        }
     }
 
     protected function getAll(): void
@@ -93,11 +96,6 @@ class LoginController extends Controller
         $user_mapper = new UserMapper();
 
         try {
-            $password = $input['password'];
-            if (!$password) {
-                throw new APILoginException('Password is required.', 'password');
-            }
-
             if ($input['username']) {
                 $user = $user_mapper->findByUsername($input['username']);
             } elseif ($input['email']) {
@@ -108,6 +106,11 @@ class LoginController extends Controller
                 $user = $user_mapper->findByEmail($input['email']);
             } else {
                 throw new APILoginException("Parameter `username` or `email` is required", 'username');
+            }
+
+            $password = $input['password'];
+            if (!$password) {
+                throw new APILoginException('Password is required.', 'password');
             }
 
             $user->verifyPassword($input['password']);
@@ -174,6 +177,8 @@ class LoginController extends Controller
             // } elseif (!$check_1 && !$check_2 && $user_details['registered'] != $user_details['activity']) {
             //     $GLOBALS['no_oauth'] = true;
             // }
+
+            $this->render(200);
         } catch (APILoginException $e) {
             throw $e;
         } catch (\Exception $e) {

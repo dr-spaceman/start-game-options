@@ -101,7 +101,7 @@ class Request
         return $this->body->getContents();
     }
 
-    public function restrictSameDomain(): void
+    public function sameDomain($assert=false): bool
     {
         if ($this->getHeader('Referer')) {
             $origin = $this->getHeader('Referer');
@@ -111,8 +111,10 @@ class Request
             $test = false;
         }
 
-        if (! $test) {
+        if ($assert && !$test) {
             throw new APIAuthorizationException("`$origin` is not authorized to access this resource.");
         }
+
+        return $test;
     }
 }
