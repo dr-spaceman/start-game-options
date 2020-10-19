@@ -10,6 +10,7 @@ import '../styles/app.scss';
 // Components to render
 import Colophon from './components/Colophon.jsx';
 import Header from './components/Header.jsx';
+import Test from './components/Test.jsx';
 
 // Grab data-* properties from <header> element and pass them as props to <Header> component
 const headerElement = document.getElementById('header');
@@ -37,17 +38,17 @@ const Content = () => {
                     <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aperiam deserunt ea natus iusto ipsa, labore in consectetur, beatae commodi voluptas hic, ratione asperiores dicta accusantium optio quas unde omnis error!</p>
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa maxime quod ex iure eius et, sint doloremque! Libero exercitationem pariatur hic dignissimos, dolorum consequuntur odio consectetur voluptate accusamus voluptatem a.</p>
                     <p>Fin.</p>
+                    <h1>&gt;START GAME Options Foo___foo.bar<br/>____________ (Layout font)</h1>
+                    <h1 style={{ fontFamily: 'Press Start' }}>&gt;START GAME Options Foo___foo.bar<br/>____________ (Monospace font)</h1>
+                    <h1 style={{ fontFamily: 'Emulogic' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
+                    <h1 style={{ fontFamily: 'Yoster Island' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'Bc.BMP07_A' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'Bc.BMP07_K' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'NineteenNinetySeven' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
+                    <h1 style={{ fontFamily: 'Super Legend Boy' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
                 </>}
-            <h1>&gt;START GAME Options Foo___foo.bar<br/>____________ (Layout font)</h1>
-            <h1 style={{ fontFamily: 'Press Start' }}>&gt;START GAME Options Foo___foo.bar<br/>____________ (Monospace font)</h1>
-            <h1 style={{ fontFamily: 'Emulogic' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
-            <h1 style={{ fontFamily: 'Yoster Island' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'Bc.BMP07_A' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'Bc.BMP07_K' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'NineteenNinetySeven' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'Barcade Brawl' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
-            <h1 style={{ fontFamily: 'Super Legend Boy' }}>&gt;START GAME Options Foo___foo.bar<br/>____________</h1>
             <button type="button" onClick={() => setOpen(!open)}>Toggle filler text</button>
             <p>Env</p>
             {/* WARNING: These variables will be exposed in the bundle */}
@@ -55,6 +56,8 @@ const Content = () => {
                 <li>ENVIRONMENT: {process.env.ENVIRONMENT}</li>
                 <li>HOST_DOMAIN: {process.env.HOST_DOMAIN}</li>
             </ul>
+            <h2>Testing</h2>
+            <Test />
         </>
     );
 };
