@@ -1,30 +1,26 @@
 import React from 'react';
-import classNames from 'classnames';
+import cn from 'classnames';
 import matchComponent from '../lib/match-component.js';
-import useOutsideClick from '../lib/use-outside-click.js';
+import useOutsideClick from '../hooks/use-outside-click.js';
 
 const isDropdownToggle = matchComponent(DropdownToggle);
 const isDropdownMenu = matchComponent(DropdownMenu);
 
-function Dropdown(props) {
-    const { className, children, ...rest } = props;
-
+function Dropdown({ className, children, ...props }) {
     const [open, setOpen] = React.useState(false);
     const handleToggle = () => setOpen(!open);
     const handleClose = () => setOpen(false);
 
-    const classnames = classNames({
+    const ref = useOutsideClick(handleClose);
+
+    const classNames = cn({
         className,
         dropdown: true,
         open,
     });
 
-    // Event listener is always active... problem?
-    const wrapperRef = React.useRef(null);
-    useOutsideClick(wrapperRef, handleClose);
-
     return (
-        <div ref={wrapperRef} className={classnames} {...rest}>
+        <div ref={ref} className={classNames} {...props}>
             {/* Map children & inject listeners */}
             {React.Children.map(children, (child) => {
                 if (!React.isValidElement(child)) {

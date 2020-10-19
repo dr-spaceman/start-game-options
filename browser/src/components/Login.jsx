@@ -154,10 +154,10 @@ export default function Login() {
 
     const LoginForm = () => {
         if (state.current === 'username') {
-            return <UnderlinedInput name="username" placeholder="Username or Email" padding={17} autofocus />;
+            return <UnderlinedInput name="username" placeholder="Username or Email" padding={19} autofocus />;
         }
 
-        return <UnderlinedInput type="password" name="password" placeholder="Password" padding={17} autofocus />;
+        return <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} autofocus />;
     };
 
     const RegisterForm = () => 'Register form here....';

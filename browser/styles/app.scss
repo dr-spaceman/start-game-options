@@ -329,61 +329,77 @@ body > header {
             color: white;
         }
     }
-}
-#navmenu {
-    margin: -0.5rem 0 0; // Offset children margin
-    & .hidden,
-    &.exit-done .hidden {
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition-property: max-height, opacity;
-        transition-duration: 500ms;
-    }
-    &.enter .hidden {
-        max-height: 100px; // Exceeds normal bounds
-        opacity: 1;
-    }
-    &.enter-active .hidden,
-    &.enter-done .hidden {
-        max-height: 100px;
-        opacity: 1;
-    }
-    &.exit .hidden {
-        max-height: 0;
-        opacity: 0;
-    }
-}
-ul.navmenu {
-    &,
-    > li {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
-    > li {
-        & > *:not(.caret) {
-            display: block;
-            margin: 0.5rem 0 0;
-            padding: 0;
-            font-family: "Pixel Emulator";
-            font-size: 1.5rem;
-            font-weight: normal;
-            text-decoration: none;
-            letter-spacing: 0.15rem;
-            outline: none;
-            &:focus {
-                color: white;
-                text-decoration: underline;
-            }
+    & > nav {
+        & .hidden,
+        &.exit-done .hidden {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition-property: max-height, opacity;
+            transition-duration: 500ms;
+        }
+        &.enter .hidden {
+            max-height: 100px; // Exceeds normal bounds
+            opacity: 1;
+        }
+        &.enter-active .hidden,
+        &.enter-done .hidden {
+            max-height: 100px;
+            opacity: 1;
+        }
+        &.exit .hidden {
+            max-height: 0;
+            opacity: 0;
         }
     }
 }
+.navmenu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    &:hover {
+        .navmenu-caret {
+            opacity: 0 !important;
+        }
+    }
+}
+    .navmenu-item {
+        display: flex;
+        align-items: center;
+        .navmenu-caret {
+            font-weight: bold;
+            opacity: 0;
+        }
+        &.selected {
+            .navmenu-caret {
+                opacity: 1;
+            }
+        }
+        &:hover {
+            .navmenu-caret {
+                opacity: 1 !important;
+            }
+        }
+    }
+    .navmenu-item * {
+        margin: 0;
+        padding: 0;
+        font-family: "Pixel Emulator";
+        font-size: 20px;
+        font-weight: normal;
+        text-decoration: none;
+        letter-spacing: 0;
+        outline: none;
+        &:focus {
+            text-decoration: underline;
+        }
+    }
 
 %login-typography {
     font-family: "Press Start";
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: normal;
+    line-height: 25px;
     text-decoration: none;
     text-transform: uppercase;
 }
@@ -410,7 +426,7 @@ ul.navmenu {
         padding: 0;
         @extend %login-typography !optional;
     }
-    button {
+    & * {
         @extend %login-typography !optional;
     }
 }
