@@ -9,5 +9,6 @@
         "indent": ["error", 4, {"SwitchCase": 1}],
         "react/jsx-indent": ["error",4],
         "import/extensions": [ "error", "always", { "ignorePackages": true } ], // Exception for including extensions in application modules
-    }
+    },
+    "parser": "babel-eslint"
 }
