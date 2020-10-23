@@ -170,9 +170,9 @@ export default function Login() {
                     <div id="loginform-nav">
                         <NavMenu>
                             <NavMenu.Item selected><a href="#login">New Name</a></NavMenu.Item>
-                            <NavMenu.Item><a href="">Blue</a></NavMenu.Item>
-                            <NavMenu.Item><a href="">Gary</a></NavMenu.Item>
-                            <NavMenu.Item><a href="">John</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#blue">Blue</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#gary">Gary</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#john">John</a></NavMenu.Item>
                         </NavMenu>
                     </div>
                     <div id="loginform-rival" />

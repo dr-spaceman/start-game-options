@@ -4,11 +4,13 @@
         "browser": true
     },
     "rules": {
-        "react/prop-types": "off",
-        "no-console": "off",
-        "indent": ["error", 4, {"SwitchCase": 1}],
-        "react/jsx-indent": ["error",4],
         "import/extensions": [ "error", "always", { "ignorePackages": true } ], // Exception for including extensions in application modules
+        "indent": ["error", 4, {"SwitchCase": 1}],
+        "no-console": "off",
+        "react/prop-types": "off",
+        "react/jsx-indent": ["error",4],
+        "react/require-default-props": "off"
     },
     "parser": "babel-eslint"
 }
+/* eslint-disable  */
