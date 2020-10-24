@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $blue: #3399ff;
 $lightblue: #66b3ff;
 $darkblue: #336699;
@@ -46,7 +48,7 @@ $spacing-monitor: 3.5rem;
     }
 }
 
-// Fonts
+// Fonts and typography styles
 
 // Used as default layout font (not monospaced)
 @font-face {
@@ -103,6 +105,12 @@ $spacing-monitor: 3.5rem;
     font-style: normal;
     font-weight: normal;
     src: url("../fonts/superlegend.woff");
+}
+
+.type-retro {
+    font-family: "Pixel Emulator";
+    font-weight: normal;
+    letter-spacing: 0;
 }
 
 // Top Level (Global)
@@ -182,34 +190,46 @@ optgroup > option {
 optgroup > option:first-child {
     margin-top: 2px;
 }
-
-// .button-blue {
-// 	@link-color: darken(@lightblue, 16%);
-// 	color:rgba(255,255,255,.93); text-shadow:0 -1px @link-color, 0 1px @lightblue;
-// 	background:@link-color; background:-moz-linear-gradient(top, @lightblue 50%, @link-color 50%); background:-webkit-gradient(linear, left top, left bottom, color-stop(50%,@lightblue), color-stop(50%,@link-color));
-// 	border-color:darken(@lightblue, 10%) darken(@link-color, 5%) darken(@link-color, 5%) darken(@lightblue, 5%);
-// 	box-shadow:0 1px 1px rgba(0,0,0,.2);
-// 	&:hover { border-color:darken(@link-color, 25%); }
-// 	&:active { box-shadow:none; background:darken(@lightblue, 5%); border-color:darken(@link-color, 12%) darken(@lightblue, 12%) darken(@lightblue, 12%) darken(@link-color, 12%); }
-// }
-button:not(.access-button),
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-.faux-button {
-    color: #444;
-    text-shadow: 0 -1px #dadada, 0 1px #eee;
-    background: #ddd;
+button,
+.button-text,
+.button-link {
+    @extend .inputitem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding-right: 1em;
+    padding-left: 1em;
+    color: white;
+    background-color: transparent;
+    background: none;
+    &:hover {
+        background-color: $color-surface;
+    }
+    & + button {
+        margin-left: 1em;
+    }
+}
+.light {
+    .button-text,
+    .button-link {
+        color: black;
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+}
+%button-contained-bg {
     background: -moz-linear-gradient(top, #eee 50%, #ddd 50%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, #eee), color-stop(50%, #ddd));
-    border-width: 1px;
-    border-style: solid;
+}
+.button-contained {
+    color: #444;
+    text-shadow: 0 -1px #dadada, 0 1px #eee;
+    @extend %button-contained-bg;
     border-color: #ddd #aaa #aaa #ddd;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    @extend .inputitem;
     &:hover {
         border-color: #777;
+        @extend %button-contained-bg;
     }
     &:active,
     &.active {
@@ -221,17 +241,39 @@ input[type="reset"],
         color: #bbb;
         cursor: not-allowed;
     }
-    &.submit:hover {
-        background: $green;
-        border-color: #016c43;
-        color: white;
-        text-shadow: none;
-    }
-    &.cancel:hover {
-        background: $red;
-        border-color: darken($red, 15%);
-        color: white;
-        text-shadow: none;
+}
+.button-link {
+    @extend .a;
+}
+.button-color-primary {
+    background: $blue;
+    border-color: $darkblue;
+    color: white;
+}
+.button-color-green {
+    background: $green;
+    border-color: color.scale($green, $lightness: -15%);
+    color: white;
+}
+.button-color-red {
+    background: $red;
+    border-color: color.scale($red, $lightness: -15%);
+    color: white;
+}
+.button-color-light {
+    @extend .light;
+}
+.button-color-dark {
+    @extend .dark;
+}
+.button-close {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 2em;
+    @extend .red;
+    &:hover {
+        background: transparent;
     }
 }
 
@@ -264,6 +306,216 @@ h5 {
 h6 {
     margin: 1em 0 0.5em;
 }
+
+.dark {
+    background-color: black;
+    color: white;
+    a {
+        color: white;
+        &:hover {
+            color: lightgray;
+        }
+    }
+}
+.light {
+    background-color: white;
+    color: black;
+    a {
+        color: black;
+        &:hover {
+            color: rgb(46, 46, 46);
+        }
+    }
+}
+.red {
+    color: $red;
+    &:hover {
+        color: #f17878;
+    }
+}
+
+.modal {
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+}
+.modal-container {
+    &.modal-enter {
+        opacity: 0;
+    }
+    &.modal-enter-active {
+        opacity: 1;
+        transition: all 500ms;
+    }
+    &.modal-exit {
+        opacity: 1;
+    }
+    &.modal-exit-active {
+        opacity: 0;
+        transition: opacity 500ms;
+    }
+}
+.modal-overlay {
+    width: 100%;
+    height: 100%;
+    z-index: 10; /* places the modal overlay between the main page and the modal content*/
+    background-color: rgba(0, 0, 0, 0.95);
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s;
+}
+.modal-content {
+    width: auto;
+    box-sizing: border-box;
+    margin: 0.5rem;
+    padding: 2rem;
+    position: relative;
+    z-index: 11; /* places the modal dialog on top of overlay */
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    h5 {
+        margin-top: 0;
+    }
+    @include breakpoint(screen) {
+        margin: auto;
+        max-width: 500px;
+    }
+}
+.modal-close {
+    position: absolute;
+    z-index: 12;
+    top: 0.3rem;
+    right: 0.3rem;
+}
+
+.dropdown {
+    position: relative;
+    button.dropdown-toggle {
+        &::after {
+            content: "";
+            display: inline-block;
+            width: 0;
+            height: 0;
+            vertical-align: middle;
+            border-top: 4px dashed #666;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+            margin-left: 8px;
+        }
+    }
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 0;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        text-align: left;
+        border-radius: 0;
+        background-clip: padding-box;
+    }
+    &.open .dropdown-menu {
+        display: block;
+    }
+    .dropdown-item {
+        display: block;
+        padding: .5em 1em;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        &:hover {
+            background-color: lightgray;
+        }
+        & > * {
+            display: block;
+            margin: -.5em -1em;
+            padding: .5em 1em;
+        }
+    }
+}
+
+.user {
+    height: 20px;
+    line-height: 20px;
+    .user-username {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .user-avatar.thumbnail {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+}
+.user-avatar {
+    &.big img {
+        width: 144px;
+        height: 144px;
+    }
+    &.icon img {
+        width: 48px;
+        height: 48px;
+    }
+    &.thumbnail img {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.navmenu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    &:hover {
+        .navmenu-caret {
+            opacity: 0 !important;
+        }
+    }
+}
+    .navmenu-item {
+        display: flex;
+        align-items: center;
+        .navmenu-caret {
+            font-weight: bold;
+            opacity: 0;
+        }
+        &.selected {
+            .navmenu-caret {
+                opacity: 1;
+            }
+        }
+        &:hover {
+            .navmenu-caret {
+                opacity: 1 !important;
+            }
+        }
+    }
+    .navmenu-item * {
+        margin: 0;
+        padding: 0;
+        font-family: "Pixel Emulator";
+        font-size: 20px;
+        font-weight: normal;
+        text-decoration: none;
+        letter-spacing: 0;
+        outline: none;
+        &:focus {
+            text-decoration: underline;
+        }
+    }
 
 // Page Layouts
 
@@ -320,12 +572,15 @@ body > header {
             margin-left: 1em;
         }
     }
-    a,
-    button.access-button {
+    .navmenu-item * {
+        font-family: 'Pixel Emulator';
+        font-size: 1.5rem;
         color: rgb(224, 224, 224);
         text-decoration: none;
+        background: none;
         &:hover,
         &:hover svg {
+            background: none;
             color: white;
         }
     }
@@ -353,47 +608,6 @@ body > header {
         }
     }
 }
-.navmenu {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    &:hover {
-        .navmenu-caret {
-            opacity: 0 !important;
-        }
-    }
-}
-    .navmenu-item {
-        display: flex;
-        align-items: center;
-        .navmenu-caret {
-            font-weight: bold;
-            opacity: 0;
-        }
-        &.selected {
-            .navmenu-caret {
-                opacity: 1;
-            }
-        }
-        &:hover {
-            .navmenu-caret {
-                opacity: 1 !important;
-            }
-        }
-    }
-    .navmenu-item * {
-        margin: 0;
-        padding: 0;
-        font-family: "Pixel Emulator";
-        font-size: 20px;
-        font-weight: normal;
-        text-decoration: none;
-        letter-spacing: 0;
-        outline: none;
-        &:focus {
-            text-decoration: underline;
-        }
-    }
 
 %login-typography {
     font-family: "Press Start";
@@ -515,189 +729,5 @@ body > footer {
             position: absolute;
             background-image: url("#{$img-dir}/footer_diorama.png");
         }
-    }
-}
-
-// Custom Classes
-
-.dark {
-    background-color: black;
-    color: white;
-    a {
-        color: white;
-        &:hover {
-            color: lightgray;
-        }
-    }
-}
-.light {
-    background-color: white;
-    color: black;
-    a {
-        color: black;
-        &:hover {
-            color: rgb(46, 46, 46);
-        }
-    }
-}
-.red {
-    color: $red;
-    &:hover {
-        color: #f17878;
-    }
-}
-
-.access-button {
-    border: 0;
-    padding: 0;
-    margin: 0;
-    background-color: transparent;
-    background-image: none;
-    cursor: pointer;
-}
-.close-button {
-    @extend .access-button;
-    @extend .red;
-    font-size: 2em;
-}
-
-.modal {
-    position: fixed;
-    z-index: 10;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: grid;
-}
-.modal-container {
-    &.modal-enter {
-        opacity: 0;
-    }
-    &.modal-enter-active {
-        opacity: 1;
-        transition: all 500ms;
-    }
-    &.modal-exit {
-        opacity: 1;
-    }
-    &.modal-exit-active {
-        opacity: 0;
-        transition: opacity 500ms;
-    }
-}
-.modal-overlay {
-    width: 100%;
-    height: 100%;
-    z-index: 10; /* places the modal overlay between the main page and the modal content*/
-    background-color: rgba(0, 0, 0, 0.95);
-    position: fixed;
-    top: 0;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    transition: all 0.3s;
-}
-.modal-content {
-    width: auto;
-    box-sizing: border-box;
-    margin: 0.5rem;
-    padding: 2rem;
-    position: relative;
-    z-index: 11; /* places the modal dialog on top of overlay */
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-    h5 {
-        margin-top: 0;
-    }
-    @include breakpoint(screen) {
-        margin: auto;
-        max-width: 500px;
-    }
-}
-.modal-close {
-    position: absolute;
-    z-index: 12;
-    top: 0.5rem;
-    right: 0.5rem;
-}
-
-.dropdown {
-    position: relative;
-    button.dropdown-toggle {
-        &::after {
-            content: "";
-            display: inline-block;
-            width: 0;
-            height: 0;
-            vertical-align: middle;
-            border-top: 4px dashed #666;
-            border-right: 4px solid transparent;
-            border-left: 4px solid transparent;
-            margin-left: 8px;
-        }
-    }
-    .dropdown-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        z-index: 1000;
-        display: none;
-        min-width: 0;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-        text-align: left;
-        border-radius: 0;
-        background-clip: padding-box;
-    }
-    &.open .dropdown-menu {
-        display: block;
-    }
-    .dropdown-item {
-        display: block;
-        padding: .5em 1em;
-        text-decoration: none;
-        white-space: nowrap;
-        cursor: pointer;
-        &:hover {
-            background-color: lightgray;
-        }
-        & > * {
-            display: block;
-            margin: -.5em -1em;
-            padding: .5em 1em;
-        }
-    }
-}
-
-.user {
-    height: 20px;
-    line-height: 20px;
-    .user-username {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .user-avatar.thumbnail {
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 5px;
-    }
-}
-.user-avatar {
-    &.big img {
-        width: 144px;
-        height: 144px;
-    }
-    &.icon img {
-        width: 48px;
-        height: 48px;
-    }
-    &.thumbnail img {
-        width: 20px;
-        height: 20px;
     }
 }

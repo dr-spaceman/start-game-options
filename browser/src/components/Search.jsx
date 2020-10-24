@@ -1,7 +1,8 @@
 /* eslint-disable react/button-has-type */
 import React from 'react';
 import { BiSearch } from 'react-icons/bi';
-import Modal from './Modal.jsx';
+import Modal from './ui/Modal.jsx';
+import Button from './ui/Button.jsx';
 
 const API_ENDPOINT = process.env.API_ENDPOINT_SEARCH;
 
@@ -85,9 +86,9 @@ export default function Search() {
 
     return (
         <div id="search">
-            <button type="button" className="access-button" onClick={() => setOpen(true)}>
+            <Button type="button" onClick={() => setOpen(true)}>
                 <BiSearch size="28" title="Search" />
-            </button>
+            </Button>
             <Modal open={open} close={handleClose} closeTabIndex="0">
                 <div>
                     <input id="searchform" type="text" value={searchTerm} placeholder="Search all the things" tabIndex="0" onChange={handleSearch} ref={(input) => input && input.focus()} />

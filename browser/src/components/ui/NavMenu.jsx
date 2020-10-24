@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import cn from 'classnames';
-import matchComponent from '../lib/match-component.js';
+import matchComponent from '../../lib/match-component.js';
 
 const isNavMenuItem = matchComponent(NavMenuItem);
 
@@ -20,11 +20,11 @@ function NavMenu({ className, children, ...props }) {
     // Set to index of <NavMenu.Item> child
     const [selected, setSelected] = React.useState(initSelected);
 
-    const classNames = cn({
-        className,
+    const classNames = cn(className, {
         navmenu: true,
     });
 
+    // Find first <NavMenuItem /> child to insert tabIndex prop
     let firstValidChild;
 
     return (
@@ -53,6 +53,9 @@ NavMenu.propTypes = {
     className: PropTypes.string,
     children: PropTypes.node.isRequired,
 };
+NavMenu.defaultProps = {
+    className: '',
+};
 
 function NavMenuItem({
     index,
@@ -67,8 +70,7 @@ function NavMenuItem({
         setSelected(index);
     };
 
-    const classNames = cn({
-        className,
+    const classNames = cn(className, {
         'navmenu-item': true,
         selected,
     });
@@ -93,6 +95,7 @@ NavMenuItem.propTypes = {
 NavMenuItem.defaultProps = {
     caret: true,
     selected: false,
+    className: '',
 };
 
 NavMenu.Item = NavMenuItem;

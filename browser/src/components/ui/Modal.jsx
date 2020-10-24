@@ -2,22 +2,16 @@ import React from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { BiX } from 'react-icons/bi';
 
-/**
- * 
- * @param {Boolean} props 
- */
-export default function Modal(props) {
-    const {
-        children,
-        open = true,
-        close = null,
-        timeout = 500,
-        overlay = true,
-        closeButton = true,
-    } = props;
-
+export default function Modal({
+    children,
+    open = true,
+    close = null,
+    timeout = 500,
+    overlay = true,
+    closeButton = true,
+}) {
     const CloseButton = () => closeButton && (
-        <button type="button" role="switch" aria-checked={open} aria-label="Close" className="modal-close close-button" onClick={close}>
+        <button type="button" role="switch" aria-checked={open} aria-label="Close" className="modal-close button-close" onClick={close}>
             <BiX arial-hidden="true" />
         </button>
     );

@@ -1,30 +1,37 @@
 import React from 'react';
 import TopNav from './TopNav.jsx';
 import Search from './Search.jsx';
+import Button from './ui/Button.jsx';
 import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
 
 const TopNavUser = React.lazy(() => import(/* webpackChunkName: "TopNavUser" */'./TopNavUser.jsx'));
 const Login = React.lazy(() => import(/* webpackChunkName: "Login" */'./Login.jsx'));
 
-function User({ username }) {
-    const [state, setState] = React.useState(false);
+function HeaderUser({ username }) {
+    const [loginLoaded, setLoginLoaded] = React.useState(false);
     const lazyloadLogin = (event) => {
         event.preventDefault();
-        setState(true);
-    }
-    const LoginButton = () => (
-        <a href="/login.php" title="Login" onClick={lazyloadLogin} className="user user-unknown">
+        setLoginLoaded(true);
+    };
+
+    const LoginButton = ({ handleClick }) => (
+        <Button title="Login" onClick={handleClick} classes={{ user: true, 'user-unknown': true }}>
             <QuestionBlock className="user-avatar thumbnail" />
             <span className="user-username">Login</span>
-        </a>
+        </Button>
     );
 
     return (
         <div id="login">
             {username ? (
-                <React.Suspense fallback={"User"}><TopNavUser username={username} /></React.Suspense>
+                <React.Suspense fallback="User"><TopNavUser username={username} /></React.Suspense>
             ) : (
-                <>{state ? <React.Suspense fallback={<LoadingMascot />}><Login /></React.Suspense> : <LoginButton />}</>
+                <>
+                    {loginLoaded
+                        ? <React.Suspense fallback={<LoadingMascot />}><Login LoginButton={LoginButton} /></React.Suspense>
+                        : <LoginButton handleClick={lazyloadLogin} />
+                    }
+                </>
             )}
         </div>
     )
@@ -36,7 +43,7 @@ export default function Header(props) {
     return (
         <>
             <TopNav />
-            <User username={username} />
+            <HeaderUser username={username} />
             <Search />
         </>
     );

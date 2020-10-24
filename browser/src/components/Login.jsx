@@ -6,9 +6,10 @@
  */
 
 import React from 'react';
-import Modal from './Modal.jsx';
-import UnderlinedInput from './UnderlinedInput.jsx';
-import NavMenu from './NavMenu.jsx';
+import Modal from './ui/Modal.jsx';
+import UnderlinedInput from './ui/UnderlinedInput.jsx';
+import NavMenu from './ui/NavMenu.jsx';
+import Button from './ui/Button.jsx';
 import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
 
 console.log('<Login> has been lazy loaded!');
@@ -26,6 +27,8 @@ const initialState = {
 };
 const reducer = (state, action) => {
     switch (action.type) {
+        case 'RESET':
+            return { ...initialState };
         case 'TOGGLE':
             return {
                 ...initialState,
@@ -74,7 +77,7 @@ const reducer = (state, action) => {
     }
 };
 
-export default function Login() {
+export default function Login({ LoginButton }) {
     const form = React.useRef();
 
     const [state, dispatchState] = React.useReducer(reducer, initialState);
@@ -82,6 +85,10 @@ export default function Login() {
     const toggleOpen = (event) => {
         event.preventDefault();
         dispatchState({ type: 'TOGGLE' });
+    };
+
+    const resetForm = () => {
+        dispatchState({ type: 'RESET' });
     };
 
     const handleSubmit = async (event) => {
@@ -135,13 +142,6 @@ export default function Login() {
         }
     };
 
-    const LoginButton = () => (
-        <a href="/login.php" title="Login" onClick={toggleOpen} className="user user-unknown">
-            <QuestionBlock className="user-avatar thumbnail" />
-            <span className="user-username">Login</span>
-        </a>
-    );
-
     let message;
     if (state.isError) {
         message = <div className="error">{state.error.hasOwnProperty('message') ? state.error.message : 'An error occurred'}</div>;
@@ -164,15 +164,15 @@ export default function Login() {
 
     return (
         <>
-            <LoginButton />
+            <LoginButton handleClick={toggleOpen} />
             <Modal open={state.isOpen} close={toggleOpen}>
                 <form id="loginform" ref={form} onSubmit={handleSubmit} className={state.isLoading ? 'loading' : undefined}>
                     <div id="loginform-nav">
                         <NavMenu>
-                            <NavMenu.Item selected><a href="#login">New Name</a></NavMenu.Item>
-                            <NavMenu.Item><a href="#blue">Blue</a></NavMenu.Item>
-                            <NavMenu.Item><a href="#gary">Gary</a></NavMenu.Item>
-                            <NavMenu.Item><a href="#john">John</a></NavMenu.Item>
+                            <NavMenu.Item selected><a href="#login" onClick={resetForm}>New Name</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#blue" onClick={resetForm}>Blue</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#gary" onClick={resetForm}>Gary</a></NavMenu.Item>
+                            <NavMenu.Item><a href="#john" onClick={resetForm}>John</a></NavMenu.Item>
                         </NavMenu>
                     </div>
                     <div id="loginform-rival" />
@@ -185,11 +185,15 @@ export default function Login() {
                     <div id="loginform-submit">
                         {state.isLoading ? (
                             <>
-                                <LoadingMascot className="loading" />
-                                <span>Professor Oak is thinking</span>
+                                <span>Oak is thinking</span>
                             </>
                         ) : (
-                            <button type="submit" disabled={state.isLoading}>Submit</button>
+                            <>
+                                {state.mode === 'login'
+                                    ? <Button onClick={() => dispatchState({ type: 'REGISTER' })}>Register</Button>
+                                    : <Button onClick={resetForm}>Login</Button>}
+                                <Button variant="contained" type="submit">Submit</Button>
+                            </>
                         )}
                     </div>
                 </form>

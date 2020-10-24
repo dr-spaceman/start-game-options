@@ -1,7 +1,7 @@
 import React from 'react';
-import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
-import NavMenu from './NavMenu.jsx';
+import NavMenu from './ui/NavMenu.jsx';
+import Button from './ui/Button.jsx';
 
 export default function TopNav() {
     const [open, setOpen] = React.useState(false);
@@ -9,11 +9,10 @@ export default function TopNav() {
         setOpen(!open);
     };
 
-    const buttonClasses = classNames({
-        'access-button': true,
+    const buttonClasses = {
         active: open,
         inactive: !open,
-    });
+    };
 
     return (
         <CSSTransition in={open} timeout={1500}>
@@ -23,9 +22,9 @@ export default function TopNav() {
                 </NavMenu.Item>
                 <NavMenu.Item>
                     {/* accessibilize */}
-                    <button type="button" role="switch" aria-checked={open} id="menu" className={buttonClasses} onClick={toggleOpen}>
+                    <Button role="switch" aria-checked={open} id="menu" classes={buttonClasses} onClick={toggleOpen}>
                         Options
-                    </button>
+                    </Button>
                 </NavMenu.Item>
                 <NavMenu.Item className="hidden"><a href="/games">Games</a></NavMenu.Item>
                 <NavMenu.Item className="hidden"><a href="/people">People</a></NavMenu.Item>

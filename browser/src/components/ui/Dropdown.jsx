@@ -1,26 +1,26 @@
 import React from 'react';
 import cn from 'classnames';
-import matchComponent from '../lib/match-component.js';
-import useOutsideClick from '../hooks/use-outside-click.js';
+import matchComponent from '../../lib/match-component.js';
+import useOutsideClick from '../../hooks/use-outside-click.js';
 
 const isDropdownToggle = matchComponent(DropdownToggle);
 const isDropdownMenu = matchComponent(DropdownMenu);
 
-function Dropdown({ className, children, ...props }) {
+function Dropdown({ classes, children, ...props }) {
     const [open, setOpen] = React.useState(false);
     const handleToggle = () => setOpen(!open);
     const handleClose = () => setOpen(false);
 
     const ref = useOutsideClick(handleClose);
 
-    const classNames = cn({
-        className,
+    const className = cn({
+        ...classes,
         dropdown: true,
         open,
     });
 
     return (
-        <div ref={ref} className={classNames} {...props}>
+        <div ref={ref} className={className} {...props}>
             {/* Map children & inject listeners */}
             {React.Children.map(children, (child) => {
                 if (!React.isValidElement(child)) {
@@ -40,17 +40,28 @@ function Dropdown({ className, children, ...props }) {
     );
 }
 
-function DropdownToggle({ className, children, handleClick }) {
+function DropdownToggle({ classes, children, handleClick }) {
+    const className = cn({
+        ...classes,
+        'dropdown-toggle': true,
+    });
+
     return (
-        <button className={`dropdown-toggle ${className}`} type="button" onClick={handleClick} aria-haspopup="true" aria-expanded="true">
+        <button type="button" className={className} onClick={handleClick} aria-haspopup="true" aria-expanded="true">
             {children}
         </button>
     );
 }
 
-function DropdownMenu({ className, children }) {
+function DropdownMenu({ classes, children }) {
+    const className = cn({
+        ...classes,
+        'dropdown-menu': true,
+        light: true,
+    });
+
     return (
-        <div className={`dropdown-menu light ${className}`} role="menu">
+        <div className={className} role="menu">
             {children}
         </div>
     );
