@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/dist/vendor.css"/>
+    <link rel="stylesheet" href="/dist/index.css"/>
     {% block head %}
         <title>{% block title %}{% endblock %}</title>
     {% endblock %}
@@ -56,8 +58,8 @@
     </footer>
 
     {% block scripts %}
-    <script src="/javascript/index_bundle.js"></script>
-    <script src="/javascript/vendor_bundle.js"></script>
+    <script src="/dist/index_bundle.js"></script>
+    <script src="/dist/vendor_bundle.js"></script>
     {% endblock %}
 </body>
 </html>

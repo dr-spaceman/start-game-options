@@ -1,6 +1,6 @@
 import React from 'react';
-import Dropdown from './ui/Dropdown.jsx';
-import User from './User.jsx';
+import Dropdown from '../ui/Dropdown.jsx';
+import User from '../User.jsx';
 
 console.log('<TopNavUser> has been lazy loaded!');
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CSSTransition } from 'react-transition-group';
-import NavMenu from './ui/NavMenu.jsx';
-import Button from './ui/Button.jsx';
+import NavMenu from '../ui/NavMenu.jsx';
+import Button from '../ui/Button.jsx';
 
 export default function TopNav() {
     const [open, setOpen] = React.useState(false);

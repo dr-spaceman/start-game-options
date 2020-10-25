@@ -1,14 +1,14 @@
 import React from 'react';
 
-import storageAvailable from '../lib/storage-available.js';
-import welcome from '../../images/colophon_welcome.png';
+import storageAvailable from '../../lib/storage-available.js';
+import welcome from '../../../images/colophon_welcome.png';
 
 export default function Colophon() {
     if (!storageAvailable('localStorage')) {
         return '';
     }
     // Prevent saving hidden status:
-    localStorage.clear();
+    // localStorage.clear();
 
     const [open, setOpen] = React.useState(true);
 

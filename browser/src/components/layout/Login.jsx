@@ -6,11 +6,11 @@
  */
 
 import React from 'react';
-import Modal from './ui/Modal.jsx';
-import UnderlinedInput from './ui/UnderlinedInput.jsx';
-import NavMenu from './ui/NavMenu.jsx';
-import Button from './ui/Button.jsx';
-import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
+import Modal from '../ui/Modal.jsx';
+import UnderlinedInput from '../ui/UnderlinedInput.jsx';
+import NavMenu from '../ui/NavMenu.jsx';
+import Button from '../ui/Button.jsx';
+import { QuestionBlock, LoadingMascot } from '../../lib/icons.js';
 
 console.log('<Login> has been lazy loaded!');
 

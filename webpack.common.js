@@ -1,26 +1,39 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable indent */
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: {
         index: './browser/src/index.js', // non-HMR
         // app: ['./src/App.jsx'] // Hot Module Replacement
+        test: './browser/src/test.js',
     },
+    plugins: [
+        // Clean dist dir before every build
+        new CleanWebpackPlugin(),
+        // Extracts CSS into separate files, a CSS file per JS file which contains CSS
+        new MiniCssExtractPlugin({
+            filename: '[name].css',
+        }),
+    ],
     output: {
         chunkFilename: '[name]_bundle.js',
         filename: '[name]_bundle.js',
-        path: path.resolve(__dirname, 'public/javascript'),
-        publicPath: '/javascript/',
+        path: path.resolve(__dirname, 'public/dist'),
+        publicPath: '/dist/',
     },
     module: {
         rules: [
             {
                 test: /\.jsx?$/,
-                exclude: /node_modules/,
+                include: path.resolve(__dirname, 'browser/src'),
                 use: 'babel-loader',
             },
             {
                 test: /\.(jpg|gif|png)$/,
+                include: path.resolve(__dirname, 'browser/images'),
                 use: {
                     loader: 'url-loader',
                     options: {
@@ -28,19 +41,23 @@ module.exports = {
                     },
                 },
             },
+            // {
+            //     test: /\.css$/,
+            //     use: [
+            //         // Extracts CSS into separate files, a CSS file per JS file which contains CSS
+            //         MiniCssExtractPlugin.loader,
+            //         // Creates `style` nodes from JS strings; Inject CSS into the DOM
+            //         // 'style-loader',
+            //         'css-loader',
+            //     ],
+            // },
             {
-                test: /\.css$/,
-                // exclude: /node_modules/,
+                test: /\.(sa|sc|c)ss$/,
                 use: [
-                    'style-loader',
-                    'css-loader',
-                ],
-            },
-            {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    // Creates `style` nodes from JS strings
-                    'style-loader',
+                    // Extracts CSS into separate files, a CSS file per JS file which contains CSS
+                    MiniCssExtractPlugin.loader,
+                    // Creates `style` nodes from JS strings; Inject CSS into the DOM
+                    // 'style-loader',
                     // Translates CSS into CommonJS
                     'css-loader',
                     'resolve-url-loader',
@@ -51,6 +68,7 @@ module.exports = {
             {
                 // Match woff2 in addition to patterns like .woff?v=1.1.1.
                 test: /\.woff2?(\?v=\d+\.\d+\.\d+)?$/,
+                include: path.resolve(__dirname, 'browser/fonts'),
                 use: {
                     loader: 'url-loader',
                     options: {

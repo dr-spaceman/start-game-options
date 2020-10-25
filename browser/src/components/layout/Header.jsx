@@ -1,8 +1,8 @@
 import React from 'react';
 import TopNav from './TopNav.jsx';
 import Search from './Search.jsx';
-import Button from './ui/Button.jsx';
-import { QuestionBlock, LoadingMascot } from '../lib/icons.js';
+import Button from '../ui/Button.jsx';
+import { QuestionBlock, LoadingMascot } from '../../lib/icons.js';
 
 const TopNavUser = React.lazy(() => import(/* webpackChunkName: "TopNavUser" */'./TopNavUser.jsx'));
 const Login = React.lazy(() => import(/* webpackChunkName: "Login" */'./Login.jsx'));

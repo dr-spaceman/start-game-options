@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block head %}<link rel="stylesheet" href="/dist/test.css">{% endblock %}
+{% block title %}Testing Ground{% endblock %}
+{% block scripts %}
+{{ parent() }}
+<script src="/dist/test_bundle.js"></script>
+{% endblock %}

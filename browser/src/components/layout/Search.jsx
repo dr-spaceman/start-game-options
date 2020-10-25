@@ -1,8 +1,8 @@
 /* eslint-disable react/button-has-type */
 import React from 'react';
 import { BiSearch } from 'react-icons/bi';
-import Modal from './ui/Modal.jsx';
-import Button from './ui/Button.jsx';
+import Modal from '../ui/Modal.jsx';
+import Button from '../ui/Button.jsx';
 
 const API_ENDPOINT = process.env.API_ENDPOINT_SEARCH;
 
