@@ -7,7 +7,7 @@ console.log('<TopNavUser> has been lazy loaded!');
 export default function TopNavUser({ username }) {
     return (
         <Dropdown id="login-user-dropdown">
-            <Dropdown.Toggle>
+            <Dropdown.Toggle classes={{ 'button-header': true }}>
                 <User username={username} href="" avatar="" />
             </Dropdown.Toggle>
             <Dropdown.Menu>

@@ -86,7 +86,7 @@ export default function Search() {
 
     return (
         <div id="search">
-            <Button type="button" onClick={() => setOpen(true)}>
+            <Button classes={{ 'button-header': true }} onClick={() => setOpen(true)}>
                 <BiSearch size="28" title="Search" />
             </Button>
             <Modal open={open} close={handleClose} closeTabIndex="0">

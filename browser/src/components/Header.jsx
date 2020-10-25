@@ -15,9 +15,8 @@ function HeaderUser({ username }) {
     };
 
     const LoginButton = ({ handleClick }) => (
-        <Button title="Login" onClick={handleClick} classes={{ user: true, 'user-unknown': true }}>
-            <QuestionBlock className="user-avatar thumbnail" />
-            <span className="user-username">Login</span>
+        <Button title="Login" onClick={handleClick} classes={{ 'button-header': true }}>
+            <QuestionBlock />
         </Button>
     );
 
@@ -34,7 +33,7 @@ function HeaderUser({ username }) {
                 </>
             )}
         </div>
-    )
+    );
 }
 
 export default function Header(props) {

@@ -568,9 +568,6 @@ body > header {
     align-items: flex-start;
     & > *:first-child {
         flex-grow: 1;
-        & ~ * {
-            margin-left: 1em;
-        }
     }
     .navmenu-item * {
         font-family: 'Pixel Emulator';
@@ -606,6 +603,12 @@ body > header {
             max-height: 0;
             opacity: 0;
         }
+    }
+    .button-header {
+        box-sizing: content-box;
+        padding-right: .3em;
+        padding-left: .3em;
+        height: 28px;
     }
 }
 
