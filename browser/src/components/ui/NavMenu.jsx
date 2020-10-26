@@ -26,6 +26,7 @@ function NavMenu({ className, children, ...props }) {
 
     // Find first <NavMenuItem /> child to insert tabIndex prop
     let firstValidChild;
+    let childProps;
 
     return (
         <nav className={classNames} {...props}>
@@ -36,12 +37,15 @@ function NavMenu({ className, children, ...props }) {
 
                 if (isNavMenuItem(child)) {
                     firstValidChild = firstValidChild || index;
-                    return React.cloneElement(child, {
+                    childProps = {
+                        ...child.props,
                         index,
                         setSelected,
                         selected: selected === index,
                         tabIndex: firstValidChild === index ? 0 : -1,
-                    });
+                    };
+
+                    return React.cloneElement(child, childProps);
                 }
 
                 return child;
@@ -83,12 +87,12 @@ function NavMenuItem({
     );
 }
 NavMenuItem.propTypes = {
-    index: PropTypes.number.isRequired,
+    index: PropTypes.number,
     /** Prepend a caret on the menu item */
     caret: PropTypes.bool,
     /** Determines if the caret is visible on initial render. */
     selected: PropTypes.bool,
-    setSelected: PropTypes.func.isRequired,
+    setSelected: PropTypes.func,
     className: PropTypes.string,
     children: PropTypes.node,
 };

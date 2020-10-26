@@ -78,25 +78,3 @@ if (isset($_POST['login'])) {
 }
 
 echo $template->render('login.html', ['login_error' => $login_error]);
-
-//logout
-if (isset($_GET['do']) && $_GET['do'] == "logout") {
-	setcookie(session_name(), '', time()-42000, '/');
-	unset($_SESSION['username'], $_SESSION['user_id'], $_SESSION['user_rank'], $_SESSION['logged_in']);
-	session_destroy();
-	?><!DOCTYPE html>
-    <html>
-    <head>
-    <title>Redirecting....</title>
-    <link rel="stylesheet" type="text/css" href="/bin/css/screen.css" />
-    <meta http-equiv="REFRESH" content="1; url=.">
-    </head>
-		<body>
-			<div id="body-message">
-				<big style="font-size:21px; padding-right:30px; background:url(/bin/img/icons/emoticons/_goomba.gif) no-repeat 100% 50%;">Logging Out</big>
-			</div>
-		</body>
-    </html>
-	<?
-	exit;
-}

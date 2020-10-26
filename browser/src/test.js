@@ -14,7 +14,7 @@ const Content = () => {
             <h1>Test Testing Testy</h1>
             {open &&
                 <>
-                    <p><span class="foo">Lorem ipsum</span> dolor sit amet <a href="#consectetur">consectetur adipisicing elit</a>. Eveniet voluptas incidunt atque ipsam, nobis quis inventore, velit libero vel autem tempora, fugit soluta excepturi <a href="#foo">voluptatum</a>! Soluta possimus nihil dolore hic.</p>
+                    <p><span className="foo">Lorem ipsum</span> dolor sit amet <a href="#consectetur">consectetur adipisicing elit</a>. Eveniet voluptas incidunt atque ipsam, nobis quis inventore, velit libero vel autem tempora, fugit soluta excepturi <a href="#foo">voluptatum</a>! Soluta possimus nihil dolore hic.</p>
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam, repellendus ullam cumque sequi deserunt cum possimus, deleniti impedit pariatur atque eligendi. Eius debitis delectus maxime esse a, odio sint mollitia!</p>
                     <p><a href="#bar">Lorem ipsum dolor sit amet consectetur</a>, adipisicing elit. Quis tenetur facilis ipsum doloremque magni cum. Praesentium reiciendis vitae omnis ex sint eaque eos necessitatibus assumenda atque reprehenderit, commodi quod. Nam! Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati consectetur similique nulla veritatis a impedit provident eaque dignissimos facere soluta voluptate ab aliquam quidem culpa dolores hic excepturi, eius quae?</p>
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias facere magni culpa molestiae voluptates ducimus? Ducimus minus nesciunt tempora ad asperiores! Totam autem dolore eos delectus reprehenderit ipsa animi omnis.</p>
@@ -23,9 +23,10 @@ const Content = () => {
                     <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aperiam deserunt ea natus iusto ipsa, labore in consectetur, beatae commodi voluptas hic, ratione asperiores dicta accusantium optio quas unde omnis error!</p>
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa maxime quod ex iure eius et, sint doloremque! Libero exercitationem pariatur hic dignissimos, dolorum consequuntur odio consectetur voluptate accusamus voluptatem a.</p>
                     <p>Fin.</p>
-                    <h1>&gt;START GAME Options Foo___foo.bar<br />____________ (Layout font)</h1>
-                    <h1 style={{ fontFamily: 'Press Start' }}>&gt;START GAME Options Foo___foo.bar<br />____________ (Monospace font)</h1>
-                    <h1 style={{ fontFamily: 'Emulogic' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
+                    <h1>&gt;START GAME Options Foo___foo.bar<br />____________ (Layout font) Pixel Emulator</h1>
+                    <h1 style={{ fontFamily: 'Press Start' }}>&gt;START GAME Options Foo___foo.bar<br />____________ (Monospace font) Press Start</h1>
+                    <h1 style={{ fontFamily: 'Press Start 2P' }}>&gt;START GAME Options Foo___foo.bar<br />____________ Press Start 2P</h1>
+                    <h1 style={{ fontFamily: 'Emulogic' }}>&gt;START GAME Options Foo___foo.bar<br />____________ Emulogic</h1>
                     <h1 style={{ fontFamily: 'Yoster Island' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
                     <h1 style={{ fontFamily: 'Bc.BMP07_A' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>
                     <h1 style={{ fontFamily: 'Bc.BMP07_K' }}>&gt;START GAME Options Foo___foo.bar<br />____________</h1>

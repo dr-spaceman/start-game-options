@@ -4,8 +4,8 @@ import Search from './Search.jsx';
 import Button from '../ui/Button.jsx';
 import { QuestionBlock, LoadingMascot } from '../../lib/icons.js';
 
-const TopNavUser = React.lazy(() => import(/* webpackChunkName: "TopNavUser" */'./TopNavUser.jsx'));
-const Login = React.lazy(() => import(/* webpackChunkName: "Login" */'./Login.jsx'));
+const TopNavUser = React.lazy(() => import(/* webpackChunkName: "top-nav-user" */'./TopNavUser.jsx'));
+const Login = React.lazy(() => import(/* webpackChunkName: "login" */'./Login.jsx'));
 
 function HeaderUser({ username }) {
     const [loginLoaded, setLoginLoaded] = React.useState(false);

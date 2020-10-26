@@ -10,6 +10,7 @@
     {% endblock %}
 </head>
 <body>
+    {% block page %}
     <header id="header" data-username="{{session.username}}"></header>
 
     <main id="content">{% block content %}{% endblock %}</main>
@@ -56,6 +57,7 @@
         <div id="colophon"></div>
         {% endblock %}
     </footer>
+    {% endblock %}
 
     {% block scripts %}
     <script src="/dist/index.bundle.js"></script>

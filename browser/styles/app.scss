@@ -65,6 +65,12 @@ $spacing-monitor: 3.5rem;
     src: url("../fonts/prstart.woff") format("woff"), url("../fonts/prstartk.woff") format("woff");
 }
 @font-face {
+    font-family: "Press Start 2P";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/press-start-2p-v9-latin-regular.woff2") format("woff2");
+}
+@font-face {
     font-family: "Emulogic";
     font-style: normal;
     font-weight: normal;
@@ -569,19 +575,19 @@ body > header {
     & > *:first-child {
         flex-grow: 1;
     }
-    .navmenu-item * {
-        font-family: 'Pixel Emulator';
-        font-size: 1.5rem;
-        color: rgb(224, 224, 224);
-        text-decoration: none;
-        background: none;
-        &:hover,
-        &:hover svg {
-            background: none;
-            color: white;
-        }
-    }
     & > nav {
+        .navmenu-item * {
+            font-family: 'Pixel Emulator';
+            font-size: 1.5rem;
+            color: rgb(224, 224, 224);
+            text-decoration: none;
+            background: none;
+            &:hover,
+            &:hover svg {
+                background: none;
+                color: white;
+            }
+        }
         & .hidden,
         &.exit-done .hidden {
             max-height: 0;

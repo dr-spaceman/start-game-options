@@ -10,7 +10,6 @@ import Modal from '../ui/Modal.jsx';
 import UnderlinedInput from '../ui/UnderlinedInput.jsx';
 import NavMenu from '../ui/NavMenu.jsx';
 import Button from '../ui/Button.jsx';
-import { QuestionBlock, LoadingMascot } from '../../lib/icons.js';
 
 console.log('<Login> has been lazy loaded!');
 
@@ -34,13 +33,19 @@ const reducer = (state, action) => {
                 ...initialState,
                 isOpen: !state.isOpen,
             };
-        case 'INIT':
+        // Form submit
+        case 'SUBMIT':
             return {
                 ...state,
                 isLoading: true,
                 isError: false,
+                user: {
+                    ...state.user,
+                    [action.inputName]: action.inputValue,
+                },
             };
-        case 'SUBMIT':
+        // Submit result success
+        case 'NEXT':
             return {
                 ...state,
                 isLoading: false,
@@ -65,7 +70,7 @@ const reducer = (state, action) => {
                 isLoading: false,
                 isError: false,
             };
-        case 'LOGIN_ERROR':
+        case 'ERROR':
             return {
                 ...state,
                 isLoading: false,
@@ -94,9 +99,14 @@ export default function Login({ LoginButton }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        dispatchState({ type: 'INIT' });
-
         const input = form['current'][state.current]['value'];
+
+        dispatchState({
+            type: 'SUBMIT',
+            inputName: state.current === 'username' && input.includes('@') ? 'email' : state.current,
+            inputValue: input,
+            current: 'password',
+        });
 
         if (state.current === 'username') {
             const response = await fetch(`${API_ENDPOINT}/${input}`, {
@@ -107,13 +117,15 @@ export default function Login({ LoginButton }) {
             if (response.ok) {
                 const result = await response.json();
                 dispatchState({
-                    type: 'SUBMIT',
+                    type: 'NEXT',
                     inputName: 'username',
                     inputValue: result.collection.items[0].username,
                     current: 'password',
                 });
             } else {
+                // Username or email not found; Offer registration
                 dispatchState({ type: 'REGISTER' });
+                dispatchState({ type: 'ERROR', error: { message: 'We don\'t have anyone registered by that name. Would you like to register?' } });
             }
         } else if (state.current === 'password') {
             const payload = {
@@ -135,10 +147,10 @@ export default function Login({ LoginButton }) {
             } else {
                 const result = await response.json();
                 console.log(response, result);
-                dispatchState({ type: 'LOGIN_ERROR', error: result.collection.errors[0] });
+                dispatchState({ type: 'ERROR', error: result.collection.errors[0] });
             }
         } else {
-            dispatchState({ type: 'LOGIN_ERROR', error: 'An unknown error occurred.' });
+            dispatchState({ type: 'ERROR', error: 'An unknown error occurred.' });
         }
     };
 
@@ -149,7 +161,7 @@ export default function Login({ LoginButton }) {
         if (state.current === 'username') message = "Erm... What's your name again?";
         else if (state.current === 'password') message = `That's right! I remember now! Your name is ${state.user.username}!`;
     } else if (state.mode === 'register') {
-        message = 'We don\'t have anyone registered by that name. Would you like to register?';
+        // message = 'Register here';
     }
 
     const LoginForm = () => {
@@ -160,7 +172,13 @@ export default function Login({ LoginButton }) {
         return <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} autofocus />;
     };
 
-    const RegisterForm = () => 'Register form here....';
+    const RegisterForm = () => (
+        <>
+            <UnderlinedInput name="username" value={state.user.username} placeholder="Username" padding={19} autofocus />
+            <UnderlinedInput name="email" value={state.user.email} placeholder="Email" padding={19} />
+            <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} />
+        </>
+    );
 
     return (
         <>
