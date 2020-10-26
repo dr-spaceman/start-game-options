@@ -13,7 +13,7 @@ const envKeys = Object.keys(env).reduce((prev, next) => {
 }, {});
 
 module.exports = merge(common, {
-    mode: 'development',
+    mode: 'production',
     // Debug tool -- see source code instead of compiled code
     // Dev console > sources > webpack > . > [source files]
     devtool: 'source-map',
