@@ -1,8 +1,8 @@
 import React from 'react';
-import cs from 'classnames';
 import './UnderlinedInput.css';
 
 export default function UnderlinedInput({
+    name,
     value: initialValue = '',
     type = 'text',
     padding = 10,
@@ -23,8 +23,8 @@ export default function UnderlinedInput({
     }
 
     return (
-        <div className="underlinedinput root">
-            <input type={type} value={value} onChange={handleChange} className="underlinedinput-typography" {...props} />
+        <div className="underlinedinput" {...props}>
+            <input type={type} name={name} value={value} onChange={handleChange} className="underlinedinput-typography" />
             <div className="underlinedinput-view">
                 {value ? (
                     <>

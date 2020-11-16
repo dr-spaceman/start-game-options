@@ -1,1 +1,0 @@
-{"version":3,"sources":["webpack:///test.css"],"names":[],"mappings":"AAAA,KACI,WACA,wB","file":"test.css","sourcesContent":[".foo {\r\n    color: pink;\r\n    background-color: bisque;\r\n}"],"sourceRoot":""}

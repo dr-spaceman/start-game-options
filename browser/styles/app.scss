@@ -673,6 +673,16 @@ body > header {
 #loginform-input {
     grid-row: 3;
 }
+#loginform-login {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    position: relative;
+    overflow: hidden;
+    & > * {
+        flex: 0 0 100%;
+    }
+}
 #loginform-submit {
     grid-row: 4;
     display: flex;

@@ -164,20 +164,19 @@ export default function Login({ LoginButton }) {
         // message = 'Register here';
     }
 
-    const LoginForm = () => {
-        if (state.current === 'username') {
-            return <UnderlinedInput name="username" placeholder="Username or Email" padding={19} autofocus />;
-        }
-
-        return <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} autofocus />;
-    };
+    const LoginForm = () => (
+        <div id="loginform-login">
+            <UnderlinedInput name="username" placeholder="Username or Email" padding={19} autofocus={state.current === 'username'} hidden={state.current !== 'username'} />
+            <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} autofocus={state.current === 'password'} hidden={state.current !== 'password'} />
+        </div>
+    );
 
     const RegisterForm = () => (
-        <>
+        <div id="loginform-register">
             <UnderlinedInput name="username" value={state.user.username} placeholder="Username" padding={19} autofocus />
             <UnderlinedInput name="email" value={state.user.email} placeholder="Email" padding={19} />
             <UnderlinedInput type="password" name="password" placeholder="Password" padding={19} />
-        </>
+        </div>
     );
 
     return (
