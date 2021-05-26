@@ -1,10 +1,6 @@
-# Videogamesite
+# Start Game Options
 
-A place where videogame fans can follow, review, collect, and show off their favorite games.
-
-A site where serious gamers can discuss gaming topics in an unserious manner.
-
-A website about videogames.
+Follow, review, collect, and show off your favorite games.
 
 ## Built With
 
@@ -15,11 +11,11 @@ A website about videogames.
 
 ## Launch
 
-Dependencies listed in [composer.json](composer.json) and [package.json](package.json); Set up your environment: `composer i && npm install`
+Dependencies listed in [composer.json](composer.json) and [package.json](package.json); Set up your environment using the command `composer i && npm install`
 
 ## Tests
 
-Unit tests are located in the `tests` folder and can be run with [PHPUnit](https://phpunit.de/): `composer test`
+Unit tests are located in the `tests` folder and can be run with [PHPUnit](https://phpunit.de/) using the command `composer test`
 
 ## API
 
@@ -27,7 +23,7 @@ REST API endpoint is located at [/api](/api).
 
 ### Documentation
 
-API documentation is compiled from doctrine annotation within the API controller files. To compile: `composer compile-apidoc`
+API documentation is compiled from doctrine annotation within the API controller files. To compile run the command `composer compile-apidoc` or [review the API doc online](https://vgsite.squarehaven.com/api/)
 
 ## Authors
 
@@ -50,7 +46,7 @@ Contributions welcome! Contact Matt.
     * [ ] Message forums
 * Back end business
     * [x] Convert mysqli to pdo
-    * [ ] Classes
+    * [ ] Class Objects
         * [x] Mapper
         * [x] Identity Map
         * [x] Storage/Registry for persistent sharing objects, eg. PDO connection
